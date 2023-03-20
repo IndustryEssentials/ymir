@@ -60,13 +60,13 @@ type VersionsType = YStates.IdMap<Dataset[]>
 type Props = {
   pid: number
   project?: YModels.Project
-  visibleGroups?: number[]
+  groups?: number[]
   iterations?: YModels.Iteration[]
 }
 
 const { useForm } = Form
 
-const Datasets: FC<Props> = ({ pid, project, iterations, visibleGroups, ...func }) => {
+const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
   const location: Location<{ type: string}> = useLocation()
   const { name } = location.query as { name?: string }
   const history = useHistory()
@@ -88,8 +88,8 @@ const Datasets: FC<Props> = ({ pid, project, iterations, visibleGroups, ...func 
   const [editingDataset, setEditingDataset] = useState<Dataset>()
   const { datasets: datasetList, versions, query } = useSelector<YStates.Root, YStates.DatasetState>(({ dataset }) => dataset)
 
-  const { data: remoteDatasets, run: getDatasets } = useRequest<YStates.List<YModels.DatasetGroup>>('dataset/getDatasetGroups')
-  const { data: remoteVersions, run: getVersions } = useRequest<YStates.List<YModels.Dataset>>('dataset/getDatasetVersions')
+  const { run: getDatasets } = useRequest<YStates.List<YModels.DatasetGroup>>('dataset/getDatasetGroups')
+  const { run: getVersions } = useRequest<YStates.List<YModels.Dataset>, [{ gid: number, force?: boolean}]>('dataset/getDatasetVersions')
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
 
@@ -101,9 +101,9 @@ const Datasets: FC<Props> = ({ pid, project, iterations, visibleGroups, ...func 
   }, [history.location])
 
   useEffect(() => {
-    const initVisibles = visibleGroups?.reduce((prev, group) => ({ ...prev, [group]: true }), {})
+    const initVisibles = groups?.reduce((prev, group) => ({ ...prev, [group]: true }), {})
     setVisibles(initVisibles || {})
-  }, [visibleGroups])
+  }, [groups])
 
   useEffect(() => {
     const list = setGroupLabelsByProject(datasetList.items, project)
@@ -146,7 +146,7 @@ const Datasets: FC<Props> = ({ pid, project, iterations, visibleGroups, ...func 
       const needReload = vss.some((ds) => ds.needReload)
 
       if (needReload) {
-        fetchVersions(gid, true)
+        fetchVersions(Number(gid), true)
       }
     })
   }, [versions])
@@ -383,8 +383,8 @@ const Datasets: FC<Props> = ({ pid, project, iterations, visibleGroups, ...func 
     setVisibles((old) => ({ ...old, [id]: !old[id] }))
   }
 
-  function fetchVersions(id: number | string, force?: boolean) {
-    getVersions({ id, force })
+  function fetchVersions(gid: number, force?: boolean) {
+    getVersions({ gid, force })
   }
 
   function setGroupLabelsByProject(datasets: DatasetGroup[], project?: YModels.Project) {
@@ -669,41 +669,5 @@ const Datasets: FC<Props> = ({ pid, project, iterations, visibleGroups, ...func 
     </div>
   )
 }
-
-// const props = (state) => {
-//   return {
-//     datasetList: state.dataset.datasets,
-//     versions: state.dataset.versions,
-//     query: state.dataset.query,
-//   }
-// }
-
-// const actions = (dispatch) => {
-//   return {
-//     getDatasets(pid, query) {
-//       return dispatch({
-//         type: 'dataset/getDatasetGroups',
-//         payload: { pid, query },
-//       })
-//     },
-//     getVersions(gid, force = false) {
-//       return dispatch({
-//         type: 'dataset/getDatasetVersions',
-//         payload: { gid, force },
-//       })
-//     },
-//     updateQuery(query) {
-//       return dispatch({
-//         type: 'dataset/updateQuery',
-//         payload: query,
-//       })
-//     },
-//     resetQuery: () => {
-//       return dispatch({
-//         type: 'dataset/resetQuery',
-//       })
-//     },
-//   }
-// }
 
 export default Datasets
