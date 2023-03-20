@@ -8,7 +8,7 @@ from google.protobuf.text_format import MessageToString
 from common_utils import labels
 from controller.utils import errors, metrics, utils
 from id_definition.error_codes import CTLResponseCode
-from id_definition.task_id import IDProto
+from id_definition.task_id import TaskId
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
@@ -75,25 +75,16 @@ class BaseMirControllerInvoker(ABC):
         metrics_name += mir_cmd_pb.TaskType.Name(self._request.req_create_task.task_type)
         metrics.send_counter_metrics(metrics_name)
 
-    @classmethod
-    def _check_tid_and_user_repo(cls, tid: str, uid: str, rid: str) -> CTLResponseCode:
-        uid_begin_pos = IDProto.ID_LEN_ID_TYPE + IDProto.ID_LEN_SUBTASK_ID + IDProto.ID_LEN_RESERVE
-        rid_begin_pos = uid_begin_pos + IDProto.ID_LEN_USER_ID
-        rid_end_pos = rid_begin_pos + IDProto.ID_LEN_REPO_ID
-        if uid != tid[uid_begin_pos:rid_begin_pos] or rid != tid[rid_begin_pos:rid_end_pos]:
-            return CTLResponseCode.INVOKER_INVALID_ARGS
-        return CTLResponseCode.CTR_OK
-
     # functions about invoke and pre_invoke
     @utils.time_it
     def server_invoke(self) -> backend_pb2.GeneralResp:
         logging.info(str(self))
 
-        ret_code = self._check_tid_and_user_repo(tid=self._task_id, uid=self._user_id, rid=self._repo_id)
-        if ret_code != CTLResponseCode.CTR_OK:
+        task_id: TaskId = TaskId.from_task_id(self._task_id)
+        if self._user_id != task_id.user_id and self._repo_id != task_id.repo_id:
             message = f"tid mismatch: {self._task_id}, user: {self._user_id}, repo: {self._repo_id}"
             logging.error(message)
-            return utils.make_general_response(code=ret_code, message=message)
+            return utils.make_general_response(code=CTLResponseCode.INVOKER_INVALID_ARGS, message=message)
         response = self.pre_invoke()
         if response.code != CTLResponseCode.CTR_OK:
             logging.info(f"pre_invoke fails: {response}")
