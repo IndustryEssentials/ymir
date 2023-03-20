@@ -2,9 +2,9 @@ import { forwardRef, useEffect, useImperativeHandle } from 'react'
 import { message, Tag, Modal } from 'antd'
 
 import t from '@/utils/t'
-import confirmConfig from '@/components/common/DangerConfirm'
-import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
+import confirmConfig from '@/components/common/DangerConfirm'
 import VersionName from '@/components/result/VersionName'
 
 export type RefProps = {
@@ -19,7 +19,7 @@ type Props = {
 
 const Hide = forwardRef<RefProps, Props>(
   ({ type = 'dataset', msg = 'dataset.action.del.confirm.content', excludeMsg = 'dataset.action.del.confirm.exclude', ok = () => {} }, ref) => {
-    const [hideResult, remoteHide] = useFetch(`${type}/hide`)
+    const { data: hideResult, run: remoteHide } = useRequest<YModels.Result, [{ pid: number; ids: number[] }]>(`${type}/hide`)
 
     const [modal, contextHolder] = Modal.useModal()
     const [msgApi, msgHolder] = message.useMessage()
@@ -32,9 +32,13 @@ const Hide = forwardRef<RefProps, Props>(
 
     useEffect(() => hideResult && ok(hideResult), [hideResult])
 
-    useImperativeHandle(ref, () => ({
+    useImperativeHandle(
+      ref,
+      () => ({
         hide,
-    }), [])
+      }),
+      [],
+    )
 
     function hide(versions: YModels.Result[], exclude: number[] = []) {
       if (!versions?.length) {
