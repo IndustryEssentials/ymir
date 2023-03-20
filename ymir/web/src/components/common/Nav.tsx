@@ -60,7 +60,7 @@ function getParantPath(path: string) {
 }
 
 function validPermission(role: ROLES, permission?: ROLES) {
-  return permission && role >= (permission || role)
+  return !permission || role >= (permission || role)
 }
 
 const HeaderNav: FC<{ simple?: boolean }> = ({ simple = false }) => {
