@@ -118,10 +118,9 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
       title: showTitle('dataset.column.keyword'),
       dataIndex: 'keywords',
       render: (_, dataset) => {
-        const { gt, pred } = dataset
-        const renderLine = (keywords: string[] = [], label = 'gt') => (
+        const { gt } = dataset
+        const renderLine = (keywords: string[] = []) => (
           <div>
-            <div>{t(`annotation.${label}`)}:</div>
             {t('dataset.column.keyword.label', {
               keywords: keywords.join(', '),
               total: keywords.length,
@@ -131,7 +130,6 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
         const label = (
           <>
             {renderLine(gt?.keywords)}
-            {renderLine(pred?.keywords, 'pred')}
           </>
         )
         return validDataset(dataset) ? (

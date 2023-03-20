@@ -1,28 +1,26 @@
-type Type = {[key: string]: number }
+export enum ROLES {
+  SUPER = 3,
+  ADMIN = 2,
+  USER = 1,
+}
 
-export const ROLES: Type = Object.freeze({
-  SUPER: 3,
-  ADMIN: 2,
-  USER: 1,
-})
+export enum STATES {
+  REGISTERED = 1,
+  ACTIVE = 2,
+  DECLINED = 3,
+  DEACTIVED = 4,
+}
 
-export const STATES: Type = Object.freeze({
-  REGISTERED: 1,
-  ACTIVE: 2,
-  DECLINED: 3,
-  DEACTIVED: 4,
-})
-
-export const getRolesLabel = (role: number | undefined) => {
+export const getRolesLabel = (role: ROLES) => {
   const labels = {
     [ROLES.SUPER]: 'super',
     [ROLES.ADMIN]: 'admin',
     [ROLES.USER]: 'user',
   }
-  return typeof role !== 'undefined' ? `user.role.${labels[role]}` : labels
+  return `user.role.${labels[role]}`
 }
 
-export const getUserState = (state: number | undefined) => {
+export const getUserState = (state: STATES) => {
   const states = Object.freeze({
     [STATES.REGISTERED]: 'registered',
     [STATES.ACTIVE]: 'active',
@@ -30,9 +28,9 @@ export const getUserState = (state: number | undefined) => {
     [STATES.DEACTIVED]: 'deactived',
   })
 
-  return typeof state !== 'undefined' ? `user.state.${states[state]}` : states
+  return `user.state.${states[state]}`
 }
 
-export function isSuperAdmin(role: number) {
+export function isSuperAdmin(role: ROLES) {
   return ROLES.SUPER === role
 }
