@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { setLocale, getLocale } from "umi"
 import { EnglishIcon, ChinaIcon } from '@/components/common/Icons'
 
-function LangBtn({ dark = false }) {
+const LangBtn: FC<{ dark?: boolean }> = ({ dark = false }) => {
   const color = dark ? 'rgba(0, 0, 0, 0.45)' : '#fff'
   const [all] = useState([
     { value: "zh-CN", to: 'en-US', label: "English", icon: <ChinaIcon style={{ color, fontSize: 24 }} /> },

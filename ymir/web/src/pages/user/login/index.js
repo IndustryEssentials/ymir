@@ -9,7 +9,7 @@ import Foot from "@/components/common/footer"
 import styles from "../common.less"
 import loginBig from "@/assets/logo-big.png"
 import { EmailIcon, LockIcon } from "@/components/common/Icons"
-import LangBtn from "@/components/common/langBtn"
+import LangBtn from "@/components/common/LangBtn"
 
 const Login = ({ loginApi }) => {
   const history = useHistory()

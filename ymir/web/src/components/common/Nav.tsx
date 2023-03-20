@@ -7,7 +7,7 @@ import { ROLES, getRolesLabel } from '@/constants/user'
 import { getDeployUrl } from '@/constants/common'
 import useFetch from '@/hooks/useFetch'
 
-import LangBtn from "../common/langBtn"
+import LangBtn from "../common/LangBtn"
 
 import styles from "./index.less"
 import './menu.less'
