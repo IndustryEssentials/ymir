@@ -10,7 +10,6 @@ from app.api.errors.errors import (
     DatasetGroupNotFound,
     DatasetNotFound,
     DuplicateDatasetGroupError,
-    NoDatasetPermission,
     FailedToHideProtectedResources,
     FailedToParseVizResponse,
     ProjectNotFound,
@@ -40,7 +39,7 @@ def batch_get_datasets(
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     ids = list({int(i) for i in dataset_ids.split(",")})
-    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
+    datasets = crud.dataset.get_multi_by_user_and_ids(db, user_id=current_user.id, ids=ids)
     if len(ids) != len(datasets):
         raise DatasetNotFound()
 
@@ -232,11 +231,9 @@ def delete_dataset(
     Delete dataset
     (soft delete actually)
     """
-    dataset = crud.dataset.get(db, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
-    if dataset.user_id != current_user.id:
-        raise NoDatasetPermission()
     dataset_group_id = dataset.dataset_group_id
     dataset = crud.dataset.soft_remove(db, id=dataset_id)
 
@@ -332,7 +329,7 @@ def check_duplication(
     """
     check duplication in two datasets
     """
-    datasets = ensure_datasets_are_ready(db, dataset_ids=in_datasets.dataset_ids)
+    datasets = ensure_datasets_are_ready(db, user_id=current_user.id, dataset_ids=in_datasets.dataset_ids)
 
     viz_client.initialize(user_id=current_user.id, project_id=in_datasets.project_id)
     duplicated_stats = viz_client.check_duplication([dataset.hash for dataset in datasets])

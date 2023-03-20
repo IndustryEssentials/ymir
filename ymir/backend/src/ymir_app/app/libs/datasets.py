@@ -139,9 +139,9 @@ class ImportDatasetPaths:
         return str(self._pred_path) if self._pred_path else None
 
 
-def ensure_datasets_are_ready(db: Session, dataset_ids: List[int]) -> List[models.Dataset]:
+def ensure_datasets_are_ready(db: Session, user_id: int, dataset_ids: List[int]) -> List[models.Dataset]:
     dataset_ids = list(set(dataset_ids))
-    datasets = crud.dataset.get_multi_by_ids(db, ids=dataset_ids)
+    datasets = crud.dataset.get_multi_by_user_and_ids(db, user_id=user_id, ids=dataset_ids)
     if len(dataset_ids) != len(datasets):
         raise DatasetNotFound()
 
