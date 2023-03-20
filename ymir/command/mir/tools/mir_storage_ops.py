@@ -26,6 +26,7 @@ def create_evaluate_config(is_instance_segmentation: bool = False,
                            need_pr_curve: bool = False,
                            class_ids: List[int] = []) -> mirpb.EvaluateConfig:
     evaluate_config = mirpb.EvaluateConfig()
+    evaluate_config.is_instance_segmentation = is_instance_segmentation
     evaluate_config.conf_thr = conf_thr
     evaluate_config.iou_thrs_interval = iou_thrs
     evaluate_config.need_pr_curve = need_pr_curve

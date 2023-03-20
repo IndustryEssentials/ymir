@@ -1,5 +1,6 @@
 import { Descriptions, Tag } from "antd"
 import t from '@/utils/t'
+import { HIDDENMODULES } from '@/constants/common'
 import { FIELDS, getConfigUrl, isLiveCode } from "@/components/form/items/liveCodeConfig"
 
 export default (config = {}) => {
@@ -11,12 +12,12 @@ export default (config = {}) => {
   }))
   const typeLabel = isLiveCode(config) ? 'live' : 'local'
   const typeItem = <Descriptions.Item label={t('task.detail.label.function')}>{t(`task.detail.function.${typeLabel}`)}</Descriptions.Item>
-  return <>
+  return !HIDDENMODULES.LIVECODE ? <>
     {typeItem}
     {isLiveCode(config) ? fields.map(({ label, key, extra }) => (
       <Descriptions.Item key={key} label={t(label)}>
         {config[key]} {extra}
       </Descriptions.Item>
     )) : null}
-  </>
+  </> : null
 }

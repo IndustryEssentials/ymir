@@ -111,42 +111,6 @@ export function batchDatasets(pid: number, ids: number[] = [], ck: boolean) {
 }
 
 /**
- * @description get assets of dataset
- * @export
- * @param {AssetQueryParams} {
- *   id,
- *   type = 'keywords',
- *   keywords = [],
- *   cm = [],
- *   annoType = [],
- *   offset = 0,
- *   limit = 20,
- * }
- */
-export function getAssetsOfDataset({ id, type = 'keywords', keywords = [], cm = [], exclude = [], annoType = [], offset = 0, limit = 20 }: YParams.AssetQueryParams) {
-  return request.get(`datasets/${id}/assets`, {
-    params: {
-      [type]: keywords.toString() || undefined,
-      in_cm_types: cm.toString() || undefined,
-      ex_cm_types: exclude.toString() || undefined,
-      annotation_types: annoType.toString() || undefined,
-      offset,
-      limit,
-    },
-  })
-}
-
-/**
- * @description get asset
- * @export
- * @param {number} id
- * @param {string} hash
- */
-export function getAsset(id: number, hash: string): Promise<AxiosResponse> {
-  return request.get(`datasets/${id}/assets/${hash}`)
-}
-
-/**
  * @description delete dataset
  * @export
  * @param {number} id
@@ -167,25 +131,6 @@ export function delDatasetGroup(id: number) {
   return request({
     method: 'delete',
     url: `/dataset_groups/${id}`,
-  })
-}
-
-/**
- * @description evalution between gt and prediction annotations by dataset
- * @export
- * @param {EvaluationParams} {
- *   pid, datasets, iou, averageIou, confidence, ck
- * }
- */
-export function evaluate({ pid, datasets, iou, averageIou, confidence, ck, curve }: YParams.EvaluationParams) {
-  return request.post(`/datasets/evaluation`, {
-    project_id: pid,
-    dataset_ids: datasets,
-    confidence_threshold: confidence,
-    iou_threshold: iou,
-    require_average_iou: averageIou,
-    main_ck: ck,
-    need_pr_curve: curve
   })
 }
 

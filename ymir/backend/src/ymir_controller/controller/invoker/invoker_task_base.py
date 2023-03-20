@@ -117,9 +117,10 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             openpai_user = assets_config.get("openpai_user", "")
             openpai_cluster = assets_config.get("openpai_cluster")
             openpai_gputype = assets_config.get("openpai_gputype")
-            logging.info(f"OpenPAI host: {openpai_host}, token: {openpai_token}, "
-                         f"storage: {openpai_storage}, user: {openpai_user}",
-                         f"cluster: {openpai_cluster}, gpu_type: {openpai_gputype}")
+            logging.info(
+                f"OpenPAI host: {openpai_host}, token: {openpai_token}, "
+                f"storage: {openpai_storage}, user: {openpai_user}",
+                f"cluster: {openpai_cluster}, gpu_type: {openpai_gputype}")
 
             if not (openpai_host and openpai_token and openpai_storage and openpai_user):
                 raise errors.MirCtrError(
@@ -188,6 +189,11 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                                                        len(sub_tasks) - 1 - subtask_idx))
                           for subtask_idx, sub_task in enumerate(sub_tasks)]
 
+        # add post_task index as last subtask with a special sub_id (i)
+        if cls.need_index_repo():
+            index_sub_task_id = request.task_id[0] + 'i' + request.task_id[2:]
+            sub_tasks_join.append((cls._subtask_invoke_index, 0.0, index_sub_task_id))
+
         sub_task_id_weights: Dict[str, float] = {}
         for sub_task in sub_tasks_join:
             sub_task_id_weights[sub_task[2]] = sub_task[1]
@@ -233,3 +239,26 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     def register_subtasks(cls, request: backend_pb2.GeneralReq) -> List[Tuple[SubTaskType, float]]:
         # register sub_tasks in executing orders.
         raise NotImplementedError
+
+    @classmethod
+    def need_index_repo(cls) -> bool:
+        return True
+
+    # Index master_task_id repo into viewer cached db.
+    @classmethod
+    def _subtask_invoke_index(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
+                              assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
+                              subtask_workdir: str, his_task_id: Optional[str],
+                              in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
+        index_response = utils.index_repo(user_id=request.user_id, repo_id=request.repo_id, task_id=master_task_id)
+        if index_response.code == CTLResponseCode.CTR_OK:
+            log_state = LogState.DONE
+        else:
+            log_state = LogState.ERROR
+        PercentLogHandler.write_percent_log(log_file=os.path.join(subtask_workdir, 'out', 'monitor.txt'),
+                                            tid=subtask_id,
+                                            percent=1.0,
+                                            state=log_state,
+                                            msg=index_response.message)
+
+        return index_response

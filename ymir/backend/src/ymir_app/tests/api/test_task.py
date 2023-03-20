@@ -62,7 +62,7 @@ class TestListTasks:
     ):
         for _ in range(3):
             create_task(db, user_id)
-        r = client.get(f"{settings.API_V1_STR}/tasks/", headers=normal_user_token_headers)
+        r = client.get(f"{settings.API_V1_STR}/tasks/", params={"limit": 100}, headers=normal_user_token_headers)
         items = r.json()["result"]["items"]
         total = r.json()["result"]["total"]
         assert len(items) == total != 0

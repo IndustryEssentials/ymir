@@ -1,18 +1,15 @@
 import {
-  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
-  getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
+  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, analysis,
+  batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
   getNegativeKeywords, updateVersion, checkDuplication
 } from "@/services/dataset"
 import {
   transferDatasetGroup,
   transferDataset,
   transferDatasetAnalysis,
-  transferAsset,
   transferAnnotationsCount,
-  transferInferDataset,
 } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
-import { evaluationTags } from '@/constants/dataset'
 import { NormalReducer } from './_utils'
 import { deepClone } from '@/utils/object'
 import { TASKTYPES } from '@/constants/task'
@@ -120,8 +117,7 @@ export default {
       }
       const { code, result } = yield call(getDatasetByGroup, gid)
       if (code === 0) {
-        const excludeInferResult = dss => dss.filter(ds => ds.taskType !== TASKTYPES.INFERENCE)
-        const vss = excludeInferResult(result.items.map(item => transferDataset(item)))
+        const vss = result.items.map(item => transferDataset(item))
         const vs = { id: gid, versions: vss, }
         yield put({
           type: "UPDATE_VERSIONS",
@@ -134,37 +130,6 @@ export default {
       const { code, result } = yield call(queryDatasets, payload)
       if (code === 0) {
         return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
-      }
-    },
-    *queryInferDatasets({ payload }, { call, put }) {
-      const { pid } = payload
-      const result = yield put.resolve({
-        type: 'queryDatasets',
-        payload: { ...payload, type: TASKTYPES.INFERENCE }
-      })
-      if (result) {
-        const { items: datasets = [], total } = result
-        const getIds = key => {
-          const ids = datasets.map(ds => {
-            const param = ds.task?.parameters || {}
-            return param[key]
-          }).filter(notEmpty => notEmpty)
-          return [...new Set(ids)]
-        }
-        const modelIds = getIds('model_id')
-        const datasetIds = getIds('dataset_id')
-        yield put({
-          type: 'model/batchLocalModels',
-          payload: modelIds
-        })
-        yield put({
-          type: 'batchLocalDatasets',
-          payload: { pid, ids: datasetIds, }
-        })
-        return {
-          items: datasets.map(transferInferDataset),
-          total,
-        }
       }
     },
     *getHiddenList({ payload }, { put }) {
@@ -197,38 +162,6 @@ export default {
         return dss.items
       }
     },
-    *getAssetsOfDataset({ payload }, { call, put }) {
-      const { cm, datasetKeywords } = payload
-      const params = payload
-      const left = [evaluationTags.fp, evaluationTags.fn]
-      if (cm && !left.includes(cm)) {
-        params.cm = undefined
-        params.exclude = left
-      }
-      const { code, result } = yield call(getAssetsOfDataset, params)
-      if (code === 0) {
-        const { items, total } = result
-        const keywords = [...new Set(items.map(item => item.keywords).flat())]
-        const assets = { items: items.map(asset => transferAsset(asset, datasetKeywords || keywords)), total }
-
-        yield put({
-          type: "UPDATE_ASSETS",
-          payload: assets,
-        })
-        return assets
-      }
-    },
-    *getAsset({ payload }, { call, put }) {
-      const { code, result } = yield call(getAsset, payload.id, payload.hash)
-      if (code === 0) {
-        const asset = transferAsset(result)
-        yield put({
-          type: "UPDATE_ASSET",
-          payload: asset,
-        })
-        return asset
-      }
-    },
     *delDataset({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
       if (code === 0) {
@@ -248,7 +181,7 @@ export default {
     *hide({ payload: { pid, ids = [] } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.hide, pid, ids)
       if (code === 0) {
-        return result
+        return result.map(transferDataset)
       }
     },
     *restore({ payload: { pid, ids = [] } }, { call, put }) {
@@ -364,12 +297,6 @@ export default {
     },
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
-    },
-    *evaluate({ payload }, { call, put }) {
-      const { code, result } = yield call(evaluate, payload)
-      if (code === 0) {
-        return result
-      }
     },
     *analysis({ payload }, { call, put }) {
       const { pid, datasets } = payload

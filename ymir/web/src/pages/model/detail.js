@@ -12,7 +12,7 @@ import { getRecommendStage } from '@/constants/model'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
 import TaskProgress from '@/components/task/progress'
-import Error from '@/components/task/error'
+import Error from '@/components/task/ErrorMessage'
 import Hide from '@/components/common/hide'
 import useRestore from '@/hooks/useRestore'
 import keywordsItem from '@/components/task/items/keywords'
@@ -195,7 +195,7 @@ function ModelDetail() {
         </div>
       </Card>
       <EditDescBox type="model" record={editing} />
-      <Hide ref={hideRef} type={1} msg="model.action.del.confirm.content" />
+      <Hide ref={hideRef} type={'model'} msg="model.action.del.confirm.content" />
     </div>
   )
 }

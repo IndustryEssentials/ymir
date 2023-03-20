@@ -2,10 +2,10 @@ import { Form, Radio } from "antd"
 import t from "@/utils/t"
 import { getLabelAnnotationTypes } from '@/constants/common'
 
-const options = getLabelAnnotationTypes()
 
-const KeepAnnotations = ({ initialValue, ...rest }) => {
+const KeepAnnotations = ({ initialValue, isPred = false, ...rest }) => {
   const prefix = 'task.label.form.keep_anno.'
+  const options = getLabelAnnotationTypes(isPred)
   return <Form.Item name='keepAnnotations'
     required
     label={t(`${prefix}label`)}

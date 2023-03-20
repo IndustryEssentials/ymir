@@ -22,6 +22,7 @@ from app.schemas.common import (
     DateTimeModelMixin,
     DatasetResult,
     ModelResult,
+    PredictionResult,
     IdModelMixin,
     IsDeletedModelMixin,
     IterationContext,
@@ -118,19 +119,19 @@ class TrainingParameter(TaskParameterBase):
 
 
 class MiningParameterBase(TaskParameterBase):
-    top_k: Optional[int]
-    generate_annotations: Optional[bool]
-
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_models = root_validator(allow_reuse=True)(model_normalize)
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
 
 
 class MiningParameter(MiningParameterBase):
+    top_k: Optional[int]
+    generate_annotations: Optional[bool] = False
     task_type: Literal["mining"]
 
 
 class InferParameter(MiningParameterBase):
+    generate_annotations: Optional[bool] = True
     task_type: Literal["infer"]
 
 
@@ -347,9 +348,10 @@ class TaskInternal(TaskInDBBase):
         task_type = values["type"]
         if task_type in [TaskType.training, TaskType.copy_model, TaskType.import_model]:
             return ResultType.model
+        elif task_type == TaskType.dataset_infer:
+            return ResultType.prediction
         elif task_type in [
             TaskType.mining,
-            TaskType.dataset_infer,
             TaskType.label,
             TaskType.import_data,
             TaskType.copy_data,
@@ -368,6 +370,7 @@ class TaskInternal(TaskInDBBase):
 class Task(TaskInternal):
     result_model: Optional[ModelResult]
     result_dataset: Optional[DatasetResult]
+    result_prediction: Optional[PredictionResult]
 
     @root_validator
     def ensure_terminate_state(cls, values: Any) -> Any:
@@ -444,10 +447,11 @@ class TaskResultUpdateMessage(BaseModel):
     result_state: Optional[int]
     result_model: Optional[ModelResult]
     result_dataset: Optional[DatasetResult]
+    result_prediction: Optional[PredictionResult]
 
     @root_validator(pre=True)
     def gen_result_state(cls, values: Any) -> Any:
-        result = values.get("result_model") or values.get("result_dataset")
+        result = values.get("result_model") or values.get("result_dataset") or values.get("result_prediction")
         if not result:
             raise ValueError("Invalid Task Result")
         values["result_state"] = result.result_state

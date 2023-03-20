@@ -9,7 +9,7 @@ from fastapi.logger import logger
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.text_format import MessageToString
 
-from app.api.errors.errors import FailedtoCreateSegLabelTask
+from app.api.errors.errors import FailedtoCreateSegLabelTask, InvalidRepo
 from app.config import settings
 from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectType
 from app.schemas.common import ImportStrategy, MergeStrategy
@@ -60,8 +60,8 @@ IMPORTING_STRATEGY_MAPPING = {
 }
 
 ANNOTATION_TYPE_MAPPING = {
-    AnnotationType.gt: mirsvrpb.AnnotationType.GT,
-    AnnotationType.pred: mirsvrpb.AnnotationType.PRED,
+    AnnotationType.gt: mir_cmd_pb.AnnotationType.AT_GT,
+    AnnotationType.pred: mir_cmd_pb.AnnotationType.AT_PRED,
 }
 
 OBJECT_TYPE_MAPPING = {
@@ -224,14 +224,11 @@ class ControllerRequest:
         request.in_dataset_ids[:] = [args["src_resource_id"]]
         copy_request = mirsvrpb.TaskReqCopyData()
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
-        if strategy is ImportStrategy.ignore_unknown_annotations:
-            copy_request.name_strategy_ignore = True
-        elif strategy is ImportStrategy.stop_upon_unknown_annotations:
-            copy_request.name_strategy_ignore = False
-        elif strategy is ImportStrategy.no_annotations:
+
+        # for dataset copy, only no_annotations will take effect and drop annotations
+        copy_request.name_strategy_ignore = True
+        if strategy is ImportStrategy.no_annotations:
             copy_request.drop_annotations = True
-        else:
-            raise ValueError("not supported strategy: %s" % strategy.name)
 
         copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
@@ -378,6 +375,8 @@ class ControllerClient:
     def check_response_code(self, resp_code: int, resp_msg: Optional[str], verbose: bool = True) -> None:
         if resp_code == controller_error_code.INVOKER_LABEL_TASK_SEG_NOT_SUPPORTED:
             raise FailedtoCreateSegLabelTask()
+        if resp_code == controller_error_code.INVALID_MIR_ROOT:
+            raise InvalidRepo()
         elif resp_code != 0:
             raise ValueError(f"gRPC error. response: {resp_code} {resp_msg}")
 
@@ -526,7 +525,7 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def evaluate_dataset(
+    def evaluate_prediction(
         self,
         user_id: int,
         project_id: int,

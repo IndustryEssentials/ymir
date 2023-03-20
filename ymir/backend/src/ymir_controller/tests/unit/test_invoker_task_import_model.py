@@ -90,7 +90,9 @@ class TestInvokerTaskImportModel(unittest.TestCase):
             'mir', 'models', '--root', self._mir_repo_root, '--package-path', self._model_package_path, '-w',
             working_dir_0, '--dst-rev', f"{self._task_id}@{self._task_id}", '--model-location', self._storage_root
         ]
-        # mock_run.assert_called_once_with(expected_cmd, capture_output=True, text=True)
-        mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd, capture_output=True, text=True),
-        ])
+
+        mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
+                                                         repo_id=self._mir_repo_name,
+                                                         task_id=self._task_id)
+        mock_run.assert_has_calls(
+            [mock.call(expected_cmd, capture_output=True, text=True, cwd=None), mocked_index_call])

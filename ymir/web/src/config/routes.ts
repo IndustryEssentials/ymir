@@ -122,6 +122,15 @@ export const homeRoutes = [
     breadcrumbLabel: "breadcrumbs.dataset.assets",
   },
   {
+    path: "/home/project/:id/prediction/:did",
+    name: "predDetail",
+    component: "@/pages/dataset/Assets",
+    title: "assets.title",
+    pid: 34,
+    id: 41,
+    breadcrumbLabel: "breadcrumbs.prediction.assets",
+  },
+  {
     path: "/home/project/:id/model/import",
     name: "modelImport",
     component: "@/pages/model/add",
@@ -245,7 +254,7 @@ export const homeRoutes = [
     title: "model.diagnose.title",
     pid: 25,
     id: 34,
-    breadcrumbLabel: "breadcrumbs.model.diagnose",
+    breadcrumbLabel: "breadcrumbs.predictions",
   },
   {
     path: "/home/project/:id/add",
@@ -268,7 +277,7 @@ export const homeRoutes = [
   {
     path: "/home/project/:id/iterations/settings",
     name: "projectEdit",
-    component: "@/pages/project/iterationSettings",
+    component: "@/pages/project/IterationSettings",
     title: "project.iteration.add.title",
     pid: 25,
     id: 35,
@@ -333,7 +342,7 @@ export const homeRoutes = [
 const Routes = [
   {
     path: "/home",
-    component: "@/layouts/index",
+    component: "@/layouts/Index",
     routes: homeRoutes.map(({ path, name, component, title, redirect }) => {
       const route: Route = { path, name, title }
       if (component) {
@@ -347,7 +356,7 @@ const Routes = [
   },
   {
     path: "/",
-    component: "@/layouts/unauth",
+    component: "@/layouts/UnAuth",
     routes: [
       {
         path: "/",

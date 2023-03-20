@@ -10,7 +10,7 @@ import { validDataset } from "@/constants/dataset"
 import { STEP } from "@/constants/iteration"
 
 import SampleRates from "@/components/dataset/SampleRates"
-import MiningSampleRates from "@/components/dataset/miningSampleRates"
+import MiningSampleRates from "@/components/dataset/MiningSampleRates"
 import Dataset from "@/components/form/option/Dataset"
 import VersionName from "@/components/result/VersionName"
 
@@ -88,7 +88,7 @@ function List({ project }) {
         const label = (
           <>
             <VersionName result={md} />
-            {!validModel(md) ? <StateTag mode="text" state={md.state} /> : null}
+            {!validModel(md) ? <StateTag mode="text" state={md.state} code={md.task?.error_code} /> : null}
           </>
         )
         return validModel(md) ? (

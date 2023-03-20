@@ -9,6 +9,7 @@ from google.protobuf.json_format import MessageToDict, ParseDict
 from common_utils import labels
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 import tests.utils as test_utils
 
@@ -81,7 +82,8 @@ class TestInvokerFilterBranch(unittest.TestCase):
                                          dst_dataset_id=self._task_id,
                                          in_dataset_ids=self.in_dataset_ids,
                                          in_class_ids=in_class_ids,
-                                         ex_class_ids=ex_class_ids)
+                                         ex_class_ids=ex_class_ids,
+                                         annotation_type=mir_cmd_pb.AnnotationType.AT_GT)
         print(MessageToDict(response))
 
         working_dir = os.path.join(self._sandbox_root, "work_dir", backend_pb2.RequestType.Name(backend_pb2.CMD_FILTER),
@@ -92,8 +94,8 @@ class TestInvokerFilterBranch(unittest.TestCase):
             f"mir filter --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} "
             f"--src-revs {self.in_dataset_ids[0]}@{self.in_dataset_ids[0]} -w {working_dir} "
             f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
-            "--cis car;person --ex-cis car;person")
-        mock_run.assert_called_once_with(expect_cmd.split(' '), capture_output=True, text=True)
+            "--cis car;person --ex-cis car;person --filter-anno-src gt")
+        mock_run.assert_called_once_with(expect_cmd.split(' '), capture_output=True, text=True, cwd=None)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

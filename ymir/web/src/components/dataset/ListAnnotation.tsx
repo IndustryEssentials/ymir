@@ -49,14 +49,14 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
 
   window.addEventListener('resize', () => imgContainer.current && calClientWidth())
 
-  function renderAnnotation(annotation: YModels.Annotation, key: number | string) {
+  function renderAnnotation(annotation: YModels.Annotation) {
     switch (annotation.type) {
       case AnnotationType.BoundingBox:
-        return <BoundingBox key={key} annotation={annotation} ratio={ratio} simple={true} />
+        return <BoundingBox key={annotation.id} annotation={annotation} ratio={ratio} simple={true} />
       case AnnotationType.Polygon:
-        return <Polygon key={key} annotation={annotation} ratio={ratio} simple={true} />
+        return <Polygon key={annotation.id} annotation={annotation} ratio={ratio} simple={true} />
       case AnnotationType.Mask:
-        return <Mask key={key} annotation={annotation} ratio={ratio} simple={true} />
+        return <Mask key={annotation.id} annotation={annotation} ratio={ratio} simple={true} />
     }
   }
 
@@ -64,7 +64,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
     <div className={styles.ic_container} ref={imgContainer} key={asset.hash}>
       <img ref={img} style={{ visibility: hideAsset ? 'hidden' : 'visible' }} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
-        {annotations.map((anno, index) => renderAnnotation(anno, asset.hash + index))}
+        {annotations.map(renderAnnotation)}
       </div>
     </div>
   )

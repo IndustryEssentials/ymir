@@ -5,6 +5,7 @@ import unittest
 import yaml
 
 from ymir_exc import env, monitor, settings
+from ymir_exc.code import ExecutorReturnCode, ExecutorState
 
 
 class TestMonitor(unittest.TestCase):
@@ -55,17 +56,27 @@ class TestMonitor(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     # protected: check results
-    def _check_monitor(self, percent: float) -> None:
+    def _check_monitor(self, percent: float, state: ExecutorState, return_code: ExecutorReturnCode) -> None:
         with open(self._monitor_file, 'r') as f:
             lines = f.read().splitlines()
-        task_id, timestamp_str, percent_str, state_str, *_ = lines[0].split()
+        task_id, timestamp_str, percent_str, state_str, return_code_str, *_ = lines[0].split()
 
         self.assertEqual(task_id, env.get_current_env().task_id)
         self.assertTrue(float(timestamp_str) > 0)
         self.assertEqual(percent, float(percent_str))
-        self.assertEqual(2, int(state_str))
+        self.assertEqual(state, int(state_str))
+        self.assertEqual(return_code, int(return_code_str))
 
     # public: test cases
     def test_write_monitor(self) -> None:
         monitor.write_monitor_logger(percent=0.2)
-        self._check_monitor(percent=0.2)
+        self._check_monitor(percent=0.2, state=ExecutorState.ES_RUNNING, return_code=ExecutorReturnCode.RC_EXEC_NO_ERROR)
+
+        monitor.write_monitor_logger(percent=0.5, return_code=ExecutorReturnCode.RC_EXEC_NO_GPU)
+        self._check_monitor(percent=0.5, state=ExecutorState.ES_RUNNING, return_code=ExecutorReturnCode.RC_EXEC_NO_ERROR)
+
+        monitor.write_monitor_logger(percent=1, state=ExecutorState.ES_ERROR)
+        self._check_monitor(percent=1, state=ExecutorState.ES_ERROR, return_code=ExecutorReturnCode.RC_EXEC_NO_ERROR)
+
+        monitor.write_monitor_logger(percent=1, state=ExecutorState.ES_ERROR, return_code=ExecutorReturnCode.RC_EXEC_OOM)
+        self._check_monitor(percent=1, state=ExecutorState.ES_ERROR, return_code=ExecutorReturnCode.RC_EXEC_OOM)

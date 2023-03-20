@@ -11,6 +11,7 @@ from tensorboardX import SummaryWriter
 from ymir_exc import dataset_reader as dr
 from ymir_exc import env, monitor
 from ymir_exc import result_writer as rw
+from ymir_exc.code import ExecutorReturnCode, ExecutorState
 
 
 def start() -> int:
@@ -39,7 +40,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
     class_names: List[str] = executor_config['class_names']
     expected_mAP: float = executor_config.get('expected_map', 0.6)
     idle_seconds: float = executor_config.get('idle_seconds', 60)
-    trigger_crash: bool = executor_config.get('trigger_crash', False)
+    crash_code: bool = executor_config.get('crash_code', ExecutorReturnCode.RC_EXEC_NO_ERROR)
     #! use `logging` or `print` to write log to console
     #   notice that logging.basicConfig is invoked at executor.env
     logging.info(f"training config: {executor_config}")
@@ -57,6 +58,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
     monitor.write_monitor_logger(percent=0.5)
+
+    _dummy_work(idle_seconds=idle_seconds, crash_code=crash_code)
 
     # suppose we have a long time training, and have saved the final model
     #! model output dir: os.path.join(env_config.output.models_dir, your_stage_name)
@@ -80,8 +83,6 @@ def _run_training(env_config: env.EnvConfig) -> None:
                              'iou_thr': 0.5,
                              'conf_thr': 0.005
                          })
-
-    _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
     write_tensorboard_log(env_config.output.tensorboard_dir)
 
@@ -111,7 +112,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
     idle_seconds: float = executor_config.get('idle_seconds', 60)
-    trigger_crash: bool = executor_config.get('trigger_crash', False)
+    crash_code: bool = executor_config.get('crash_code', ExecutorReturnCode.RC_EXEC_NO_ERROR)
     #! use `logging` or `print` to write log to console
     logging.info(f"mining config: {executor_config}")
 
@@ -133,7 +134,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     logging.info(f"assets count: {len(asset_paths)}, absent: {absent_count}")
     monitor.write_monitor_logger(percent=0.5)
 
-    _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
+    _dummy_work(idle_seconds=idle_seconds, crash_code=crash_code)
 
     #! write mining result
     #   here we give a fake score to each assets
@@ -152,7 +153,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     executor_config = env.get_executor_config()
     class_names = executor_config['class_names']
     idle_seconds: float = executor_config.get('idle_seconds', 60)
-    trigger_crash: bool = executor_config.get('trigger_crash', False)
+    crash_code: bool = executor_config.get('crash_code', ExecutorReturnCode.RC_EXEC_NO_ERROR)
     seed: int = executor_config.get('seed', 15)
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
@@ -175,7 +176,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     logging.info(f"assets count: {len(asset_paths)}, absent: {absent_count}")
     monitor.write_monitor_logger(percent=0.5)
 
-    _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
+    _dummy_work(idle_seconds=idle_seconds, crash_code=crash_code)
 
     #! write infer result
     fake_anns = []
@@ -197,11 +198,16 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     monitor.write_monitor_logger(percent=1.0)
 
 
-def _dummy_work(idle_seconds: float, trigger_crash: bool = False, gpu_memory_size: int = 0) -> None:
+def _dummy_work(idle_seconds: float, crash_code: ExecutorReturnCode) -> None:
     if idle_seconds > 0:
         time.sleep(idle_seconds)
-    if trigger_crash:
-        raise RuntimeError('app crashed')
+    if crash_code != ExecutorReturnCode.RC_EXEC_NO_ERROR:
+        #! if error, write corresponding return code with monitor.write_monitor_logger
+        #! and then raise exception
+        monitor.write_monitor_logger(percent=1,
+                                     state=ExecutorState.ES_ERROR,
+                                     return_code=crash_code)
+        raise RuntimeError(f"App crashed with code: {crash_code}")
 
 
 def write_tensorboard_log(tensorboard_dir: str) -> None:

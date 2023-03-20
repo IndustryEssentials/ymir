@@ -6,7 +6,7 @@ import t from '@/utils/t'
 import StateTag from '../task/StateTag'
 import { calTimeLeft } from '@/utils/date'
 
-function RenderProgress(state: ResultStates, result: YModels.Result, simple = false) {
+function RenderProgress(state: ResultStates, result: YModels.AllResult, simple = false) {
   const { id, progress, createTime, taskState, task } = result
   if (ResultStates.READY === state && task?.is_terminated) {
     return t('task.state.terminating')
@@ -16,7 +16,7 @@ function RenderProgress(state: ResultStates, result: YModels.Result, simple = fa
   }
   const fixedProgress = ResultStates.VALID !== state && progress === 1 ? 0.99 : progress
   const percent = Math.floor(fixedProgress * 100)
-  const stateTag = <StateTag mode={simple ? 'icon' : 'text'} state={state} />
+  const stateTag = <StateTag mode={simple ? 'icon' : 'text'} state={state} code={task.error_code} />
   return state === ResultStates.READY ? (
     <Row gutter={10} style={{ alignItems: 'center', padding: '0 7px', textAlign: 'left' }}>
       <Col>{stateTag}</Col>

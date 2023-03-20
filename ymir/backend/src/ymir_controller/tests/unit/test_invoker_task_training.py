@@ -175,7 +175,12 @@ class TestInvokerTaskTraining(unittest.TestCase):
                         f"--task-config-file {output_config} --executor {training_image} "
                         f"--executant-name {self._task_id} --tensorboard-dir {tensorboard_dir} "
                         f"--asset-cache-dir {asset_cache_dir}")
-        mock_run.assert_called_once_with(training_cmd.split(' '), capture_output=True, text=True)
+
+        mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
+                                                         repo_id=self._mir_repo_name,
+                                                         task_id=self._task_id)
+        mock_run.assert_has_calls(
+            [mock.call(training_cmd.split(' '), capture_output=True, text=True, cwd=None), mocked_index_call])
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

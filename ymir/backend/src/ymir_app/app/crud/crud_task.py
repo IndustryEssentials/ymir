@@ -5,11 +5,11 @@ from typing import List, Optional, Tuple
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
-from app.config import settings
 from app.constants.state import FinalStates, TaskState, TaskType
 from app.crud.base import CRUDBase
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
+from app.schemas import CommonPaginationParams
 from app.utils.ymir_controller import gen_task_hash
 
 
@@ -175,13 +175,13 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         state: Optional[TaskState] = None,
         dataset_ids: List[int],
         model_stage_ids: List[int],
-        start_time: Optional[int] = None,
-        end_time: Optional[int] = None,
-        offset: int = 0,
-        limit: int = settings.DEFAULT_LIMIT,
-        order_by: str,
-        is_desc: bool = True,
+        pagination: CommonPaginationParams,
     ) -> Tuple[List[Task], int]:
+        start_time, end_time = pagination.start_time, pagination.end_time
+        offset, limit = pagination.offset, pagination.limit
+        order_by = pagination.order_by.name
+        is_desc = pagination.is_desc
+
         query = db.query(self.model).filter(not_(self.model.is_deleted))
         if user_id:
             query = query.filter(self.model.user_id == user_id)

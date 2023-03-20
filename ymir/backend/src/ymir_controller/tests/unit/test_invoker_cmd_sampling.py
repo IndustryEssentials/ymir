@@ -87,4 +87,4 @@ class TestInvokerSampling(unittest.TestCase):
         expected_cmd = f"mir sampling --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id}"
         expected_cmd += f" --src-revs {self.in_dataset_ids[0]}@{self.in_dataset_ids[0]}"
         expected_cmd += f" -w {work_dir} --count 10"
-        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
+        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True, cwd=None)

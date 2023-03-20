@@ -6,7 +6,7 @@ from common_utils.labels import UserLabels
 
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils
-from id_definition.error_codes import CTLResponseCode
+from id_definition.error_codes import CMDResponseCode, CTLResponseCode
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2, backend_pb2_utils
 
@@ -18,11 +18,11 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
                                          import_dataset_request.gt_dir)
         if pred_dir:
             if not os.access(pred_dir, os.R_OK):
-                return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                return utils.make_general_response(code=CMDResponseCode.RC_CMD_INVALID_DATASET,
                                                    message=f"invalid permissions of pred_dir: {pred_dir}")
         if gt_dir:
             if not os.access(gt_dir, os.R_OK):
-                return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                return utils.make_general_response(code=CMDResponseCode.RC_CMD_INVALID_DATASET,
                                                    message=f"invalid permissions of gt_dir: {gt_dir}")
 
         if not os.access(media_dir, os.R_OK):
@@ -83,7 +83,7 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
             utils.mir_executable(), 'import', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '--src-revs',
             'master', '--index-file', index_file, '--gen-dir', media_location, '-w', work_dir, "--user-label-file",
             label_storage_file, "--anno-type",
-            utils.anno_type_str(object_type)
+            utils.object_type_str(object_type)
         ]
         if is_instance_segmentation:
             importing_cmd.append('--ins-seg')
@@ -96,4 +96,4 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
             backend_pb2_utils.unknown_types_strategy_str_from_enum(unknown_types_strategy).value
         ])
 
-        return utils.run_command(importing_cmd)
+        return utils.run_command(importing_cmd, error_code=CMDResponseCode.RC_CMD_INVALID_DATASET)

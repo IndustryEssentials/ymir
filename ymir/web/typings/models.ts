@@ -17,6 +17,16 @@ declare namespace YModels {
     [key: string]: any
   }
 
+  export type ResponseResultList<M extends BackendData = BackendData> = {
+    items: M[]
+    total: number
+  }
+
+  export type Response<M extends BackendData = BackendData> = {
+    code: number
+    result?: M
+  }
+
   export interface Group {
     id: number
     name: string
@@ -24,9 +34,9 @@ declare namespace YModels {
     createTime: string
   }
 
-  export interface Result<P = TaskParams> {
+  export interface Result {
     id: number
-    groupId: number
+    groupId?: number
     projectId: number
     type: ObjectType
     name: string
@@ -46,7 +56,6 @@ declare namespace YModels {
     durationLabel?: string
     taskName: string
     project?: Project
-    task: Task<P>
     hidden: boolean
     description: string
     needReload?: boolean
@@ -65,7 +74,7 @@ declare namespace YModels {
     [key: string]: string | number
   }
   type CKCount = { [key: string]: number }
-  type CKItem = {keyword: string, count: number, children?: CKItem[]}
+  type CKItem = { keyword: string; count: number; children?: CKItem[] }
   type CKCounts = {
     keywords: CKItem[]
     counts: CKCount
@@ -96,25 +105,32 @@ declare namespace YModels {
     versions?: Array<Dataset>
   }
 
-  export interface Dataset<P = TaskParams> extends Result<P> {
+  export interface Dataset<P = TaskParams> extends Result {
+    groupId: number
     keywordCount: number
     isProtected: Boolean
     assetCount: number
-    evaluated: boolean
+    task: Task<P>
     gt?: AnnotationsCount
-    pred?: AnnotationsCount
-    inferClass?: Array<string>
     cks?: CKCounts
     tags?: CKCounts
+    evaluated?: boolean
   }
 
-  export interface InferDataset extends Dataset {
+  export interface Prediction extends Omit<Dataset<InferenceParams>, 'groupId'> {
     inferModelId: number[]
     inferModel?: Model
     inferDatasetId: number
     inferDataset?: Dataset
     inferConfig: ImageConfig
+    rowSpan?: number
+    evaluated: boolean
+    pred: AnnotationsCount
+    inferClass?: Array<string>
+    odd?: boolean
   }
+
+  type AllResult = Prediction | Dataset | Model
 
   export interface DatasetAnalysis extends Omit<Dataset, 'gt' | 'pred'> {
     assetHWRatio: Array<BackendData>
@@ -148,7 +164,7 @@ declare namespace YModels {
   }
 
   export interface AnnotationBase {
-    id: string | number,
+    id: string | number
     keyword: string
     width: number
     height: number
@@ -214,9 +230,10 @@ declare namespace YModels {
     metrics?: StageMetrics
   }
   export interface ModelGroup extends Group {}
-  export interface Model<P = TaskParams> extends Result<P> {
+  export interface Model<P = TaskParams> extends Result {
     map: number
     url: string
+    task: Task<P>
     stages?: Array<Stage>
     recommendStage: number
   }
@@ -294,6 +311,7 @@ declare namespace YModels {
     objectType: ObjectType
     related?: Array<Image>
     liveCode?: boolean
+    errorCode?: string
   }
 
   export interface ImageList {
@@ -364,7 +382,7 @@ declare namespace YModels {
     id: number
     hash: string
     state: number
-    error_code: number
+    error_code: string
     duration: number
     percent: number
     parameters: P
@@ -448,4 +466,15 @@ declare namespace YModels {
   }
 
   interface InferenceParams extends DockerParams {}
+
+  type KeywordsCount = {
+    keywords: string[]
+    count: {
+      [keyword: string]: number
+    }
+  }
+  type MiningStats = {
+    totalList: KeywordsCount
+    keywordList: KeywordsCount
+  }
 }

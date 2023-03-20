@@ -1,4 +1,3 @@
-import enum
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Path
@@ -7,18 +6,10 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import (
-    ModelGroupNotFound,
-    DuplicateModelGroupError,
-)
+from app.api.errors.errors import ModelGroupNotFound, DuplicateModelGroupError
 from app.utils.ymir_controller import ControllerClient
 
 router = APIRouter()
-
-
-class SortField(enum.Enum):
-    id = "id"
-    create_datetime = "create_datetime"
 
 
 @router.get("/", response_model=schemas.ModelGroupPaginationOut)
@@ -27,24 +18,14 @@ def list_model_groups(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_id: int = Query(None),
     name: str = Query(None, description="search by model's name"),
-    offset: int = Query(None),
-    limit: int = Query(None),
-    order_by: SortField = Query(SortField.id),
-    is_desc: bool = Query(True),
-    start_time: int = Query(None, description="from this timestamp"),
-    end_time: int = Query(None, description="to this timestamp"),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     model_groups, total = crud.model_group.get_multi_model_groups(
         db,
         user_id=current_user.id,
         project_id=project_id,
         name=name,
-        offset=offset,
-        limit=limit,
-        order_by=order_by.name,
-        is_desc=is_desc,
-        start_time=start_time,
-        end_time=end_time,
+        pagination=pagination,
     )
     return {"result": {"total": total, "items": model_groups}}
 

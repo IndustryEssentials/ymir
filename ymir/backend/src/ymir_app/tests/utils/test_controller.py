@@ -78,7 +78,7 @@ class TestControllerRequest:
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
         assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeLabel
-        assert ret.req.req_create_task.labeling.annotation_type == m.mirsvrpb.AnnotationType.PRED
+        assert ret.req.req_create_task.labeling.annotation_type == m.mir_cmd_pb.AnnotationType.AT_PRED
 
     def test_copy_data(self):
         task_type = m.TaskType.copy_data
@@ -180,7 +180,7 @@ class TestControllerClient:
         mocker.patch.object(m, "convert_class_id_to_keyword", mock_convertor)
         resp = {"evaluation": mocker.Mock()}
         cc.send = mocker.Mock(return_value=resp)
-        cc.evaluate_dataset(
+        cc.evaluate_prediction(
             user_id,
             project_id,
             user_labels,

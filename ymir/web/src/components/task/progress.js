@@ -47,7 +47,7 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
           <Row>
             <Col>
               {task.is_terminated && state === ResultStates.READY ? t('task.state.terminating') : <>
-                <StateTag state={state} />
+                <StateTag state={state} code={task.error_code} />
                 {state === ResultStates.VALID
                   ? t("task.column.duration") + ": " + duration
                   : null}

@@ -298,7 +298,6 @@ export function mine({
   topk,
   algorithm,
   config,
-  inference,
   name,
   image,
 }) {
@@ -320,7 +319,6 @@ export function mine({
       dataset_group_name: name,
       mining_algorithm: algorithm,
       top_k: topk,
-      generate_annotations: inference,
       docker_image_id: image,
     },
   })
@@ -351,7 +349,6 @@ export function infer({ name, projectId, datasets, stages = [], config, image, o
       task_type: 'infer',
       model_id: model,
       model_stage_id: stage,
-      generate_annotations: true,
       dataset_id: dataset,
       docker_image_id: image,
     },
