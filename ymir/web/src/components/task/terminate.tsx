@@ -6,19 +6,22 @@ import { TASKTYPES } from '@/constants/task'
 import confirmConfig from '@/components/common/DangerConfirm'
 import useRequest from '@/hooks/useRequest'
 import { FC } from 'react'
+type Result = YModels.Result & {
+  task: YModels.Task
+}
 
 type Props = {
-  ok: (resultTask: YModels.Task, result?: YModels.Result) => void
+  ok: (resultTask: YModels.Task, result: Result) => void
 }
 export type RefProps = {
-  confirm: (result: YModels.Result) => void
+  confirm: (result: Result) => void
 }
 const Terminate = forwardRef<RefProps, Props>(({ ok }, ref) => {
   const [visible, setVisible] = useState(false)
   const [id, setId] = useState<number>()
   const [name, setName] = useState('')
   const [type, setType] = useState<number>()
-  const [result, setResult] = useState<YModels.Result>()
+  const [result, setResult] = useState<Result>()
   const { runAsync: stopTask } = useRequest<YModels.Task, [{ id: number; with_data?: boolean }]>('task/stopTask')
 
   useEffect(() => {
@@ -28,7 +31,7 @@ const Terminate = forwardRef<RefProps, Props>(({ ok }, ref) => {
   useImperativeHandle(
     ref,
     () => ({
-      confirm: (result: YModels.Result) => {
+      confirm: (result: Result) => {
         const name = result.name + result.versionName
         const { id, type } = result.task
         setResult(result)
@@ -73,7 +76,7 @@ const Terminate = forwardRef<RefProps, Props>(({ ok }, ref) => {
   }
 
   function handle(res: YModels.Task) {
-    if (res) {
+    if (res && result) {
       ok(res, result)
     }
     setVisible(false)

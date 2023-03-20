@@ -6,20 +6,25 @@ import useRequest from '@/hooks/useRequest'
 
 import confirmConfig from '@/components/common/DangerConfirm'
 import VersionName from '@/components/result/VersionName'
-
+type ResultType = 'dataset' | 'model' | 'prediction'
+type Result<K extends ResultType> = {
+  'dataset': YModels.Dataset
+  'model' : YModels.Model
+  'prediction': YModels.Prediction
+}[K]
 export type RefProps = {
   hide: (dss: YModels.Result[], exclude?: number[]) => void
 }
 type Props = {
-  type?: 'dataset' | 'model' | 'prediction'
+  type?: ResultType
   msg?: string
   excludeMsg?: string
-  ok?: (result: YModels.Result) => void
+  ok?: (result: YModels.Result[]) => void
 }
 
 const Hide = forwardRef<RefProps, Props>(
   ({ type = 'dataset', msg = 'dataset.action.del.confirm.content', excludeMsg = 'dataset.action.del.confirm.exclude', ok = () => {} }, ref) => {
-    const { data: hideResult, run: remoteHide } = useRequest<YModels.Result, [{ pid: number; ids: number[] }]>(`${type}/hide`)
+    const { data: hideResult, run: remoteHide } = useRequest<Result<typeof type>[], [{ pid: number; ids: number[] }]>(`${type}/hide`)
 
     const [modal, contextHolder] = Modal.useModal()
     const [msgApi, msgHolder] = message.useMessage()
