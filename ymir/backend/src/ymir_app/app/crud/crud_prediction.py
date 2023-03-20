@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Optional, Tuple
 
-from sqlalchemy import desc, not_
+from sqlalchemy import func, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
@@ -23,25 +23,28 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         pagination: CommonPaginationParams,
     ) -> Tuple[List[Prediction], int]:
         offset, limit = pagination.offset, pagination.limit
-        order_by = pagination.order_by.name
         is_desc = pagination.is_desc
 
         # Subquery
         #  find models with latest predictions
-        order_by_column = getattr(self.model, order_by)
         subquery = (
-            db.query(self.model.model_id)
+            db.query(self.model.model_id, func.max(self.model.id).label("max_id"))
             .filter(
                 self.model.project_id == project_id,
                 self.model.is_visible == int(visible),
                 not_(self.model.is_deleted),
             )
-            .group_by(self.model.model_id, order_by_column)
-            .order_by(desc(order_by_column) if is_desc else order_by_column)
-            .offset(offset)
-            .limit(limit)
+            .group_by(self.model.model_id)
             .subquery()
         )
+        model_query = (
+            db.query(subquery.c.model_id)
+            .order_by(subquery.c.max_id.desc() if is_desc else subquery.c.max_id)
+            .limit(limit)
+            .offset(offset)
+        )
+        model_ids = [r.model_id for r in model_query.all()]
+        model_count = db.query(subquery.c.model_id).count()
 
         # Query
         #  find all predictions belonging to model_ids from subquery
@@ -49,12 +52,13 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
             db.query(self.model)
             .join(subquery, self.model.model_id == subquery.c.model_id)
             .filter(
+                self.model.model_id.in_(model_ids),
                 self.model.is_visible == int(visible),
                 not_(self.model.is_deleted),
             )
         )
 
-        return query.all(), query.count()
+        return query.all(), model_count
 
     def update_state(
         self,
