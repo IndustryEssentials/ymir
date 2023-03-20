@@ -50,7 +50,7 @@ class UserCreate(UserBase):
     @validator("phone")
     def check_phone(cls, v: Optional[str]) -> Optional[str]:
         if not v:
-            return v
+            return None
         if not PHONE_NUMBER_PATTERN.match(v):
             raise ValueError("Invalud Phone Number")
         return v
