@@ -292,11 +292,15 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
 
     coco_file_path = os.path.join(annotations_dir_path, coco_json_filename)
-    with open(coco_file_path, 'r') as f:
-        coco_obj = json.loads(f.read())
-        images_list = coco_obj['images']
-        categories_list = coco_obj['categories']
-        annotations_list = coco_obj['annotations']
+    try:
+        with open(coco_file_path, 'r') as f:
+            coco_obj = json.loads(f.read())
+            images_list = coco_obj['images']
+            categories_list = coco_obj['categories']
+            annotations_list = coco_obj['annotations']
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
+                              error_message=f"Can not open or parse annotation file, {e}")
 
     if not images_list or not isinstance(images_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
