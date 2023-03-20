@@ -17,9 +17,10 @@ router = APIRouter()
 def batch_get_models(
     db: Session = Depends(deps.get_db),
     model_stage_ids: str = Query(None, alias="ids"),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     ids = [int(i) for i in model_stage_ids.split(",")]
-    stages = crud.model_stage.get_multi_by_ids(db, ids=ids)
+    stages = crud.model_stage.get_multi_by_user_and_ids(db, user_id=current_user.id, ids=ids)
     return {"result": stages}
 
 

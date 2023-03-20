@@ -35,7 +35,9 @@ def recommend_keywords(
     """
     class_ids: Optional[List[int]] = None
     if dataset_ids:
-        datasets = crud.dataset.get_multi_by_ids(db, ids=[int(i) for i in dataset_ids.split(",")])
+        datasets = crud.dataset.get_multi_by_user_and_ids(
+            db, user_id=current_user.id, ids=[int(i) for i in dataset_ids.split(",")]
+        )
         keywords = extract_keywords(datasets)
         class_ids = keywords_to_class_ids(user_labels, keywords)
 
