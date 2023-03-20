@@ -342,7 +342,7 @@ export const homeRoutes = [
 const Routes = [
   {
     path: "/home",
-    component: "@/layouts/index",
+    component: "@/layouts/Index",
     routes: homeRoutes.map(({ path, name, component, title, redirect }) => {
       const route: Route = { path, name, title }
       if (component) {
@@ -356,7 +356,7 @@ const Routes = [
   },
   {
     path: "/",
-    component: "@/layouts/unauth",
+    component: "@/layouts/UnAuth",
     routes: [
       {
         path: "/",
