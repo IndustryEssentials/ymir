@@ -54,8 +54,8 @@ class TestTaskLabelingInvoker:
         mock_post = mocker.patch.object(requests, "post", return_value=mock_resp)
 
         sandbox_root = test_utils.dir_test_root(["test_invoker_labeling"])
-        user_name = "user"
-        mir_repo_name = "repoid"
+        user_name = "aaaa"
+        mir_repo_name = "bbbbbb"
         task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzb5'
         user_root = os.path.join(sandbox_root, user_name)
         mir_repo_root = os.path.join(user_root, mir_repo_name)
