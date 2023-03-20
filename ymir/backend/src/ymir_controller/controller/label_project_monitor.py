@@ -87,7 +87,16 @@ def generate_label_index_file(input_asset_dir: Path, annotation_dir: Path, objec
 
 
 def update_label_task(label_instance: utils.LabelBase, task_id: str, project_info: Dict) -> None:
-    percent = label_instance.get_task_completion_percent(project_info["project_id"])
+    try:
+        percent = label_instance.get_task_completion_percent(project_info["project_id"])
+    except (ConnectionError, HTTPError, Timeout) as e:
+        logging.error(f"Failed to get_task_completion_percent for {project_info['project_id']} error: {e}")
+        error_code = CTLResponseCode.INVOKER_LABEL_TASK_NETWORK_ERROR
+        state = LogState.ERROR
+    else:
+        logging.info(f"label task <{task_id}> percent: {percent}")
+        error_code = None
+        state = LogState.DONE if percent == 1 else LogState.RUNNING
 
     logging.info(f"label task <{task_id}> percent: {percent}")
     state = LogState.DONE if percent == 1 else LogState.RUNNING
@@ -106,6 +115,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
         except (ConnectionError, HTTPError, Timeout) as e:
             sentry_sdk.capture_exception(e)
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
+            error_code = CTLResponseCode.INVOKER_LABEL_TASK_NETWORK_ERROR
             state = LogState.ERROR
         label_index_file = generate_label_index_file(Path(project_info["input_asset_dir"]), Path(des_annotation_path),
                                                      object_type)
@@ -120,6 +130,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             is_instance_segmentation=is_instance_segmentation,
         )
         if import_response.Code != CTLResponseCode.CTR_OK:
+            error_code = CTLResponseCode.INVOKER_LABEL_TASK_UNKNOWN_ERROR
             state = LogState.ERROR
 
         rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
@@ -128,7 +139,8 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
     PercentLogHandler.write_percent_log(log_file=project_info["monitor_file_path"],
                                         tid=project_info["task_id"],
                                         percent=percent,
-                                        state=state)
+                                        state=state,
+                                        error_code=error_code)
 
 
 def lable_task_monitor() -> None:
