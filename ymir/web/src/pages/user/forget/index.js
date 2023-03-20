@@ -1,14 +1,14 @@
-import React from "react"
-import { connect } from "dva"
-import { Form, Input, Button, Layout, Row, Col } from "antd"
-import { useHistory } from "umi"
+import React from 'react'
+import { connect } from 'dva'
+import { Form, Input, Button, Layout, Row, Col } from 'antd'
+import { useHistory } from 'umi'
 
-import t from "@/utils/t"
-import { layout420 } from "@/config/antd"
-import HeaderNav from "@/components/nav"
-import Foot from "@/components/common/footer"
-import styles from "../common.less"
-import { EmailIcon } from "@/components/common/Icons"
+import t from '@/utils/t'
+import { layout420 } from '@/config/antd'
+import HeaderNav from '@/components/common/Nav'
+import Foot from '@/components/common/Footer'
+import styles from '../common.less'
+import { EmailIcon } from '@/components/common/Icons'
 
 const { Header, Footer, Content } = Layout
 
@@ -17,12 +17,12 @@ const Forget = ({ forgetPwd }) => {
   const onFinish = async ({ email }) => {
     const res = await forgetPwd(email)
     if (res) {
-      history.replace("/login")
+      history.replace('/login')
     }
   }
 
   const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo)
+    console.log('Failed:', errorInfo)
   }
 
   return (
@@ -35,11 +35,11 @@ const Forget = ({ forgetPwd }) => {
           <div className={styles.formBox}>
             <Row className={styles.header}>
               <Col flex={1}>
-                <h2>{t("forget.title.page")}</h2>
+                <h2>{t('forget.title.page')}</h2>
               </Col>
               <Col>
                 <Button type="link" onClick={() => history.goBack()}>
-                  {t("common.back")}&gt;
+                  {t('common.back')}&gt;
                 </Button>
               </Col>
             </Row>
@@ -51,33 +51,28 @@ const Forget = ({ forgetPwd }) => {
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               size="large"
-              labelAlign='left'
+              labelAlign="left"
             >
               <Form.Item>
-                <h3 className={styles.tipTitle}>{t("forget.title")}</h3>
-                <p className={styles.tip}>{t("forget.info")}</p>
+                <h3 className={styles.tipTitle}>{t('forget.title')}</h3>
+                <p className={styles.tip}>{t('forget.info')}</p>
               </Form.Item>
               <Form.Item
-                label={t("forget.email")}
+                label={t('forget.email')}
                 name="email"
                 rules={[
                   {
                     required: true,
-                    message: t("forget.email.required.msg"),
+                    message: t('forget.email.required.msg'),
                   },
-                  { email: true, message: t("forget.email.valid.msg") },
+                  { email: true, message: t('forget.email.valid.msg') },
                 ]}
               >
-                <Input allowClear prefix={<EmailIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} placeholder={t('forget.email.placeholder')}  />
+                <Input allowClear prefix={<EmailIcon style={{ color: 'rgba(0, 0, 0, 0.45)' }} />} placeholder={t('forget.email.placeholder')} />
               </Form.Item>
-              <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  className={styles.submit}
-                  block
-                >
-                  {t("forget.send")}
+              <Form.Item name="submitBtn" wrapperCol={{ span: 24 }}>
+                <Button type="primary" htmlType="submit" className={styles.submit} block>
+                  {t('forget.send')}
                 </Button>
               </Form.Item>
             </Form>
@@ -95,7 +90,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     forgetPwd(email) {
       return dispatch({
-        type: "user/forgetPwd",
+        type: 'user/forgetPwd',
         payload: email,
       })
     },

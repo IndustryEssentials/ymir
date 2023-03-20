@@ -7,11 +7,10 @@ import { MenuItemType } from 'rc-menu/lib/interface'
 import t from '@/utils/t'
 import { ROLES, getRolesLabel } from '@/constants/user'
 import { getDeployUrl } from '@/constants/common'
-import useFetch from '@/hooks/useFetch'
 
 import LangBtn from '../common/LangBtn'
 
-import styles from './index.less'
+import styles from './nav.less'
 import './menu.less'
 import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, ArrowDownIcon, GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon } from '@/components/common/Icons'

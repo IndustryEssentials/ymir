@@ -6,8 +6,8 @@ import { Form, Input, Button, Checkbox, Layout, Row, Col, message } from "antd"
 import t from "@/utils/t"
 import { STATES } from '@/constants/user'
 import { layout420 } from "@/config/antd"
-import HeaderNav from "@/components/nav"
-import Foot from "@/components/common/footer"
+import HeaderNav from "@/components/common/Nav"
+import Foot from "@/components/common/Footer"
 import styles from "../common.less"
 import { EmailIcon, UserIcon, SmartphoneIcon, LockIcon, KeyIcon, EqualizerIcon, NavHomeIcon } from '@/components/common/Icons'
 import { phoneValidate } from "@/components/form/validators"
