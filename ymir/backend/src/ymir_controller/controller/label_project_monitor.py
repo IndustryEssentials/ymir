@@ -98,8 +98,6 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
         error_code = None
         state = LogState.DONE if percent == 1 else LogState.RUNNING
 
-    logging.info(f"label task <{task_id}> percent: {percent}")
-    state = LogState.DONE if percent == 1 else LogState.RUNNING
     if state == LogState.DONE:
         # For remove some special tasks. Delete the task after labeling will save file
         object_type = int(project_info.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
