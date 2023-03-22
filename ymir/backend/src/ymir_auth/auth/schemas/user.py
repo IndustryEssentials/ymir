@@ -45,7 +45,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     username: Optional[constr(min_length=2, max_length=15, strip_whitespace=True)] = None
     phone: Optional[str] = None
-    password: str
+    password: constr(min_length=8, max_length=40, strip_whitespace=True)
 
     @validator("phone")
     def check_phone(cls, v: Optional[str]) -> Optional[str]:
