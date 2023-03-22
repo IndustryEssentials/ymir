@@ -75,7 +75,7 @@ services:
 
   redis:
     image: industryessentials/ymir-backend-redis
-    command: redis-server /config/redis/redis.conf --loadmodule /usr/lib/redis/modules/redisgraph.so
+    command: redis-server /config/redis/redis.conf
     volumes:
       - ${YMIR_PATH}/redis:/var/log/redis
       - ${YMIR_PATH}/redis:/data

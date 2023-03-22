@@ -1,3 +1,3 @@
-FROM redis:7.0.10-alpine3.17
+FROM redis:6.2.5-alpine
 
 COPY redis.conf /config/redis/redis.conf
