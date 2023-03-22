@@ -101,3 +101,9 @@ class ControllerUserOut(Common):
 class UserInfo(BaseModel):
     id: int
     role: UserRole
+
+    @validator("role", pre=True)
+    def default_role(cls, v: Optional[UserRole]) -> UserRole:
+        if v is None:
+            return UserRole.NORMAL
+        return v

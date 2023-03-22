@@ -4,7 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DockerImageHavingRelationships,
@@ -22,7 +22,7 @@ router = APIRouter()
 @router.get("/", response_model=schemas.DockerImagesOut)
 def list_docker_images(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     name: str = Query(None),
     url: str = Query(None),
     state: DockerImageState = Query(None),
@@ -52,7 +52,7 @@ def list_docker_images(
 def create_docker_image(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_admin),
     docker_image_in: DockerImageCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
@@ -135,7 +135,7 @@ def get_docker_image(
     *,
     db: Session = Depends(deps.get_db),
     docker_image_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get a single docker image
@@ -157,7 +157,7 @@ def update_docker_image(
     db: Session = Depends(deps.get_db),
     docker_image_id: int = Path(...),
     docker_image_update: schemas.DockerImageUpdate,
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_admin),
 ) -> Any:
     """
     Update docker image's name and description
@@ -181,7 +181,7 @@ def delete_docker_image(
     *,
     db: Session = Depends(deps.get_db),
     docker_image_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_admin),
 ) -> Any:
     """
     Delete docker image
@@ -204,7 +204,7 @@ def link_docker_images(
     *,
     db: Session = Depends(deps.get_db),
     docker_image_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_admin),
     image_relationships: schemas.ImageRelationshipsCreate,
 ) -> Any:
     """
@@ -228,7 +228,7 @@ def get_related_images(
     *,
     db: Session = Depends(deps.get_db),
     docker_image_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get all the related_images of given docker image

@@ -26,7 +26,7 @@ def recommend_keywords(
     dataset_ids: str = Query(None, description="recommend keywords based on given datasets"),
     limit: int = Query(10, description="limit the data point size"),
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     viz_client: VizClient = Depends(deps.get_viz_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
@@ -59,7 +59,7 @@ def recommend_keywords(
 def get_projects_count(
     precision: StatsPrecision = Query(..., description="day, week or month"),
     limit: int = Query(10, description="limit the data point size"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     viz_client: VizClient = Depends(deps.get_viz_client),
 ) -> Any:
     """

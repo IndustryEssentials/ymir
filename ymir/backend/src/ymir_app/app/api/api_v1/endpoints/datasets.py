@@ -4,7 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DatasetGroupNotFound,
@@ -35,7 +35,7 @@ def batch_get_datasets(
     dataset_ids: str = Query(..., example="1,2,3", alias="ids", min_length=1),
     require_ck: bool = Query(False, alias="ck"),
     require_hist: bool = Query(False, alias="hist"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     ids = list({int(i) for i in dataset_ids.split(",")})
@@ -62,7 +62,7 @@ def batch_update_datasets(
     *,
     db: Session = Depends(deps.get_db),
     dataset_ops: schemas.BatchOperations,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     if not dataset_ops.operations:
         raise MissingOperations()
@@ -85,7 +85,7 @@ def batch_update_datasets(
 @router.get("/", response_model=schemas.DatasetPaginationOut)
 def list_datasets(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     source: TaskType = Query(None, description="type of related task"),
     exclude_source: TaskType = Query(None, description="exclude type of related task"),
     project_id: int = Query(None),
@@ -119,7 +119,7 @@ def list_datasets(
 @router.get("/public", response_model=schemas.DatasetPaginationOut)
 def get_public_datasets(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get all the public datasets
@@ -140,7 +140,7 @@ def import_dataset(
     *,
     db: Session = Depends(deps.get_db),
     dataset_import: schemas.DatasetImport,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
 ) -> Any:
@@ -225,7 +225,7 @@ def delete_dataset(
     *,
     db: Session = Depends(deps.get_db),
     dataset_id: int = Path(..., example="12"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete dataset
@@ -256,7 +256,7 @@ def update_dataset(
     db: Session = Depends(deps.get_db),
     dataset_id: int = Path(..., example="12"),
     dataset_update: schemas.DatasetUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
     if not dataset:
@@ -276,7 +276,7 @@ def get_dataset(
     dataset_id: int = Path(..., example="12"),
     keywords_for_negative_info: str = Query(None, alias="keywords"),
     verbose_info: bool = Query(False, alias="verbose"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     viz_client: VizClient = Depends(deps.get_viz_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
@@ -323,7 +323,7 @@ def check_duplication(
     *,
     db: Session = Depends(deps.get_db),
     in_datasets: schemas.dataset.MultiDatasetsWithProjectID,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     viz_client: VizClient = Depends(deps.get_viz_client),
 ) -> Any:
     """
@@ -342,7 +342,7 @@ def create_dataset_fusion_task(
     *,
     db: Session = Depends(deps.get_db),
     in_fusion: schemas.task.FusionParameter,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
@@ -369,7 +369,7 @@ def merge_datasets(
     *,
     db: Session = Depends(deps.get_db),
     in_merge: schemas.task.FusionParameter,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
@@ -392,7 +392,7 @@ def filter_dataset(
     *,
     db: Session = Depends(deps.get_db),
     in_filter: schemas.task.FusionParameter,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:

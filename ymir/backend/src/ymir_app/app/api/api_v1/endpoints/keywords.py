@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends, Query
 from fastapi.logger import logger
 
-from app import models
+from app import schemas
 from app.api import deps
 from app.config import settings
 from app.schemas.keyword import (
@@ -27,7 +27,7 @@ router = APIRouter()
     response_model=KeywordsPaginationOut,
 )
 def get_keywords(
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
     q: Optional[str] = Query(None, description="query keywords"),
@@ -53,7 +53,7 @@ def get_keywords(
 def create_keywords(
     *,
     keywords_input: KeywordsInput,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
 ) -> Any:
@@ -88,7 +88,7 @@ def update_keyword_aliases(
     *,
     keyword: str,
     aliases_in: KeywordUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
 ) -> Any:
