@@ -96,3 +96,8 @@ class ControllerUser(BaseModel):
 
 class ControllerUserOut(Common):
     result: ControllerUser
+
+
+class UserInfo(BaseModel):
+    id: int
+    role: UserRole

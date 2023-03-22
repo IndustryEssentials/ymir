@@ -1,6 +1,6 @@
 from typing import Generator
 
-from fastapi import Depends, Security
+from fastapi import Depends, Security, Header
 from fastapi.logger import logger
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer, SecurityScopes
 from jose import jwt
@@ -149,3 +149,10 @@ def get_user_labels(
 
     cache.set(ymir_cache.KEYWORDS_CACHE_KEY, user_labels.json())
     return user_labels
+
+
+def get_user_info(
+    x_user_id: str = Header(default=None),
+    x_user_role: str = Header(default=None),
+):
+    return schemas.user.UserInfo(id=x_user_id, role=x_user_role)
