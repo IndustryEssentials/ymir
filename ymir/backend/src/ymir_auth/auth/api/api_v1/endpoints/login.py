@@ -63,6 +63,7 @@ def login_access_token(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     token_payload = {
         "id": user.id,
+        "email": user.email,
         "role": role.name,
     }
     token_payload["version"] = YMIR_VERSION

@@ -19,4 +19,5 @@ class TokenOut(Common):
 class TokenPayload(BaseModel):
     id: int
     role: str
+    email: str
     version: Optional[str]
