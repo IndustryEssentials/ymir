@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
     FailedToCallInference,
@@ -26,7 +26,7 @@ def call_inference(
     *,
     inference_in: schemas.InferenceCreate,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """

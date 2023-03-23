@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, Path
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import ModelGroupNotFound, DuplicateModelGroupError
 from app.utils.ymir_controller import ControllerClient
@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/", response_model=schemas.ModelGroupPaginationOut)
 def list_model_groups(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     project_id: int = Query(None),
     name: str = Query(None, description="search by model's name"),
     pagination: schemas.CommonPaginationParams = Depends(),
@@ -34,7 +34,7 @@ def list_model_groups(
 def create_model_group(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     obj_in: schemas.ModelGroupCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
@@ -56,7 +56,7 @@ def get_model_group(
     *,
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get a model group detail
@@ -76,7 +76,7 @@ def update_model_group(
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
     obj_update: schemas.ModelGroupUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Change model group name
@@ -100,7 +100,7 @@ def delete_model_group(
     *,
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete model group

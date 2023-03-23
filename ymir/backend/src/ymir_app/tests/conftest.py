@@ -10,8 +10,8 @@ from app.api import deps
 from app.config import settings
 from app.db.session import SessionLocal
 from app.main import app
-from tests.utils.user import authentication_token_from_email, create_admin_user
-from tests.utils.utils import get_admin_token_headers, get_super_admin_token_headers
+from tests.utils.user import create_admin_user
+from tests.utils.utils import get_normal_token_headers, get_admin_token_headers, get_super_admin_token_headers
 
 
 @pytest.fixture(scope="session")
@@ -157,22 +157,20 @@ def api_key_headers(client: TestClient, db: Session) -> Dict[str, str]:
 
 
 @pytest.fixture(scope="module")
-def normal_user_token_headers(client: TestClient, db: Session) -> Dict[str, str]:
-    return authentication_token_from_email(client=client, email=settings.EMAIL_TEST_USER, db=db)
+def normal_user_token_headers() -> Dict[str, str]:
+    return get_normal_token_headers()
 
 
 @pytest.fixture(scope="module")
-def admin_token_headers(client: TestClient) -> Dict[str, str]:
-    return get_admin_token_headers(client)
+def admin_token_headers() -> Dict[str, str]:
+    return get_admin_token_headers()
 
 
 @pytest.fixture(scope="module")
-def super_admin_token_headers(client: TestClient) -> Dict[str, str]:
-    return get_super_admin_token_headers(client)
+def super_admin_token_headers() -> Dict[str, str]:
+    return get_super_admin_token_headers()
 
 
 @pytest.fixture()
-def user_id(mocker, client: TestClient, normal_user_token_headers: Dict[str, str]):
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
-    current_user = r.json()["result"]
-    return current_user["id"]
+def user_id(normal_user_token_headers: Dict[str, str]):
+    return int(normal_user_token_headers["X-User-Id"])
