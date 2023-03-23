@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Path, Query, BackgroundTasks
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
     ProjectNotFound,
@@ -29,7 +29,7 @@ router = APIRouter()
 @router.get("/", response_model=schemas.ProjectPaginationOut)
 def list_projects(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     name: str = Query(None),
     object_type: int = Query(None),
     pagination: schemas.CommonPaginationParams = Depends(),
@@ -59,7 +59,7 @@ def list_projects(
 def create_sample_project(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
@@ -120,7 +120,7 @@ def create_sample_project(
 def create_project(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -202,7 +202,7 @@ def get_project(
     *,
     db: Session = Depends(deps.get_db),
     project_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get a project detail
@@ -222,7 +222,7 @@ def update_project(
     db: Session = Depends(deps.get_db),
     project_id: int = Path(...),
     project_update: schemas.ProjectUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Setting up a project
@@ -252,7 +252,7 @@ def delete_project(
     db: Session = Depends(deps.get_db),
     project_id: int = Path(...),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete project, and terminate all tasks
@@ -286,7 +286,7 @@ def delete_project(
 def check_project_status(
     *,
     project_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """

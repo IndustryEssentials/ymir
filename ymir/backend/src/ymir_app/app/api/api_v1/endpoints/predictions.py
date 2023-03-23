@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.utils.data import groupby
 from app.api import deps
 from app.api.errors.errors import (
@@ -26,7 +26,7 @@ router = APIRouter()
 def list_predictions(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     project_id: int = Query(None),
     visible: bool = Query(True),
     pagination: schemas.CommonPaginationParams = Depends(),
@@ -46,7 +46,7 @@ def list_predictions(
 def get_prediction(
     db: Session = Depends(deps.get_db),
     prediction_id: int = Path(..., example="12"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     viz_client: VizClient = Depends(deps.get_viz_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
@@ -77,7 +77,7 @@ def batch_update_predictions(
     *,
     db: Session = Depends(deps.get_db),
     prediction_ops: schemas.BatchOperations,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     if not prediction_ops.operations:
         raise MissingOperations()
@@ -101,7 +101,7 @@ def batch_evaluate_datasets(
     *,
     db: Session = Depends(deps.get_db),
     in_evaluation: schemas.prediction.PredictionEvaluationCreate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:

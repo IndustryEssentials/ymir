@@ -30,7 +30,7 @@ def list_assets(
     tags_str: Optional[str] = Query(None, example="big,small", alias="tags"),
     annotation_types_str: Optional[str] = Query(None, example="gt,pred", alias="annotation_types"),
     viz_client: VizClient = Depends(deps.get_viz_client),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
@@ -66,7 +66,7 @@ def get_random_asset_id_of_dataset(
     data_type: AnnotationType,
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
@@ -108,7 +108,7 @@ def get_asset_info(
     asset_hash: str = Path(..., description="in asset hash format"),
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """

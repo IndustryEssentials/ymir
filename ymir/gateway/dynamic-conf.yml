@@ -8,11 +8,20 @@ http:
       service: auth
       rule: PathPrefix(`/api/v1/auth`) || PathPrefix(`/api/v1/user`) || PathPrefix(`/api/v1/reset-password`) || PathPrefix(`/api/v1/password-recovery`)
 
+    doc_router:
+      entryPoints:
+        - web
+      middlewares:
+        - APIRateLimiter
+      service: backend
+      rule: PathPrefix(`/api/v1/openapi.json`)
+
     backend_router:
       entryPoints:
         - web
       middlewares:
         - APIRateLimiter
+        - Authenticator
       service: backend
       rule: PathPrefix(`/api/v1/`)
 
@@ -48,6 +57,7 @@ http:
       loadBalancer:
         servers:
           - url: http://backend:80/
+
     frontend:
       loadBalancer:
         servers:
@@ -60,6 +70,13 @@ http:
           - url: http://tensorboard:6006/
 
   middlewares:
+
+    Authenticator:
+      forwardAuth:
+        address: http://backend:8088/api/v1/auth/validate
+        authResponseHeaders:
+          - "X-User-Id"
+          - "X-User-Role"
 
     APIRateLimiter:
       rateLimit:

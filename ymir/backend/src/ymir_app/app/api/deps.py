@@ -1,34 +1,24 @@
 from typing import Generator
 
-from fastapi import Depends, Security
+from fastapi import Depends, Security, Header
 from fastapi.logger import logger
-from fastapi.security import APIKeyHeader, OAuth2PasswordBearer, SecurityScopes
-from jose import jwt
-from pydantic import ValidationError
-from sqlalchemy.orm import Session
+from fastapi.security import APIKeyHeader
 
-from app import crud, models, schemas
+from app import schemas
 from app.api.errors.errors import (
-    InactiveUser,
     InvalidScope,
     InvalidToken,
     UserNotFound,
-    SystemVersionConflict,
 )
 from app.config import settings
 from app.constants.role import Roles
 from app.db.session import SessionLocal
 from app.utils import cache as ymir_cache
-from app.utils import security, ymir_controller, ymir_viz
+from app.utils import ymir_controller, ymir_viz
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import ControllerClient
 from common_utils.labels import UserLabels
-from common_utils.version import YMIR_VERSION
 
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/auth/token",
-    scopes={role.name: role.description for role in [Roles.NORMAL, Roles.ADMIN, Roles.SUPER_ADMIN]},
-)
 
 API_KEY_NAME = "api-key"  # use dash to compatible with Nginx
 api_key_header = APIKeyHeader(name=API_KEY_NAME, scheme_name="API key header", auto_error=False)
@@ -44,7 +34,6 @@ def api_key_security(header_param: str = Security(api_key_header)) -> str:
         raise InvalidToken()
 
 
-# OAuth2 approach
 def get_db() -> Generator:
     try:
         db = SessionLocal()
@@ -53,57 +42,36 @@ def get_db() -> Generator:
         db.close()
 
 
-def get_current_user(
-    security_scopes: SecurityScopes,
-    db: Session = Depends(get_db),
-    token: str = Depends(reusable_oauth2),
-) -> models.User:
-    try:
-        payload = jwt.decode(token, settings.APP_SECRET_KEY, algorithms=[security.ALGORITHM])
-        token_data = schemas.TokenPayload(**payload)
-    except (jwt.JWTError, ValidationError):
-        logger.exception("Invalid JWT token")
-        raise InvalidToken()
-
-    if token_data.version != YMIR_VERSION:
-        raise SystemVersionConflict()
-
-    user = crud.user.get(db, id=token_data.id)
-    if not user:
+def get_user_info_from_x_headers(
+    x_user_id: str = Header(default=None),
+    x_user_role: str = Header(default=None),
+) -> schemas.user.UserInfo:
+    if not x_user_id:
         raise UserNotFound()
-
-    current_role = min(
-        getattr(schemas.UserRole, token_data.role),
-        schemas.UserRole(user.role),
-    )
-
-    if security_scopes.scopes and current_role.name not in security_scopes.scopes:
-        logger.error(
-            "Invalid JWT token scope: %s not in %s",
-            current_role.name,
-            security_scopes.scopes,
-        )
-        raise InvalidScope()
-    return user
+    return schemas.user.UserInfo(id=x_user_id, role=x_user_role)
 
 
 def get_current_active_user(
-    current_user: models.User = Security(get_current_user, scopes=[]),
-) -> models.User:
-    if not crud.user.is_active(current_user):
-        raise InactiveUser()
+    current_user: schemas.user.UserInfo = Depends(get_user_info_from_x_headers),
+) -> schemas.user.UserInfo:
+    if current_user.role < Roles.NORMAL.rank:
+        raise InvalidScope()
     return current_user
 
 
 def get_current_active_admin(
-    current_user: models.User = Security(get_current_user, scopes=[Roles.ADMIN.name, Roles.SUPER_ADMIN.name]),
-) -> models.User:
+    current_user: schemas.user.UserInfo = Depends(get_user_info_from_x_headers),
+) -> schemas.user.UserInfo:
+    if current_user.role < Roles.ADMIN.rank:
+        raise InvalidScope()
     return current_user
 
 
 def get_current_active_super_admin(
-    current_user: models.User = Security(get_current_user, scopes=[Roles.SUPER_ADMIN.name]),
-) -> models.User:
+    current_user: schemas.user.UserInfo = Depends(get_user_info_from_x_headers),
+) -> schemas.user.UserInfo:
+    if current_user.role < Roles.SUPER_ADMIN.rank:
+        raise InvalidScope()
     return current_user
 
 
@@ -124,7 +92,7 @@ def get_viz_client() -> Generator:
 
 
 def get_cache(
-    current_user: models.User = Depends(get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(get_current_active_user),
 ) -> Generator:
     try:
         cache_client = ymir_cache.CacheClient(redis_uri=settings.BACKEND_REDIS_URL, user_id=current_user.id)
@@ -134,7 +102,7 @@ def get_cache(
 
 
 def get_user_labels(
-    current_user: models.User = Depends(get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(get_current_active_user),
     cache: ymir_cache.CacheClient = Depends(get_cache),
     controller_client: ControllerClient = Depends(get_controller_client),
 ) -> UserLabels:

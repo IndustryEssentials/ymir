@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     FIRST_ADMIN: EmailStr = "admin@example.com"  # type: ignore
     FIRST_ADMIN_PASSWORD: str = "change_this"
 
-    USE_200_EVERYWHERE: bool = True
+    USE_200_EVERYWHERE: bool = False
 
     APP_API_TIMEOUT: int = 30
     APP_API_HOST: str = "backend:80"

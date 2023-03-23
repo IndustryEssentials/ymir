@@ -12,7 +12,7 @@ def generate_uuid() -> str:
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "api_user"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     email = Column(String(100), unique=True, index=True, nullable=False)
     username = Column(String(100), index=True)

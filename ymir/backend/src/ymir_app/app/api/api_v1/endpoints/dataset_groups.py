@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, Path
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DatasetGroupNotFound,
@@ -18,7 +18,7 @@ router = APIRouter()
 @router.get("/", response_model=schemas.DatasetGroupPaginationOut)
 def list_dataset_groups(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     name: str = Query(None, description="search by dataset group name"),
     project_id: int = Query(None),
     pagination: schemas.CommonPaginationParams = Depends(),
@@ -37,7 +37,7 @@ def list_dataset_groups(
 def create_dataset_group(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     obj_in: schemas.DatasetGroupCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
@@ -59,7 +59,7 @@ def get_dataset_group(
     *,
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get a dataset group detail
@@ -79,7 +79,7 @@ def update_dataset_group(
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
     obj_update: schemas.DatasetGroupUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Change dataset group name
@@ -103,7 +103,7 @@ def delete_dataset_group(
     *,
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete dataset group
