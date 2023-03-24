@@ -27,6 +27,17 @@ declare namespace YModels {
     result?: M
   }
 
+  export type User = {
+    id: number
+    hash: string
+    uuid: string
+    email: string
+    role: number
+    username?: string
+    phone?: string
+    avatar?: string
+  }
+
   export interface Group {
     id: number
     name: string
@@ -34,7 +45,7 @@ declare namespace YModels {
     createTime: string
   }
 
-  export interface Result {
+  export interface Result<P = TaskParams> {
     id: number
     groupId?: number
     projectId: number
@@ -48,6 +59,7 @@ declare namespace YModels {
     createTime: string
     updateTime: string
     hash: string
+    task: Task<P>
     taskId: number
     progress: number
     taskState: number
@@ -105,12 +117,11 @@ declare namespace YModels {
     versions?: Array<Dataset>
   }
 
-  export interface Dataset<P = TaskParams> extends Result {
+  export interface Dataset<P = TaskParams> extends Result<P> {
     groupId: number
     keywordCount: number
     isProtected: Boolean
     assetCount: number
-    task: Task<P>
     gt?: AnnotationsCount
     cks?: CKCounts
     tags?: CKCounts
@@ -230,10 +241,9 @@ declare namespace YModels {
     metrics?: StageMetrics
   }
   export interface ModelGroup extends Group {}
-  export interface Model<P = TaskParams> extends Result {
+  export interface Model<P = TaskParams> extends Result<P> {
     map: number
     url: string
-    task: Task<P>
     stages?: Array<Stage>
     recommendStage: number
   }
@@ -372,7 +382,7 @@ declare namespace YModels {
     [key: string]: any
   }
 
-  export interface Task<P = TaskParams> {
+  export interface Task<P = Params> {
     name: string
     type: number
     project_id: number

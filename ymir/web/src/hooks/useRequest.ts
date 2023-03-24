@@ -1,7 +1,8 @@
 import { useDispatch } from 'umi'
 import { useRequest as useAhRequest } from 'ahooks'
 import { useEffect } from 'react'
-type OptionsType<TData, TParams extends any[]> = {
+
+type Options<TData, TParams extends any[]> = {
   loading?: boolean
   manual?: boolean
   onBefore?: (params: TParams) => void
@@ -32,7 +33,7 @@ type OptionsType<TData, TParams extends any[]> = {
   ready?: boolean
 }
 
-const useRequest = <TData, TParams extends any[] = [params?: { [key: string]: any }]>(effect: string, options: OptionsType<TData, TParams> = {}) => {
+const useRequest = <TData, TParams extends any[] = [params?: { [key: string]: any }]>(effect: string, options: Options<TData, TParams> = {}) => {
   const dispatch = useDispatch()
   const { loading = true } = options
   const setLoading = (loading: Boolean) =>
@@ -51,7 +52,6 @@ const useRequest = <TData, TParams extends any[] = [params?: { [key: string]: an
   const defaultOpts = {
     manual: true,
   }
-  // { loading, data, error, params, cancel, refresh, refreshAsync, run, runAsync, mutate }
   const request = useAhRequest<TData, TParams>(fetch, { ...defaultOpts, ...options })
 
   useEffect(() => {

@@ -26,28 +26,28 @@ const PredictionModel: YStates.PredictionStore = {
     prediction: {},
   },
   effects: {
-    getPredictions: createEffect<PredictionsPayload>(function* ({ payload }, { call, select, put }) {
+    getPredictions: createEffect<PredictionsPayload>(function * ({ payload }, { call, select, put }) {
       const { pid, force, ...params } = payload
       if (!force) {
-        const list: YStates.List<YModels.Prediction> = yield select(({ prediction }) => prediction.predictions[pid])
+        const list = yield select(({ prediction }) => prediction.predictions[pid])
         if (list) {
           return list
         }
       }
-      const { code, result } = yield call<YModels.ResponseResultList>(getPredictions, { pid, ...params })
+      const { code, result } = yield call<YModels.Response<YModels.ResponseResultList>>(getPredictions, { pid, ...params })
       if (code === 0 && result) {
-        type originData = { create_datatime: string; [key: string]: any }
+        type originData = YModels.BackendData & { create_datatime: string }
         const sorter = (a: originData, b: originData) => diffTime(b.create_datetime, a.create_datetime)
-        const groupByModel = ({ items, total }: { items: { [key: string]: originData[] }; total: number }) => ({
+        const groupByModel = ({ items, total }: YModels.ResponseResultList) => ({
           items: Object.values(items)
             .map((list) =>
-              list.sort(sorter).map((item, index) => ({
+              list.sort(sorter).map((item: originData, index: number) => ({
                 ...item,
                 rowSpan: index === 0 ? list.length : 0,
               })),
             )
             .sort(([a], [b]) => sorter(a, b))
-            .map((its, index) => its.map((it) => ({ ...it, odd: index % 2 === 0 })))
+            .map((its, index) => its.map((it: originData) => ({ ...it, odd: index % 2 === 0 })))
             .flat(),
           total,
         })
