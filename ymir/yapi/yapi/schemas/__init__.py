@@ -1,6 +1,7 @@
 from .msg import Msg
 from .user import UserInfo
 from .dataset import Dataset
+from .task import Task
 from .common import CommonPaginationParams
 from .model import Model
 from .prediction import Prediction

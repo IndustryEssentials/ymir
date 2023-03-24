@@ -6,6 +6,7 @@ from yapi.api.api_v1.endpoints import (
     predictions,
     projects,
     docker_images,
+    tasks,
 )
 
 api_router = APIRouter()
@@ -19,3 +20,4 @@ api_router.include_router(
 api_router.include_router(
     docker_images.router, prefix="/docker_images", tags=["docker_images"]
 )
+api_router.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
