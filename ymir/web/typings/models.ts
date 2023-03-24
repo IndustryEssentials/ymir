@@ -467,7 +467,6 @@ declare namespace YModels {
   interface TrainingParams extends DockerParams {
     validation_dataset_id: DatasetId
     strategy: number
-    preprocess: Preprocess
   }
 
   interface MiningParams extends DockerParams {

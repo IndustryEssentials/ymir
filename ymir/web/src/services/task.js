@@ -260,7 +260,6 @@ export function train({
   strategy,
   modelStage = [],
   image,
-  preprocess,
 }) {
   const model = modelStage[0]
   const stageId = modelStage[1]
@@ -272,7 +271,6 @@ export function train({
     iteration_stage: stage,
     type: TASKTYPES.TRAINING,
     docker_image_config: { ...config, openpai_enable: openpai },
-    preprocess,
     parameters: {
       task_type: 'training',
       strategy,
