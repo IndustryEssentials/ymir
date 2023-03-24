@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import ModelStageNotFound
 
@@ -17,7 +17,7 @@ router = APIRouter()
 def batch_get_models(
     db: Session = Depends(deps.get_db),
     model_stage_ids: str = Query(None, alias="ids"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     ids = [int(i) for i in model_stage_ids.split(",")]
     stages = crud.model_stage.get_multi_by_user_and_ids(db, user_id=current_user.id, ids=ids)
@@ -32,7 +32,7 @@ def get_model_stage(
     *,
     db: Session = Depends(deps.get_db),
     model_stage_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get a model stage detail

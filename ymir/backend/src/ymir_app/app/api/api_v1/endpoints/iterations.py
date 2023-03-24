@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateIterationError,
@@ -27,7 +27,7 @@ router = APIRouter()
 def create_iteration(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     obj_in: schemas.IterationCreate,
 ) -> Any:
     """
@@ -51,7 +51,7 @@ def create_iteration(
 @router.get("/", response_model=schemas.IterationsOut)
 def list_iterations(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     project_id: int = Query(...),
 ) -> Any:
     """
@@ -64,7 +64,7 @@ def list_iterations(
 @router.get("/{iteration_id}", response_model=schemas.IterationOut)
 def get_iteration(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     project_id: int = Query(...),
     iteration_id: int = Path(...),
 ) -> Any:
@@ -86,7 +86,7 @@ def update_iteration(
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
     iteration_updates: schemas.IterationUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Change iteration stage and update iteration context when necessary
@@ -108,7 +108,7 @@ def update_iteration(
 @router.get("/{iteration_id}/mining_progress", response_model=schemas.iteration.IterationMiningProgressOut)
 def get_mining_progress_of_iteration(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     project_id: int = Query(...),
     iteration_id: int = Path(...),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -125,7 +125,7 @@ def list_iteration_steps(
     *,
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
     if not iteration:
@@ -140,7 +140,7 @@ def get_iteration_step(
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
     step_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
     if not iteration:
@@ -158,7 +158,7 @@ def bind_iteration_step(
     iteration_id: int = Path(...),
     step_id: int = Path(...),
     task_id: int = Query(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     start given step:
@@ -188,7 +188,7 @@ def unbind_iteration_step(
     iteration_id: int = Path(...),
     step_id: int = Path(...),
     user_labels: UserLabels = Depends(deps.get_user_labels),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
     if not iteration:
@@ -208,7 +208,7 @@ def finish_iteration_step(
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
     step_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     # make sure iteration belongs to user
     iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)

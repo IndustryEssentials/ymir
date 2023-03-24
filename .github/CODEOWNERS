@@ -1,3 +1,5 @@
-/ymir/command/       @IndustryEssentials/ymir-cmd
+/ymir/command/       @IndustryEssentials/ymir-backend
 /ymir/backend/       @IndustryEssentials/ymir-backend
+/ymir/gateway/       @IndustryEssentials/ymir-backend
+/ymir/updater/       @IndustryEssentials/ymir-backend
 /ymir/web/           @IndustryEssentials/ymir-web

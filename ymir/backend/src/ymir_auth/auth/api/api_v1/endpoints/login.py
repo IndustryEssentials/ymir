@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any
 
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, Response
 from fastapi.logger import logger
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -63,6 +63,8 @@ def login_access_token(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     token_payload = {
         "id": user.id,
+        "name": user.username,
+        "email": user.email,
         "role": role.name,
     }
     token_payload["version"] = YMIR_VERSION
@@ -77,13 +79,17 @@ def login_access_token(
     return {"result": payload, **payload}
 
 
+@router.get("/auth/validate", response_model=schemas.Msg)
 @router.post("/auth/validate", response_model=schemas.Msg)
 def validate_token(
+    response: Response,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Validate JWT
     """
+    response.headers["X-User-Id"] = str(current_user.id)
+    response.headers["X-User-Role"] = str(current_user.role)
     return {"message": "ok"}
 
 

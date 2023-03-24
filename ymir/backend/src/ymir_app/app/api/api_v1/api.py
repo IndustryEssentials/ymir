@@ -7,7 +7,6 @@ from app.api.api_v1.endpoints import (
     inferences,
     info,
     keywords,
-    login,
     models,
     roles,
     stats,
@@ -24,7 +23,6 @@ from app.api.api_v1.endpoints import (
 
 api_router = APIRouter()
 
-api_router.include_router(login.router, tags=["auth"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(iterations.router, prefix="/iterations", tags=["iterations"])

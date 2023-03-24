@@ -4,7 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
     ModelNotFound,
@@ -25,7 +25,7 @@ router = APIRouter()
 def batch_get_models(
     db: Session = Depends(deps.get_db),
     model_ids: str = Query(None, alias="ids"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     ids = [int(i) for i in model_ids.split(",")]
     models = crud.model.get_multi_by_user_and_ids(db, user_id=current_user.id, ids=ids)
@@ -37,7 +37,7 @@ def batch_update_models(
     *,
     db: Session = Depends(deps.get_db),
     model_ops: schemas.BatchOperations,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     project = crud.project.get(db, model_ops.project_id)
     if not project:
@@ -56,7 +56,7 @@ def batch_update_models(
 @router.get("/", response_model=schemas.ModelPaginationOut)
 def list_models(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     source: TaskType = Query(None, description="type of related task"),
     state: ResultState = Query(None),
     project_id: int = Query(None),
@@ -96,7 +96,7 @@ def import_model(
     *,
     db: Session = Depends(deps.get_db),
     model_import: schemas.ModelImport,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
 ) -> Any:
@@ -157,7 +157,7 @@ def delete_model(
     *,
     db: Session = Depends(deps.get_db),
     model_id: int = Path(..., example="12"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete model
@@ -177,7 +177,7 @@ def update_model(
     db: Session = Depends(deps.get_db),
     model_id: int = Path(..., example="12"),
     model_update: schemas.ModelUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     model = crud.model.get_by_user_and_id(db, user_id=current_user.id, id=model_id)
     if not model:
@@ -191,7 +191,7 @@ def update_model(
 def get_model(
     db: Session = Depends(deps.get_db),
     model_id: int = Path(..., example="12"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get verbose information of specific model

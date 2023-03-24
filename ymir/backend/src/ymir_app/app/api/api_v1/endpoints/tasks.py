@@ -9,7 +9,7 @@ from fastapi.logger import logger
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
@@ -38,7 +38,7 @@ router = APIRouter()
 def batch_create_tasks(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
     batch_tasks_in: schemas.BatchTasksCreate,
 ) -> Any:
@@ -59,7 +59,7 @@ def batch_create_tasks(
 @router.get("/", response_model=schemas.TaskPaginationOut)
 def list_tasks(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     name: str = Query(None, description="search by task name"),
     type_: TaskType = Query(None, alias="type"),
     state: TaskState = Query(None),
@@ -89,7 +89,7 @@ def create_task(
     *,
     db: Session = Depends(deps.get_db),
     task_in: schemas.TaskCreate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
@@ -117,7 +117,7 @@ def delete_task(
     *,
     db: Session = Depends(deps.get_db),
     task_id: int = Path(..., example="12"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete task
@@ -141,7 +141,7 @@ def delete_task(
 def get_task(
     db: Session = Depends(deps.get_db),
     task_id: int = Path(..., example="12"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
@@ -163,7 +163,7 @@ def update_task_name(
     db: Session = Depends(deps.get_db),
     task_id: int = Path(..., example="12"),
     task_in: schemas.TaskUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update task name
@@ -183,7 +183,7 @@ def terminate_task(
     db: Session = Depends(deps.get_db),
     task_id: int = Path(...),
     terminate_info: schemas.TaskTerminate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
@@ -307,7 +307,7 @@ async def save_task_update_to_redis_stream(*, task_events: schemas.TaskMonitorEv
 def get_openpai_task(
     db: Session = Depends(deps.get_db),
     task_id: int = Path(..., example=12),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
