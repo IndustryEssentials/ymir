@@ -248,8 +248,8 @@ export const homeRoutes = [
     breadcrumbLabel: "breadcrumbs.models",
   },
   {
-    path: "/home/project/:id/diagnose",
-    name: "diagnose",
+    path: "/home/project/:id/pred",
+    name: "predictions",
     component: "@/pages/project/diagnose",
     title: "model.diagnose.title",
     pid: 25,

@@ -5,16 +5,17 @@ import { useSelector } from 'react-redux'
 
 import t from '@/utils/t'
 import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask, validState } from '@/constants/common'
+import useRequest from '@/hooks/useRequest'
 
 import { getPredictionColumns } from '@/components/table/Columns'
 import Actions from '@/components/table/Actions'
 import Hide, { RefProps } from '@/components/common/hide'
+import MetricsModal from './components/MetricsModal'
+import Empty from '@/components/empty/Pred'
 
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
-import MetricsModal from './components/MetricsModal'
-import useRequest from '@/hooks/useRequest'
-import Empty from '@/components/empty/Pred'
+
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -120,7 +121,7 @@ const Predictions: React.FC = () => {
   }
 
   return (
-    <div className={s.inferDataset}>
+    <div className={s.list}>
       {predictions.length ? (
         <>
           <Table

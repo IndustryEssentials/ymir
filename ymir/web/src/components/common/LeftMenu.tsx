@@ -78,7 +78,7 @@ function LeftMenu() {
               getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon),
               getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
-              getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon),
+              getItem(t('model.diagnose'), `/home/project/${id}/pred`, DiagnosisIcon),
               getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
               getItem(t('common.trash.list'), `/home/project/${id}/trash`, DeleteIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),
