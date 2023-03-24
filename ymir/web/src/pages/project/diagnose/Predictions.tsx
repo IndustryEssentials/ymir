@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Card, Pagination, Table, TableColumnsType } from 'antd'
+import { Card, ConfigProvider, Pagination, Table, TableColumnsType } from 'antd'
 import { useHistory, useParams } from 'umi'
 import { useSelector } from 'react-redux'
 
@@ -16,6 +16,7 @@ import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
 import { validDataset } from '@/constants/dataset'
 import MetricsModal from './components/MetricsModal'
 import useRequest from '@/hooks/useRequest'
+import Empty from '@/components/empty/Pred'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -122,22 +123,28 @@ const Predictions: React.FC = () => {
 
   return (
     <div className={s.inferDataset}>
-      <Table
-        columns={columns}
-        dataSource={predictions}
-        rowKey={(record) => record.id}
-        rowClassName={(record) => (record.odd ? 'oddRow' : '')}
-        pagination={false}
-      />
-      <Pagination
-        className={`pager`}
-        onChange={pageChange}
-        current={query.current}
-        defaultPageSize={query.limit}
-        total={total}
-        showQuickJumper
-        showSizeChanger
-      />
+      {predictions.length ? (
+        <>
+          <Table
+            columns={columns}
+            dataSource={predictions}
+            rowKey={(record) => record.id}
+            rowClassName={(record) => (record.odd ? 'oddRow' : '')}
+            pagination={false}
+          />
+          <Pagination
+            className={`pager`}
+            onChange={pageChange}
+            current={query.current}
+            defaultPageSize={query.limit}
+            total={total}
+            showQuickJumper
+            showSizeChanger
+          />
+        </>
+      ) : (
+        <Empty />
+      )}
       <Hide ref={hideRef} type="prediction" ok={fetchPredictions} msg="pred.action.del.confirm.content" />
       <MetricsModal width={'90%'} prediction={currentPrediction} visible={metricsModalVisible} onCancel={() => setMModalVisible(false)} footer={null} />
     </div>
