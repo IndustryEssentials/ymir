@@ -108,7 +108,7 @@ const Item: FC<Props> = ({ project, more }) => {
   return (
     <List.Item
       onClick={() => {
-        history.push(`/home/project/${project.id}/detail`)
+        history.push(`/home/project/${project.id}/dataset`)
       }}
     >
       <Skeleton active loading={!project.id}>

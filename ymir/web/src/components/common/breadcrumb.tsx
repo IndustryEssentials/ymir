@@ -1,9 +1,9 @@
 import { FC, useEffect } from 'react'
 import { Breadcrumb } from 'antd'
-import { Link, useHistory, useParams, useRouteMatch, useSelector } from 'umi'
+import { Link, useParams, useRouteMatch } from 'umi'
+import { useSelector } from 'react-redux'
 import { homeRoutes } from '@/config/routes'
 import t from '@/utils/t'
-import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
 type CrumbType = {
@@ -52,8 +52,9 @@ function loop(id = 1, crumbs: CrumbType[]): CrumbType[] {
 
 const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
   const { path } = useRouteMatch()
-  const params = useParams<{ id: string; [key: string | number]: string }>() || {}
-  const { data: project, run: getProject} = useRequest<YModels.Project>('project/getProject', {
+  const params = useParams<{ id: string; [key: string | number]: string }>()
+  const project = useSelector<YStates.Root, YModels.Project | undefined>(({ project }) => project.projects[params.id])
+  const { run: getProject} = useRequest<YModels.Project>('project/getProject', {
     cacheKey: 'getProject',
     loading: false
   })
@@ -62,14 +63,14 @@ const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
 
   useEffect(() => {
     setTimeout(() => {
-      if (crumbItems.some((crumb) => crumb.id === 25) && params?.id) {
-        getProject({ id: params?.id })
+      if (crumbItems.some((crumb) => crumb.id === 24) && params.id) {
+        getProject({ id: params.id })
       }
     }, 500)
-  }, [params?.id])
+  }, [params.id])
 
   const getLabel = (crumb: CrumbType, customTitle: string) => {
-    return (crumb.id === 25 ? project?.name : customTitle) || t(crumb.label)
+    return project && (crumb.id === 24 ? project?.name : customTitle) || t(crumb.label)
   }
   return (
     <div className="breadcrumb">

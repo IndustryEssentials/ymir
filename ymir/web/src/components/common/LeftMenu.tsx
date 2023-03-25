@@ -73,7 +73,6 @@ function LeftMenu() {
         getItem(t('projects.title'), `/home/project`, ProjectIcon),
         showProjectList
           ? getItem(project?.name, `project.summary`, VectorIcon, [
-              getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon),
               project?.enableIteration ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon) : null,
               getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon),
               getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
