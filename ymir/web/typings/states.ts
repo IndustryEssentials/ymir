@@ -49,13 +49,14 @@ declare namespace YStates {
   }
 
   interface DatasetState extends State {
-    datasets: List<YModels.Dataset>
+    datasets: IdMap<List<YModels.Dataset>>
     versions: IdMap<YModels.Dataset[]>
     dataset: IdMap<YModels.Dataset>
     assets: List<YModels.Asset>
     asset: YModels.Asset
     allDatasets: { [pid: number]: YModels.Dataset[] }
     publicDatasets: YModels.Dataset[]
+    query: YParams.DatasetsQuery
   }
 
   interface PredictionState extends State {
@@ -69,10 +70,11 @@ declare namespace YStates {
   }
 
   interface ModelState extends State {
-    models: List<YModels.Model>
+    models: IdMap<List<YModels.Model>>
     versions: IdMap<YModels.Model[]>
     model: IdMap<YModels.Model>
-    allModels: YModels.Model
+    allModels: YModels.Model[]
+    query: YParams.ModelsQuery
   }
 
   interface IterationState extends State {

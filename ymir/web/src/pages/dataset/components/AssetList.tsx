@@ -1,7 +1,7 @@
 import { FC, ReactNode, useEffect, useRef, useState } from 'react'
 import { Row, Space } from 'antd'
 
-import DefaultEmpty from '@/components/empty/default'
+import DefaultEmpty from '@/components/empty/Default'
 
 import styles from '../assets.less'
 import Item from './AssetListItem'

@@ -32,6 +32,7 @@ export function transferPrediction(data: YModels.BackendData): YModels.Predictio
   return {
     id: data.id,
     projectId: data.project_id,
+    groupId: params?.model_id || 0,
     type: data.object_type || ObjectType.ObjectDetection,
     name: data.group_name,
     version: data.version_num || 0,

@@ -19,7 +19,7 @@ type Props = {
   type?: ResultType
   msg?: string
   excludeMsg?: string
-  ok?: (result: YModels.Result[]) => void
+  ok?: (result: YModels.AllResult[]) => void
 }
 
 const Hide = forwardRef<RefProps, Props>(

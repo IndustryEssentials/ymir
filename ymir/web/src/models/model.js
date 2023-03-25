@@ -32,10 +32,7 @@ const initQuery = {
 
 const initState = {
   query: initQuery,
-  models: {
-    items: [],
-    total: 0,
-  },
+  models: {},
   versions: {},
   model: {},
   allModels: [],

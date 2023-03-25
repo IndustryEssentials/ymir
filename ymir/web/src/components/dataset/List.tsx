@@ -1,16 +1,17 @@
-import React, { FC, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import styles from './list.less'
 import { Link, Location, useHistory, useLocation } from 'umi'
-import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover, TableColumnsType } from 'antd'
+import { Form, Button, Input, Table, Space, Row, Col, Tooltip, Pagination, message, Popover, TableColumnsType } from 'antd'
 
 import t from '@/utils/t'
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
-import { readyState, ResultStates, validState } from '@/constants/common'
+import { readyState, validState } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
 
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
+import type { RefProps as ERefProps } from '@/components/form/editBox'
 import EditNameBox from '@/components/form/editNameBox'
 import EditDescBox from '@/components/form/editDescBox'
 import Terminate, { RefProps as TRefProps } from '@/components/task/terminate'
@@ -41,6 +42,7 @@ import { DescPop } from '../common/DescPop'
 import useRerunAction from '@/hooks/useRerunAction'
 import useRequest from '@/hooks/useRequest'
 import StrongTitle from '../table/columns/StrongTitle'
+import { ModuleType } from '@/pages/project/components/ListHoc'
 
 type IsType = {
   isTrainSet?: boolean
@@ -57,17 +59,10 @@ type Dataset = YModels.Dataset & ExtraLabel & IsType
 type DatasetGroup = YModels.DatasetGroup & ExtraLabel & IsType
 type VersionsType = YStates.IdMap<Dataset[]>
 
-type Props = {
-  pid: number
-  project?: YModels.Project
-  groups?: number[]
-  iterations?: YModels.Iteration[]
-}
-
 const { useForm } = Form
 
-const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
-  const location: Location<{ type: string}> = useLocation()
+const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
+  const location: Location<{ type: string }> = useLocation()
   const { name } = location.query as { name?: string }
   const history = useHistory()
   const [datasets, setDatasets] = useState<DatasetGroup[]>([])
@@ -81,15 +76,21 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
     versions: {},
   })
   const hideRef = useRef<RefProps>(null)
+  const editNameBoxRef = useRef<ERefProps>(null)
+  const editDescBoxRef = useRef<ERefProps>(null)
   let [lock, setLock] = useState(true)
   const terminateRef = useRef<TRefProps>(null)
   const [testingSetIds, setTestingSetIds] = useState<number[]>([])
   const generateRerun = useRerunAction()
   const [editingDataset, setEditingDataset] = useState<Dataset>()
-  const { datasets: datasetList, versions, query } = useSelector<YStates.Root, YStates.DatasetState>(({ dataset }) => dataset)
+  const {
+    datasets: { [pid]: datasetList },
+    versions,
+    query,
+  } = useSelector<YStates.Root, YStates.DatasetState>(({ dataset }) => dataset)
 
   const { run: getDatasets } = useRequest<YStates.List<YModels.DatasetGroup>>('dataset/getDatasetGroups')
-  const { run: getVersions } = useRequest<YStates.List<YModels.Dataset>, [{ gid: number, force?: boolean}]>('dataset/getDatasetVersions')
+  const { run: getVersions } = useRequest<YStates.List<YModels.Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
 
@@ -106,9 +107,9 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
   }, [groups])
 
   useEffect(() => {
-    const list = setGroupLabelsByProject(datasetList.items, project)
+    const list = setGroupLabelsByProject(datasetList?.items, project)
     setDatasets(list)
-    setTotal(datasetList.total)
+    setTotal(datasetList?.total || 1)
     setTestingSetIds(project?.testingSets || [])
   }, [datasetList, project])
 
@@ -387,7 +388,7 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
     getVersions({ gid, force })
   }
 
-  function setGroupLabelsByProject(datasets: DatasetGroup[], project?: YModels.Project) {
+  function setGroupLabelsByProject(datasets: DatasetGroup[] = [], project?: YModels.Project) {
     return datasets.map((item) => {
       delete item.projectLabel
       item = project?.trainSet?.id ? setLabelByProject<DatasetGroup>(project.trainSet.id, 'isTrainSet', item) : item
@@ -472,8 +473,8 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
   }
 
   const edit = (record: DatasetGroup) => {
-    setCurrent(undefined)
-    setTimeout(() => setCurrent(record), 0)
+    editNameBoxRef.current?.show()
+    setCurrent(record)
   }
 
   const saveNameHandle = (result: Dataset) => {
@@ -504,8 +505,8 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
   }
 
   const editDesc = (dataset: Dataset) => {
-    setEditingDataset(undefined)
-    setTimeout(() => setEditingDataset(dataset), 0)
+    editDescBoxRef.current?.show()
+    setEditingDataset(dataset)
   }
 
   const add = () => {
@@ -647,7 +648,7 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
             name="queryForm"
             form={form}
             labelCol={{ flex: '120px' }}
-            initialValues={{ type: query.type, time: query.time, name: name || query.name }}
+            initialValues={{ type: query.type, name: name || query.name }}
             onValuesChange={search}
             colon={false}
           >
@@ -662,8 +663,8 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
         </div>
         {renderGroups}
       </div>
-      {editingDataset ? <EditDescBox record={editingDataset} handle={saveDescHandle} /> : null}
-      {current ? <EditNameBox record={current} max={80} handle={saveNameHandle} /> : null}
+      <EditDescBox ref={editDescBoxRef} record={editingDataset} handle={saveDescHandle} />
+      <EditNameBox ref={editNameBoxRef} record={current} max={80} handle={saveNameHandle} />
       <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>

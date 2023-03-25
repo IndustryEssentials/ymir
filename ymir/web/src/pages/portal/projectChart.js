@@ -1,19 +1,19 @@
-import BarChart from "@/components/chart/bar"
-import { useEffect, useState } from "react"
+import BarChart from '@/components/chart/bar'
+import { useEffect, useState } from 'react'
 import { connect } from 'dva'
-import { Card, Radio } from "antd"
-import moment from "moment"
+import { Card, Radio } from 'antd'
+import moment from 'moment'
 
 import t from '@/utils/t'
 import styles from './index.less'
-import Empty from '@/components/empty/default'
-import { cardBody, cardHead } from "./components/styles"
+import Empty from '@/components/empty/Default'
+import { cardBody, cardHead } from './components/styles'
 import { BarchartIcon } from '@/components/common/Icons'
 
 const getTimes = () => [
-  { value: 'day', label: 'Day', },
-  { value: 'week', label: 'Week', },
-  { value: 'month', label: 'Month', },
+  { value: 'day', label: 'Day' },
+  { value: 'week', label: 'Week' },
+  { value: 'month', label: 'Month' },
 ]
 
 const ProjectChart = ({ getProjectStats }) => {
@@ -24,8 +24,8 @@ const ProjectChart = ({ getProjectStats }) => {
   const tooltip = {
     trigger: 'axis',
     axisPointer: {
-      type: 'shadow'
-    }
+      type: 'shadow',
+    },
   }
 
   const legend = { data: [t('portal.project')], left: 0 }
@@ -33,12 +33,12 @@ const ProjectChart = ({ getProjectStats }) => {
     left: '0',
     right: '5px',
     bottom: '3%',
-    containLabel: true
+    containLabel: true,
   }
   const yAxis = [
     {
-      type: 'value'
-    }
+      type: 'value',
+    },
   ]
   const [timestamps, setTimestamps] = useState([])
 
@@ -46,20 +46,20 @@ const ProjectChart = ({ getProjectStats }) => {
     const result = await getProjectStats(type)
     if (result?.length) {
       const transData = transferData(result)
-      setTimestamps(result.map(item => item.legend))
+      setTimestamps(result.map((item) => item.legend))
       setSeries(transData)
     }
   }, [type])
 
   useEffect(() => {
-    if(!series.length) {
+    if (!series.length) {
       return
     }
     const xAxis = [
       {
         type: 'category',
         data: xTimes(type),
-      }
+      },
     ]
     setOption({
       tooltip,
@@ -72,21 +72,23 @@ const ProjectChart = ({ getProjectStats }) => {
   }, [series])
 
   function transferData(data) {
-    let result = [];
-    data.forEach(item => {
+    let result = []
+    data.forEach((item) => {
       // filter
       result.push(item.count)
     })
-     const series = [{
-      name: t('portal.project'),
-      type: 'line',
-      smooth: true,
-      label: { show: true, formatter: '{@[0]}' },
-      emphasis: {
-        focus: 'series'
+    const series = [
+      {
+        name: t('portal.project'),
+        type: 'line',
+        smooth: true,
+        label: { show: true, formatter: '{@[0]}' },
+        emphasis: {
+          focus: 'series',
+        },
+        data: result,
       },
-      data: result,
-    }]
+    ]
     return series
   }
 
@@ -96,37 +98,48 @@ const ProjectChart = ({ getProjectStats }) => {
     const e8 = (stamp) => (stamp ? moment(stamp) : moment()).utcOffset(480)
     // day
     if (type === times[0].value) {
-      result = timestamps.map(stamp => {
+      result = timestamps.map((stamp) => {
         return e8(stamp).format('DD/MM')
       })
     } else if (type === times[1].value) {
       // week
-      return timestamps.map(stamp => {
+      return timestamps.map((stamp) => {
         return e8(stamp).format('D/M')
       })
     } else {
       // year
-      result = timestamps.map(stamp => {
+      result = timestamps.map((stamp) => {
         return e8(stamp).format('MM/YY')
       })
     }
     return result
   }
 
-  function timeChange ({ target }){ 
-    setType(target.value) 
+  function timeChange({ target }) {
+    setType(target.value)
   }
 
   return (
-    <Card className={styles.box}
-      headStyle={cardHead} bodyStyle={{...cardBody, height: 281}} 
-      bordered={false} title={<><BarchartIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.project.static.title')}</span></>}
+    <Card
+      className={styles.box}
+      headStyle={cardHead}
+      bodyStyle={{ ...cardBody, height: 281 }}
+      bordered={false}
+      title={
+        <>
+          <BarchartIcon className={styles.headIcon} />
+          <span className={styles.headTitle}>{t('portal.project.static.title')}</span>
+        </>
+      }
     >
       {series.length ? (
-      <>
-        <Radio.Group className={styles.taskTimeBtn} options={times} optionType='button' value={type} onChange={timeChange}></Radio.Group>
-        <BarChart option={option} height={241}></BarChart>
-      </>) : <Empty /> }
+        <>
+          <Radio.Group className={styles.taskTimeBtn} options={times} optionType="button" value={type} onChange={timeChange}></Radio.Group>
+          <BarChart option={option} height={241}></BarChart>
+        </>
+      ) : (
+        <Empty />
+      )}
     </Card>
   )
 }
@@ -136,9 +149,9 @@ const actions = (dispatch) => {
     getProjectStats(type) {
       return dispatch({
         type: 'common/getStats',
-        payload: { q: 'ps', type, }
+        payload: { q: 'ps', type },
       })
-    }
+    },
   }
 }
 

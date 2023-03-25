@@ -1,26 +1,30 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { connect } from 'dva'
+import { useEffect, useState, useRef } from 'react'
 import styles from './list.less'
-import { Link, useHistory, useSelector } from 'umi'
-import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, message, Popover } from 'antd'
+import { Link, Location, useHistory, useLocation } from 'umi'
+import { useSelector } from 'react-redux'
+import { Form, Input, Table, Row, Col, Pagination, Space, Empty, Button, message, Popover, TableColumnsType } from 'antd'
 
 import { diffTime } from '@/utils/date'
-import { ResultStates } from '@/constants/common'
+import { readyState, validState } from '@/constants/common'
 import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from '@/utils/t'
 import usePublish from '@/hooks/usePublish'
 import { getDeployUrl } from '@/constants/common'
+import { getTensorboardLink } from '@/constants/common'
 
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
 import Actions from '@/components/table/Actions'
 import TypeTag from '@/components/task/TypeTag'
 import RenderProgress from '@/components/common/Progress'
-import Terminate from '@/components/task/terminate'
-import Hide from '../common/hide'
+import Terminate, { RefProps as TRefProps } from '@/components/task/terminate'
+import Hide, { RefProps } from '../common/hide'
+import type { RefProps as ERefProps } from '@/components/form/editBox'
 import EditNameBox from '@/components/form/editNameBox'
 import EditDescBox from '@/components/form/editDescBox'
-import { getTensorboardLink } from '@/constants/common'
 import Detail from '@/components/project/Detail'
+import EditStageCell from './StageCellEdit'
+import { DescPop } from '../common/DescPop'
+import useRerunAction from '@/hooks/useRerunAction'
 
 import {
   ShieldIcon,
@@ -37,33 +41,54 @@ import {
   ImportIcon,
   BarchartIcon,
 } from '@/components/common/Icons'
-import EditStageCell from './editStageCell'
-import { DescPop } from '../common/DescPop'
-import useRerunAction from '../../hooks/useRerunAction'
+import { ModuleType } from '@/pages/project/components/ListHoc'
+import useRequest from '@/hooks/useRequest'
+import StrongTitle from '../table/columns/StrongTitle'
+
+type IsType = {
+  isInitModel?: boolean
+}
+type ExtraLabel = {
+  projectLabel?: string
+  iterationLabel?: string
+  iterationRound?: number
+}
+type ModelType = YModels.Model & ExtraLabel & IsType
+type ModelGroup = YModels.ModelGroup & ExtraLabel & IsType
+type Models = YStates.IdMap<ModelType[]>
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, iterations, groups, versions, query, ...func }) {
+const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   const history = useHistory()
-  const { name } = history.location.query
-  const [models, setModels] = useState([])
-  const [modelVersions, setModelVersions] = useState({})
+  const location: Location = useLocation()
+  const name = location.query?.name
+  const [models, setModels] = useState<ModelGroup[]>([])
+  const [modelVersions, setModelVersions] = useState<Models>({})
   const [total, setTotal] = useState(1)
-  const [selectedVersions, setSelectedVersions] = useState({ selected: [], versions: {} })
+  const [selectedVersions, setSelectedVersions] = useState<{ selected: number[]; versions: { [gid: number]: number[] } }>({ selected: [], versions: {} })
   const [form] = useForm()
-  const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState({})
+  const [current, setCurrent] = useState<ModelGroup>()
+  const [visibles, setVisibles] = useState<{ [key: number | string]: boolean }>({})
   const [trainingUrl, setTrainingUrl] = useState('')
   let [lock, setLock] = useState(true)
-  const hideRef = useRef(null)
-  const delGroupRef = useRef(null)
-  const terminateRef = useRef(null)
+  const editNameBoxRef = useRef<ERefProps>(null)
+  const editDescBoxRef = useRef<ERefProps>(null)
+  const hideRef = useRef<RefProps>(null)
+  const terminateRef = useRef<TRefProps>(null)
   const generateRerun = useRerunAction()
   const [publish, publishResult] = usePublish()
-  const [editingModel, setEditingModel] = useState({})
-  const modelList = useSelector(({ model }) => model.models[pid] || { items: [], total: 0 })
+  const [editingModel, setEditingModel] = useState<YModels.Model>()
+  const {
+    versions,
+    query,
+    models: { [pid]: modelList },
+  } = useSelector<YStates.Root, YStates.ModelState>(({ model }) => model)
+  const { run: getModels } = useRequest<YStates.List<YModels.ModelGroup>, [{ pid: number; query: YParams.ModelsQuery }]>('model/getModelGroups')
+  const { run: getVersions } = useRequest<YStates.List<YModels.Model>, [{ gid: number; force?: boolean }]>('model/getModelVersions')
+  const { run: updateQuery } = useRequest('model/updateQuery')
+  const { run: resetQuery } = useRequest('model/resetQuery')
 
-  /** use effect must put on the top */
   useEffect(() => {
     if (history.action !== 'POP') {
       initState()
@@ -72,14 +97,15 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
   }, [history.location])
 
   useEffect(() => {
-    const initVisibles = groups.reduce((prev, group) => ({ ...prev, [group]: true }), {})
-    setVisibles(initVisibles)
+    const initVisibles = groups?.reduce((prev, group) => ({ ...prev, [group]: true }), {})
+    setVisibles(initVisibles || {})
   }, [groups])
 
   useEffect(() => {
-    const mds = setGroupLabelsByProject(modelList.items, project)
+    console.log('modelList:', modelList)
+    const mds = setGroupLabelsByProject(modelList?.items, project)
     setModels(mds)
-    setTotal(modelList.total)
+    setTotal(modelList?.total || 1)
   }, [modelList, project])
 
   useEffect(() => {
@@ -95,7 +121,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
       const vss = versions[gid]
       const needReload = vss.some((ds) => ds.needReload)
       if (needReload) {
-        fetchVersions(gid, true)
+        fetchVersions(Number(gid), true)
       }
     })
   }, [versions])
@@ -116,15 +142,16 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
     setModelVersions(dvs)
   }, [versions, project, iterations])
 
-  useEffect(async () => {
+  useEffect(() => {
     if (name) {
-      await func.updateQuery({ ...query, name })
+      updateQuery({ ...query, name })
       form.setFieldsValue({ name })
     }
     setLock(false)
   }, [name])
 
   useEffect(() => {
+    console.log('query, lock:', query, lock)
     if (!lock) {
       getData()
     }
@@ -141,13 +168,13 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
   }, [selectedVersions])
 
   async function initState() {
-    await func.resetQuery()
+    await resetQuery()
     form.resetFields()
   }
 
-  const columns = [
+  const columns: TableColumnsType<ModelType> = [
     {
-      title: showTitle('model.column.name'),
+      title: <StrongTitle label="model.column.name" />,
       dataIndex: 'versionName',
       className: styles[`column_name`],
       render: (name, { id, description, projectLabel, iterationLabel }) => {
@@ -174,32 +201,32 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
       ellipsis: true,
     },
     {
-      title: showTitle('model.column.source'),
+      title: <StrongTitle label="model.column.source" />,
       dataIndex: 'taskType',
       render: (type) => <TypeTag type={type} />,
     },
     {
-      title: showTitle('model.column.stage'),
+      title: <StrongTitle label="model.column.stage" />,
       dataIndex: 'recommendStage',
-      render: (_, record) => (isValidModel(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null),
+      render: (_, record) => (validState(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null),
       // align: 'center',
       width: 300,
     },
     {
-      title: showTitle('dataset.column.state'),
+      title: <StrongTitle label="dataset.column.state" />,
       dataIndex: 'state',
       render: (state, record) => RenderProgress(state, record),
       // width: 60,
     },
     {
-      title: showTitle('model.column.create_time'),
+      title: <StrongTitle label="model.column.create_time" />,
       dataIndex: 'createTime',
       sorter: (a, b) => diffTime(a.createTime, b.createTime),
       width: 200,
       align: 'center',
     },
     {
-      title: showTitle('model.column.action'),
+      title: <StrongTitle label="model.column.action" />,
       key: 'action',
       dataIndex: 'action',
       render: (text, record) => <Actions actions={actionMenus(record)} showCount={3} />,
@@ -209,17 +236,15 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
     },
   ]
 
-  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {}
+  const hideHidden = ({ state, id }: YModels.Model) => readyState(state) || project?.hiddenModels?.includes(id)
 
-  const hideHidden = ({ state, id }) => isRunning(state) || project?.hiddenModels?.includes(id)
-
-  const listChange = (current, pageSize) => {
+  const listChange = (current: number, pageSize: number) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, current, limit, offset })
+    updateQuery({ ...query, current, limit, offset })
   }
 
-  function updateModelVersion(result) {
+  function updateModelVersion(result: YModels.Model) {
     setModelVersions((mvs) => {
       return {
         ...mvs,
@@ -230,83 +255,88 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
     })
   }
 
-  async function showVersions(id) {
+  async function showVersions(id: number) {
     setVisibles((old) => ({ ...old, [id]: !old[id] }))
   }
 
-  function setVersionLabelsByIterations(versions, iterations) {
+  function setVersionLabelsByIterations(versions: Models, iterations: YModels.Iteration[]) {
     Object.keys(versions).forEach((gid) => {
       const list = versions[gid]
       const updatedList = list.map((item) => {
         delete item.iterationLabel
-        const iteration = iterations.find((iter) => iter.model === item.id)
-        if (iteration) {
-          item.iterationLabel = t('iteration.tag.round', iteration)
-        }
-        return { ...item }
+        return setLabelByIterations(item, iterations)
       })
       versions[gid] = updatedList
     })
     return { ...versions }
   }
 
-  function setVersionLabelsByProject(versions, project) {
+  function setVersionLabelsByProject(versions: Models, project?: YModels.Project) {
     Object.keys(versions).forEach((gid) => {
       const list = versions[gid]
       const updatedList = list.map((item) => {
         delete item.projectLabel
-        item = setLabelByProject(project?.model, 'isInitModel', item)
-        return { ...item }
+        return project?.model ? setLabelByProject(project?.model, 'isInitModel', item) : item
       })
       versions[gid] = updatedList
     })
     return { ...versions }
   }
 
-  function setGroupLabelsByProject(items, project) {
+  function setGroupLabelsByProject(items: ModelGroup[] = [], project?: YModels.Project) {
     return items.map((item) => {
       delete item.projectLabel
-      item = setLabelByProject(project?.model, 'isInitModel', item)
-      return { ...item }
+      return project?.model ? setLabelByProject(project?.model, 'isInitModel', item) : item
     })
   }
 
-  function setLabelByProject(id, label, item, version = '') {
+  function setLabelByProject<T extends ModelType | ModelGroup = ModelType>(id: number, label: keyof IsType, item: T, version = ''): T {
     const maps = {
       isInitModel: 'project.tag.model',
     }
-    item[label] = id && item.id === id
+    item[label] = !!id && item.id === id
     item.projectLabel = item.projectLabel || (item[label] ? t(maps[label], { version }) : '')
     return item
   }
 
-  async function fetchVersions(id, force) {
-    await func.getVersions(id, force)
+  function setLabelByIterations(item: ModelType, iterations?: YModels.Iteration[]) {
+    const iteration = iterations?.find((iter) =>
+      iter.steps
+        .map(({ resultId }) => resultId)
+        .filter((id) => id)
+        .includes(item.id),
+    )
+    if (iteration) {
+      item.iterationLabel = t('iteration.tag.round', iteration)
+      item.iterationRound = iteration.round
+    }
+    return item
   }
 
-  function showTitle(str) {
-    return <strong>{t(str)}</strong>
+  function fetchVersions(id: number | string, force?: boolean) {
+    getVersions({ gid: Number(id), force })
   }
 
-  async function getData() {
-    await func.getModels(pid, query)
+  function getData() {
+    console.log('pid, query:', pid, query)
+    getModels({ pid, query })
   }
 
-  const actionMenus = (record) => {
+  const actionMenus = (record: ModelType): YComponents.Action[] => {
     const { id, name, url, state, taskState, taskType, task, isProtected, stages, recommendStage } = record
 
     const actions = [
       {
         key: 'publish',
         label: t('model.action.publish'),
-        hidden: () => !isValidModel(state) || !getDeployUrl(),
+        hidden: () => !validState(state) || !getDeployUrl(),
         onclick: () => publish(record),
         icon: <ShieldIcon />,
       },
       {
         key: 'verify',
         label: t('model.action.verify'),
-        hidden: () => !isValidModel(state),
+        hidden: () => !validState(state),
         onclick: () => history.push(`/home/project/${pid}/model/${id}/verify`),
         icon: <ShieldIcon />,
       },
@@ -315,27 +345,27 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
         label: t('model.action.download'),
         link: url,
         target: '_blank',
-        hidden: () => !isValidModel(state),
+        hidden: () => !validState(state),
         icon: <FileDownloadIcon />,
       },
       {
         key: 'mining',
         label: t('dataset.action.mining'),
-        hidden: () => !isValidModel(state),
+        hidden: () => !validState(state),
         onclick: () => history.push(`/home/project/${pid}/mining?mid=${id},${recommendStage}`),
         icon: <VectorIcon />,
       },
       {
         key: 'train',
         label: t('dataset.action.train'),
-        hidden: () => !isValidModel(state),
+        hidden: () => !validState(state),
         onclick: () => history.push(`/home/project/${pid}/train?mid=${id},${recommendStage}`),
         icon: <TrainIcon />,
       },
       {
         key: 'inference',
         label: t('dataset.action.inference'),
-        hidden: () => !isValidModel(state),
+        hidden: () => !validState(state),
         onclick: () => history.push(`/home/project/${pid}/inference?mid=${id},${recommendStage}`),
         icon: <WajueIcon />,
       },
@@ -349,7 +379,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
         key: 'stop',
         label: t('task.action.terminate'),
         onclick: () => stop(record),
-        hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
+        hidden: () => taskState === TASKSTATES.PENDING || !readyState(state) || task.is_terminated,
         icon: <StopIcon />,
       },
       {
@@ -372,9 +402,9 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
     return actions
   }
 
-  const edit = (record) => {
-    setCurrent({})
-    setTimeout(() => setCurrent(record), 0)
+  const edit = (record: ModelGroup) => {
+    editNameBoxRef.current?.show()
+    setCurrent(record)
   }
 
   const multipleInfer = () => {
@@ -396,32 +426,32 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
     const allVss = Object.values(versions).flat()
     const vss = allVss.filter(({ id, state }) => selectedVersions.selected.includes(id))
     if (vss.length) {
-      hideRef.current.hide(vss, project.hiddenModels)
+      hideRef.current?.hide(vss, project?.hiddenModels)
     } else {
       message.warning(t('model.list.batch.invalid'))
     }
   }
 
-  const getDisabledStatus = (filter = () => {}) => {
+  const getDisabledStatus = (filter?: (v: ModelType) => boolean) => {
     const allVss = Object.values(versions).flat()
     const { selected } = selectedVersions
-    return !selected.length || allVss.filter(({ id }) => selected.includes(id)).some((version) => filter(version))
+    return !selected.length || (filter && allVss.filter(({ id }) => selected.includes(id)).some(filter))
   }
 
-  const hide = (version) => {
-    if (project.hiddenModels.includes(version.id)) {
+  const hide = (version: ModelType) => {
+    if (project?.hiddenModels.includes(version.id)) {
       return message.warn(t('dataset.del.single.invalid'))
     }
-    hideRef.current.hide([version])
+    hideRef.current?.hide([version])
   }
 
-  const hideOk = (result) => {
-    result.forEach((item) => fetchVersions(item.model_group_id, true))
+  const hideOk = (result: YModels.Result[]) => {
+    result.forEach((item) => fetchVersions(item.groupId, true))
     getData()
     setSelectedVersions({ selected: [], versions: {} })
   }
 
-  function rowSelectChange(gid, rowKeys) {
+  function rowSelectChange(gid: number, rowKeys: number[]) {
     setSelectedVersions(({ versions }) => {
       versions[gid] = rowKeys
       return {
@@ -431,15 +461,15 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
     })
   }
 
-  const stop = (dataset) => {
-    terminateRef.current.confirm(dataset)
+  const stop = (model: ModelType) => {
+    terminateRef.current?.confirm(model)
   }
 
-  function terminateOk({}, { groupId }) {
-    groupId && func.getVersions(groupId, true)
+  function terminateOk({}, { groupId }: YModels.Result) {
+    groupId && fetchVersions(groupId, true)
   }
 
-  const saveNameHandle = (result) => {
+  const saveNameHandle = (result: ModelGroup) => {
     if (result) {
       setModels((models) =>
         models.map((model) => {
@@ -451,7 +481,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
       )
     }
   }
-  const saveDescHandle = (result) => {
+  const saveDescHandle = (result: ModelType) => {
     if (result) {
       setModelVersions((models) => ({
         ...models,
@@ -465,30 +495,22 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
     }
   }
 
-  const editDesc = (model) => {
-    setEditingModel({})
-    setTimeout(() => setEditingModel(model), 0)
+  const editDesc = (model: ModelType) => {
+    editDescBoxRef.current?.show()
+    setEditingModel(model)
   }
 
-  const search = (values) => {
+  const search = (values: { [key: string]: any }) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      func.updateQuery({ ...query, ...values })
+      updateQuery({ ...query, ...values })
     } else {
       setTimeout(() => {
         if (name === form.getFieldValue('name')) {
-          func.updateQuery({ ...query, name })
+          updateQuery({ ...query, name })
         }
       }, 1000)
     }
-  }
-
-  function isValidModel(state) {
-    return ResultStates.VALID === state
-  }
-
-  function isRunning(state) {
-    return ResultStates.READY === state
   }
 
   function add() {
@@ -503,10 +525,10 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
 
   const renderMultipleActions = (
     <>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => readyState(state))} onClick={multipleHide}>
         <DeleteIcon /> {t('common.action.multiple.del')}
       </Button>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidModel(state))} onClick={multipleInfer}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => !validState(state))} onClick={multipleInfer}>
         <WajueIcon /> {t('common.action.multiple.infer')}
       </Button>
       <a href={trainingUrl} target="_blank">
@@ -540,11 +562,10 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
               <div className="groupTable" hidden={!visibles[group.id]}>
                 <Table
                   dataSource={modelVersions[group.id]}
-                  onChange={tableChange}
                   rowKey={(record) => record.id}
                   rowSelection={{
                     selectedRowKeys: selectedVersions.versions[group.id],
-                    onChange: (keys) => rowSelectChange(group.id, keys),
+                    onChange: (keys) => rowSelectChange(group.id, keys as number[]),
                   }}
                   rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
                   columns={columns}
@@ -585,14 +606,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
       </Row>
       <div className={`list ${styles.list}`}>
         <div className={`search ${styles.search}`}>
-          <Form
-            name="queryForm"
-            form={form}
-            labelCol={{ flex: '120px' }}
-            initialValues={{ time: query.time, name: name || query.name }}
-            onValuesChange={search}
-            colon={false}
-          >
+          <Form name="queryForm" form={form} labelCol={{ flex: '120px' }} initialValues={{ name: name || query.name }} onValuesChange={search} colon={false}>
             <Row>
               <Col className={styles.queryColumn} span={12}>
                 <Form.Item name="name" label={t('model.query.name')}>
@@ -605,48 +619,48 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
 
         {renderGroups}
       </div>
-      <EditNameBox type="model" record={current} max={80} handle={saveNameHandle} />
-      <EditDescBox type="model" record={editingModel} handle={saveDescHandle} />
+      <EditNameBox ref={editNameBoxRef} type="model" record={current} max={80} handle={saveNameHandle} />
+      <EditDescBox ref={editDescBoxRef} type="model" record={editingModel} handle={saveDescHandle} />
       <Hide ref={hideRef} type={'model'} msg="model.action.del.confirm.content" ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
 }
 
-const props = (state) => {
-  return {
-    logined: state.user.logined,
-    query: state.model.query,
-    versions: state.model.versions,
-  }
-}
+// const props = (state) => {
+//   return {
+//     logined: state.user.logined,
+//     query: state.model.query,
+//     versions: state.model.versions,
+//   }
+// }
 
-const actions = (dispatch) => {
-  return {
-    getModels: (pid, query) => {
-      return dispatch({
-        type: 'model/getModelGroups',
-        payload: { pid, query },
-      })
-    },
-    getVersions: (gid, force) => {
-      return dispatch({
-        type: 'model/getModelVersions',
-        payload: { gid, force },
-      })
-    },
-    updateQuery: (query) => {
-      return dispatch({
-        type: 'model/updateQuery',
-        payload: query,
-      })
-    },
-    resetQuery: () => {
-      return dispatch({
-        type: 'model/resetQuery',
-      })
-    },
-  }
-}
+// const actions = (dispatch) => {
+//   return {
+//     getModels: (pid, query) => {
+//       return dispatch({
+//         type: 'model/getModelGroups',
+//         payload: { pid, query },
+//       })
+//     },
+//     getVersions: (gid, force) => {
+//       return dispatch({
+//         type: 'model/getModelVersions',
+//         payload: { gid, force },
+//       })
+//     },
+//     updateQuery: (query) => {
+//       return dispatch({
+//         type: 'model/updateQuery',
+//         payload: query,
+//       })
+//     },
+//     resetQuery: () => {
+//       return dispatch({
+//         type: 'model/resetQuery',
+//       })
+//     },
+//   }
+// }
 
-export default connect(props, actions)(Model)
+export default Model

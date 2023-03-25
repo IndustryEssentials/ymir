@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
-import EmptyState from '@/components/empty/dataset'
+import EmptyState from '@/components/empty/Dataset'
 import Dataset from '@/components/form/option/Dataset'
 
 interface Props extends SelectProps {

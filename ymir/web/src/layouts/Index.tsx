@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import useRequest from '@/hooks/useRequest'
 
 import Loading from '@/components/common/Loading'
-import Empty from '@/components/empty/default'
+import Empty from '@/components/empty/Default'
 import LeftMenu from '@/components/common/LeftMenu'
 import HeaderNav from '@/components/common/Nav'
 import Foot from '@/components/common/Footer'

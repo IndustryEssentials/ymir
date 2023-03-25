@@ -47,7 +47,7 @@ declare namespace YModels {
 
   export interface Result<P = TaskParams> {
     id: number
-    groupId?: number
+    groupId: number
     projectId: number
     type: ObjectType
     name: string
@@ -128,7 +128,7 @@ declare namespace YModels {
     evaluated?: boolean
   }
 
-  export interface Prediction extends Omit<Dataset<InferenceParams>, 'groupId'> {
+  export interface Prediction extends Dataset<InferenceParams> {
     inferModelId: number[]
     inferModel?: Model
     inferDatasetId: number

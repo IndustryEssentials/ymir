@@ -223,7 +223,7 @@ export const homeRoutes = [
   {
     path: "/home/project/:id/dataset",
     name: "projectDataset",
-    component: "@/pages/project/dataset",
+    component: "@/pages/project/Datasets",
     title: "datasets.title",
     pid: 24,
     id: 32,
@@ -232,7 +232,7 @@ export const homeRoutes = [
   {
     path: "/home/project/:id/model",
     name: "projectModel",
-    component: "@/pages/project/models",
+    component: "@/pages/project/Models",
     title: "models.title",
     pid: 24,
     id: 33,

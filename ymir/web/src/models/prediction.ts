@@ -15,7 +15,7 @@ const hideAction = (type: actions) =>
   createEffect<{ pid: number; ids: number[] }>(function* ({ payload: { pid, ids = [] } }, { call, put }) {
     const { code, result } = yield call(batchAct, type, pid, ids)
     if (code === 0) {
-      return result
+      return result.map(transferPrediction)
     }
   })
 
