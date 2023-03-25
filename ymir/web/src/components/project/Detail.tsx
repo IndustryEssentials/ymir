@@ -19,9 +19,6 @@ const Detail: FC<Props> = ({ project, back }) => {
       <Space className={s.detailPanel} wrap size={16}>
         <span className={s.name}>{project.name}</span>
         <ObjectTypeTag type={project.type} />
-        <span>
-          {t('project.train_classes')}: <span className={s.black}>{project?.keywords?.join(',')}</span>
-        </span>
         {project.description ? (
           <span>
             {t('project.detail.desc')}: {project.description}

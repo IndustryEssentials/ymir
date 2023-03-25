@@ -27,12 +27,6 @@ const Item: FC<Props> = ({ project, more }) => {
             <ObjectTypeTag type={project.type} />
             {project.isExample ? <span className="extraTag example">{t('project.example')}</span> : null}
           </span>
-          <span className="titleItem">
-            <span className="titleLabel">{t('project.train_classes')}:</span>
-            <span className="titleContent">
-              <KeywordsItem keywords={project.keywords} />
-            </span>
-          </span>
           {project.enableIteration ? (
             <span className="titleItem">
               <span className="titleLabel">{t('project.iteration.current')}:</span>
