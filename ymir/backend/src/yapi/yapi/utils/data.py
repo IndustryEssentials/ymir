@@ -27,6 +27,8 @@ def dump_to_json(data_model: BaseModel) -> Dict:
 
 
 def exclude_nones(data: Dict) -> Dict:
+    # explicitly convert any IntEnum to Int
+    data = json.loads(json.dumps(data))
     res = {}
     for k, v in data.items():
         if v is not None:

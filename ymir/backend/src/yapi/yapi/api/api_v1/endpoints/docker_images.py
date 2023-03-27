@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query, Path
 from yapi import schemas
 from yapi.api import deps
 from yapi.config import settings
-from yapi.constants.state import DockerImageState, DockerImageType
+from yapi.constants.state import DockerImageState, DockerImageType, ObjectType
 from yapi.utils.ymir_app import AppClient
 from yapi.utils.data import exclude_nones
 
@@ -20,10 +20,10 @@ def list_docker_images(
     docker_url: str = Query(None, alias="url"),
     state: DockerImageState = Query(None),
     type_: DockerImageType = Query(None, alias="type"),
+    object_type: ObjectType = Query(None),
 ) -> Any:
     url = f"{settings.APP_URL_PREFIX}/images"
-    state = state.value if state else None
-    params = {"name": name, "url": docker_url, "state": state, "type": type_}
+    params = {"name": name, "url": docker_url, "state": state, "type": type_, "object_type": object_type}
     resp = app.get(url, params=exclude_nones(params))
     docker_images = resp.json()
     return docker_images

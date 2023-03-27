@@ -1,6 +1,6 @@
 from typing import Any, List, Optional, Dict
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, root_validator, constr
 from yapi.constants.state import (
     TaskType,
     ImportStrategy,
@@ -83,7 +83,7 @@ class TaskOut(Common):
 
 class TrainTaskRequest(BaseModel):
     project_id: int
-    class_names: List[str]
+    class_names: List[constr(min_length=1, strip_whitespace=True)]
     dataset_version_id: int
     docker_image_config: Dict[str, Any]
     docker_image_id: int
@@ -123,7 +123,7 @@ class ImportModelRequest(BaseModel):
 
 class LabelDatasetRequest(BaseModel):
     project_id: int
-    class_names: List[str]
+    class_names: List[constr(min_length=1, strip_whitespace=True)]
     dataset_version_id: int
     doc_url: Optional[str]
     labellers: Optional[List[str]]
@@ -160,8 +160,8 @@ class SampleDatasetRequest(BaseModel):
 class FilterDatasetRequest(BaseModel):
     project_id: int
     dataset_version_id: int
-    include_class_names: Optional[List[str]]
-    exclude_class_names: Optional[List[str]]
+    include_class_names: Optional[List[constr(min_length=1, strip_whitespace=True)]]
+    exclude_class_names: Optional[List[constr(min_length=1, strip_whitespace=True)]]
 
 
 class ImportDockerImageRequest(BaseModel):
