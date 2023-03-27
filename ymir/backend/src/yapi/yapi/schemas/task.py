@@ -81,6 +81,10 @@ class TaskOut(Common):
     result: Task
 
 
+class ResourceParams(BaseModel):
+    gpu_count: Optional[int]
+
+
 class TrainTaskRequest(BaseModel):
     project_id: int
     class_names: List[constr(min_length=1, strip_whitespace=True)]
@@ -89,6 +93,7 @@ class TrainTaskRequest(BaseModel):
     docker_image_id: int
     model_version_id: Optional[int]
     validation_dataset_version_id: int
+    resource_params: Optional[ResourceParams]
 
 
 class InferenceTaskRequest(BaseModel):
@@ -97,6 +102,7 @@ class InferenceTaskRequest(BaseModel):
     docker_image_config: Optional[Dict[str, Any]]
     docker_image_id: Optional[int]
     model_version_id: int
+    resource_params: Optional[ResourceParams]
 
 
 class MineTaskRequest(BaseModel):
@@ -106,6 +112,7 @@ class MineTaskRequest(BaseModel):
     docker_image_id: Optional[int]
     model_version_id: int
     top_k: int
+    resource_params: Optional[ResourceParams]
 
 
 class ImportDatasetRequest(BaseModel):
@@ -182,6 +189,12 @@ class AppTaskAdapter(BaseModel):
     @root_validator(pre=True)
     def convert_parameters(cls, values: Any) -> Any:
         values["name"] = generate_uuid()
+        if values.get("resource_params") and values["resource_params"].get("gpu_count"):
+            docker_image_config = values.get("docker_image_config", {})
+            values["docker_image_config"] = {
+                "gpu_count": values["resource_params"]["gpu_count"],
+                **docker_image_config,
+            }
         values["parameters"] = exclude_nones(
             {
                 "task_type": values["type"].name,
