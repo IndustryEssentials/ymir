@@ -39,28 +39,22 @@ class TaskBase(BaseModel):
 
         if values["state"] == TaskState.done or values["state"] == TaskState.terminate:
             if values.get("result_dataset"):
-                type, id, version_id = (
-                    ResultType.dataset.value,
-                    values["result_dataset"]["dataset_group_id"],
-                    values["result_dataset"]["id"],
-                )
+                type_ = ResultType.dataset.value
+                id_ = values["result_dataset"]["dataset_group_id"]
+                version_id = values["result_dataset"]["id"]
             elif values.get("result_prediction"):
-                type, id, version_id = (
-                    ResultType.prediction.value,
-                    values["result_prediction"]["id"],
-                    0,
-                )
+                type_ = ResultType.prediction.value
+                id_ = values["result_prediction"]["id"]
+                version_id = 0
             elif values.get("result_model"):
-                type, id, version_id = (
-                    ResultType.model.value,
-                    values["result_model"]["model_group_id"],
-                    values["result_model"]["id"],
-                )
+                type_ = ResultType.model.value
+                id_ = values["result_model"]["model_group_id"]
+                version_id = values["result_model"]["id"]
             else:
-                type, id, version_id = ResultType.no_result.value, -1, -1
+                type_, id_, version_id = ResultType.no_result.value, -1, -1
             values["result"] = {
-                "type": type,
-                "id": id,
+                "type": type_,
+                "id": id_,
                 "version_id": version_id,
             }
 
@@ -144,7 +138,6 @@ class MergeDatasetsRequest(BaseModel):
 
 class ExcludeDatasetsRequest(BaseModel):
     project_id: int
-    dataset_id: int
     dataset_version_id: int
     exclude_dataset_version_ids: List[int]
 
@@ -167,8 +160,8 @@ class SampleDatasetRequest(BaseModel):
 class FilterDatasetRequest(BaseModel):
     project_id: int
     dataset_version_id: int
-    include_class_names: List[str]
-    exclude_class_names: List[str]
+    include_class_names: Optional[List[str]]
+    exclude_class_names: Optional[List[str]]
 
 
 class ImportDockerImageRequest(BaseModel):
@@ -214,19 +207,35 @@ class AppTaskAdapter(BaseModel):
         return values
 
 
+class CreateResourceResponse(Common):
+    result: int  # task_id
+
+    @root_validator(pre=True)
+    def AdaptAppResponse(cls, values: Any) -> Any:
+        result = values.get("result")
+        if isinstance(result, dict):
+            values["result"] = result.get("task_id", -1)
+        else:
+            values["result"] = -1
+        return values
+
+
 class CreateTaskResponse(Common):
     result: int  # task_id
 
     @root_validator(pre=True)
     def AdaptAppResponse(cls, values: Any) -> Any:
-        values["result"] = (values.get("result") or {}).get("id", -1)
+        result = values.get("result")
+        if isinstance(result, dict):
+            values["result"] = result.get("id", -1)
+        else:
+            values["result"] = -1
         return values
 
 
 class AppImportOpsAdapter(BaseModel):
     project_id: int
     group_name: Optional[str]
-    group_id: Optional[int]
     input_path: Optional[str]
     input_url: Optional[str]
     input_dataset_id: Optional[int]

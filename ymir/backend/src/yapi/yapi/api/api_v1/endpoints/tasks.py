@@ -123,7 +123,7 @@ def create_mine_task(
     return task
 
 
-@router.post("/import_dataset", response_model=schemas.task.CreateTaskResponse)
+@router.post("/import_dataset", response_model=schemas.task.CreateResourceResponse)
 def create_import_dataset_task(
     *,
     app: AppClient = Depends(deps.get_app_client),
@@ -136,11 +136,11 @@ def create_import_dataset_task(
     url = f"{settings.APP_URL_PREFIX}/datasets/importing/"
     payload = dump_to_json(schemas.task.AppImportOpsAdapter(**task_in.dict()))
     resp = app.post(url, json=payload)
-    task = resp.json()
-    return task
+    dataset = resp.json()
+    return dataset
 
 
-@router.post("/import_dataset_file", response_model=schemas.task.CreateTaskResponse)
+@router.post("/import_dataset_file", response_model=schemas.task.CreateResourceResponse)
 def create_import_dataset_file_task(
     *,
     app: AppClient = Depends(deps.get_app_client),
@@ -162,11 +162,11 @@ def create_import_dataset_file_task(
         schemas.task.AppImportOpsAdapter(input_url=hosted_url, project_id=project_id)
     )
     resp = app.post(url, json=payload)
-    task = resp.json()
-    return task
+    dataset = resp.json()
+    return dataset
 
 
-@router.post("/import_model", response_model=schemas.task.CreateTaskResponse)
+@router.post("/import_model", response_model=schemas.task.CreateResourceResponse)
 def create_import_model_task(
     *,
     app: AppClient = Depends(deps.get_app_client),
@@ -179,11 +179,11 @@ def create_import_model_task(
     url = f"{settings.APP_URL_PREFIX}/models/importing/"
     payload = dump_to_json(schemas.task.AppImportOpsAdapter(**task_in.dict()))
     resp = app.post(url, json=payload)
-    task = resp.json()
-    return task
+    model = resp.json()
+    return model
 
 
-@router.post("/import_model_file", response_model=schemas.task.CreateTaskResponse)
+@router.post("/import_model_file", response_model=schemas.task.CreateResourceResponse)
 def create_import_model_file_task(
     *,
     app: AppClient = Depends(deps.get_app_client),
@@ -205,8 +205,8 @@ def create_import_model_file_task(
         schemas.task.AppImportOpsAdapter(input_url=hosted_url, project_id=project_id)
     )
     resp = app.post(url, json=payload)
-    task = resp.json()
-    return task
+    model = resp.json()
+    return model
 
 
 @router.post("/label", response_model=schemas.task.CreateTaskResponse)
