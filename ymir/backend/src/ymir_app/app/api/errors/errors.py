@@ -178,6 +178,11 @@ class AssetNotFound(NotFound):
     message = "Asset Not Found"
 
 
+class ClassNameNotFound(NotFound):
+    code = error_codes.CLASS_NAME_NOT_FOUND
+    message = "Class Name Not Found"
+
+
 class ModelNotFound(NotFound):
     code = error_codes.MODEL_NOT_FOUND
     message = "Model Not Found"

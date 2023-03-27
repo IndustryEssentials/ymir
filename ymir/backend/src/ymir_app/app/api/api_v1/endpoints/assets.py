@@ -10,6 +10,7 @@ from app.api.errors.errors import AssetNotFound, DatasetNotFound
 from app.config import settings
 from app.constants.state import AnnotationType
 from app.utils.ymir_viz import VizClient
+from app.libs.labels import keywords_to_class_ids
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -42,7 +43,7 @@ def list_assets(
         raise DatasetNotFound()
 
     keywords = keywords_str.split(",") if keywords_str else None
-    keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0] if keywords else None
+    keyword_ids = keywords_to_class_ids(user_labels, keywords) if keywords else None
 
     viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
     assets = viz_client.get_assets(
