@@ -14,6 +14,7 @@ from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
+from requests.exceptions import RequestException
 
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -67,6 +68,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 app.add_exception_handler(HTTPException, errors.http_error_handler)
 app.add_exception_handler(RequestValidationError, errors.http422_error_handler)
+app.add_exception_handler(RequestException, errors.app_requests_error_handler)
 
 logging.basicConfig(level=logging.INFO)
 gunicorn_error_logger = logging.getLogger("gunicorn.error")

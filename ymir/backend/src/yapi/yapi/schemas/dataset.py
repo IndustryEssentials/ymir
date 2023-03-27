@@ -48,9 +48,9 @@ class DatasetVersion(DatasetVersionBase, IdModelMixin, DateTimeModelMixin):
     gt_stats: Optional[AnnotationStats]
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         if values.get("keywords"):
-            values["class_names"] = list(values["keywords"].keys())
+            values["class_names"] = list(values["keywords"]["gt"].keys())
         values["class_name_count"] = values["keyword_count"]
         values["gt_stats"] = values.get("gt")
         return values
@@ -77,7 +77,7 @@ class DatasetAsset(BaseModel):
     gt: Optional[List[Annotation]]
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         values["class_names"] = values.get("keywords")
         return values
 

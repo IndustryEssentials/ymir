@@ -1,10 +1,15 @@
 from datetime import datetime
-from enum import Enum, IntEnum
+from enum import Enum
 from typing import Any, Dict, Optional, List
+import uuid
 
 from pydantic import BaseModel, Field, validator, root_validator
 
 from yapi.config import settings
+
+
+def generate_uuid() -> str:
+    return str(uuid.uuid4())
 
 
 class Common(BaseModel):
@@ -47,19 +52,6 @@ class BatchOperations(BaseModel):
     operations: List[Operation]
 
 
-class MergeStrategy(IntEnum):
-    stop_upon_conflict = 1
-    prefer_newest = 2
-    prefer_oldest = 3
-
-
-class ImportStrategy(IntEnum):
-    no_annotations = 1
-    ignore_unknown_annotations = 2
-    stop_upon_unknown_annotations = 3
-    add_unknown_annotations = 4
-
-
 # Common Query Parameters
 
 
@@ -90,7 +82,7 @@ class Annotation(BaseModel):
     score: Optional[float]
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         values["class_name"] = values.get("keyword")
         return values
 

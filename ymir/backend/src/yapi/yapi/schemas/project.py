@@ -1,4 +1,3 @@
-import uuid
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, root_validator
@@ -7,11 +6,8 @@ from yapi.schemas.common import (
     Common,
     DateTimeModelMixin,
     IdModelMixin,
+    generate_uuid,
 )
-
-
-def generate_uuid() -> str:
-    return str(uuid.uuid4())
 
 
 class ProjectBase(BaseModel):
@@ -27,7 +23,7 @@ class AppProjectCreate(ProjectCreate):
     training_keywords: List = []
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         values["name"] = values.get("name") or generate_uuid()
         return values
 

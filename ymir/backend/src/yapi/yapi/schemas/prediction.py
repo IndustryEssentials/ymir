@@ -26,7 +26,7 @@ class Prediction(IdModelMixin, DateTimeModelMixin, PredictionBase):
     evaluation_state: Optional[int]
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         values["dataset_version_id"] = values["dataset_id"]
         values["model_version_id"] = values["model_id"]
         try:
@@ -53,7 +53,7 @@ class PredictionWithAnnotation(Prediction):
     pred_stats: Optional[AnnotationStats]
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         values["gt_stats"] = values.get("gt")
         values["pred_stats"] = values.get("pred")
         values["dataset_version_id"] = values["dataset_id"]
@@ -84,7 +84,7 @@ class PredictionAsset(BaseModel):
     pred: Optional[List[Annotation]]
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         values["class_names"] = values.get("keywords")
         return values
 
@@ -96,3 +96,13 @@ class PredictionAssetPagination(BaseModel):
 
 class PredictionAssetPaginationOut(Common):
     result: PredictionAssetPagination
+
+
+class PredictionEvaluationOut(Common):
+    result: Dict
+
+    @root_validator(pre=True)
+    def AdaptAppResponse(cls, values: Any) -> Any:
+        for _, result in values.get("result", {}).items():
+            values["result"] = result
+        return values

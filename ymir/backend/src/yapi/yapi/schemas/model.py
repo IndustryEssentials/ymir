@@ -14,12 +14,11 @@ class ModelBase(BaseModel):
     """
 
 
-
 class Model(IdModelMixin, DateTimeModelMixin, ModelBase):
     training_dataset_version_id: Optional[int]
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         values["training_dataset_version_id"] = values.get("training_dataset_id")
         return values
 
@@ -55,7 +54,7 @@ class ModelVersion(ModelVersionBase, IdModelMixin, DateTimeModelMixin):
     url: str
 
     @root_validator(pre=True)
-    def AdapteAppResponse(cls, values: Any) -> Any:
+    def AdaptAppResponse(cls, values: Any) -> Any:
         values["class_names"] = values.get("keywords")
         return values
 

@@ -5,9 +5,9 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY, HTTP_400_BAD_REQUEST
+from requests.exceptions import HTTPError
 
-from yapi.config import settings
 from .error_codes import APIErrorCode as error_codes
 
 
@@ -20,9 +20,7 @@ async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
             "code": error_codes.UNKNOWN_ERROR,
             "message": "Unknown Error",
         }
-    return JSONResponse(
-        detail, status_code=200 if settings.USE_200_EVERYWHERE else exc.status_code
-    )
+    return JSONResponse(detail, status_code=exc.status_code)
 
 
 async def http422_error_handler(
@@ -35,9 +33,21 @@ async def http422_error_handler(
             "message": "Invalid Request Format",
             "errors": exc.errors(),
         },
-        status_code=200
-        if settings.USE_200_EVERYWHERE
-        else HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+    )
+
+
+async def app_requests_error_handler(
+    _: Request,
+    exc: HTTPError,
+) -> JSONResponse:
+    return JSONResponse(
+        {
+            "code": error_codes.API_ERROR,
+            "message": "Failed to request YMIR",
+            "errors": str(exc),
+        },
+        status_code=HTTP_400_BAD_REQUEST,
     )
 
 
@@ -117,3 +127,9 @@ class InvalidScope(APIError):
 
 class DuplicateError(APIError):
     status_code = 400
+
+
+class InvalidModel(APIError):
+    status_code = 400
+    code = error_codes.INVALID_MODEL
+    message = "Invalid Model"

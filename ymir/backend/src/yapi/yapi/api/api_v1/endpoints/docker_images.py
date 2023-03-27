@@ -1,7 +1,6 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Path
-from fastapi.logger import logger
 
 from yapi import schemas
 from yapi.api import deps
@@ -23,10 +22,10 @@ def list_docker_images(
     type_: DockerImageType = Query(None, alias="type"),
 ) -> Any:
     url = f"{settings.APP_URL_PREFIX}/images"
+    state = state.value if state else None
     params = {"name": name, "url": docker_url, "state": state, "type": type_}
     resp = app.get(url, params=exclude_nones(params))
     docker_images = resp.json()
-    logger.info("url: %s, params: %s, resp: %s", url, params, docker_images)
     return docker_images
 
 
@@ -37,7 +36,6 @@ def get_docker_image(
     docker_image_id: int = Path(...),
 ) -> Any:
     url = f"{settings.APP_URL_PREFIX}/images/{docker_image_id}"
-    logger.info("url: %s, params: %s", url, None)
     resp = app.get(url)
     docker_images = resp.json()
     return docker_images

@@ -7,7 +7,7 @@ from yapi import schemas
 from yapi.api import deps
 from yapi.config import settings
 from yapi.utils.ymir_app import AppClient
-from yapi.utils.data import dump_to_json
+from yapi.utils.data import dump_to_json, exclude_nones
 
 router = APIRouter()
 
@@ -58,7 +58,35 @@ def list_prediction_assets(
         "keywords": class_names,
         **dump_to_json(pagination),
     }
-    logger.info("url: %s, params: %s", url, params)
     resp = app.get(url, params=params)
     assets = resp.json()
     return assets
+
+
+@router.get(
+    "/{prediction_id}/evaluation",
+    response_model=schemas.prediction.PredictionEvaluationOut,
+)
+def get_prediction_evaluation(
+    app: AppClient = Depends(deps.get_app_client),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
+    prediction_id: int = Path(...),
+    project_id: int = Query(...),
+    confidence_threshold: float = Query(0.5),
+    iou_threshold: float = Query(0.5),
+    require_average_iou: bool = Query(False),
+    need_pr_curve: bool = Query(False),
+) -> Any:
+    url = f"{settings.APP_URL_PREFIX}/predictions/evaluation"
+    payload = {
+        "project_id": project_id,
+        "prediction_ids": [prediction_id],
+        "confidence_threshold": confidence_threshold,
+        "iou_threshold": iou_threshold,
+        "require_average_iou": require_average_iou,
+        "need_pr_curve": need_pr_curve,
+    }
+    resp = app.post(url, json=exclude_nones(payload))
+    evaluation_result = resp.json()
+    logger.info("url: %s, payload: %s, resp: %s", url, payload, evaluation_result)
+    return evaluation_result
