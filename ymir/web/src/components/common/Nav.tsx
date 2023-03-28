@@ -7,6 +7,7 @@ import { MenuItemType } from 'rc-menu/lib/interface'
 import t from '@/utils/t'
 import { ROLES, getRolesLabel } from '@/constants/user'
 import { getDeployUrl } from '@/constants/common'
+import config from '@/../package.json'
 
 import LangBtn from '../common/LangBtn'
 
@@ -142,7 +143,7 @@ const HeaderNav: FC<{ simple?: boolean }> = ({ simple = false }) => {
   return (
     <Row className={styles.nav} gutter={24} align="middle">
       <div className={styles.logo} style={{ overflow: simple ? 'initial' : 'hidden' }}>
-        <Link to="/" title={'YMIR'}>
+        <Link to="/" title={config.displayName}>
           <img src={logo} />
         </Link>
       </div>
