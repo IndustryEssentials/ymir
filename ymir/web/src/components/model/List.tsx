@@ -592,7 +592,7 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
 
   return (
     <div className={styles.model}>
-      <Detail project={project} />
+      <Detail type='model' project={project} />
       <Row className="actions">
         <Col flex={1}>
           <Space>

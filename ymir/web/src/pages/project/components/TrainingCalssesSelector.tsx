@@ -22,7 +22,7 @@ const TrainingClassesSelector: FC<Props> = ({ pid, onChange, ...props }) => {
     }
   }, [trainingDataset, model])
 
-  return (
+  return project?.round <= 0 ? (
     <Select
       showArrow
       placeholder={t('project.add.form.keyword.placeholder')}
@@ -30,13 +30,12 @@ const TrainingClassesSelector: FC<Props> = ({ pid, onChange, ...props }) => {
       {...props}
       options={classes.map((cs) => ({ value: cs, label: cs }))}
       onChange={(value: string[], option) => {
-        console.log('value:', value)
         updateTrainClasses({ id: pid, classes: value })
         onChange && onChange(value, option)
       }}
       mode="multiple"
     ></Select>
-  )
+  ): null
 }
 
 export default TrainingClassesSelector

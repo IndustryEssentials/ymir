@@ -630,7 +630,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
 
   return (
     <div className={styles.dataset}>
-      <Detail project={project} />
+      <Detail project={project} type='dataset' />
       <Row className="actions">
         <Col flex={1}>
           <Space>
