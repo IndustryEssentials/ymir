@@ -1,6 +1,6 @@
 from typing import Any, List, Optional, Dict
 
-from pydantic import BaseModel, Field, root_validator, constr
+from pydantic import BaseModel, Field, root_validator, constr, conint
 from yapi.constants.state import (
     TaskType,
     ImportStrategy,
@@ -82,7 +82,7 @@ class TaskOut(Common):
 
 
 class ResourceParams(BaseModel):
-    gpu_count: Optional[int]
+    gpu_count: Optional[conint(ge=0)]
 
 
 class TrainTaskRequest(BaseModel):
@@ -172,7 +172,7 @@ class FilterDatasetRequest(BaseModel):
 
 
 class ImportDockerImageRequest(BaseModel):
-    url: str
+    url: constr(min_length=1, strip_whitespace=True)
 
 
 class RefreshDockerImageRequest(BaseModel):
@@ -202,7 +202,7 @@ class AppTaskAdapter(BaseModel):
                 "model_id": values.get("model_version_id"),
                 "model_stage_id": values.get("model_stage_id"),
                 "dataset_id": values.get("dataset_version_id"),
-                "validation_dataset_version_id": values.get("validation_dataset_id"),
+                "validation_dataset_id": values.get("validation_dataset_version_id"),
                 "docker_image_id": values.get("docker_image_id"),
                 "keywords": values.get("class_names"),
                 "top_k": values.get("top_k"),
