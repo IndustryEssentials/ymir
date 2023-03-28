@@ -461,7 +461,7 @@ declare namespace YModels {
   interface LabelParams extends Params {
     labels: Labels
     extra_url?: string
-    annotation_type: 0 | 1 | 2
+    annotation_type: 1 | 2
   }
 
   interface TrainingParams extends DockerParams {

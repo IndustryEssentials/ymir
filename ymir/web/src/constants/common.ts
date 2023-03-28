@@ -114,11 +114,11 @@ export const getLabelAnnotationTypes = (isPred?: boolean) => {
   const keepItem = { value: LabelAnnotationTypes[type], label: `${prefix}${type}`}
   return [
     keepItem,
-    {value: undefined, label: `${prefix}none`},
+    {value: 0, label: `${prefix}none`},
   ]
 }
 
-export const getLabelAnnotationType = (type: LabelAnnotationTypes | undefined) => {
+export const getLabelAnnotationType = (type: LabelAnnotationTypes) => {
   const types = getLabelAnnotationTypes()
   const target = types.find(({ value }) => !value || value === type)
   return target?.label

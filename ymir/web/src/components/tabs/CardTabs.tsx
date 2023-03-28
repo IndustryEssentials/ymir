@@ -7,7 +7,7 @@ type Props = CardProps & {
   data: (CardTabListType & { content: ReactNode })[]
   initialTab?: string
 }
-export const CardTabs: FC<Props> = ({ data = [], initialTab, ...props }) => {
+const CardTabs: FC<Props> = ({ data = [], initialTab, ...props }) => {
   const location: Location<{ type?: string }> = useLocation()
   const history = useHistory()
   const [tabs, setTabs] = useState<CardTabListType[]>([])
@@ -44,3 +44,5 @@ export const CardTabs: FC<Props> = ({ data = [], initialTab, ...props }) => {
     </Card>
   )
 }
+
+export default CardTabs

@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { Button, Space } from 'antd'
 import { useHistory, useParams } from 'umi'
 import t from '@/utils/t'
-import DefaultEmpty from './default'
+import DefaultEmpty from './Default'
 import styles from './empty.less'
 
 const Pred: FC = () => {

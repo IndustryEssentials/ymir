@@ -11,7 +11,7 @@ import Current from './iterations/detail'
 import List from './iterations/list'
 
 import s from './iterations/index.less'
-import { CardTabs } from '@/components/tabs/CardTabs'
+import CardTabs from '@/components/tabs/CardTabs'
 import ProjectDetail from './components/Detail'
 import ActionPanel from './components/IterationTopActionPanel'
 
