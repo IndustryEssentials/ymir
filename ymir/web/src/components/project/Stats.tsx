@@ -14,7 +14,6 @@ const numStyles = {
 }
 
 const Stats: FC<{ type: 'dataset' | 'model'; project: YModels.Project }> = ({ type, project }) => {
-  console.log('project:', project, project.datasetProcessingCount, `${type}ProcessingCount`)
   const statBlocks = (blocks: StatType[] = []) =>
     blocks.map((block, index) => typeof block.count !== 'undefined' ? (
       <Col key={index} span={24 / blocks.length}>
@@ -24,7 +23,6 @@ const Stats: FC<{ type: 'dataset' | 'model'; project: YModels.Project }> = ({ ty
 
   const statBlock = ({ label, count }: StatType) => (
     <>
-    {console.log('count:', count)}
       <div className="contentLabel">{t(label)}</div>
       <div style={numStyles}>{count}</div>
     </>
