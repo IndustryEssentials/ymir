@@ -1,21 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Card, Pagination, Table, TableColumnsType } from 'antd'
+import { Card, ConfigProvider, Pagination, Table, TableColumnsType } from 'antd'
 import { useHistory, useParams } from 'umi'
 import { useSelector } from 'react-redux'
 
-import useFetch from '@/hooks/useFetch'
 import t from '@/utils/t'
 import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask, validState } from '@/constants/common'
+import useRequest from '@/hooks/useRequest'
 
 import { getPredictionColumns } from '@/components/table/Columns'
 import Actions from '@/components/table/Actions'
 import Hide, { RefProps } from '@/components/common/hide'
+import MetricsModal from './components/MetricsModal'
+import Empty from '@/components/empty/Pred'
 
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
-import { validDataset } from '@/constants/dataset'
-import MetricsModal from './components/MetricsModal'
-import useRequest from '@/hooks/useRequest'
+
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -121,23 +121,29 @@ const Predictions: React.FC = () => {
   }
 
   return (
-    <div className={s.inferDataset}>
-      <Table
-        columns={columns}
-        dataSource={predictions}
-        rowKey={(record) => record.id}
-        rowClassName={(record) => (record.odd ? 'oddRow' : '')}
-        pagination={false}
-      />
-      <Pagination
-        className={`pager`}
-        onChange={pageChange}
-        current={query.current}
-        defaultPageSize={query.limit}
-        total={total}
-        showQuickJumper
-        showSizeChanger
-      />
+    <div className={s.list}>
+      {predictions.length ? (
+        <>
+          <Table
+            columns={columns}
+            dataSource={predictions}
+            rowKey={(record) => record.id}
+            rowClassName={(record) => (record.odd ? 'oddRow' : '')}
+            pagination={false}
+          />
+          <Pagination
+            className={`pager`}
+            onChange={pageChange}
+            current={query.current}
+            defaultPageSize={query.limit}
+            total={total}
+            showQuickJumper
+            showSizeChanger
+          />
+        </>
+      ) : (
+        <Empty />
+      )}
       <Hide ref={hideRef} type="prediction" ok={fetchPredictions} msg="pred.action.del.confirm.content" />
       <MetricsModal width={'90%'} prediction={currentPrediction} visible={metricsModalVisible} onCancel={() => setMModalVisible(false)} footer={null} />
     </div>

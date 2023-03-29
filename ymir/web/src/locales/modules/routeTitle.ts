@@ -1,4 +1,6 @@
-const SysName = "YMIR"
+import config from '@/../package.json'
+
+const SysName = config.displayName
 type ItemType = {cn: string, en: string}
 const generateItem = ({ cn, en }: ItemType) => {
   const prefix = (title: string) => `${SysName} - ${title}`

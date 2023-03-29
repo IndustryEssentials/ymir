@@ -23,7 +23,7 @@ import Desc from '@/components/form/desc'
 import MergeType from '@/components/form/items/MergeType'
 
 import styles from './mining.less'
-import SubmitButtons from './submitButtons'
+import SubmitButtons from './SubmitButtons'
 
 function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...func }) {
   const pageParams = useParams()
@@ -227,9 +227,9 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
           <Form.Item
             tooltip={t('tip.task.filter.strategy')}
             label={t('task.mining.form.topk.label')}
-            name='topk' rules={[
-              { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
-            ]}>
+            name="topk"
+            rules={[{ type: 'number', min: 1, max: dataset.assetCount - 1 || 1 }]}
+          >
             <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
           </Form.Item>
           <Form.Item tooltip={t('tip.task.filter.mgpucount')} label={t('task.gpu.count')}>

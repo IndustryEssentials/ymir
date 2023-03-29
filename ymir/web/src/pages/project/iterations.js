@@ -11,8 +11,9 @@ import Current from './iterations/detail'
 import List from './iterations/list'
 
 import s from './iterations/index.less'
-import { CardTabs } from '@/components/tabs/cardTabs'
-import ProjectDetail from './components/detail'
+import CardTabs from '@/components/tabs/CardTabs'
+import ProjectDetail from './components/Detail'
+import ActionPanel from './components/IterationTopActionPanel'
 
 function Iterations() {
   const { id } = useParams()
@@ -38,7 +39,7 @@ function Iterations() {
     <div className={s.iterations}>
       <Breadcrumbs />
       <div className={s.header}>
-        <ProjectDetail project={project} />
+        <ProjectDetail project={project} extra={<ActionPanel fold={project.round > 0} />} />
         {project.round > 0 ? <Iteration project={project} fresh={fresh} /> : <Prepare project={project} fresh={fresh} />}
       </div>
       <CardTabs data={tabs} />

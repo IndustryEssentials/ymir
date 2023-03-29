@@ -25,7 +25,7 @@ import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
 import useDuplicatedCheck from '@/hooks/useDuplicatedCheck'
 import TrainFormat from './training/trainFormat'
-import SubmitButtons from './submitButtons'
+import SubmitButtons from './SubmitButtons'
 
 import styles from './training/training.less'
 
@@ -300,7 +300,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
               tooltip={t('tip.task.filter.keywords')}
               help={
                 trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ? (
-                  <Button type="link" size='small' style={{ marginLeft: '-10px' }} onClick={() => setAllKeywords()}>
+                  <Button type="link" size="small" style={{ marginLeft: '-10px' }} onClick={() => setAllKeywords()}>
                     {t('dataset.train.all.train.target')}
                   </Button>
                 ) : null

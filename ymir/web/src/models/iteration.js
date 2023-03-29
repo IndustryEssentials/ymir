@@ -1,4 +1,14 @@
-import { getIterations, getIteration, createIteration, updateIteration, getMiningStats, bindStep, unbindStep, nextStep } from '@/services/iteration'
+import {
+  getIterations,
+  getIteration,
+  createIteration,
+  updateIteration,
+  getMiningStats,
+  bindStep,
+  unbindStep,
+  nextStep,
+  updateTrainClasses,
+} from '@/services/iteration'
 import { Stages, transferIteration, transferMiningStats } from '@/constants/iteration'
 import { updateResultState } from '@/constants/common'
 import { NormalReducer } from './_utils'
@@ -110,6 +120,10 @@ export default {
           payload: modelIds,
         })
       }
+    },
+
+    *updateTrainClasses({ payload: { id, classes } }, { call, put }) {
+      return yield put({ type: 'project/updateProject', payload: { id, keywords: classes } })
     },
     *getMiningStats({ payload }, { call, put }) {
       const { pid, id } = payload

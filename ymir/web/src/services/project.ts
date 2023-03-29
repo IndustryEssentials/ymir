@@ -10,7 +10,6 @@ type QueryParams = {
 
 type CreateParams = {
   name: string
-  keywords: string[]
   strategy: number
   type: ObjectType
   enableIteration?: number
@@ -73,17 +72,16 @@ export function delProject(id: number) {
  *   {number}  [target_iteration]
  *   {number}  [target_map]
  *   {number}  [target_dataset]
- *   {array<string>}  keywords
  *   {boolean} enableIteration
  * }
  * @returns
  */
-export function createProject({ name, description, type, keywords, strategy = 1, enableIteration }: CreateParams) {
+export function createProject({ name, description, type, strategy = 1, enableIteration }: CreateParams) {
   return request.post('/projects/', {
     name,
     description,
     object_type: type,
-    training_keywords: keywords,
+    training_keywords: [],
     mining_strategy: strategy,
     enable_iteration: enableIteration,
   })

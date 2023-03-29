@@ -1,49 +1,56 @@
 import {
-  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, analysis,
-  batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
-  getNegativeKeywords, updateVersion, checkDuplication
-} from "@/services/dataset"
-import {
-  transferDatasetGroup,
-  transferDataset,
-  transferDatasetAnalysis,
-  transferAnnotationsCount,
-} from '@/constants/dataset'
+  getDatasetGroups,
+  getDatasetByGroup,
+  queryDatasets,
+  getDataset,
+  batchDatasets,
+  analysis,
+  batchAct,
+  delDataset,
+  delDatasetGroup,
+  createDataset,
+  updateDataset,
+  getInternalDataset,
+  getNegativeKeywords,
+  updateVersion,
+  checkDuplication,
+} from '@/services/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAnnotationsCount } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
 import { NormalReducer } from './_utils'
 import { deepClone } from '@/utils/object'
 import { TASKTYPES } from '@/constants/task'
 
-const initQuery = { name: "", type: "", time: 0, current: 1, offset: 0, limit: 20 }
+const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
 
 const reducers = {
-  UPDATE_ALL_DATASETS: NormalReducer('allDatasets')
+  UPDATE_ALL_DATASETS: NormalReducer('allDatasets'),
 }
 
 const initState = {
   query: { ...initQuery },
-  datasets: { items: [], total: 0, },
+  datasets: {},
   versions: {},
   dataset: {},
-  assets: { items: [], total: 0, },
-  asset: { annotations: [], },
+  assets: { items: [], total: 0 },
+  asset: { annotations: [] },
   allDatasets: {},
   publicDatasets: [],
 }
 
 export default {
-  namespace: "dataset",
+  namespace: 'dataset',
   state: deepClone(initState),
   effects: {
     *getDatasetGroups({ payload }, { call, put }) {
       const { pid, query } = payload
       const { code, result } = yield call(getDatasetGroups, pid, query)
       if (code === 0) {
-        const groups = result.items.map(item => transferDatasetGroup(item))
+        const groups = result.items.map((item) => transferDatasetGroup(item))
         const payload = { items: groups, total: result.total }
         yield put({
-          type: "UPDATE_DATASETS",
-          payload,
+          type: 'UPDATE_DATASETS',
+          payload: { [pid]: payload },
         })
         return payload
       }
@@ -57,10 +64,10 @@ export default {
       if (ids.length === cache.length) {
         return cache
       }
-      const fetchIds = ids.filter(id => cache.every(ds => ds.id !== id))
+      const fetchIds = ids.filter((id) => cache.every((ds) => ds.id !== id))
       const remoteDatasets = yield put.resolve({
         type: 'batchDatasets',
-        payload: { pid, ids: fetchIds, ck }
+        payload: { pid, ids: fetchIds, ck },
       })
       return [...cache, ...(remoteDatasets || [])]
     },
@@ -71,7 +78,7 @@ export default {
       }
       const { code, result } = yield call(batchDatasets, pid, ids, ck)
       if (code === 0) {
-        const datasets = result.map(ds => transferDataset(ds))
+        const datasets = result.map((ds) => transferDataset(ds))
         yield put({
           type: 'updateLocalDatasets',
           payload: datasets,
@@ -82,7 +89,7 @@ export default {
     *getDataset({ payload }, { call, put, select }) {
       const { id, verbose, force } = payload
       if (!force) {
-        const dataset = yield select(state => state.dataset.dataset[id])
+        const dataset = yield select((state) => state.dataset.dataset[id])
         if (dataset) {
           return dataset
         }
@@ -101,7 +108,7 @@ export default {
           }
         }
         yield put({
-          type: "UPDATE_DATASET",
+          type: 'UPDATE_DATASET',
           payload: { id: dataset.id, dataset },
         })
         return dataset
@@ -117,10 +124,10 @@ export default {
       }
       const { code, result } = yield call(getDatasetByGroup, gid)
       if (code === 0) {
-        const vss = result.items.map(item => transferDataset(item))
-        const vs = { id: gid, versions: vss, }
+        const vss = result.items.map((item) => transferDataset(item))
+        const vs = { id: gid, versions: vss }
         yield put({
-          type: "UPDATE_VERSIONS",
+          type: 'UPDATE_VERSIONS',
           payload: vs,
         })
         return vss
@@ -129,7 +136,7 @@ export default {
     *queryDatasets({ payload }, { select, call, put }) {
       const { code, result } = yield call(queryDatasets, payload)
       if (code === 0) {
-        return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
+        return { items: result.items.map((ds) => transferDataset(ds)), total: result.total }
       }
     },
     *getHiddenList({ payload }, { put }) {
@@ -145,7 +152,7 @@ export default {
       })
       const { pid, force } = payload
       if (!force) {
-        const dssCache = yield select(state => state.dataset.allDatasets[pid])
+        const dssCache = yield select((state) => state.dataset.allDatasets[pid])
         if (dssCache.length) {
           return dssCache
         }
@@ -156,7 +163,7 @@ export default {
       const dss = yield put.resolve({ type: 'queryDatasets', payload: { pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
         yield put({
-          type: "UPDATE_ALL_DATASETS",
+          type: 'UPDATE_ALL_DATASETS',
           payload: { [pid]: dss.items },
         })
         return dss.items
@@ -166,7 +173,7 @@ export default {
       const { code, result } = yield call(delDataset, payload)
       if (code === 0) {
         yield put({
-          type: "UPDATE_DATASET",
+          type: 'UPDATE_DATASET',
           payload: { id: payload, dataset: null },
         })
         return result
@@ -215,21 +222,21 @@ export default {
     *getInternalDataset({ payload }, { call, put }) {
       const { code, result } = yield call(getInternalDataset, payload)
       if (code === 0) {
-        const dss = result.items.map(item => transferDataset(item))
+        const dss = result.items.map((item) => transferDataset(item))
         const ds = { items: dss, total: result.total }
         yield put({
-          type: "UPDATE_PUBLICDATASETS",
+          type: 'UPDATE_PUBLICDATASETS',
           payload: ds,
         })
         return ds
       }
     },
     *updateDatasets({ payload }, { put, select }) {
-      const versions = yield select(state => state.dataset.versions)
+      const versions = yield select((state) => state.dataset.versions)
       const tasks = payload || {}
-      Object.keys(versions).forEach(gid => {
+      Object.keys(versions).forEach((gid) => {
         const datasets = versions[gid]
-        let updatedDatasets = datasets.map(dataset => {
+        let updatedDatasets = datasets.map((dataset) => {
           const updatedDataset = updateResultState(dataset, tasks)
           return updatedDataset ? { ...updatedDataset } : dataset
         })
@@ -243,8 +250,8 @@ export default {
     },
     *updateAllDatasets({ payload: tasks = {} }, { put, select }) {
       const newDatasets = Object.values(tasks)
-        .filter(task => task.result_state === ResultStates.VALID)
-        .map(task => ({ id: task?.result_dataset?.id, needReload: true }))
+        .filter((task) => task.result_state === ResultStates.VALID)
+        .map((task) => ({ id: task?.result_dataset?.id, needReload: true }))
       const pid = yield select(({ project }) => project.current?.id)
       if (newDatasets.length) {
         yield put({
@@ -254,7 +261,7 @@ export default {
       }
     },
     *updateDatasetState({ payload }, { put, select }) {
-      const caches = yield select(state => state.dataset.dataset)
+      const caches = yield select((state) => state.dataset.dataset)
       const tasks = Object.values(payload || {})
       for (let index = 0; index < tasks.length; index++) {
         const task = tasks[index]
@@ -267,7 +274,7 @@ export default {
           if (updated.needReload) {
             yield put({
               type: 'getDataset',
-              payload: { id: updated.id, force: true }
+              payload: { id: updated.id, force: true },
             })
           } else {
             yield put({
@@ -286,23 +293,23 @@ export default {
           ...query,
           ...payload,
           offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
-        }
+        },
       })
     },
-    *resetQuery({ }, { put }) {
+    *resetQuery({}, { put }) {
       yield put({
         type: 'UPDATE_QUERY',
         payload: initQuery,
       })
     },
-    *clearCache({ }, { put }) {
-      yield put({ type: 'CLEAR_ALL', })
+    *clearCache({}, { put }) {
+      yield put({ type: 'CLEAR_ALL' })
     },
     *analysis({ payload }, { call, put }) {
       const { pid, datasets } = payload
       const { code, result } = yield call(analysis, pid, datasets)
       if (code === 0) {
-        return result.map(item => transferDatasetAnalysis(item))
+        return result.map((item) => transferDatasetAnalysis(item))
       }
     },
     *checkDuplication({ payload }, { call, put, select }) {
@@ -322,17 +329,19 @@ export default {
       // update versions
       const target = versions[ds.groupId] || []
       yield put({
-        type: 'UPDATE_VERSIONS', payload: {
+        type: 'UPDATE_VERSIONS',
+        payload: {
           id: ds.groupId,
           versions: [ds, ...target],
-        }
+        },
       })
       // update dataset
       yield put({
-        type: 'UPDATE_DATASET', payload: {
+        type: 'UPDATE_DATASET',
+        payload: {
           id: ds.id,
           dataset: ds,
-        }
+        },
       })
     },
     *getNegativeKeywords({ payload }, { put, call, select }) {
@@ -356,7 +365,7 @@ export default {
         const dataset = datasets[i]
         if (dataset?.id) {
           yield put({
-            type: "UPDATE_DATASET",
+            type: 'UPDATE_DATASET',
             payload: { id: dataset.id, dataset },
           })
         }
@@ -364,7 +373,7 @@ export default {
     },
     *getLocalDatasets({ payload: ids = [] }, { put, select }) {
       const datasets = yield select(({ dataset }) => dataset.dataset)
-      return ids.map((id) => datasets[id]).filter(d => d)
+      return ids.map((id) => datasets[id]).filter((d) => d)
     },
   },
   reducers: {
@@ -372,7 +381,7 @@ export default {
     UPDATE_DATASETS(state, { payload }) {
       return {
         ...state,
-        datasets: payload
+        datasets: payload,
       }
     },
     UPDATE_VERSIONS(state, { payload }) {
@@ -392,7 +401,7 @@ export default {
     },
     UPDATE_DATASET(state, { payload }) {
       const { id, dataset } = payload
-      const dss = { ...state.dataset, [id]: dataset, }
+      const dss = { ...state.dataset, [id]: dataset }
       return {
         ...state,
         dataset: dss,
@@ -408,19 +417,19 @@ export default {
     UPDATE_ASSETS(state, { payload }) {
       return {
         ...state,
-        assets: payload
+        assets: payload,
       }
     },
     UPDATE_ASSET(state, { payload }) {
       return {
         ...state,
-        asset: payload
+        asset: payload,
       }
     },
     UPDATE_PUBLICDATASETS(state, { payload }) {
       return {
         ...state,
-        publicDatasets: payload
+        publicDatasets: payload,
       }
     },
     UPDATE_QUERY(state, { payload }) {

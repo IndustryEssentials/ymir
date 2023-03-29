@@ -73,12 +73,11 @@ function LeftMenu() {
         getItem(t('projects.title'), `/home/project`, ProjectIcon),
         showProjectList
           ? getItem(project?.name, `project.summary`, VectorIcon, [
-              getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon),
               project?.enableIteration ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon) : null,
               getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon),
               getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
-              getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon),
+              getItem(t('model.diagnose'), `/home/project/${id}/pred`, DiagnosisIcon),
               getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
               getItem(t('common.trash.list'), `/home/project/${id}/trash`, DeleteIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),

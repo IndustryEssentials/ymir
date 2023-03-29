@@ -5,7 +5,7 @@ import { useParams, useHistory } from 'umi'
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Empty from '@/components/empty/default'
+import Empty from '@/components/empty/Default'
 import { getStepLabel } from '@/constants/iteration'
 import Detail from '@/components/project/Detail'
 import Name from '@/components/search/Name'
@@ -88,7 +88,9 @@ function ProjectDetail(func) {
             <Name onSearch={search} />
           </Col>
           <Col>
-            <Button type='primary' icon={<SearchIcon />} onClick={() => search()}>{t('common.search.advanced')}</Button>
+            <Button type="primary" icon={<SearchIcon />} onClick={() => search()}>
+              {t('common.search.advanced')}
+            </Button>
           </Col>
           <Col>
             <AddButton id={id} />

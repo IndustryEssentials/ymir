@@ -12,6 +12,7 @@ declare namespace YParams {
     endTime?: string | number
     visible?: boolean
     desc?: boolean
+    current?: number
   }
 
   interface DatasetsQuery extends ResultListQuery {

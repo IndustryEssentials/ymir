@@ -11,7 +11,6 @@ type Result<T extends ModeType> = {
     'btn': ReactNode
   }[T]
 export default function useRerunAction(mode: ModeType = 'menu') {
-  console.log('mode:', mode, typeof mode)
   const history = useHistory()
 
   const rerun = (pid: number, type: string, record: YModels.Result) => {

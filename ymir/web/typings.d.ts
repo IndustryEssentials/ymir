@@ -13,6 +13,11 @@ declare module '*.svg' {
   export default url;
 }
 
+declare module '*.json' {
+  const data: any
+  export default data
+}
+
   interface Window {
     baseConfig: {
       [name: string]: string

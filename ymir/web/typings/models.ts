@@ -27,6 +27,17 @@ declare namespace YModels {
     result?: M
   }
 
+  export type User = {
+    id: number
+    hash: string
+    uuid: string
+    email: string
+    role: number
+    username?: string
+    phone?: string
+    avatar?: string
+  }
+
   export interface Group {
     id: number
     name: string
@@ -34,9 +45,9 @@ declare namespace YModels {
     createTime: string
   }
 
-  export interface Result {
+  export interface Result<P = TaskParams> {
     id: number
-    groupId?: number
+    groupId: number
     projectId: number
     type: ObjectType
     name: string
@@ -48,6 +59,7 @@ declare namespace YModels {
     createTime: string
     updateTime: string
     hash: string
+    task: Task<P>
     taskId: number
     progress: number
     taskState: number
@@ -105,19 +117,18 @@ declare namespace YModels {
     versions?: Array<Dataset>
   }
 
-  export interface Dataset<P = TaskParams> extends Result {
+  export interface Dataset<P = TaskParams> extends Result<P> {
     groupId: number
     keywordCount: number
     isProtected: Boolean
     assetCount: number
-    task: Task<P>
     gt?: AnnotationsCount
     cks?: CKCounts
     tags?: CKCounts
     evaluated?: boolean
   }
 
-  export interface Prediction extends Omit<Dataset<InferenceParams>, 'groupId'> {
+  export interface Prediction extends Dataset<InferenceParams> {
     inferModelId: number[]
     inferModel?: Model
     inferDatasetId: number
@@ -230,10 +241,9 @@ declare namespace YModels {
     metrics?: StageMetrics
   }
   export interface ModelGroup extends Group {}
-  export interface Model<P = TaskParams> extends Result {
+  export interface Model<P = TaskParams> extends Result<P> {
     map: number
     url: string
-    task: Task<P>
     stages?: Array<Stage>
     recommendStage: number
   }
@@ -372,7 +382,7 @@ declare namespace YModels {
     [key: string]: any
   }
 
-  export interface Task<P = TaskParams> {
+  export interface Task<P = Params> {
     name: string
     type: number
     project_id: number
@@ -451,13 +461,12 @@ declare namespace YModels {
   interface LabelParams extends Params {
     labels: Labels
     extra_url?: string
-    annotation_type: 0 | 1 | 2
+    annotation_type: 1 | 2
   }
 
   interface TrainingParams extends DockerParams {
     validation_dataset_id: DatasetId
     strategy: number
-    preprocess: Preprocess
   }
 
   interface MiningParams extends DockerParams {

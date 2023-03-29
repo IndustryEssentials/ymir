@@ -6,7 +6,7 @@ import { percent } from '@/utils/number'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 
-import EmptyStateModel from '@/components/empty/model'
+import EmptyStateModel from '@/components/empty/Model'
 
 const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {}, onReady = () => {}, filters, ...resProps }) => {
   const models = useSelector(({ model }) => model.allModels)

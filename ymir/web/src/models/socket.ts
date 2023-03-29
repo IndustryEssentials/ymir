@@ -1,6 +1,9 @@
 import { getSocket } from '../services/socket'
-import { validState } from '@/constants/common'
-
+import { readyState } from '@/constants/common'
+import { createEffect } from './_utils'
+import { history } from 'umi'
+import { Socket as SocketType } from 'socket.io-client'
+history
 const pageMaps = [
   { path: '/home/project/\\d+/dataset', method: 'dataset/updateDatasets' },
   { path: '/home/project/\\d+/model', method: 'model/updateModelsStates' },
@@ -14,19 +17,19 @@ const pageMaps = [
   { path: '/home/project/\\d+/diagnose', method: 'dataset/updateDatasets' },
 ]
 
-export default {
+const Socket: YStates.SocketStore = {
   state: {
     socket: null,
     tasks: [],
   },
   namespace: 'socket',
   effects: {
-    *getSocket({ payload }, { put, select }) {
+    getSocket: createEffect(function* ({ payload }, { put, select }) {
       let socket = yield select((state) => state.socket.socket)
       if (socket) {
         return socket
       }
-      const { hash } = yield put.resolve({
+      const { hash } = yield put.resolve<null, YModels.User>({
         type: 'user/getUserInfo',
       })
       socket = getSocket(hash)
@@ -35,15 +38,15 @@ export default {
         payload: socket,
       })
       return socket
-    },
-    *saveUpdatedTasks({ payload }, { put }) {
+    }),
+    saveUpdatedTasks: createEffect<YStates.IdMap<YModels.ProgressTask>>(function* ({ payload = {} }, { put }) {
       const tasks = Object.keys(payload).map((hash) => ({
         ...payload[hash],
         hash,
-        reload: validState(payload[hash].result_state),
+        reload: !readyState(payload[hash].result_state),
       }))
       yield put({ type: 'saveTasks', payload: tasks })
-    },
+    }),
   },
   reducers: {
     updateSocket(state, { payload }) {
@@ -57,7 +60,7 @@ export default {
     setup({ dispatch, history }) {
       return history.listen(async (location) => {
         if (pageMaps.some((page) => new RegExp(`^${page.path}$`).test(location.pathname))) {
-          let socket = await dispatch({
+          let socket = await dispatch<any, SocketType>({
             type: 'getSocket',
           })
           socket.off().on('update_taskstate', (data) => {
@@ -70,3 +73,5 @@ export default {
     },
   },
 }
+
+export default Socket
