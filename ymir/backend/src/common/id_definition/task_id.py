@@ -2,7 +2,6 @@ import struct
 
 from dataclasses import dataclass
 from enum import Enum, IntEnum, unique
-from typing import Any
 
 
 class IDProto(IntEnum):
@@ -53,7 +52,10 @@ class TaskId:
         return f"{self.id_type}{self.sub_task_id}{self.id_reserve}{self.user_id}{self.repo_id}{self.hex_task_id}"
 
     @classmethod
-    def from_task_id(cls, task_id: str) -> Any:
+    def from_task_id(cls, task_id: str) -> "TaskId":
         fmt = "1s1s2s4s6s16s"
-        components = struct.unpack(fmt, task_id.encode())
+        try:
+            components = struct.unpack(fmt, task_id.encode())
+        except struct.error:
+            raise ValueError(f"Ill-formatted task id: {task_id}")
         return cls(*(c.decode() for c in components))

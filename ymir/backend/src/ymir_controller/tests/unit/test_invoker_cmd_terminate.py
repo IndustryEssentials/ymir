@@ -14,8 +14,8 @@ from proto import backend_pb2
 class TestInvokerCMDTerminate(unittest.TestCase):
     def __init__(self, methodName: str) -> None:
         super().__init__(methodName=methodName)
-        self._user_name = "user"
-        self._mir_repo_name = "repoid"
+        self._user_name = "aaaa"
+        self._mir_repo_name = "bbbbbb"
         self._storage_name = "media_storage_root"
         self._task_id = "t000aaaabbbbbbzzzzzzzzzzzzzzz5"
 

@@ -35,7 +35,7 @@ class TestTaskLabelingInvoker:
         in_class_ids = [0, 1]
         label_req.labeler_accounts[:] = ["a@a.com"]
         label_req.project_name = "fake_project_name"
-        in_dataset_ids = ["id"]
+        in_dataset_ids = ["t000aaaabbbbbbzzzzzzzzzzzzzzb1"]
         label_req.object_type = mir_cmd_pb.ObjectType.OT_DET_BOX
         label_req.expert_instruction_url = "url"
         label_req.export_annotation = False
@@ -54,8 +54,8 @@ class TestTaskLabelingInvoker:
         mock_post = mocker.patch.object(requests, "post", return_value=mock_resp)
 
         sandbox_root = test_utils.dir_test_root(["test_invoker_labeling"])
-        user_name = "user"
-        mir_repo_name = "repoid"
+        user_name = "aaaa"
+        mir_repo_name = "bbbbbb"
         task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzb5'
         user_root = os.path.join(sandbox_root, user_name)
         mir_repo_root = os.path.join(user_root, mir_repo_name)

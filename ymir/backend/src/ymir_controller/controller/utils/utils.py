@@ -10,6 +10,7 @@ from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase
 from controller.label_model.label_free import LabelFree
 from controller.label_model.label_studio import LabelStudio
+from controller.utils.errors import MirCtrError
 from id_definition import task_id as task_id_proto
 from id_definition.error_codes import CTLResponseCode
 from mir.protos import mir_command_pb2 as mir_cmd_pb
@@ -129,3 +130,30 @@ def create_label_instance() -> LabelBase:
 def ensure_dirs_exist(paths: List[str]) -> None:
     for path in paths:
         Path(path).mkdir(parents=True, exist_ok=True)
+
+
+def check_general_req_user_and_repo(req: backend_pb2.GeneralReq) -> None:
+    all_tids = [req.task_id]  # tids from current req user
+    if req.dst_dataset_id:
+        all_tids.append(req.dst_dataset_id)
+    all_tids.extend(req.ex_dataset_ids)
+    if req.req_type == backend_pb2.RequestType.TASK_CREATE:
+        if req.req_create_task.exporting.dataset_id:
+            all_tids.append(req.req_create_task.exporting.dataset_id)
+        all_tids.extend([x.dataset_id for x in req.req_create_task.training.in_dataset_types])
+
+        is_copy_task = req.req_create_task.task_type == mir_cmd_pb.TaskTypeCopyData
+        for tid in req.in_dataset_ids:
+            # for copy task, only allowed to copy from "0001" (the admin / public dataset owner) or uid's repos
+            # so skip those tids belongs to 0001
+            if is_copy_task and "0001" == task_id_proto.TaskId.from_task_id(tid).user_id:
+                continue
+            all_tids.append(tid)
+    else:
+        all_tids.extend(req.in_dataset_ids)
+
+    for tid in all_tids:
+        task_id = task_id_proto.TaskId.from_task_id(tid)
+        if req.user_id != task_id.user_id or req.repo_id != task_id.repo_id:
+            raise MirCtrError(error_code=CTLResponseCode.INVOKER_INVALID_ARGS,
+                              error_message=f"Task id mismatch: {tid}, user: {req.user_id}, repo: {req.repo_id}")
