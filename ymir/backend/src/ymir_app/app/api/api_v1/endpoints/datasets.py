@@ -94,6 +94,7 @@ def list_datasets(
     visible: bool = Query(True),
     state: ResultState = Query(None),
     object_type: ObjectType = Query(None),
+    allow_empty: bool = Query(True),
     pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
@@ -111,6 +112,7 @@ def list_datasets(
         state=state,
         object_type=object_type,
         visible=visible,
+        allow_empty=allow_empty,
         pagination=pagination,
     )
     return {"result": {"total": total, "items": datasets}}
