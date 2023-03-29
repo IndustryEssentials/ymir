@@ -94,6 +94,8 @@ message GeneralReq {
     string model_stage = 27;
     // use in filter and fuse: filter from gt, or pred, or any of them
     mir.command.AnnotationType annotation_type = 28;
+    // required by LabelFree API
+    string user_token = 29;
     ReqCreateTask req_create_task = 1001;
 
     reserved 17, 24;
