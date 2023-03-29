@@ -24,8 +24,8 @@ class TestInvokerFilterBranch(unittest.TestCase):
         # └── test_user
         #     └── ymir-dvc-test
         super().__init__(methodName=methodName)
-        self._user_name = "user"
-        self._mir_repo_name = "repoid"
+        self._user_name = "aaaa"
+        self._mir_repo_name = "bbbbbb"
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz5'
         self.in_dataset_ids = ['t000aaaabbbbbbzzzzzzzzzzzzzzz4']
