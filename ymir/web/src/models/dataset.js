@@ -212,6 +212,18 @@ export default {
         return result
       }
     },
+    *haveDatasets({ payload }, { call, put }) {
+      const { pid } = payload
+      const result = yield put.resolve({
+        type: 'queryDatasets',
+        payload: {
+          pid,
+          empty: false,
+        }
+      })
+      console.log('result:', result)
+      return result.total > 1
+    },
     *updateVersion({ payload }, { call, put }) {
       const { id, description } = payload
       const { code, result } = yield call(updateVersion, id, description)

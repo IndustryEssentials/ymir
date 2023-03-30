@@ -459,4 +459,30 @@ describe('models: dataset', () => {
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
+  it('effects: haveDatasets -> yes', () => {
+    const saga = dataset.effects.haveDatasets
+    const creator = {
+      type: 'haveDatasets',
+      payload: { pid: 234324 }
+    }
+    const result = {items: products(3), total: 3}
+    const expected = true
+    const generator = saga(creator, { put })
+    generator.next()
+    const end = generator.next(result)
+    expect(end.value).toBe(expected)
+  })
+  it('effects: haveDatasets -> no', () => {
+    const saga = dataset.effects.haveDatasets
+    const creator = {
+      type: 'haveDatasets',
+      payload: { pid: 234324 }
+    }
+    const result = {items: [], total: 0}
+    const expected = false
+    const generator = saga(creator, { put })
+    generator.next()
+    const end = generator.next(result)
+    expect(end.value).toBe(expected)
+  })
 })

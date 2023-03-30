@@ -19,6 +19,7 @@ declare namespace YParams {
     orderBy?: 'id' | 'create_datetime' | 'asset_count' | 'source'
     keywords?: string[]
     excludeType?: number
+    empty?: boolean
   }
 
   interface ModelsQuery extends ResultListQuery {

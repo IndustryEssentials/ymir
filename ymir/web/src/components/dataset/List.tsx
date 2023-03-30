@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
-import styles from './list.less'
 import { Link, Location, useHistory, useLocation } from 'umi'
 import { Form, Button, Input, Table, Space, Row, Col, Tooltip, Pagination, message, Popover, TableColumnsType } from 'antd'
 
@@ -9,6 +8,7 @@ import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
 import { readyState, validState } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
+import useRequest from '@/hooks/useRequest'
 
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
 import type { RefProps as ERefProps } from '@/components/form/editBox'
@@ -22,7 +22,12 @@ import Actions from '@/components/table/Actions'
 import AssetCount from '@/components/dataset/AssetCount'
 import Detail from '@/components/project/Detail'
 import AddButton from '@/components/dataset/AddButton'
+import { DescPop } from '../common/DescPop'
+import useRerunAction from '@/hooks/useRerunAction'
+import StrongTitle from '../table/columns/StrongTitle'
+import { ModuleType } from '@/pages/project/components/ListHoc'
 
+import styles from './list.less'
 import {
   ScreenIcon,
   TaggingIcon,
@@ -38,11 +43,6 @@ import {
   CompareListIcon,
   DeleteIcon,
 } from '@/components/common/Icons'
-import { DescPop } from '../common/DescPop'
-import useRerunAction from '@/hooks/useRerunAction'
-import useRequest from '@/hooks/useRequest'
-import StrongTitle from '../table/columns/StrongTitle'
-import { ModuleType } from '@/pages/project/components/ListHoc'
 
 type IsType = {
   isTrainSet?: boolean
@@ -93,7 +93,12 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   const { run: getVersions } = useRequest<YStates.List<YModels.Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
+  const { data: haveDatasets, run: fetchHaveDatasets } = useRequest<boolean, [{ pid: number }]>('dataset/haveDatasets')
 
+  useEffect(() => fetchHaveDatasets({ pid }), [pid])
+  useEffect(() => {
+    console.log('haveDatasets:', haveDatasets)
+  }, [haveDatasets])
   useEffect(() => {
     if (history.action !== 'POP') {
       initState()
@@ -634,7 +639,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
       <Row className="actions">
         <Col flex={1}>
           <Space>
-            <AddButton id={pid} />
+            <AddButton className={!haveDatasets ? 'wave' : ''} id={pid} />
             {renderMultipleActions}
           </Space>
         </Col>
