@@ -41,7 +41,7 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
                 return container_response
         elif self._request.terminated_task_type == mir_cmd_pb.TaskType.TaskTypeLabel:
             project_id = self.get_project_id_by_task_id(self._request.executant_name)
-            label_instance = utils.create_label_instance()
+            label_instance = utils.create_label_instance(self._request.user_token)
             label_instance.delete_unlabeled_task(project_id)
         else:
             logging.info(f"Do nothing to terminate task_type:{self._request.req_type}")

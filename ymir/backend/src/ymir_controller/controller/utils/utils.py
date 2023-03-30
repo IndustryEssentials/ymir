@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 import subprocess
 import time
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase
@@ -116,11 +116,11 @@ def time_it(f: Callable) -> Callable:
     return wrapper
 
 
-def create_label_instance() -> LabelBase:
+def create_label_instance(user_token: Optional[str] = None) -> LabelBase:
     if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
         label_instance = LabelStudio()
     elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
-        label_instance = LabelFree()  # type: ignore
+        label_instance = LabelFree(user_token)  # type: ignore
     else:
         raise ValueError("Error! Please setting your label tools")
 

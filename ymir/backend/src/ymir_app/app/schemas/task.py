@@ -92,6 +92,7 @@ class TaskParameterBase(BaseModel):
 class LabelParameter(TaskParameterBase):
     task_type: Literal["label"]
 
+    username: Optional[str]
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
     annotation_type: Optional[AnnotationType] = None

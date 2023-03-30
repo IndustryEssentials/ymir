@@ -73,6 +73,7 @@ class TestControllerRequest:
                 "labellers": [],
                 "extra_url": random_url(),
                 "annotation_type": 2,
+                "username": random_lower_string(),
                 "object_type": 3,
             },
         )

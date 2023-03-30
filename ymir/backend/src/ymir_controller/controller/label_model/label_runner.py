@@ -99,9 +99,10 @@ def start_label_task(
     annotation_type: Optional[int],
     object_type: int,
     is_instance_segmentation: bool,
+    user_token: Optional[str],
 ) -> None:
     logging.info("start label task!!!")
-    label_instance = utils.create_label_instance()
+    label_instance = utils.create_label_instance(user_token)
     input_asset_dir, export_path, monitor_file_path, export_work_dir, import_work_dir = prepare_label_dir(
         working_dir, task_id)
     trigger_ymir_export(repo_root=repo_root,

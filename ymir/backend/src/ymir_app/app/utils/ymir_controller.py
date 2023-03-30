@@ -20,6 +20,7 @@ from id_definition.error_codes import CTLResponseCode as controller_error_code
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
+from app.utils.security import create_access_token
 
 
 class ExtraRequestType(enum.IntEnum):
@@ -196,6 +197,7 @@ class ControllerRequest:
         dataset = args["typed_datasets"][0]  # label need only one dataset
         request.in_dataset_ids[:] = [dataset["hash"]]
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
+        request.user_token = create_access_token({"id": self.user_id, "name": request.user_id})
         label_request = mirsvrpb.TaskReqLabeling()
         label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
@@ -264,6 +266,7 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_TERMINATE
         request.executant_name = args["target_container"]
         request.terminated_task_type = args["task_type"]
+        request.user_token = create_access_token({"id": self.user_id, "name": request.user_id})
         return request
 
     def prepare_pull_image(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
