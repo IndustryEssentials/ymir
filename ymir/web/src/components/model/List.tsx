@@ -357,7 +357,7 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
       },
       {
         key: 'train',
-        label: t('dataset.action.train'),
+        label: t('common.action.finetune'),
         hidden: () => !validState(state),
         onclick: () => history.push(`/home/project/${pid}/train?mid=${id},${recommendStage}`),
         icon: <TrainIcon />,
@@ -626,41 +626,5 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     </div>
   )
 }
-
-// const props = (state) => {
-//   return {
-//     logined: state.user.logined,
-//     query: state.model.query,
-//     versions: state.model.versions,
-//   }
-// }
-
-// const actions = (dispatch) => {
-//   return {
-//     getModels: (pid, query) => {
-//       return dispatch({
-//         type: 'model/getModelGroups',
-//         payload: { pid, query },
-//       })
-//     },
-//     getVersions: (gid, force) => {
-//       return dispatch({
-//         type: 'model/getModelVersions',
-//         payload: { gid, force },
-//       })
-//     },
-//     updateQuery: (query) => {
-//       return dispatch({
-//         type: 'model/updateQuery',
-//         payload: query,
-//       })
-//     },
-//     resetQuery: () => {
-//       return dispatch({
-//         type: 'model/resetQuery',
-//       })
-//     },
-//   }
-// }
 
 export default Model

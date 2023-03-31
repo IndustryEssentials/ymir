@@ -104,9 +104,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   const [analysisDatasets, setADatasets] = useState<number[]>([])
 
   useEffect(() => fetchHaveDatasets({ pid }), [pid])
-  useEffect(() => {
-    console.log('haveDatasets:', haveDatasets)
-  }, [haveDatasets])
+
   useEffect(() => {
     if (history.action !== 'POP') {
       initState()

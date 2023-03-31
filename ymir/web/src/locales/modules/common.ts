@@ -67,6 +67,7 @@ const common = {
   'common.cancel': { cn: '取消', en: 'Cancel' },
   'common.done': { cn: '已完成', en: 'Done' },
   'common.action.train': { cn: '训练', en: 'Train' },
+  'common.action.finetune': { cn: '模型优化', en: 'Fine-tune' },
   'common.action.mining': { cn: '挖掘', en: 'Mine' },
   'common.action.fusion': { cn: '预处理', en: 'Pretreat' },
   'common.action.merge': { cn: '添加', en: 'Add' },

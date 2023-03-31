@@ -218,10 +218,10 @@ export default {
         type: 'queryDatasets',
         payload: {
           pid,
+          state: ResultStates.VALID,
           empty: false,
         }
       })
-      console.log('result:', result)
       return result.total > 1
     },
     *updateVersion({ payload }, { call, put }) {
