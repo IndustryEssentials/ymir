@@ -53,6 +53,7 @@ enum RequestType {
 
     // Long task
     TASK_CREATE = 1001;
+    TASK_SEQ_CREATE = 1002;
 
     reserved 15;
 }
@@ -97,6 +98,7 @@ message GeneralReq {
     // required by LabelFree API
     string user_token = 29;
     ReqCreateTask req_create_task = 1001;
+    ReqCreateSequentialTask req_create_seq = 1002;
 
     reserved 17, 24;
 }
@@ -133,6 +135,12 @@ message ReqCreateTask {
     TaskReqCopyData copy = 105;
     TaskReqLabeling labeling = 106;
     TaskReqImportModel import_model = 107;
+}
+
+message ReqCreateSequentialTask {
+    string seq_id = 1;
+    repeated GeneralReq tasks = 2;
+    int32 gpu_count = 3;
 }
 
 message TrainingDatasetType {

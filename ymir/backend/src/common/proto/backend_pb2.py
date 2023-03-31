@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'Z\007/protos',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rbackend.proto\x12\x0cymir.backend\x1a\x11mir_command.proto\"\xdc\x06\n\nGeneralReq\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0f\n\x07repo_id\x18\x02 \x01(\t\x12+\n\x08req_type\x18\x03 \x01(\x0e\x32\x19.ymir.backend.RequestType\x12\x0f\n\x07task_id\x18\x04 \x01(\t\x12\x14\n\x0csingleton_op\x18\x05 \x01(\t\x12\x13\n\x0bhis_task_id\x18\x06 \x01(\t\x12\x16\n\x0e\x64st_dataset_id\x18\x07 \x01(\t\x12\x16\n\x0ein_dataset_ids\x18\x08 \x03(\t\x12\x16\n\x0e\x65x_dataset_ids\x18\t \x03(\t\x12\x14\n\x0cin_class_ids\x18\n \x03(\x05\x12\x14\n\x0c\x65x_class_ids\x18\x0b \x03(\x05\x12\r\n\x05\x66orce\x18\x0c \x01(\x08\x12\x16\n\x0e\x63ommit_message\x18\r \x01(\t\x12\x12\n\nmodel_hash\x18\x0e \x01(\t\x12\x11\n\tasset_dir\x18\x0f \x01(\t\x12\x1b\n\x13\x64ocker_image_config\x18\x10 \x01(\t\x12\x12\n\ncheck_only\x18\x12 \x01(\x08\x12\x16\n\x0e\x65xecutant_name\x18\x13 \x01(\t\x12\x33\n\x0emerge_strategy\x18\x14 \x01(\x0e\x32\x1b.ymir.backend.MergeStrategy\x12\x33\n\x14terminated_task_type\x18\x15 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x18\n\x0esampling_count\x18\x16 \x01(\x05H\x00\x12\x17\n\rsampling_rate\x18\x17 \x01(\x02H\x00\x12\x37\n\x10label_collection\x18\x19 \x01(\x0b\x32\x1d.ymir.backend.LabelCollection\x12\x34\n\x0f\x65valuate_config\x18\x1a \x01(\x0b\x32\x1b.mir.command.EvaluateConfig\x12\x13\n\x0bmodel_stage\x18\x1b \x01(\t\x12\x34\n\x0f\x61nnotation_type\x18\x1c \x01(\x0e\x32\x1b.mir.command.AnnotationType\x12\x12\n\nuser_token\x18\x1d \x01(\t\x12\x35\n\x0freq_create_task\x18\xe9\x07 \x01(\x0b\x32\x1b.ymir.backend.ReqCreateTaskB\n\n\x08samplingJ\x04\x08\x11\x10\x12J\x04\x08\x18\x10\x19\"\x9e\x04\n\x0bGeneralResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x13\n\x0breq_task_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x10\n\x08\x65xt_strs\x18\x04 \x03(\t\x12\x0f\n\x07hash_id\x18\x06 \x01(\t\x12M\n\x13\x64ocker_image_config\x18\x07 \x03(\x0b\x32\x30.ymir.backend.GeneralResp.DockerImageConfigEntry\x12\x1c\n\x14\x61vailable_gpu_counts\x18\x08 \x01(\x05\x12\x37\n\x10label_collection\x18\t \x01(\x0b\x32\x1d.ymir.backend.LabelCollection\x12\x0f\n\x07ops_ret\x18\n \x01(\x08\x12\x18\n\x10sandbox_versions\x18\x0b \x03(\t\x12\x30\n\x07objects\x18\xe8\x07 \x01(\x0b\x32\x1e.ymir.backend.RespCMDInference\x12\x18\n\x0f\x65nable_livecode\x18\xe9\x07 \x01(\x08\x12,\n\nevaluation\x18\xea\x07 \x01(\x0b\x32\x17.mir.command.Evaluation\x12-\n\x0bobject_type\x18\xeb\x07 \x01(\x0e\x32\x17.mir.command.ObjectType\x1a\x38\n\x16\x44ockerImageConfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01J\x04\x08\x05\x10\x06\"\xb5\x03\n\rReqCreateTask\x12(\n\ttask_type\x18\x01 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x17\n\x0fno_task_monitor\x18\x02 \x01(\x08\x12/\n\x08training\x18\x65 \x01(\x0b\x32\x1d.ymir.backend.TaskReqTraining\x12+\n\x06mining\x18\x66 \x01(\x0b\x32\x1b.ymir.backend.TaskReqMining\x12:\n\x0eimport_dataset\x18g \x01(\x0b\x32\".ymir.backend.TaskReqImportDataset\x12\x31\n\texporting\x18h \x01(\x0b\x32\x1e.ymir.backend.TaskReqExporting\x12+\n\x04\x63opy\x18i \x01(\x0b\x32\x1d.ymir.backend.TaskReqCopyData\x12/\n\x08labeling\x18j \x01(\x0b\x32\x1d.ymir.backend.TaskReqLabeling\x12\x36\n\x0cimport_model\x18k \x01(\x0b\x32 .ymir.backend.TaskReqImportModel\"U\n\x13TrainingDatasetType\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12*\n\x0c\x64\x61taset_type\x18\x02 \x01(\x0e\x32\x14.mir.command.TvtType\"i\n\x0fTaskReqTraining\x12;\n\x10in_dataset_types\x18\x01 \x03(\x0b\x32!.ymir.backend.TrainingDatasetType\x12\x19\n\x11preprocess_config\x18\x02 \x01(\t\"<\n\rTaskReqMining\x12\r\n\x05top_k\x18\x01 \x01(\x05\x12\x1c\n\x14generate_annotations\x18\x02 \x01(\x08\"\xf3\x01\n\x14TaskReqImportDataset\x12\x11\n\tasset_dir\x18\x01 \x01(\t\x12\x10\n\x08pred_dir\x18\x02 \x01(\t\x12\x0e\n\x06gt_dir\x18\x03 \x01(\t\x12\x42\n\x16unknown_types_strategy\x18\x04 \x01(\x0e\x32\".ymir.backend.UnknownTypesStrategy\x12\x12\n\nclean_dirs\x18\x05 \x01(\x08\x12,\n\x0bobject_type\x18\x06 \x01(\x0e\x32\x17.mir.command.ObjectType\x12 \n\x18is_instance_segmentation\x18\x07 \x01(\x08\"\x86\x01\n\x10TaskReqExporting\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12)\n\x06\x66ormat\x18\x02 \x01(\x0e\x32\x19.mir.command.ExportFormat\x12\x11\n\tasset_dir\x18\x03 \x01(\t\x12\x10\n\x08pred_dir\x18\x04 \x01(\t\x12\x0e\n\x06gt_dir\x18\x05 \x01(\t\"s\n\x0fTaskReqCopyData\x12\x13\n\x0bsrc_user_id\x18\x01 \x01(\t\x12\x13\n\x0bsrc_repo_id\x18\x02 \x01(\t\x12\x1c\n\x14name_strategy_ignore\x18\x03 \x01(\x08\x12\x18\n\x10\x64rop_annotations\x18\x04 \x01(\x08\"\x82\x02\n\x0fTaskReqLabeling\x12\x18\n\x10labeler_accounts\x18\x01 \x03(\t\x12\x1e\n\x16\x65xpert_instruction_url\x18\x02 \x01(\t\x12\x14\n\x0cproject_name\x18\x03 \x01(\t\x12\x19\n\x11\x65xport_annotation\x18\x04 \x01(\x08\x12\x34\n\x0f\x61nnotation_type\x18\x05 \x01(\x0e\x32\x1b.mir.command.AnnotationType\x12,\n\x0bobject_type\x18\x06 \x01(\x0e\x32\x17.mir.command.ObjectType\x12 \n\x18is_instance_segmentation\x18\x07 \x01(\x08\"0\n\x12TaskReqImportModel\x12\x1a\n\x12model_package_path\x18\x01 \x01(\t\"\xc1\x01\n\x10RespCMDInference\x12O\n\x11image_annotations\x18\x01 \x03(\x0b\x32\x34.ymir.backend.RespCMDInference.ImageAnnotationsEntry\x1a\\\n\x15ImageAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.mir.command.SingleImageAnnotations:\x02\x38\x01\"L\n\x0fLabelCollection\x12#\n\x06labels\x18\x01 \x03(\x0b\x32\x13.ymir.backend.Label\x12\x14\n\x0cymir_version\x18\x02 \x01(\t\"\\\n\x05Label\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07\x61liases\x18\x03 \x03(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12\x13\n\x0bupdate_time\x18\x05 \x01(\t\"\x80\x01\n\rHelOpsRequest\x12*\n\x08ops_type\x18\x01 \x01(\x0e\x32\x18.ymir.backend.HelOpsType\x12\x14\n\x0csingleton_op\x18\n \x01(\t\x12-\n\x0eterm_task_type\x18\x0b \x01(\x0e\x32\x15.mir.command.TaskType\"\x89\x01\n\x0eHelOpsResponse\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0f\n\x07message\x18\x02 \x01(\t\x12*\n\x08gpu_info\x18\n \x01(\x0b\x32\x18.ymir.backend.HelGpuInfo\x12,\n\x07request\x18\x64 \x01(\x0b\x32\x1b.ymir.backend.HelOpsRequest\"q\n\nHelGpuInfo\x12\x17\n\x0fgpu_count_total\x18\x01 \x01(\x05\x12\x16\n\x0egpu_count_busy\x18\x02 \x01(\x05\x12\x16\n\x0egpu_count_idle\x18\x03 \x01(\x05\x12\x1a\n\x12gpu_count_reserved\x18\x04 \x01(\x05\"\x94\x01\n\x19HelTaskRequestCopyDataset\x12\x13\n\x0bsrc_user_id\x18\x01 \x01(\t\x12\x13\n\x0bsrc_repo_id\x18\x02 \x01(\t\x12\x15\n\rin_dataset_id\x18\n \x01(\t\x12\x1c\n\x14name_strategy_ignore\x18\x0b \x01(\x08\x12\x18\n\x10\x64rop_annotations\x18\x0c \x01(\x08\"\xda\x01\n\x1bHelTaskRequestImportDataset\x12\x11\n\tasset_dir\x18\n \x01(\t\x12\x10\n\x08pred_dir\x18\x14 \x01(\t\x12\x0e\n\x06gt_dir\x18\x15 \x01(\t\x12.\n\x0b\x61nno_format\x18\x16 \x01(\x0e\x32\x19.mir.command.ExportFormat\x12\x42\n\x16unknown_types_strategy\x18\x17 \x01(\x0e\x32\".ymir.backend.UnknownTypesStrategy\x12\x12\n\nclean_dirs\x18\x1e \x01(\x08\"\x82\x01\n\x1bHelTaskRequestExportDataset\x12\x11\n\tasset_dir\x18\n \x01(\t\x12\x10\n\x08pred_dir\x18\x14 \x01(\t\x12\x0e\n\x06gt_dir\x18\x15 \x01(\t\x12.\n\x0b\x61nno_format\x18\x16 \x01(\x0e\x32\x19.mir.command.ExportFormat\"7\n\x19HelTaskRequestImportModel\x12\x1a\n\x12model_package_file\x18\n \x01(\t\"\x9f\x02\n\x13HelTaskRequestTrain\x12;\n\x10in_dataset_types\x18\n \x03(\x0b\x32!.ymir.backend.TrainingDatasetType\x12\x33\n\x0emerge_strategy\x18\x0b \x01(\x0e\x32\x1b.ymir.backend.MergeStrategy\x12\x14\n\x0cin_class_ids\x18\x14 \x03(\x05\x12\x19\n\x11preprocess_config\x18\x15 \x01(\t\x12\x19\n\x11\x64ocker_image_name\x18\x16 \x01(\t\x12\x1b\n\x13\x64ocker_image_config\x18\x17 \x01(\t\x12\x12\n\nmodel_hash\x18\x1e \x01(\t\x12\x13\n\x0bmodel_stage\x18\x1f \x01(\tJ\x04\x08\x18\x10\x19\"\xba\x01\n\x12HelTaskRequestMine\x12\x15\n\rin_dataset_id\x18\n \x01(\t\x12\x19\n\x11\x64ocker_image_name\x18\x14 \x01(\t\x12\x1b\n\x13\x64ocker_image_config\x18\x15 \x01(\t\x12\x12\n\nmodel_hash\x18\x1e \x01(\t\x12\x13\n\x0bmodel_stage\x18\x1f \x01(\t\x12\r\n\x05top_k\x18( \x01(\x05\x12\x17\n\x0f\x61\x64\x64_annotations\x18) \x01(\x08J\x04\x08\x16\x10\x17\"\xe4\x01\n\x12HelTaskRequestFuse\x12\x16\n\x0ein_dataset_ids\x18\n \x03(\t\x12\x16\n\x0e\x65x_dataset_ids\x18\x0b \x03(\t\x12\x33\n\x0emerge_strategy\x18\x0c \x01(\x0e\x32\x1b.ymir.backend.MergeStrategy\x12\x14\n\x0cin_class_ids\x18\x14 \x03(\x05\x12\x14\n\x0c\x65x_class_ids\x18\x15 \x03(\x05\x12\x18\n\x0esampling_count\x18\x16 \x01(\x05H\x00\x12\x17\n\rsampling_rate\x18\x17 \x01(\x02H\x00\x42\n\n\x08sampling\"4\n\x17HelTaskRequestPullImage\x12\x19\n\x11\x64ocker_image_name\x18\n \x01(\t\"\xc1\x04\n\x0eHelTaskRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0f\n\x07repo_id\x18\x02 \x01(\t\x12(\n\ttask_type\x18\x03 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x0f\n\x07task_id\x18\n \x01(\t\x12.\n\x04\x66use\x18\x64 \x01(\x0b\x32 .ymir.backend.HelTaskRequestFuse\x12=\n\x0c\x63opy_dataset\x18\x65 \x01(\x0b\x32\'.ymir.backend.HelTaskRequestCopyDataset\x12\x41\n\x0eimport_dataset\x18\x66 \x01(\x0b\x32).ymir.backend.HelTaskRequestImportDataset\x12\x41\n\x0e\x65xport_dataset\x18g \x01(\x0b\x32).ymir.backend.HelTaskRequestExportDataset\x12=\n\x0cimport_model\x18h \x01(\x0b\x32\'.ymir.backend.HelTaskRequestImportModel\x12:\n\npull_image\x18\xc8\x01 \x01(\x0b\x32%.ymir.backend.HelTaskRequestPullImage\x12\x31\n\x05train\x18\xc9\x01 \x01(\x0b\x32!.ymir.backend.HelTaskRequestTrain\x12/\n\x04mine\x18\xca\x01 \x01(\x0b\x32 .ymir.backend.HelTaskRequestMine\"_\n\x0fHelTaskResponse\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0f\n\x07message\x18\x02 \x01(\t\x12-\n\x07request\x18\x64 \x01(\x0b\x32\x1c.ymir.backend.HelTaskRequest*.\n\rMergeStrategy\x12\x08\n\x04STOP\x10\x00\x12\x08\n\x04HOST\x10\x01\x12\t\n\x05GUEST\x10\x02*A\n\x14UnknownTypesStrategy\x12\x0c\n\x08UTS_STOP\x10\x00\x12\x0e\n\nUTS_IGNORE\x10\x01\x12\x0b\n\x07UTS_ADD\x10\x02*\x9e\x04\n\x0bRequestType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x12\n\x0e\x43MD_BRANCH_DEL\x10\x01\x12\x13\n\x0f\x43MD_BRANCH_LIST\x10\x02\x12\x17\n\x13\x43MD_BRANCH_CHECKOUT\x10\x03\x12\x15\n\x11\x43MD_BRANCH_CREATE\x10\x04\x12\r\n\tCMD_CLONE\x10\x05\x12\x0e\n\nCMD_COMMIT\x10\x06\x12\x0e\n\nCMD_FILTER\x10\x07\x12\x0c\n\x08\x43MD_INIT\x10\x08\x12\x0b\n\x07\x43MD_LOG\x10\t\x12\r\n\tCMD_MERGE\x10\n\x12\x11\n\rCMD_INFERENCE\x10\x0b\x12\x11\n\rCMD_LABEL_ADD\x10\x0c\x12\x11\n\rCMD_LABEL_GET\x10\r\x12\x11\n\rCMD_TERMINATE\x10\x0e\x12\x12\n\x0e\x43MD_PULL_IMAGE\x10\x10\x12\x14\n\x10\x43MD_GPU_INFO_GET\x10\x11\x12\x10\n\x0c\x43MD_SAMPLING\x10\x12\x12\x10\n\x0c\x43MD_EVALUATE\x10\x13\x12\x12\n\x0e\x43MD_REPO_CHECK\x10\x14\x12\x12\n\x0e\x43MD_REPO_CLEAR\x10\x15\x12\x14\n\x10\x43MD_VERSIONS_GET\x10\x16\x12\r\n\tUSER_LIST\x10\x65\x12\x0f\n\x0bUSER_CREATE\x10\x66\x12\x0f\n\x0bUSER_REMOVE\x10g\x12\r\n\tREPO_LIST\x10h\x12\x0f\n\x0bREPO_CREATE\x10i\x12\x0f\n\x0bREPO_REMOVE\x10j\x12\x10\n\x0bTASK_CREATE\x10\xe9\x07\"\x04\x08\x0f\x10\x0f*M\n\nHelOpsType\x12\x13\n\x0fHEL_OPS_UNKNOWN\x10\x00\x12\x15\n\x11HEL_OPS_TERMINATE\x10\x01\x12\x13\n\x0fHEL_OPS_GET_GPU\x10\x02\x32\x66\n\x16mir_controller_service\x12L\n\x13\x64\x61ta_manage_request\x12\x18.ymir.backend.GeneralReq\x1a\x19.ymir.backend.GeneralResp\"\x00\x32\xb0\x01\n\x0bhel_service\x12N\n\x0fhel_ops_process\x12\x1b.ymir.backend.HelOpsRequest\x1a\x1c.ymir.backend.HelOpsResponse\"\x00\x12Q\n\x10hel_task_process\x12\x1c.ymir.backend.HelTaskRequest\x1a\x1d.ymir.backend.HelTaskResponse\"\x00\x42\tZ\x07/protosb\x06proto3'
+  serialized_pb=b'\n\rbackend.proto\x12\x0cymir.backend\x1a\x11mir_command.proto\"\x9c\x07\n\nGeneralReq\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0f\n\x07repo_id\x18\x02 \x01(\t\x12+\n\x08req_type\x18\x03 \x01(\x0e\x32\x19.ymir.backend.RequestType\x12\x0f\n\x07task_id\x18\x04 \x01(\t\x12\x14\n\x0csingleton_op\x18\x05 \x01(\t\x12\x13\n\x0bhis_task_id\x18\x06 \x01(\t\x12\x16\n\x0e\x64st_dataset_id\x18\x07 \x01(\t\x12\x16\n\x0ein_dataset_ids\x18\x08 \x03(\t\x12\x16\n\x0e\x65x_dataset_ids\x18\t \x03(\t\x12\x14\n\x0cin_class_ids\x18\n \x03(\x05\x12\x14\n\x0c\x65x_class_ids\x18\x0b \x03(\x05\x12\r\n\x05\x66orce\x18\x0c \x01(\x08\x12\x16\n\x0e\x63ommit_message\x18\r \x01(\t\x12\x12\n\nmodel_hash\x18\x0e \x01(\t\x12\x11\n\tasset_dir\x18\x0f \x01(\t\x12\x1b\n\x13\x64ocker_image_config\x18\x10 \x01(\t\x12\x12\n\ncheck_only\x18\x12 \x01(\x08\x12\x16\n\x0e\x65xecutant_name\x18\x13 \x01(\t\x12\x33\n\x0emerge_strategy\x18\x14 \x01(\x0e\x32\x1b.ymir.backend.MergeStrategy\x12\x33\n\x14terminated_task_type\x18\x15 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x18\n\x0esampling_count\x18\x16 \x01(\x05H\x00\x12\x17\n\rsampling_rate\x18\x17 \x01(\x02H\x00\x12\x37\n\x10label_collection\x18\x19 \x01(\x0b\x32\x1d.ymir.backend.LabelCollection\x12\x34\n\x0f\x65valuate_config\x18\x1a \x01(\x0b\x32\x1b.mir.command.EvaluateConfig\x12\x13\n\x0bmodel_stage\x18\x1b \x01(\t\x12\x34\n\x0f\x61nnotation_type\x18\x1c \x01(\x0e\x32\x1b.mir.command.AnnotationType\x12\x12\n\nuser_token\x18\x1d \x01(\t\x12\x35\n\x0freq_create_task\x18\xe9\x07 \x01(\x0b\x32\x1b.ymir.backend.ReqCreateTask\x12>\n\x0ereq_create_seq\x18\xea\x07 \x01(\x0b\x32%.ymir.backend.ReqCreateSequentialTaskB\n\n\x08samplingJ\x04\x08\x11\x10\x12J\x04\x08\x18\x10\x19\"\x9e\x04\n\x0bGeneralResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x13\n\x0breq_task_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x10\n\x08\x65xt_strs\x18\x04 \x03(\t\x12\x0f\n\x07hash_id\x18\x06 \x01(\t\x12M\n\x13\x64ocker_image_config\x18\x07 \x03(\x0b\x32\x30.ymir.backend.GeneralResp.DockerImageConfigEntry\x12\x1c\n\x14\x61vailable_gpu_counts\x18\x08 \x01(\x05\x12\x37\n\x10label_collection\x18\t \x01(\x0b\x32\x1d.ymir.backend.LabelCollection\x12\x0f\n\x07ops_ret\x18\n \x01(\x08\x12\x18\n\x10sandbox_versions\x18\x0b \x03(\t\x12\x30\n\x07objects\x18\xe8\x07 \x01(\x0b\x32\x1e.ymir.backend.RespCMDInference\x12\x18\n\x0f\x65nable_livecode\x18\xe9\x07 \x01(\x08\x12,\n\nevaluation\x18\xea\x07 \x01(\x0b\x32\x17.mir.command.Evaluation\x12-\n\x0bobject_type\x18\xeb\x07 \x01(\x0e\x32\x17.mir.command.ObjectType\x1a\x38\n\x16\x44ockerImageConfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01J\x04\x08\x05\x10\x06\"\xb5\x03\n\rReqCreateTask\x12(\n\ttask_type\x18\x01 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x17\n\x0fno_task_monitor\x18\x02 \x01(\x08\x12/\n\x08training\x18\x65 \x01(\x0b\x32\x1d.ymir.backend.TaskReqTraining\x12+\n\x06mining\x18\x66 \x01(\x0b\x32\x1b.ymir.backend.TaskReqMining\x12:\n\x0eimport_dataset\x18g \x01(\x0b\x32\".ymir.backend.TaskReqImportDataset\x12\x31\n\texporting\x18h \x01(\x0b\x32\x1e.ymir.backend.TaskReqExporting\x12+\n\x04\x63opy\x18i \x01(\x0b\x32\x1d.ymir.backend.TaskReqCopyData\x12/\n\x08labeling\x18j \x01(\x0b\x32\x1d.ymir.backend.TaskReqLabeling\x12\x36\n\x0cimport_model\x18k \x01(\x0b\x32 .ymir.backend.TaskReqImportModel\"e\n\x17ReqCreateSequentialTask\x12\x0e\n\x06seq_id\x18\x01 \x01(\t\x12\'\n\x05tasks\x18\x02 \x03(\x0b\x32\x18.ymir.backend.GeneralReq\x12\x11\n\tgpu_count\x18\x03 \x01(\x05\"U\n\x13TrainingDatasetType\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12*\n\x0c\x64\x61taset_type\x18\x02 \x01(\x0e\x32\x14.mir.command.TvtType\"i\n\x0fTaskReqTraining\x12;\n\x10in_dataset_types\x18\x01 \x03(\x0b\x32!.ymir.backend.TrainingDatasetType\x12\x19\n\x11preprocess_config\x18\x02 \x01(\t\"<\n\rTaskReqMining\x12\r\n\x05top_k\x18\x01 \x01(\x05\x12\x1c\n\x14generate_annotations\x18\x02 \x01(\x08\"\xf3\x01\n\x14TaskReqImportDataset\x12\x11\n\tasset_dir\x18\x01 \x01(\t\x12\x10\n\x08pred_dir\x18\x02 \x01(\t\x12\x0e\n\x06gt_dir\x18\x03 \x01(\t\x12\x42\n\x16unknown_types_strategy\x18\x04 \x01(\x0e\x32\".ymir.backend.UnknownTypesStrategy\x12\x12\n\nclean_dirs\x18\x05 \x01(\x08\x12,\n\x0bobject_type\x18\x06 \x01(\x0e\x32\x17.mir.command.ObjectType\x12 \n\x18is_instance_segmentation\x18\x07 \x01(\x08\"\x86\x01\n\x10TaskReqExporting\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x12)\n\x06\x66ormat\x18\x02 \x01(\x0e\x32\x19.mir.command.ExportFormat\x12\x11\n\tasset_dir\x18\x03 \x01(\t\x12\x10\n\x08pred_dir\x18\x04 \x01(\t\x12\x0e\n\x06gt_dir\x18\x05 \x01(\t\"s\n\x0fTaskReqCopyData\x12\x13\n\x0bsrc_user_id\x18\x01 \x01(\t\x12\x13\n\x0bsrc_repo_id\x18\x02 \x01(\t\x12\x1c\n\x14name_strategy_ignore\x18\x03 \x01(\x08\x12\x18\n\x10\x64rop_annotations\x18\x04 \x01(\x08\"\x82\x02\n\x0fTaskReqLabeling\x12\x18\n\x10labeler_accounts\x18\x01 \x03(\t\x12\x1e\n\x16\x65xpert_instruction_url\x18\x02 \x01(\t\x12\x14\n\x0cproject_name\x18\x03 \x01(\t\x12\x19\n\x11\x65xport_annotation\x18\x04 \x01(\x08\x12\x34\n\x0f\x61nnotation_type\x18\x05 \x01(\x0e\x32\x1b.mir.command.AnnotationType\x12,\n\x0bobject_type\x18\x06 \x01(\x0e\x32\x17.mir.command.ObjectType\x12 \n\x18is_instance_segmentation\x18\x07 \x01(\x08\"0\n\x12TaskReqImportModel\x12\x1a\n\x12model_package_path\x18\x01 \x01(\t\"\xc1\x01\n\x10RespCMDInference\x12O\n\x11image_annotations\x18\x01 \x03(\x0b\x32\x34.ymir.backend.RespCMDInference.ImageAnnotationsEntry\x1a\\\n\x15ImageAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.mir.command.SingleImageAnnotations:\x02\x38\x01\"L\n\x0fLabelCollection\x12#\n\x06labels\x18\x01 \x03(\x0b\x32\x13.ymir.backend.Label\x12\x14\n\x0cymir_version\x18\x02 \x01(\t\"\\\n\x05Label\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07\x61liases\x18\x03 \x03(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12\x13\n\x0bupdate_time\x18\x05 \x01(\t\"\x80\x01\n\rHelOpsRequest\x12*\n\x08ops_type\x18\x01 \x01(\x0e\x32\x18.ymir.backend.HelOpsType\x12\x14\n\x0csingleton_op\x18\n \x01(\t\x12-\n\x0eterm_task_type\x18\x0b \x01(\x0e\x32\x15.mir.command.TaskType\"\x89\x01\n\x0eHelOpsResponse\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0f\n\x07message\x18\x02 \x01(\t\x12*\n\x08gpu_info\x18\n \x01(\x0b\x32\x18.ymir.backend.HelGpuInfo\x12,\n\x07request\x18\x64 \x01(\x0b\x32\x1b.ymir.backend.HelOpsRequest\"q\n\nHelGpuInfo\x12\x17\n\x0fgpu_count_total\x18\x01 \x01(\x05\x12\x16\n\x0egpu_count_busy\x18\x02 \x01(\x05\x12\x16\n\x0egpu_count_idle\x18\x03 \x01(\x05\x12\x1a\n\x12gpu_count_reserved\x18\x04 \x01(\x05\"\x94\x01\n\x19HelTaskRequestCopyDataset\x12\x13\n\x0bsrc_user_id\x18\x01 \x01(\t\x12\x13\n\x0bsrc_repo_id\x18\x02 \x01(\t\x12\x15\n\rin_dataset_id\x18\n \x01(\t\x12\x1c\n\x14name_strategy_ignore\x18\x0b \x01(\x08\x12\x18\n\x10\x64rop_annotations\x18\x0c \x01(\x08\"\xda\x01\n\x1bHelTaskRequestImportDataset\x12\x11\n\tasset_dir\x18\n \x01(\t\x12\x10\n\x08pred_dir\x18\x14 \x01(\t\x12\x0e\n\x06gt_dir\x18\x15 \x01(\t\x12.\n\x0b\x61nno_format\x18\x16 \x01(\x0e\x32\x19.mir.command.ExportFormat\x12\x42\n\x16unknown_types_strategy\x18\x17 \x01(\x0e\x32\".ymir.backend.UnknownTypesStrategy\x12\x12\n\nclean_dirs\x18\x1e \x01(\x08\"\x82\x01\n\x1bHelTaskRequestExportDataset\x12\x11\n\tasset_dir\x18\n \x01(\t\x12\x10\n\x08pred_dir\x18\x14 \x01(\t\x12\x0e\n\x06gt_dir\x18\x15 \x01(\t\x12.\n\x0b\x61nno_format\x18\x16 \x01(\x0e\x32\x19.mir.command.ExportFormat\"7\n\x19HelTaskRequestImportModel\x12\x1a\n\x12model_package_file\x18\n \x01(\t\"\x9f\x02\n\x13HelTaskRequestTrain\x12;\n\x10in_dataset_types\x18\n \x03(\x0b\x32!.ymir.backend.TrainingDatasetType\x12\x33\n\x0emerge_strategy\x18\x0b \x01(\x0e\x32\x1b.ymir.backend.MergeStrategy\x12\x14\n\x0cin_class_ids\x18\x14 \x03(\x05\x12\x19\n\x11preprocess_config\x18\x15 \x01(\t\x12\x19\n\x11\x64ocker_image_name\x18\x16 \x01(\t\x12\x1b\n\x13\x64ocker_image_config\x18\x17 \x01(\t\x12\x12\n\nmodel_hash\x18\x1e \x01(\t\x12\x13\n\x0bmodel_stage\x18\x1f \x01(\tJ\x04\x08\x18\x10\x19\"\xba\x01\n\x12HelTaskRequestMine\x12\x15\n\rin_dataset_id\x18\n \x01(\t\x12\x19\n\x11\x64ocker_image_name\x18\x14 \x01(\t\x12\x1b\n\x13\x64ocker_image_config\x18\x15 \x01(\t\x12\x12\n\nmodel_hash\x18\x1e \x01(\t\x12\x13\n\x0bmodel_stage\x18\x1f \x01(\t\x12\r\n\x05top_k\x18( \x01(\x05\x12\x17\n\x0f\x61\x64\x64_annotations\x18) \x01(\x08J\x04\x08\x16\x10\x17\"\xe4\x01\n\x12HelTaskRequestFuse\x12\x16\n\x0ein_dataset_ids\x18\n \x03(\t\x12\x16\n\x0e\x65x_dataset_ids\x18\x0b \x03(\t\x12\x33\n\x0emerge_strategy\x18\x0c \x01(\x0e\x32\x1b.ymir.backend.MergeStrategy\x12\x14\n\x0cin_class_ids\x18\x14 \x03(\x05\x12\x14\n\x0c\x65x_class_ids\x18\x15 \x03(\x05\x12\x18\n\x0esampling_count\x18\x16 \x01(\x05H\x00\x12\x17\n\rsampling_rate\x18\x17 \x01(\x02H\x00\x42\n\n\x08sampling\"4\n\x17HelTaskRequestPullImage\x12\x19\n\x11\x64ocker_image_name\x18\n \x01(\t\"\xc1\x04\n\x0eHelTaskRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0f\n\x07repo_id\x18\x02 \x01(\t\x12(\n\ttask_type\x18\x03 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x0f\n\x07task_id\x18\n \x01(\t\x12.\n\x04\x66use\x18\x64 \x01(\x0b\x32 .ymir.backend.HelTaskRequestFuse\x12=\n\x0c\x63opy_dataset\x18\x65 \x01(\x0b\x32\'.ymir.backend.HelTaskRequestCopyDataset\x12\x41\n\x0eimport_dataset\x18\x66 \x01(\x0b\x32).ymir.backend.HelTaskRequestImportDataset\x12\x41\n\x0e\x65xport_dataset\x18g \x01(\x0b\x32).ymir.backend.HelTaskRequestExportDataset\x12=\n\x0cimport_model\x18h \x01(\x0b\x32\'.ymir.backend.HelTaskRequestImportModel\x12:\n\npull_image\x18\xc8\x01 \x01(\x0b\x32%.ymir.backend.HelTaskRequestPullImage\x12\x31\n\x05train\x18\xc9\x01 \x01(\x0b\x32!.ymir.backend.HelTaskRequestTrain\x12/\n\x04mine\x18\xca\x01 \x01(\x0b\x32 .ymir.backend.HelTaskRequestMine\"_\n\x0fHelTaskResponse\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0f\n\x07message\x18\x02 \x01(\t\x12-\n\x07request\x18\x64 \x01(\x0b\x32\x1c.ymir.backend.HelTaskRequest*.\n\rMergeStrategy\x12\x08\n\x04STOP\x10\x00\x12\x08\n\x04HOST\x10\x01\x12\t\n\x05GUEST\x10\x02*A\n\x14UnknownTypesStrategy\x12\x0c\n\x08UTS_STOP\x10\x00\x12\x0e\n\nUTS_IGNORE\x10\x01\x12\x0b\n\x07UTS_ADD\x10\x02*\xb4\x04\n\x0bRequestType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x12\n\x0e\x43MD_BRANCH_DEL\x10\x01\x12\x13\n\x0f\x43MD_BRANCH_LIST\x10\x02\x12\x17\n\x13\x43MD_BRANCH_CHECKOUT\x10\x03\x12\x15\n\x11\x43MD_BRANCH_CREATE\x10\x04\x12\r\n\tCMD_CLONE\x10\x05\x12\x0e\n\nCMD_COMMIT\x10\x06\x12\x0e\n\nCMD_FILTER\x10\x07\x12\x0c\n\x08\x43MD_INIT\x10\x08\x12\x0b\n\x07\x43MD_LOG\x10\t\x12\r\n\tCMD_MERGE\x10\n\x12\x11\n\rCMD_INFERENCE\x10\x0b\x12\x11\n\rCMD_LABEL_ADD\x10\x0c\x12\x11\n\rCMD_LABEL_GET\x10\r\x12\x11\n\rCMD_TERMINATE\x10\x0e\x12\x12\n\x0e\x43MD_PULL_IMAGE\x10\x10\x12\x14\n\x10\x43MD_GPU_INFO_GET\x10\x11\x12\x10\n\x0c\x43MD_SAMPLING\x10\x12\x12\x10\n\x0c\x43MD_EVALUATE\x10\x13\x12\x12\n\x0e\x43MD_REPO_CHECK\x10\x14\x12\x12\n\x0e\x43MD_REPO_CLEAR\x10\x15\x12\x14\n\x10\x43MD_VERSIONS_GET\x10\x16\x12\r\n\tUSER_LIST\x10\x65\x12\x0f\n\x0bUSER_CREATE\x10\x66\x12\x0f\n\x0bUSER_REMOVE\x10g\x12\r\n\tREPO_LIST\x10h\x12\x0f\n\x0bREPO_CREATE\x10i\x12\x0f\n\x0bREPO_REMOVE\x10j\x12\x10\n\x0bTASK_CREATE\x10\xe9\x07\x12\x14\n\x0fTASK_SEQ_CREATE\x10\xea\x07\"\x04\x08\x0f\x10\x0f*M\n\nHelOpsType\x12\x13\n\x0fHEL_OPS_UNKNOWN\x10\x00\x12\x15\n\x11HEL_OPS_TERMINATE\x10\x01\x12\x13\n\x0fHEL_OPS_GET_GPU\x10\x02\x32\x66\n\x16mir_controller_service\x12L\n\x13\x64\x61ta_manage_request\x12\x18.ymir.backend.GeneralReq\x1a\x19.ymir.backend.GeneralResp\"\x00\x32\xb0\x01\n\x0bhel_service\x12N\n\x0fhel_ops_process\x12\x1b.ymir.backend.HelOpsRequest\x1a\x1c.ymir.backend.HelOpsResponse\"\x00\x12Q\n\x10hel_task_process\x12\x1c.ymir.backend.HelTaskRequest\x1a\x1d.ymir.backend.HelTaskResponse\"\x00\x42\tZ\x07/protosb\x06proto3'
   ,
   dependencies=[mir__command__pb2.DESCRIPTOR,])
 
@@ -50,8 +50,8 @@ _MERGESTRATEGY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=5722,
-  serialized_end=5768,
+  serialized_start=5889,
+  serialized_end=5935,
 )
 _sym_db.RegisterEnumDescriptor(_MERGESTRATEGY)
 
@@ -81,8 +81,8 @@ _UNKNOWNTYPESSTRATEGY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=5770,
-  serialized_end=5835,
+  serialized_start=5937,
+  serialized_end=6002,
 )
 _sym_db.RegisterEnumDescriptor(_UNKNOWNTYPESSTRATEGY)
 
@@ -239,11 +239,16 @@ _REQUESTTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='TASK_SEQ_CREATE', index=29, number=1002,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=5838,
-  serialized_end=6380,
+  serialized_start=6005,
+  serialized_end=6569,
 )
 _sym_db.RegisterEnumDescriptor(_REQUESTTYPE)
 
@@ -273,8 +278,8 @@ _HELOPSTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=6382,
-  serialized_end=6459,
+  serialized_start=6571,
+  serialized_end=6648,
 )
 _sym_db.RegisterEnumDescriptor(_HELOPSTYPE)
 
@@ -314,6 +319,7 @@ REPO_LIST = 104
 REPO_CREATE = 105
 REPO_REMOVE = 106
 TASK_CREATE = 1001
+TASK_SEQ_CREATE = 1002
 HEL_OPS_UNKNOWN = 0
 HEL_OPS_TERMINATE = 1
 HEL_OPS_GET_GPU = 2
@@ -524,6 +530,13 @@ _GENERALREQ = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='req_create_seq', full_name='ymir.backend.GeneralReq.req_create_seq', index=28,
+      number=1002, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -542,7 +555,7 @@ _GENERALREQ = _descriptor.Descriptor(
     fields=[]),
   ],
   serialized_start=51,
-  serialized_end=911,
+  serialized_end=975,
 )
 
 
@@ -580,8 +593,8 @@ _GENERALRESP_DOCKERIMAGECONFIGENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1394,
-  serialized_end=1450,
+  serialized_start=1458,
+  serialized_end=1514,
 )
 
 _GENERALRESP = _descriptor.Descriptor(
@@ -702,8 +715,8 @@ _GENERALRESP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=914,
-  serialized_end=1456,
+  serialized_start=978,
+  serialized_end=1520,
 )
 
 
@@ -790,8 +803,54 @@ _REQCREATETASK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1459,
-  serialized_end=1896,
+  serialized_start=1523,
+  serialized_end=1960,
+)
+
+
+_REQCREATESEQUENTIALTASK = _descriptor.Descriptor(
+  name='ReqCreateSequentialTask',
+  full_name='ymir.backend.ReqCreateSequentialTask',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='seq_id', full_name='ymir.backend.ReqCreateSequentialTask.seq_id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='tasks', full_name='ymir.backend.ReqCreateSequentialTask.tasks', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='gpu_count', full_name='ymir.backend.ReqCreateSequentialTask.gpu_count', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1962,
+  serialized_end=2063,
 )
 
 
@@ -829,8 +888,8 @@ _TRAININGDATASETTYPE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1898,
-  serialized_end=1983,
+  serialized_start=2065,
+  serialized_end=2150,
 )
 
 
@@ -868,8 +927,8 @@ _TASKREQTRAINING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1985,
-  serialized_end=2090,
+  serialized_start=2152,
+  serialized_end=2257,
 )
 
 
@@ -907,8 +966,8 @@ _TASKREQMINING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2092,
-  serialized_end=2152,
+  serialized_start=2259,
+  serialized_end=2319,
 )
 
 
@@ -981,8 +1040,8 @@ _TASKREQIMPORTDATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2155,
-  serialized_end=2398,
+  serialized_start=2322,
+  serialized_end=2565,
 )
 
 
@@ -1041,8 +1100,8 @@ _TASKREQEXPORTING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2401,
-  serialized_end=2535,
+  serialized_start=2568,
+  serialized_end=2702,
 )
 
 
@@ -1094,8 +1153,8 @@ _TASKREQCOPYDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2537,
-  serialized_end=2652,
+  serialized_start=2704,
+  serialized_end=2819,
 )
 
 
@@ -1168,8 +1227,8 @@ _TASKREQLABELING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2655,
-  serialized_end=2913,
+  serialized_start=2822,
+  serialized_end=3080,
 )
 
 
@@ -1200,8 +1259,8 @@ _TASKREQIMPORTMODEL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2915,
-  serialized_end=2963,
+  serialized_start=3082,
+  serialized_end=3130,
 )
 
 
@@ -1239,8 +1298,8 @@ _RESPCMDINFERENCE_IMAGEANNOTATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3067,
-  serialized_end=3159,
+  serialized_start=3234,
+  serialized_end=3326,
 )
 
 _RESPCMDINFERENCE = _descriptor.Descriptor(
@@ -1270,8 +1329,8 @@ _RESPCMDINFERENCE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2966,
-  serialized_end=3159,
+  serialized_start=3133,
+  serialized_end=3326,
 )
 
 
@@ -1309,8 +1368,8 @@ _LABELCOLLECTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3161,
-  serialized_end=3237,
+  serialized_start=3328,
+  serialized_end=3404,
 )
 
 
@@ -1369,8 +1428,8 @@ _LABEL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3239,
-  serialized_end=3331,
+  serialized_start=3406,
+  serialized_end=3498,
 )
 
 
@@ -1415,8 +1474,8 @@ _HELOPSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3334,
-  serialized_end=3462,
+  serialized_start=3501,
+  serialized_end=3629,
 )
 
 
@@ -1468,8 +1527,8 @@ _HELOPSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3465,
-  serialized_end=3602,
+  serialized_start=3632,
+  serialized_end=3769,
 )
 
 
@@ -1521,8 +1580,8 @@ _HELGPUINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3604,
-  serialized_end=3717,
+  serialized_start=3771,
+  serialized_end=3884,
 )
 
 
@@ -1581,8 +1640,8 @@ _HELTASKREQUESTCOPYDATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3720,
-  serialized_end=3868,
+  serialized_start=3887,
+  serialized_end=4035,
 )
 
 
@@ -1648,8 +1707,8 @@ _HELTASKREQUESTIMPORTDATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3871,
-  serialized_end=4089,
+  serialized_start=4038,
+  serialized_end=4256,
 )
 
 
@@ -1701,8 +1760,8 @@ _HELTASKREQUESTEXPORTDATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4092,
-  serialized_end=4222,
+  serialized_start=4259,
+  serialized_end=4389,
 )
 
 
@@ -1733,8 +1792,8 @@ _HELTASKREQUESTIMPORTMODEL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4224,
-  serialized_end=4279,
+  serialized_start=4391,
+  serialized_end=4446,
 )
 
 
@@ -1814,8 +1873,8 @@ _HELTASKREQUESTTRAIN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4282,
-  serialized_end=4569,
+  serialized_start=4449,
+  serialized_end=4736,
 )
 
 
@@ -1888,8 +1947,8 @@ _HELTASKREQUESTMINE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4572,
-  serialized_end=4758,
+  serialized_start=4739,
+  serialized_end=4925,
 )
 
 
@@ -1967,8 +2026,8 @@ _HELTASKREQUESTFUSE = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=4761,
-  serialized_end=4989,
+  serialized_start=4928,
+  serialized_end=5156,
 )
 
 
@@ -1999,8 +2058,8 @@ _HELTASKREQUESTPULLIMAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4991,
-  serialized_end=5043,
+  serialized_start=5158,
+  serialized_end=5210,
 )
 
 
@@ -2108,8 +2167,8 @@ _HELTASKREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5046,
-  serialized_end=5623,
+  serialized_start=5213,
+  serialized_end=5790,
 )
 
 
@@ -2154,8 +2213,8 @@ _HELTASKRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5625,
-  serialized_end=5720,
+  serialized_start=5792,
+  serialized_end=5887,
 )
 
 _GENERALREQ.fields_by_name['req_type'].enum_type = _REQUESTTYPE
@@ -2165,6 +2224,7 @@ _GENERALREQ.fields_by_name['label_collection'].message_type = _LABELCOLLECTION
 _GENERALREQ.fields_by_name['evaluate_config'].message_type = mir__command__pb2._EVALUATECONFIG
 _GENERALREQ.fields_by_name['annotation_type'].enum_type = mir__command__pb2._ANNOTATIONTYPE
 _GENERALREQ.fields_by_name['req_create_task'].message_type = _REQCREATETASK
+_GENERALREQ.fields_by_name['req_create_seq'].message_type = _REQCREATESEQUENTIALTASK
 _GENERALREQ.oneofs_by_name['sampling'].fields.append(
   _GENERALREQ.fields_by_name['sampling_count'])
 _GENERALREQ.fields_by_name['sampling_count'].containing_oneof = _GENERALREQ.oneofs_by_name['sampling']
@@ -2185,6 +2245,7 @@ _REQCREATETASK.fields_by_name['exporting'].message_type = _TASKREQEXPORTING
 _REQCREATETASK.fields_by_name['copy'].message_type = _TASKREQCOPYDATA
 _REQCREATETASK.fields_by_name['labeling'].message_type = _TASKREQLABELING
 _REQCREATETASK.fields_by_name['import_model'].message_type = _TASKREQIMPORTMODEL
+_REQCREATESEQUENTIALTASK.fields_by_name['tasks'].message_type = _GENERALREQ
 _TRAININGDATASETTYPE.fields_by_name['dataset_type'].enum_type = mir__command__pb2._TVTTYPE
 _TASKREQTRAINING.fields_by_name['in_dataset_types'].message_type = _TRAININGDATASETTYPE
 _TASKREQIMPORTDATASET.fields_by_name['unknown_types_strategy'].enum_type = _UNKNOWNTYPESSTRATEGY
@@ -2225,6 +2286,7 @@ _HELTASKRESPONSE.fields_by_name['request'].message_type = _HELTASKREQUEST
 DESCRIPTOR.message_types_by_name['GeneralReq'] = _GENERALREQ
 DESCRIPTOR.message_types_by_name['GeneralResp'] = _GENERALRESP
 DESCRIPTOR.message_types_by_name['ReqCreateTask'] = _REQCREATETASK
+DESCRIPTOR.message_types_by_name['ReqCreateSequentialTask'] = _REQCREATESEQUENTIALTASK
 DESCRIPTOR.message_types_by_name['TrainingDatasetType'] = _TRAININGDATASETTYPE
 DESCRIPTOR.message_types_by_name['TaskReqTraining'] = _TASKREQTRAINING
 DESCRIPTOR.message_types_by_name['TaskReqMining'] = _TASKREQMINING
@@ -2283,6 +2345,13 @@ ReqCreateTask = _reflection.GeneratedProtocolMessageType('ReqCreateTask', (_mess
   # @@protoc_insertion_point(class_scope:ymir.backend.ReqCreateTask)
   })
 _sym_db.RegisterMessage(ReqCreateTask)
+
+ReqCreateSequentialTask = _reflection.GeneratedProtocolMessageType('ReqCreateSequentialTask', (_message.Message,), {
+  'DESCRIPTOR' : _REQCREATESEQUENTIALTASK,
+  '__module__' : 'backend_pb2'
+  # @@protoc_insertion_point(class_scope:ymir.backend.ReqCreateSequentialTask)
+  })
+_sym_db.RegisterMessage(ReqCreateSequentialTask)
 
 TrainingDatasetType = _reflection.GeneratedProtocolMessageType('TrainingDatasetType', (_message.Message,), {
   'DESCRIPTOR' : _TRAININGDATASETTYPE,
@@ -2472,8 +2541,8 @@ _MIR_CONTROLLER_SERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=6461,
-  serialized_end=6563,
+  serialized_start=6650,
+  serialized_end=6752,
   methods=[
   _descriptor.MethodDescriptor(
     name='data_manage_request',
@@ -2498,8 +2567,8 @@ _HEL_SERVICE = _descriptor.ServiceDescriptor(
   index=1,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=6566,
-  serialized_end=6742,
+  serialized_start=6755,
+  serialized_end=6931,
   methods=[
   _descriptor.MethodDescriptor(
     name='hel_ops_process',
