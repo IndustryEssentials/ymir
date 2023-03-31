@@ -171,21 +171,6 @@ function Label({ query = {}, hidden, ok = () => {}, bottom }) {
             ]}
           >
             <UserKeywordsSelector />
-            {/* <Select
-              mode="tags"
-              showArrow
-              placeholder={t('task.label.form.member.labeltarget')}
-              filterOption={(value, option) => [option.value, ...(option.aliases || [])].some((key) => key.indexOf(value) >= 0)}
-            >
-              {keywords.map((keyword) => (
-                <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                  <Row>
-                    <Col flex={1}>{keyword.name}</Col>
-                    {keyword.aliases?.length ? <Col>{keyword.aliases.join(',')}</Col> : null }
-                  </Row>
-                </Select.Option>
-              ))}
-            </Select> */}
           </Item>
           <KeepAnnotations />
           <Item label={t('task.label.form.desc.label')} name="desc">

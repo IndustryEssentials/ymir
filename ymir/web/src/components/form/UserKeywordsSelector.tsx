@@ -1,11 +1,10 @@
 import { Col, Row, Select, SelectProps } from 'antd'
 import { FC, useEffect, useState } from 'react'
 import { DefaultOptionType } from 'antd/lib/select'
+import { useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
-import { useDebounce } from 'ahooks'
-import { KeywordObjectType, KeywordsQueryParams } from '@/services/keyword.d'
 
 type OptionType = DefaultOptionType & {
   value: string
@@ -15,36 +14,23 @@ type Props = SelectProps
 
 const UserKeywordsSelector: FC<Props> = (props) => {
   const [options, setOptions] = useState<OptionType[]>([])
-  const [queryName, setQueryName] = useState('')
-  const debonceQueryName = useDebounce(queryName, {
-    wait: 800,
-  })
+  const keywords = useSelector(({ keyword }) => keyword.allKeywords)
   const {
-    data: keywordResult,
-    run: getKeywords,
+    run: getAllKeywords,
     loading,
-  } = useRequest<YStates.List<KeywordObjectType>, [KeywordsQueryParams]>('keyword/getKeywords', {
+  } = useRequest<YStates.List<YModels.Keyword>>('keyword/getAllKeywords', {
     loading: false,
   })
 
   useEffect(() => {
-    fetchKeywords()
+    getAllKeywords()
   }, [])
 
   useEffect(() => {
-    if (!debonceQueryName) {
-      return
-    }
-    fetchKeywords(debonceQueryName)
-  }, [debonceQueryName])
+    keywords && generateOptions(keywords)
+  }, [keywords])
 
-  useEffect(() => {
-    if (keywordResult) {
-      generateOptions(keywordResult.items)
-    }
-  }, [keywordResult])
-
-  function generateOptions(keywords: KeywordObjectType[] = []) {
+  function generateOptions(keywords: YModels.Keyword[] = []) {
     const opts = keywords.map((keyword) => ({
       label: (
         <Row>
@@ -57,16 +43,13 @@ const UserKeywordsSelector: FC<Props> = (props) => {
     setOptions(opts)
   }
 
-  const fetchKeywords = (name?: string) => getKeywords({ q: name, limit: 10 })
-
   return (
     <Select
       showArrow
       placeholder={t('task.train.form.keywords.label')}
       {...props}
       mode="tags"
-      onSearch={setQueryName}
-      filterOption={false}
+      filterOption={(value, option) => !!option && [option.value, ...(option.aliases || [])].some((key) => key.indexOf(value) >= 0)}
       options={options}
       loading={loading}
     ></Select>

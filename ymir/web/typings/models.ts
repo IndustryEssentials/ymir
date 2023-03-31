@@ -79,6 +79,10 @@ declare namespace YModels {
     InstanceSegmentation = 4,
   }
 
+  type Keyword = {
+    name: string,
+    aliases: string[]
+  }
   type Keywords = {
     [key: string]: number
   }

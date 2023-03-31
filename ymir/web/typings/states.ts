@@ -6,7 +6,7 @@ declare namespace YStates {
     prediction: PredictionState
     model: ModelState
     image: ImageState
-    keywords: LabelState
+    keyword: LabelState
     project: ProjectState
     socket: SocketState
     asset: AssetState
@@ -89,8 +89,8 @@ declare namespace YStates {
   }
 
   type LabelState = {
-    keywords: List<YModels.Keywords>
-    keyword: IdMap<YModels.Keywords>
+    allKeywords: YModels.Keyword[]
+    reload: boolean
   }
 
   interface SocketState extends State {
