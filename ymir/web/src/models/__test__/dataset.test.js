@@ -83,6 +83,7 @@ describe('models: dataset', () => {
   normalReducer(dataset, 'UPDATE_ASSET', product(6445), product(6445), 'asset', {})
   normalReducer(dataset, 'UPDATE_PUBLICDATASETS', datasets, datasets, 'publicDatasets', { items: [], total: 0 })
   normalReducer(dataset, 'UPDATE_QUERY', { limit: 20 }, { limit: 20 }, 'query', {})
+  normalReducer(dataset, 'UpdateTotal', 15, 15, 'total', 0)
 
   it('reducers: CLEAR_ALL', () => {
     const state = {
@@ -99,6 +100,7 @@ describe('models: dataset', () => {
       asset: { annotations: [] },
       allDatasets: {},
       publicDatasets: [],
+      total: 0
     }
     const action = {
       payload: null,
@@ -459,30 +461,20 @@ describe('models: dataset', () => {
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
-  it('effects: haveDatasets -> yes', () => {
-    const saga = dataset.effects.haveDatasets
+  it('effects: getValidDatasetsCount', () => {
+    const saga = dataset.effects.getValidDatasetsCount
+    const pid = 63343
     const creator = {
-      type: 'haveDatasets',
-      payload: { pid: 234324 }
+      type: 'getValidDatasetsCount',
+      payload: pid
     }
-    const result = {items: products(3), total: 3}
-    const expected = true
+    const total = 3
+    const result = {items: products(total), total }
     const generator = saga(creator, { put })
     generator.next()
-    const end = generator.next(result)
-    expect(end.value).toBe(expected)
-  })
-  it('effects: haveDatasets -> no', () => {
-    const saga = dataset.effects.haveDatasets
-    const creator = {
-      type: 'haveDatasets',
-      payload: { pid: 234324 }
-    }
-    const result = {items: [], total: 0}
-    const expected = false
-    const generator = saga(creator, { put })
-    generator.next()
-    const end = generator.next(result)
-    expect(end.value).toBe(expected)
+    generator.next(result)
+    const end = generator.next()
+
+    expect(end.value).toBe(total)
   })
 })

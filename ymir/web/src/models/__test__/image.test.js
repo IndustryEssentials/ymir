@@ -1,23 +1,25 @@
 import image from '../image'
-import { put, call, select } from 'redux-saga/effects'
+import { put, call, select, putResolve } from 'redux-saga/effects'
 import { errorCode } from './func'
 import { transferImage } from '../../constants/image'
+put.resolve = putResolve
 
 describe('models: image', () => {
   const product = (id) => ({ id })
   const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
-  it('reducers: UPDATE_IMAGES', () => {
+  it('reducers: UpdateTotal', () => {
     const state = {
-      images: {},
+      total: 0,
     }
-    const expected = { items: [1, 2, 3, 4], total: 4 }
+    const total = 4
+    const expected = { total }
     const action = {
-      payload: expected,
+      payload: total,
     }
-    const result = image.reducers.UPDATE_IMAGES(state, action)
-    expect(result.images.total).toBe(expected.total)
+    const result = image.reducers.UpdateTotal(state, action)
+    expect(result.total).toBe(total)
   })
-  it('reducers: UPDATE_IMAGE', () => {
+  it('reducers: UpdateImage', () => {
     const state = {
       image: {},
     }
@@ -26,7 +28,7 @@ describe('models: image', () => {
     const action = {
       payload: expected,
     }
-    const result = image.reducers.UPDATE_IMAGE(state, action)
+    const result = image.reducers.UpdateImage(state, action)
     expect(expected).toEqual(result.image)
   })
 
@@ -35,9 +37,7 @@ describe('models: image', () => {
   errorCode(image, 'delImage')
   errorCode(image, 'createImage')
   errorCode(image, 'updateImage')
-  errorCode(image, 'shareImage')
   errorCode(image, 'relateImage')
-  errorCode(image, 'getShareImages')
 
   it('effects: getImages -> success', () => {
     const saga = image.effects.getImages
@@ -55,27 +55,7 @@ describe('models: image', () => {
       code: 0,
       result,
     })
-    generator.next()
     const end = generator.next()
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it('effects: getShareImages -> success', () => {
-    const saga = image.effects.getShareImages
-    const creator = {
-      type: 'getShareImages',
-      payload: {},
-    }
-    const images = products(9).map((image) => ({ id: image, configs: [{ config: { anchor: '12,3,4' }, type: 1 }] }))
-    const expected = { items: images.map((image) => transferImage(image)), total: images.length }
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result: expected,
-    })
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -166,26 +146,6 @@ describe('models: image', () => {
     expect(expected).toEqual(end.value)
     expect(end.done).toBe(true)
   })
-  it('effects: shareImage', () => {
-    const saga = image.effects.shareImage
-    const result = { id: 10011, name: 'new_image_name' }
-    const creator = {
-      type: 'shareImage',
-      payload: result,
-    }
-    const expected = transferImage(result)
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next()
-
-    expect(expected).toEqual(end.value)
-    expect(end.done).toBe(true)
-  })
   it('effects: relateImage', () => {
     const saga = image.effects.relateImage
     const result = { id: 10011, name: 'new_image_name' }
@@ -204,6 +164,18 @@ describe('models: image', () => {
     const end = generator.next()
 
     expect(expected).toEqual(end.value)
+    expect(end.done).toBe(true)
+  })
+  it('effects: getValidImagesCount', () => {
+    const saga = image.effects.getValidImagesCount
+    const total = 6
+    const creator = { type: 'getValidImagesCount', payload: {} }
+    const generator = saga(creator, { put })
+    generator.next()
+    generator.next({ total })
+    const end = generator.next()
+
+    expect(end.value).toBe(total)
     expect(end.done).toBe(true)
   })
 })

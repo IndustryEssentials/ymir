@@ -20,7 +20,7 @@ import { ResultStates as states } from '@/constants/common'
 import { toAnnotation } from '@/constants/asset'
 import { actions, updateResultState, updateResultByTask } from '@/constants/common'
 import { deepClone } from '@/utils/object'
-import { NormalReducer } from './_utils'
+import { NormalReducer, createReducers, createEffect } from './_utils'
 
 const initQuery = {
   name: '',
@@ -36,15 +36,17 @@ const initState = {
   versions: {},
   model: {},
   allModels: [],
+  total: 0,
 }
 
-const reducers = {
-  UPDATE_MODELS: NormalReducer('models'),
-  UPDATE_VERSIONS: NormalReducer('versions'),
-  UPDATE_ALL_MODELS: NormalReducer('allModels'),
-  UPDATE_MODEL: NormalReducer('model'),
-  UPDATE_QUERY: NormalReducer('query'),
-}
+const list = [
+  { name: 'UPDATE_MODELS', field: 'models' },
+  { name: 'UPDATE_VERSIONS', field: 'versions' },
+  { name: 'UPDATE_ALL_MODELS', field: 'allModels' },
+  { name: 'UPDATE_MODEL', field: 'model' },
+  { name: 'UPDATE_QUERY', field: 'query' },
+  { name: 'UpdateTotal', field: 'total' },
+]
 
 export default {
   namespace: 'model',
@@ -177,7 +179,7 @@ export default {
     *hide({ payload: { pid, ids = [] } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.hide, pid, ids)
       if (code === 0) {
-        const models = (result || []).reduce((prev, md) => ({ ...prev, [md.id]: transferModel(md)}), {})
+        const models = (result || []).reduce((prev, md) => ({ ...prev, [md.id]: transferModel(md) }), {})
         yield put({
           type: 'UPDATE_MODEL',
           payload: models,
@@ -188,7 +190,7 @@ export default {
     *restore({ payload: { pid, ids = [] } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.restore, pid, ids)
       if (code === 0) {
-        const models = (result || []).reduce((prev, md) => ({ ...prev, [md.id]: transferModel(md)}), {})
+        const models = (result || []).reduce((prev, md) => ({ ...prev, [md.id]: transferModel(md) }), {})
         yield put({
           type: 'UPDATE_MODEL',
           payload: models,
@@ -365,9 +367,22 @@ export default {
       const models = yield select(({ model }) => model.model)
       return ids.map((id) => models[id]).filter((d) => d)
     },
+    getValidModelsCount: createEffect(function* ({ payload: pid }, { put }) {
+      const result = yield put.resolve({
+        type: 'queryModels',
+        payload: {
+          state: states.VALID,
+          pid,
+        },
+      })
+      if (result?.total) {
+        yield put({ type: 'UpdateTotal', payload: result.total })
+        return result.total
+      }
+    }),
   },
   reducers: {
-    ...reducers,
+    ...createReducers(list),
     CLEAR_ALL() {
       return deepClone(initState)
     },

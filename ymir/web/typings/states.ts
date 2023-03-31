@@ -57,6 +57,7 @@ declare namespace YStates {
     allDatasets: { [pid: number]: YModels.Dataset[] }
     publicDatasets: YModels.Dataset[]
     query: YParams.DatasetsQuery
+    total: number
   }
 
   interface PredictionState extends State {
@@ -84,8 +85,8 @@ declare namespace YStates {
   }
 
   interface ImageState extends State {
-    images: List<YModels.Image>
     image: IdMap<YModels.Image>
+    total: number
   }
 
   type LabelState = {
@@ -150,6 +151,8 @@ declare namespace YStates {
   type PredictionStore = StoreType<'prediction', PredictionState>
   type AssetStore = StoreType<'asset', AssetState>
   type SocketStore = StoreType<'socket', SocketState>
+  type ImageStore = StoreType<'image', ImageState>
+  type DatasetStore = StoreType<'dataset', DatasetState>
 
   type ResultState<T extends YModels.ResultType> = T extends 'dataset' ? DatasetState : ModelState
   type List<T> = { items: T[]; total: number }

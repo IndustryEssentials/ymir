@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useRef, useState } from 'react'
+import { ComponentProps, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, Location, useHistory, useLocation } from 'umi'
 import { Form, Button, Input, Table, Space, Row, Col, Tooltip, Pagination, message, Popover, TableColumnsType } from 'antd'
@@ -26,6 +26,9 @@ import { DescPop } from '../common/DescPop'
 import useRerunAction from '@/hooks/useRerunAction'
 import StrongTitle from '../table/columns/StrongTitle'
 import { ModuleType } from '@/pages/project/components/ListHoc'
+import useModal from '@/hooks/useModal'
+import Analysis from './Analysis'
+import { getActions } from './list/Actions'
 
 import styles from './list.less'
 import {
@@ -44,8 +47,7 @@ import {
   DeleteIcon,
   BarChart2LineIcon,
 } from '@/components/common/Icons'
-import useModal from '@/hooks/useModal'
-import Analysis from './Analysis'
+import { ObjectType } from '@/constants/objectType'
 
 type IsType = {
   isTrainSet?: boolean
@@ -96,14 +98,24 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   const { run: getVersions } = useRequest<YStates.List<YModels.Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
-  const { data: haveDatasets, run: fetchHaveDatasets } = useRequest<boolean, [{ pid: number }]>('dataset/haveDatasets')
+  const { data: validTotal, run: getValidDatasetsCount } = useRequest<boolean, [number]>('dataset/getValidDatasetsCount')
   const [AnalysisModal, showAnalysisModal] = useModal<ComponentProps<typeof Analysis>>(Analysis, {
     width: '90%',
-    style: { paddingTop: 20 }
+    style: { paddingTop: 20 },
   })
   const [analysisDatasets, setADatasets] = useState<number[]>([])
+  const { data: modelsCount = 0, run: getModelsCount } = useRequest<number, [number]>('model/getValidModelsCount', { loading: false })
+  const { data: imagesCount = 0, run: getImagesCount } = useRequest<number, [{ type?: ObjectType; example?: boolean }]>('image/getValidImagesCount', {
+    loading: false,
+  })
 
-  useEffect(() => fetchHaveDatasets({ pid }), [pid])
+  useEffect(() => {
+    getValidDatasetsCount(pid)
+    getModelsCount(pid)
+  }, [pid])
+  useEffect(() => {
+    project && getImagesCount({ type: project.type, example: true })
+  }, [project])
 
   useEffect(() => {
     if (history.action !== 'POP') {
@@ -195,17 +207,30 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
         key: 'name',
         dataIndex: 'versionName',
         className: styles[`column_name`],
-        render: (name, { id, description, projectLabel, iterationLabel }) => {
+        render: (name, record) => {
+          const { id, description, projectLabel, iterationLabel } = record
           const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
           const content = (
             <Row>
               <Col flex={1}>
                 <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>
               </Col>
-              <Col flex={'50px'} style={{ textAlign: 'right'}}>
+              <Col flex={'50px'} style={{ textAlign: 'right' }}>
                 {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
                 {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-                <span onClick={() => {showAnalysisModal(); setADatasets([id])}}><BarChart2LineIcon /></span>
+                {validDataset(record) && !!record.assetCount ? (
+                  <span title={t('common.action.preview')} onClick={() => history.push(`/home/project/${pid}/dataset/${id}/assets`)}>
+                    <SearchIcon className={styles.addBtnIcon} />
+                  </span>
+                ) : null}
+                <span
+                  onClick={() => {
+                    showAnalysisModal()
+                    setADatasets([id])
+                  }}
+                >
+                  <BarChart2LineIcon />
+                </span>
               </Col>
             </Row>
           )
@@ -281,91 +306,90 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     ]
   }
 
-  const actionMenus = (record: Dataset): YComponents.Action[] => {
-    const { id, groupId, state, taskState, task, assetCount } = record
-    const invalidDataset = ({ state, assetCount }: Dataset) => !validState(state) || assetCount === 0
-    return [
-      {
-        key: 'label',
-        label: t('dataset.action.label'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
-        icon: <TaggingIcon />,
-      },
-      {
-        key: 'train',
-        label: t('dataset.action.train'),
-        hidden: () => invalidDataset(record) || isTestingDataset(id) || !record.keywords.length,
-        onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
-        icon: <TrainIcon />,
-      },
-      {
-        key: 'mining',
-        label: t('dataset.action.mining'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
-        icon: <VectorIcon />,
-      },
-      {
-        key: 'preview',
-        label: t('common.action.preview'),
-        hidden: () => !validDataset(record) || !assetCount,
-        onclick: () => history.push(`/home/project/${pid}/dataset/${id}/assets`),
-        icon: <SearchIcon className={styles.addBtnIcon} />,
-      },
-      {
-        key: 'merge',
-        label: t('common.action.merge'),
-        hidden: () => !validState(state),
-        onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
-        icon: <CompareListIcon className={styles.addBtnIcon} />,
-      },
-      {
-        key: 'filter',
-        label: t('common.action.filter'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
-        icon: <ScreenIcon className={styles.addBtnIcon} />,
-      },
-      {
-        key: 'inference',
-        label: t('dataset.action.inference'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
-        icon: <WajueIcon />,
-      },
-      {
-        key: 'copy',
-        label: t('task.action.copy'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
-        icon: <CopyIcon />,
-      },
-      {
-        key: 'edit',
-        label: t('common.action.edit.desc'),
-        onclick: () => editDesc(record),
-        icon: <EditIcon />,
-      },
-      {
-        key: 'stop',
-        label: t('task.action.terminate'),
-        onclick: () => stop(record),
-        hidden: () => taskState === TASKSTATES.PENDING || !readyState(state) || task.is_terminated,
-        icon: <StopIcon />,
-      },
-      generateRerun(record),
-      {
-        key: 'hide',
-        label: t('common.action.del'),
-        onclick: () => hide(record),
-        hidden: () => !canHide(record, project),
-        icon: <DeleteIcon />,
-      },
-    ]
-  }
-
-  // const tableChange = ({ current, pageSize }, filters, sorters = {}) => {}
+  const actionMenus = useCallback(
+    (record: Dataset): YComponents.Action[] => {
+      const { id, groupId, state, taskState, task, assetCount } = record
+      const invalidDataset = ({ state, assetCount }: Dataset) => !validState(state) || assetCount === 0
+      const acts = {
+        label: {
+          key: 'label',
+          label: t('dataset.action.label'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
+          icon: <TaggingIcon />,
+        },
+        train: {
+          key: 'train',
+          label: t('dataset.action.train'),
+          hidden: () => invalidDataset(record) || isTestingDataset(id),
+          onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
+          icon: <TrainIcon />,
+        },
+        mining: {
+          key: 'mining',
+          label: t('dataset.action.mining'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
+          icon: <VectorIcon />,
+        },
+        merge: {
+          key: 'merge',
+          label: t('common.action.merge'),
+          hidden: () => !validState(state),
+          onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
+          icon: <CompareListIcon className={styles.addBtnIcon} />,
+        },
+        filter: {
+          key: 'filter',
+          label: t('common.action.filter'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
+          icon: <ScreenIcon className={styles.addBtnIcon} />,
+        },
+        inference: {
+          key: 'inference',
+          label: t('dataset.action.inference'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
+          icon: <WajueIcon />,
+        },
+        copy: {
+          key: 'copy',
+          label: t('task.action.copy'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
+          icon: <CopyIcon />,
+        },
+        edit: {
+          key: 'edit',
+          label: t('common.action.edit.desc'),
+          onclick: () => editDesc(record),
+          icon: <EditIcon />,
+        },
+        stop: {
+          key: 'stop',
+          label: t('task.action.terminate'),
+          onclick: () => stop(record),
+          hidden: () => taskState === TASKSTATES.PENDING || !readyState(state) || task.is_terminated,
+          icon: <StopIcon />,
+        },
+        rerun: generateRerun(record),
+        del: {
+          key: 'del',
+          label: t('common.action.del'),
+          onclick: () => hide(record),
+          hidden: () => !canHide(record, project),
+          icon: <DeleteIcon />,
+        },
+      }
+      return getActions(acts, {
+        hasImages: !!imagesCount,
+        haveAnnotations: !!record.keywords.length,
+        haveModels: !!modelsCount,
+      })
+    },
+    [modelsCount, imagesCount],
+  )
 
   const getTypeFilter = (gid: number) => {
     return getFilters(gid, 'taskType', (type) => (type ? t(getTaskTypeLabel(type as TASKTYPES)) : ''))
@@ -642,11 +666,11 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
 
   return (
     <div className={styles.dataset}>
-      <Detail project={project} type='dataset' />
+      <Detail project={project} type="dataset" />
       <Row className="actions">
         <Col flex={1}>
           <Space>
-            <AddButton className={!haveDatasets ? 'wave' : ''} id={pid} />
+            <AddButton className={!validTotal ? 'wave' : ''} id={pid} />
             {renderMultipleActions}
           </Space>
         </Col>

@@ -138,6 +138,9 @@ describe('models: model', () => {
     }
     const result = model.reducers.UPDATE_MODEL(state, daction)
     expect(result.model[expectedId].id).toBe(expectedId)
+
+    const totalState = model.reducers.UpdateTotal(state, { payload: total })
+    expect(totalState.total).toBe(total)
   })
 
   errorCode(model, 'getModelGroups')
@@ -385,5 +388,21 @@ describe('models: model', () => {
 
     expect(end.value).toEqual({ keywords: [], kmodels: {} })
     expect(end.done).toBe(true)
+  })
+  it('effects: getValidModelsCount', () => {
+    const saga = model.effects.getValidModelsCount
+    const pid = 523443
+    const creator = {
+      type: 'getValidModelsCount',
+      payload: pid,
+    }
+    const total = 3
+    const result = {items: products(total), total }
+    const generator = saga(creator, { put })
+    generator.next()
+    generator.next(result)
+    const end = generator.next()
+
+    expect(end.value).toBe(total)
   })
 })

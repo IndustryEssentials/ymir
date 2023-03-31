@@ -17,15 +17,16 @@ import {
 } from '@/services/dataset'
 import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAnnotationsCount } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
-import { NormalReducer } from './_utils'
+import { createEffect, createReducers } from './_utils'
 import { deepClone } from '@/utils/object'
 import { TASKTYPES } from '@/constants/task'
 
 const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
 
-const reducers = {
-  UPDATE_ALL_DATASETS: NormalReducer('allDatasets'),
-}
+const list = [
+  {name: 'UPDATE_ALL_DATASETS', field: 'allDatasets'},
+  { name: 'UpdateTotal', field: 'total'},
+]
 
 const initState = {
   query: { ...initQuery },
@@ -36,6 +37,7 @@ const initState = {
   asset: { annotations: [] },
   allDatasets: {},
   publicDatasets: [],
+  total: 0,
 }
 
 export default {
@@ -212,8 +214,7 @@ export default {
         return result
       }
     },
-    *haveDatasets({ payload }, { call, put }) {
-      const { pid } = payload
+    getValidDatasetsCount: createEffect(function *({ payload: pid }, { call, put }) {
       const result = yield put.resolve({
         type: 'queryDatasets',
         payload: {
@@ -222,8 +223,14 @@ export default {
           empty: false,
         }
       })
-      return result.total > 1
-    },
+      if (result?.total) {
+        yield put({
+          type: 'UpdateTotal',
+          payload: result.total,
+        })
+        return result.total
+      }
+    }),
     *updateVersion({ payload }, { call, put }) {
       const { id, description } = payload
       const { code, result } = yield call(updateVersion, id, description)
@@ -389,7 +396,7 @@ export default {
     },
   },
   reducers: {
-    ...reducers,
+    ...createReducers(list),
     UPDATE_DATASETS(state, { payload }) {
       return {
         ...state,

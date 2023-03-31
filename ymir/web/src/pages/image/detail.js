@@ -33,7 +33,7 @@ function ImageDetail() {
     const { name, related } = image
     linkModalRef.current.show({ id, name, related })
   }
-  const share = ({ name = '', url = '', description = '' }) =>
+  const publish = ({ name = '', url = '', description = '' }) =>
     history.push(`/home/public_image/publish?name=${name}&image_addr=${url}&description=${description}`)
 
   const del = () => {
@@ -140,7 +140,7 @@ function ImageDetail() {
 
             <Item label={''} span={2}>
               <Space>
-                <Button hidden={!isAdmin() || !isDone()} onClick={() => share(image)} icon={<PublishIcon />}>
+                <Button hidden={!isAdmin() || !isDone()} onClick={() => publish(image)} icon={<PublishIcon />}>
                   {t('image.action.publish')}
                 </Button>
                 <Button hidden={!isAdmin() || (!isDone() && !isError())} onClick={del} icon={<DeleteIcon />}>
