@@ -2,16 +2,18 @@ import useFetch from '@/hooks/useFetch'
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'umi'
 
+type Result = { name: string; versionName: string }
 type Props = {
   id?: YModels.DatasetId
-  result?: YModels.Result
+  result?: Result
   extra?: React.ReactElement | string
 }
+
 const VersionName: React.FC<Props> = ({ id, result, extra }) => {
-  const cache: YModels.Dataset = useSelector(({ dataset }: YStates.Root) => {
+  const cache: Result | undefined = useSelector(({ dataset }: YStates.Root) => {
     return id ? dataset.dataset[id] : undefined
   })
-  const [dataset, setDataset] = useState<YModels.Result>()
+  const [dataset, setDataset] = useState<Result>()
   const [label, setLabel] = useState('')
   const [_, getDataset] = useFetch('dataset/getDataset')
 

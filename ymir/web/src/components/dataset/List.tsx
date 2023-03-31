@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { ComponentProps, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, Location, useHistory, useLocation } from 'umi'
 import { Form, Button, Input, Table, Space, Row, Col, Tooltip, Pagination, message, Popover, TableColumnsType } from 'antd'
@@ -42,7 +42,10 @@ import {
   ArrowRightIcon,
   CompareListIcon,
   DeleteIcon,
+  BarChart2LineIcon,
 } from '@/components/common/Icons'
+import useModal from '@/hooks/useModal'
+import Analysis from './Analysis'
 
 type IsType = {
   isTrainSet?: boolean
@@ -94,6 +97,11 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
   const { data: haveDatasets, run: fetchHaveDatasets } = useRequest<boolean, [{ pid: number }]>('dataset/haveDatasets')
+  const [AnalysisModal, showAnalysisModal] = useModal<ComponentProps<typeof Analysis>>(Analysis, {
+    width: '90%',
+    style: { paddingTop: 20 }
+  })
+  const [analysisDatasets, setADatasets] = useState<number[]>([])
 
   useEffect(() => fetchHaveDatasets({ pid }), [pid])
   useEffect(() => {
@@ -196,9 +204,10 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
               <Col flex={1}>
                 <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>
               </Col>
-              <Col flex={'50px'}>
+              <Col flex={'50px'} style={{ textAlign: 'right'}}>
                 {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
                 {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+                <span onClick={() => {showAnalysisModal(); setADatasets([id])}}><BarChart2LineIcon /></span>
               </Col>
             </Row>
           )
@@ -672,6 +681,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
       <EditNameBox ref={editNameBoxRef} record={current} max={80} handle={saveNameHandle} />
       <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
+      <AnalysisModal ids={analysisDatasets} />
     </div>
   )
 }

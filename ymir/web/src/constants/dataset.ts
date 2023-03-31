@@ -108,9 +108,7 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     hidden: !data.is_visible,
     description: data.description || '',
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
-    tags: data.gt
-      ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total)
-      : undefined,
+    tags: data.gt ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total) : undefined,
   }
 }
 
@@ -129,23 +127,45 @@ export function canHide(dataset: YModels.Dataset, project: YModels.Project | und
 
 export function transferDatasetAnalysis(data: YModels.BackendData): YModels.DatasetAnalysis {
   const { bytes, area, quality, hw_ratio } = data.hist
+  const gt = data.gt
+  const { quality: gtQuality = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts = [] } = gt.hist
 
-  const gt = generateAnno(data.gt)
-  const pred = generateAnno(data.pred)
   const dataset = transferDataset(data)
+  const keywords = dataset.keywords
+  const total = dataset.gt?.total
+  const totalArea = data.total_mask_area || 0
+  const assetCount = dataset.assetCount
   return {
     ...dataset,
-    assetArea: area,
-    assetQuality: quality,
-    assetHWRatio: hw_ratio,
-    gt,
-    pred,
-    cks: transferCK(data.cks_count, data.cks_count_total),
-    tags: transferCK(data.gt.tags_count, data.gt?.tags_count_total),
+    total: data.annos_count || 0,
+    negative: data.negative_assets_count || 0,
+    average: data.gt?.ave_annos_count || 0,
+    totalArea,
+    keywords: keywords2ChartData(dataset.keywords, dataset.assetCount, dataset.gt?.count),
+    assetArea: addTotal2ChartData(area, totalArea),
+    assetQuality: addTotal2ChartData(quality, assetCount),
+    assetHWRatio: addTotal2ChartData(hw_ratio, assetCount),
+    quality: addTotal2ChartData(gtQuality, assetCount),
+    areaRatio: addTotal2ChartData(box_area_ratio, total),
+    keywordAnnotationCount: keywords2ChartData(keywords, assetCount, data.classwise_annos_count),
+    keywordArea: keywords2ChartData(keywords, totalArea, data.classwise_area),
+    instanceArea: addTotal2ChartData(mask_area, total),
+    crowdedness: addTotal2ChartData(obj_counts, assetCount),
+    complexity: addTotal2ChartData(class_counts, assetCount),
   }
 }
 
-export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
+const keywords2ChartData = (list: string[] = [], total?: number, counts: YModels.KeywordCountsType = {}) => ({
+  data: list.map((item) => ({
+    x: item,
+    y: counts[item] || 0,
+  })),
+  total,
+})
+
+const addTotal2ChartData = (list: YModels.AnalysisChartData[] = [], total?: number) => ({ data: list, total })
+
+export function transferAnnotationsCount(count: YModels.KeywordCountsType = {}, negative = 0, total = 1) {
   return {
     keywords: Object.keys(count),
     count,
@@ -175,23 +195,5 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
     counts,
     subKeywordsTotal,
     total,
-  }
-}
-
-const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
-  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts = [] } = data.hist
-  return {
-    keywords: data.keywords,
-    total: data.annos_count || 0,
-    average: data.ave_annos_count || 0,
-    negative: data.negative_assets_count || 0,
-    quality: quality || [],
-    areaRatio: box_area_ratio || [],
-    keywordAnnotaitionCount: data.classwise_annos_count || {},
-    totalArea: data.total_mask_area || 0,
-    keywordArea: data.classwise_area || {},
-    instanceArea: mask_area,
-    crowdedness: obj_counts,
-    complexity: class_counts,
   }
 }

@@ -85,13 +85,13 @@ declare namespace YModels {
   type CK = {
     [key: string]: string | number
   }
-  type CKCount = { [key: string]: number }
+  type KeywordCountsType = { [key: string]: number }
   type CKItem = { keyword: string; count: number; children?: CKItem[] }
   type CKCounts = {
     keywords: CKItem[]
-    counts: CKCount
+    counts: KeywordCountsType
     subKeywordsTotal: number
-    total: CKCount
+    total: KeywordCountsType
   }
   type AnnotationsCount = {
     count: Keywords
@@ -99,19 +99,13 @@ declare namespace YModels {
     negative: number
     total: number
   }
-  type AnylysisAnnotation = {
-    keywords: Keywords
-    total: number
-    average: number
-    negative: number
-    totalArea: number
-    quality: Array<BackendData>
-    areaRatio: Array<BackendData>
-    keywordAnnotaitionCount: Array<BackendData>
-    keywordArea: Array<BackendData>
-    instanceArea: Array<BackendData>
-    crowdedness: Array<BackendData>
-    complexity: Array<BackendData>
+  type AnalysisChartData = {
+    x: number | string
+    y: number
+  }
+  type AnalysisChart = {
+    data: AnalysisChartData[]
+    total?: number
   }
   export interface DatasetGroup extends Group {
     versions?: Array<Dataset>
@@ -143,12 +137,22 @@ declare namespace YModels {
 
   type AllResult = Prediction | Dataset | Model
 
-  export interface DatasetAnalysis extends Omit<Dataset, 'gt' | 'pred'> {
-    assetHWRatio: Array<BackendData>
-    assetArea: Array<BackendData>
-    assetQuality: Array<BackendData>
-    gt: AnylysisAnnotation
-    pred: AnylysisAnnotation
+  export interface DatasetAnalysis extends Omit<Dataset, 'keywords'> {
+    keywords: AnalysisChart
+    assetHWRatio: AnalysisChart
+    assetArea: AnalysisChart
+    assetQuality: AnalysisChart
+    total: number
+    negative: number
+    average: number
+    totalArea: number
+    quality: AnalysisChart
+    areaRatio: AnalysisChart
+    keywordAnnotationCount: AnalysisChart
+    keywordArea: AnalysisChart
+    instanceArea: AnalysisChart
+    crowdedness: AnalysisChart
+    complexity: AnalysisChart
   }
 
   export interface Asset {

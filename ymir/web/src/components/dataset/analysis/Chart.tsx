@@ -1,22 +1,27 @@
-import BarChart from '@/components/chart/bar'
-import { useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
+import { EChartsOption, BarSeriesOption, YAXisComponentOption, XAXisComponentOption, TooltipComponentOption } from 'echarts'
 import { percent } from '@/utils/number'
 import t from '@/utils/t'
+import BarChart, { Props as ChartProps } from '@/components/chart/bar'
+import { Chart as ChartConfig } from './AnalysisHelper'
 
-const AnalysisChartBar = ({ customOptions = {}, ...resProps }) => {
-  const [option, setOption] = useState({})
-  const [series, setSeries] = useState([])
+export type Props = ChartProps & {
+  customOptions: ChartConfig
+}
+
+const Chart: FC<Props> = ({ customOptions, ...resProps }) => {
+  const [option, setOption] = useState<EChartsOption>({})
+  const [series, setSeries] = useState<BarSeriesOption[]>([])
   const {
     xData,
-    xUnit,
+    xLabel = '',
     yData,
-    seriesType = 'bar',
     barWidth = 8,
     grid,
     legend,
     color,
     tooltipLabel = 'dataset.analysis.bar.asset.tooltip',
-    yAxisFormatter = function (val) {
+    yAxisFormatter = function (val: number) {
       return val * 100 + '%'
     },
   } = customOptions
@@ -30,20 +35,25 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps }) => {
     containLabel: true,
   }
 
-  const tooltip = {
+  const tooltip: TooltipComponentOption = {
     trigger: 'axis',
     axisPointer: {
       type: 'shadow',
     },
-    formatter: function (params) {
-
+    formatter: (params) => {
+      if (typeof params === 'string') {
+        return params
+      }
+      if (!Array.isArray(params)) {
+        return `${params.value}`
+      }
       var res = `${params[0].name}`
       for (var i = 0, l = params.length; i < l; i++) {
         const indexColor = params[i].color
         res += `<br/><span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background:${indexColor}"></span>`
         const name = params[i].seriesName
-        const ratio = percent(params[i].value)
-        const amount = yData[params[i].seriesIndex].count[params[i].dataIndex]
+        const ratio = percent(Number(params[i].value))
+        const amount = yData[params[i].seriesIndex || 0].count[params[i].dataIndex]
         res += `<span style="color: rgba(0, 0, 0, 0.85);">${name}</span>
          <span style="color: rgba(0, 0, 0, 0.45); font-size: 13px;"> ${t(tooltipLabel, { ratio, amount })}</span>`
       }
@@ -51,7 +61,7 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps }) => {
     },
   }
 
-  const yAxis = [
+  const yAxis: YAXisComponentOption[] = [
     {
       type: 'value',
       splitLine: {
@@ -65,7 +75,7 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps }) => {
     },
   ]
 
-  useEffect(async () => {
+  useEffect(() => {
     const transData = transferData()
     setSeries(transData)
   }, [customOptions])
@@ -75,7 +85,7 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps }) => {
       setOption({})
       return
     }
-    const xAxis = [
+    const xAxis: XAXisComponentOption[] = [
       {
         type: 'category',
         axisLine: {
@@ -84,7 +94,7 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps }) => {
         axisTick: {
           show: false,
         },
-        name: xUnit ? `(${xUnit})` : '',
+        name: xLabel,
         data: xData,
         axisLabel: {
           rotate: xData.length > 10 ? 45 : 0,
@@ -103,9 +113,10 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps }) => {
   }, [series])
 
   function transferData() {
+    const type: 'bar' = 'bar'
     const series = yData.map((item) => ({
       name: item.name,
-      type: seriesType,
+      type,
       barWidth,
       data: item.value,
     }))
@@ -115,4 +126,4 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps }) => {
   return <BarChart option={option} {...resProps}></BarChart>
 }
 
-export default AnalysisChartBar
+export default Chart
