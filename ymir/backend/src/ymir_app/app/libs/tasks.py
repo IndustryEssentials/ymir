@@ -13,7 +13,6 @@ from app.api.errors.errors import (
     DuplicateDatasetGroupError,
     FailedToUpdateTaskStatusTemporally,
     FailedtoCreateTask,
-    ModelNotReady,
     ModelNotFound,
     TaskNotFound,
     DatasetNotFound,
@@ -172,7 +171,7 @@ class TaskResult:
     def model_info(self) -> Optional[Dict]:
         try:
             result = self.viz.get_model_info(self.task_hash)
-        except (ModelNotReady, ModelNotFound):
+        except ModelNotFound:
             logger.exception("[update task] failed to get model_info: model not ready")
             return None
         except Exception:

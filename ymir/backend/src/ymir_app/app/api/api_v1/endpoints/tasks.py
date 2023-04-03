@@ -14,7 +14,6 @@ from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
     FailedToUpdateTaskStatusTemporally,
-    ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
@@ -256,8 +255,6 @@ def update_task_status(
     except (ConnectionError, HTTPError, Timeout):
         logger.exception("Failed to update task status. Try again later")
         raise FailedToUpdateTaskStatusTemporally()
-    except ModelNotReady:
-        logger.warning("Model Not Ready")
     else:
         namespace = f"/{gen_user_hash(task.user_id)}"
         task_update_msg = schemas.TaskResultUpdateMessage(
