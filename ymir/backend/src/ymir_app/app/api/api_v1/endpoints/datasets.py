@@ -95,6 +95,7 @@ def list_datasets(
     state: ResultState = Query(None),
     object_type: ObjectType = Query(None),
     allow_empty: bool = Query(True),
+    having_classes: bool = Query(None),
     pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
@@ -113,6 +114,7 @@ def list_datasets(
         object_type=object_type,
         visible=visible,
         allow_empty=allow_empty,
+        having_classes=having_classes,
         pagination=pagination,
     )
     return {"result": {"total": total, "items": datasets}}
@@ -126,7 +128,7 @@ def get_public_datasets(
     """
     Get all the public datasets
 
-    public datasets come from User set by env (PUBLIC_DATASET_OWNER)
+    public datasets come from User 1
     """
     datasets, total = crud.dataset.get_multi_datasets(
         db,
@@ -149,7 +151,7 @@ def import_dataset(
     """
     Import dataset.
 
-    Three Import Strategy:
+    Import Strategy Options:
     - no_annotations = 1
     - ignore_unknown_annotations = 2
     - stop_upon_unknown_annotations = 3

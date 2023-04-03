@@ -78,6 +78,7 @@ class DatasetInfo:
     cks_count_total: Dict
 
     keywords: Dict
+    keyword_count: int
     new_types_added: Optional[bool]
 
     total_assets_count: int
@@ -103,6 +104,7 @@ class DatasetInfo:
             cks_count=res["cks_count"],
             cks_count_total=res["cks_count_total"],
             keywords=keywords,
+            keyword_count=len(gt.keywords) if gt else 0,
             new_types_added=res.get("new_types_added"),
             total_assets_count=total_assets_count,
             hist=res.get("assets_hist") or None,

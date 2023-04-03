@@ -13,3 +13,4 @@ from .role import Role
 from .task import Task
 from .user import User
 from .prediction import Prediction
+from .message import Message

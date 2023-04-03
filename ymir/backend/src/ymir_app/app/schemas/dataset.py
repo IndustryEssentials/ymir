@@ -22,7 +22,6 @@ class DatasetBase(BaseModel):
     project_id: int
     # task_id haven't created yet
     # user_id can be parsed from token
-    keywords: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -68,7 +67,6 @@ class DatasetCreate(DatasetBase):
 class DatasetUpdate(BaseModel):
     description: Optional[str]
     result_state: Optional[ResultState]
-    keywords: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -92,16 +90,29 @@ class DatasetInDB(DatasetInDBBase):
     pass
 
 
+class DatasetBasicAnalysis(BaseModel):
+    """
+    used for dataset improvement suggestion
+    """
+    classwise_area_rank: Optional[Dict]
+    class_proportion: Optional[float]
+    scene_density: Optional[float]
+    classwise_annos_count: Optional[Dict]
+
+
 # Properties to return to caller
 class Dataset(DatasetInDBBase):
-    keywords: Optional[str]
+    keywords: Optional[Dict]
+    analysis: Optional[Dict]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords")
-    def unpack(cls, v: Optional[str]) -> Dict[str, int]:
+    @validator("keywords", "analysis", pre=True)
+    def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict:
         if v is None:
             return {}
-        return json.loads(v)
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
 
     class Config:
         use_enum_values = True
@@ -155,7 +166,8 @@ class DatasetInfo(DatasetInDBBase):
     gt: Optional[DatasetAnnotation]
     pred: Optional[DatasetAnnotation]
 
-    keywords: Optional[Any]
+    keywords: Optional[Dict]
+    analysis: Optional[Dict]
     cks_count: Optional[Dict]
     cks_count_total: Optional[Dict]
 
@@ -163,8 +175,8 @@ class DatasetInfo(DatasetInDBBase):
     evaluation_state: Optional[int]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords")
-    def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict[str, int]:
+    @validator("keywords", "analysis", pre=True)
+    def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict:
         if v is None:
             return {}
         if isinstance(v, str):

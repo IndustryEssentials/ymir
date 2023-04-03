@@ -31,6 +31,8 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
             query = query.filter(DockerImage.configs.any(DockerImageConfig.type == int(filters["type"])))
         if filters.get("object_type"):
             query = query.filter(DockerImage.object_type == int(filters["object_type"]))
+        if filters.get("is_official"):
+            query = query.filter(self.model.is_official)
 
         query = query.order_by(desc(self.model.create_datetime))
         if limit:

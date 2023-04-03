@@ -31,6 +31,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         object_type: Optional[IntEnum] = None,
         visible: bool = True,
         allow_empty: bool = True,
+        having_classes: Optional[bool] = None,
         pagination: CommonPaginationParams,
     ) -> Tuple[List[Dataset], int]:
         # each dataset is associate with one task
@@ -67,6 +68,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(self.model.dataset_group_id == group_id)
         if not allow_empty:
             query = query.filter(self.model.asset_count > 0)
+        if having_classes:
+            query = query.filter(self.model.keyword_count > 0)
 
         if object_type is not None:
             query = query.join(Project, Project.id == self.model.project_id).filter(
@@ -170,6 +173,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         if result:
             dataset.keywords = json.dumps(result["keywords"])
             dataset.asset_count = result["total_assets_count"]
+            dataset.keyword_count = result["keyword_count"]
 
         db.add(dataset)
         db.commit()

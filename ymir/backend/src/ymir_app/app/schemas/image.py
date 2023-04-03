@@ -23,6 +23,7 @@ class DockerImageBase(BaseModel):
 
 
 class DockerImageCreate(DockerImageBase):
+    is_official: bool = False
     url: str
 
 
@@ -42,6 +43,7 @@ class DockerImageInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin,
     hash: Optional[str]
     state: DockerImageState = DockerImageState.pending
     is_shared: Optional[bool]
+    is_official: Optional[bool] = False
 
     class Config:
         orm_mode = True

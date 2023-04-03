@@ -28,6 +28,7 @@ def list_docker_images(
     state: DockerImageState = Query(None),
     type_: DockerImageType = Query(None, alias="type"),
     object_type: ObjectType = Query(None),
+    is_official: bool = Query(None),
 ) -> Any:
     """
     Get docker images and configuration templates
@@ -44,6 +45,7 @@ def list_docker_images(
         state=state,
         type=type_,
         object_type=object_type,
+        is_official=is_official,
     )
     return {"result": {"total": total, "items": docker_images}}
 
