@@ -107,10 +107,10 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
 
         expected_cmd_import_dataset = (
             f"mir import --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} --src-revs master "
-            f"--index-file {os.path.join(working_dir, 'index.txt')} --gen-dir {self._storage_root} -w {working_dir} "
+            f"--gen-dir {self._storage_root} -w {working_dir} "
             f"--user-label-file {test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
-            f"--anno-type det-box --pred-dir {self._storage_root} --gt-dir {self._storage_root} "
-            "--unknown-types-strategy add")
+            f"--anno-type det-box --asset-path {self._storage_root} "
+            f"--pred-dir {self._storage_root} --gt-dir {self._storage_root} --unknown-types-strategy add")
         mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
                                                          repo_id=self._mir_repo_name,
                                                          task_id=self._task_id)

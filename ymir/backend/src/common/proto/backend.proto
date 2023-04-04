@@ -159,7 +159,9 @@ message TaskReqMining {
 }
 
 message TaskReqImportDataset {
-    // store media files
+    // path to dataset dir, with sub dirs: images and gt
+    // or path to dataset zip file
+    // or URL to dataset zip file
     string asset_dir = 1;
     // pred and gt file dir
     //  for voc: single pascal xml per asset, same base_filename as in asset-folder

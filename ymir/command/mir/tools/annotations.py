@@ -150,10 +150,10 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     return obj_anno
 
 
-def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
-                       groundtruth_dir_path: str, file_name_to_asset_ids: Dict[str, str],
-                       unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
-                       is_instance_segmentation: bool, phase: str) -> Dict[str, int]:
+def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str,
+                       prediction_dir_path: Optional[str], groundtruth_dir_path: Optional[str],
+                       file_name_to_asset_ids: Dict[str, str], unknown_types_strategy: UnknownTypesStrategy,
+                       anno_type: "mirpb.ObjectType.V", is_instance_segmentation: bool, phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict

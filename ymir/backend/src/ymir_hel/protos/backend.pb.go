@@ -1105,7 +1105,9 @@ type TaskReqImportDataset struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// store media files
+	// path to images dir, with all images in it
+	// or path to dataset zip file
+	// or URL to dataset zip file
 	AssetDir string `protobuf:"bytes,1,opt,name=asset_dir,json=assetDir,proto3" json:"asset_dir,omitempty"`
 	// pred and gt file dir
 	//  for voc: single pascal xml per asset, same base_filename as in asset-folder
