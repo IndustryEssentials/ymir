@@ -20,7 +20,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         inference_config = yaml.safe_load(req_inference_config)
         inference_config_file = os.path.join(work_dir, "inference_config.yaml")
         with open(inference_config_file, "w") as f:
-            yaml.dump({'executor_config': inference_config, 'task_context': task_context}, f)
+            yaml.dump({'executor_config': inference_config, 'task_context': task_context}, f, allow_unicode=True)
 
         return inference_config_file
 

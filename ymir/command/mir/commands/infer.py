@@ -308,7 +308,7 @@ def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> No
     logging.info(f"container config: {executor_config}")
 
     with open(dst_config_file, 'w') as f:
-        yaml.dump(executor_config, f)
+        yaml.dump(executor_config, f, allow_unicode=True)
 
 
 # public: cli bind

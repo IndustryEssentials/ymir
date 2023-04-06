@@ -199,7 +199,7 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     ymir_info_file_name = 'ymir-info.yaml'
     ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
     with open(ymir_info_file_path, 'w') as f:
-        yaml.safe_dump(model_storage.dict(), f)
+        yaml.safe_dump(model_storage.dict(), f, allow_unicode=True)
 
     tar_file_path = os.path.join(model_dir_path, 'model.tar.gz')
     with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:

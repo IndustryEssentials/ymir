@@ -62,11 +62,11 @@ class TestEnv(unittest.TestCase):
             },
         }
         with open(self._custom_env_file, 'w') as f:
-            yaml.safe_dump(env_obj, f)
+            yaml.safe_dump(env_obj, f, allow_unicode=True)
 
         # executor config
         with open(self._executor_config_file, 'w') as f:
-            yaml.safe_dump(self._expected_executor_config, f)
+            yaml.safe_dump(self._expected_executor_config, f, allow_unicode=True)
 
         # training index
         with open(self._training_index_file, 'w') as f:

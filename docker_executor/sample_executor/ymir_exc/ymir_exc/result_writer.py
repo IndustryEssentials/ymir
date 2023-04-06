@@ -119,7 +119,7 @@ def write_model_stage(stage_name: str,
 
     # save all
     with open(env_config.output.training_result_file, 'w') as f:
-        yaml.safe_dump(data=training_result, stream=f)
+        yaml.safe_dump(data=training_result, stream=f, allow_unicode=True)
 
 
 def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:

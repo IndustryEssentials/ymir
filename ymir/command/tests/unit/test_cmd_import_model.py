@@ -69,7 +69,7 @@ class TestCmdImportModel(unittest.TestCase):
                                             object_type=mirpb.ObjectType.OT_UNKNOWN,  # will be treated as detection
                                             package_version=YMIR_MODEL_VERSION)
         with open(os.path.join(self._src_model_root, 'ymir-info.yaml'), 'w') as f:
-            yaml.safe_dump(model_storage.dict(), f)
+            yaml.safe_dump(model_storage.dict(), f, allow_unicode=True)
         with tarfile.open(self._src_model_package_path, 'w:gz') as tar_gz_f:
             tar_gz_f.add(os.path.join(self._src_model_root, 'best.weights'), f"{mss.stage_name}/best.weights")
             tar_gz_f.add(os.path.join(self._src_model_root, 'ymir-info.yaml'), 'ymir-info.yaml')

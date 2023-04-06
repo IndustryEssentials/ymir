@@ -217,7 +217,7 @@ class TestCmdTraining(unittest.TestCase):
         executor_config['gpu_id'] = '0'
         config = {mir_settings.EXECUTOR_CONFIG_KEY: executor_config}
         with open(self._config_file, 'w') as f:
-            yaml.dump(config, f)
+            yaml.dump(config, f, allow_unicode=True)
 
     def __deprepare_dirs(self):
         if os.path.isdir(self._test_root):

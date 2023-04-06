@@ -96,7 +96,7 @@ def _generate_config(executor_config: Any, out_config_path: str, task_id: str,
     logging.info("container config: {}".format(executor_config))
 
     with open(out_config_path, "w") as f:
-        yaml.dump(executor_config, f)
+        yaml.dump(executor_config, f, allow_unicode=True)
 
     return executor_config
 
@@ -348,7 +348,8 @@ class CmdTrain(base.BaseCommand):
                                                   model_meta=model_meta,
                                                   return_code=task_code,
                                                   return_msg=return_msg,
-                                                  serialized_executor_config=yaml.safe_dump(executor_config),
+                                                  serialized_executor_config=yaml.safe_dump(executor_config,
+                                                                                            allow_unicode=True),
                                                   executor=executor,
                                                   src_revs=src_revs,
                                                   dst_rev=dst_rev)

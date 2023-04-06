@@ -58,7 +58,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
 
             labels_dict = {'labels': [], 'version': 1, 'ymir_version': '2.0.0'}
             with open(os.path.join(self._sandbox_a_root, user_id, 'labels.yaml'), 'w') as f:
-                yaml.safe_dump(labels_dict, f)
+                yaml.safe_dump(labels_dict, f, allow_unicode=True)
 
     def _prepare_sandbox_b(self) -> None:
         """
@@ -79,7 +79,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
 
             labels_dict = {'labels': [], 'version': 1, 'ymir_version': vers[user_id]}
             with open(os.path.join(self._sandbox_c_root, user_id, 'labels.yaml'), 'w') as f:
-                yaml.safe_dump(labels_dict, f)
+                yaml.safe_dump(labels_dict, f, allow_unicode=True)
 
     @classmethod
     def _prepare_repo(cls, mir_root: str) -> None:

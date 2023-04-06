@@ -110,7 +110,7 @@ class TestInvokerCMDInference(unittest.TestCase):
 
         # store user labels.
         with open(os.path.join(self._user_root, 'labels.yaml'), 'w') as f:
-            yaml.safe_dump({"labels": [{"id": 0, "name": "no_helmet_head"}]}, f)
+            yaml.safe_dump({"labels": [{"id": 0, "name": "no_helmet_head"}]}, f, allow_unicode=True)
 
         make_invoker_cmd_call(
             invoker=RequestTypeToInvoker[backend_pb2.CMD_INFERENCE],

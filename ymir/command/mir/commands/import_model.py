@@ -96,7 +96,7 @@ class CmdModelImport(base.BaseCommand):
                                                   src_revs=src_revs,
                                                   dst_rev=dst_rev,
                                                   serialized_executor_config=yaml.safe_dump(
-                                                      model_storage.executor_config),
+                                                      model_storage.executor_config, allow_unicode=True),
                                                   executor=model_storage.task_context.get('executor', ''))
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,

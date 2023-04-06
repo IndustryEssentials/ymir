@@ -100,7 +100,7 @@ class TestCmdInfer(unittest.TestCase):
                                             package_version=YMIR_MODEL_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
-            yaml.dump(model_storage.dict(), f)
+            yaml.dump(model_storage.dict(), f, allow_unicode=True)
 
         # pack model
         with tarfile.open(os.path.join(self._models_location, 'fake_model_hash'), "w:gz") as dest_tar_gz:
@@ -115,7 +115,7 @@ class TestCmdInfer(unittest.TestCase):
         with open(os.path.join(test_assets_root, 'infer-template.yaml'), 'r') as f:
             executor_config = yaml.safe_load(f)
         with open(self._config_file, 'w') as f:
-            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config}, f)
+            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config}, f, allow_unicode=True)
 
     def _prepare_infer_result_file(self):
         fake_infer_output_dict = {

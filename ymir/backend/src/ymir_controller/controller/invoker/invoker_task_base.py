@@ -147,7 +147,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             yaml.safe_dump(dict(
                 executor_config=executor_config,
                 task_context=task_context,
-            ), f)
+            ), f, allow_unicode=True)
 
         return True
 
