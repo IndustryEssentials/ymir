@@ -14,7 +14,7 @@ from proto import backend_pb2, backend_pb2_utils
 class TaskImportDatasetInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         import_dataset_request = request.req_create_task.import_dataset
-        (media_dir, pred_dir, gt_dir) = (import_dataset_request.asset_dir, import_dataset_request.pred_dir,
+        (asset_dir, pred_dir, gt_dir) = (import_dataset_request.asset_dir, import_dataset_request.pred_dir,
                                          import_dataset_request.gt_dir)
         if pred_dir:
             if not os.access(pred_dir, os.R_OK):
@@ -24,10 +24,9 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
             if not os.access(gt_dir, os.R_OK):
                 return utils.make_general_response(code=CMDResponseCode.RC_CMD_INVALID_DATASET,
                                                    message=f"invalid permissions of gt_dir: {gt_dir}")
-
-        if not os.access(media_dir, os.R_OK):
+        if not asset_dir:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               message=f"invalid permissions of media_dir:{media_dir}")
+                                               message="empty asset_dir")
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message="")
 
     @classmethod
