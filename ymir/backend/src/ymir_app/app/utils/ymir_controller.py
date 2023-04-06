@@ -172,11 +172,6 @@ class ControllerRequest:
 
         import_dataset_request.asset_dir = args["asset_dir"]
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
-        if strategy != ImportStrategy.no_annotations:
-            if args.get("gt_dir"):
-                import_dataset_request.gt_dir = args["gt_dir"]
-            if args.get("pred_dir"):
-                import_dataset_request.pred_dir = args["pred_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
 
         import_dataset_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]

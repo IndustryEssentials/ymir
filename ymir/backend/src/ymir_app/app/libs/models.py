@@ -1,4 +1,3 @@
-import tempfile
 import os
 from typing import Dict, Any
 
@@ -9,9 +8,8 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.api.errors.errors import ModelNotFound, TaskNotFound, FieldValidationFailed
 from app.constants.state import ResultState, TaskType, TaskState
-from app.utils.files import NGINX_DATA_PATH, save_file, FailedToDownload
+from app.utils.files import NGINX_DATA_PATH
 from app.utils.ymir_controller import gen_user_hash, gen_repo_hash, ControllerClient
-from app.config import settings
 from id_definition.error_codes import APIErrorCode as error_codes
 
 
@@ -34,9 +32,6 @@ def import_model_in_background(
     except (ModelNotFound, TaskNotFound):
         logger.exception("[import model] source model not found for copy model(%s)", model_id)
         state_code = error_codes.MODEL_NOT_FOUND
-    except FailedToDownload:
-        logger.exception("[import model] failed to download for importing model(%s)", model_id)
-        state_code = error_codes.FAILED_TO_DOWNLOAD
     except Exception:
         state_code = error_codes.FAILED_TO_IMPORT_MODEL
         logger.exception("[import model] failed to download for importing model(%s)", model_id)
@@ -74,9 +69,7 @@ def _import_model(
         # TODO(chao): remove model file after importing
         parameters = {"model_package_path": os.path.join(NGINX_DATA_PATH, model_import.input_model_path)}
     elif model_import.input_url:
-        temp_dir = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
-        model_path = save_file(model_import.input_url, temp_dir)
-        parameters = {"model_package_path": str(model_path)}
+        parameters = {"model_package_path": model_import.input_url}
     else:
         raise FieldValidationFailed()
 
