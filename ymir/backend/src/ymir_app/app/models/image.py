@@ -30,7 +30,7 @@ class DockerImage(Base):
         uselist=True,
     )
     enable_livecode = Column(Boolean, default=False, nullable=False)
-    object_type = Column(SmallInteger, index=True, default=2, nullable=False)
+    object_type = Column(SmallInteger, index=True, default=2, nullable=False)  # obsolete
     is_shared = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     is_official = Column(Boolean, default=False)

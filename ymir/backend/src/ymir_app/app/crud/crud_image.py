@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import desc, not_
+from sqlalchemy import desc, not_, and_
 from sqlalchemy.orm import Session
 
 from app.constants.state import DockerImageState, DockerImageType
@@ -27,10 +27,15 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
             query = query.filter(DockerImage.state == int(filters["state"]))
         if filters.get("url"):
             query = query.filter(DockerImage.url == filters["url"])
-        if filters.get("type"):
-            query = query.filter(DockerImage.configs.any(DockerImageConfig.type == int(filters["type"])))
-        if filters.get("object_type"):
-            query = query.filter(DockerImage.object_type == int(filters["object_type"]))
+        if filters.get("object_type") and filters.get("type"):
+            query = query.filter(
+                DockerImage.configs.any(
+                    and_(
+                        DockerImageConfig.object_type == int(filters["object_type"]),
+                        DockerImageConfig.type == int(filters["type"]),
+                    )
+                )
+            )
         if filters.get("is_official"):
             query = query.filter(self.model.is_official)
 
