@@ -201,7 +201,7 @@ nvidia-docker 权限不够。
 
 #### 建议处理方式
 
-1. 通过 ymir-workplace/ymir-data/logs/ymir_controller.yaml 获得更详细的报错信息。
+1. 通过 ymir-workplace/ymir-data/logs/ymir_controller.log 获得更详细的报错信息。
 
 ## executors
 
