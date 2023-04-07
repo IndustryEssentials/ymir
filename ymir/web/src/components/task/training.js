@@ -1,16 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { connect } from 'dva'
-import { Select, Radio, Button, Form, Space, InputNumber, Tag, Tooltip } from 'antd'
+import { Select, Radio, Button, Form, InputNumber, Tag, Tooltip } from 'antd'
 import { formLayout } from '@/config/antd'
 import { useHistory, useLocation, useParams } from 'umi'
 
 import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
-import { string2Array, generateName } from '@/utils/string'
+import { generateName } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
 import { randomNumber } from '@/utils/number'
-import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
 import ImageSelect from '@/components/form/ImageSelect'
@@ -23,6 +21,7 @@ import DockerConfigForm from '@/components/form/items/dockerConfig'
 import OpenpaiForm from '@/components/form/items/openpai'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
+import Suggestion from '@/components/dataset/Suggestion'
 import useDuplicatedCheck from '@/hooks/useDuplicatedCheck'
 import TrainFormat from './training/trainFormat'
 import SubmitButtons from './SubmitButtons'
@@ -39,7 +38,7 @@ const TrainType = [
 
 const KeywordsMaxCount = 5
 
-function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
+function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -61,9 +60,16 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
   const [liveInitialValues, setLiveInitialValues] = useState({})
   const [openpai, setOpenpai] = useState(false)
   const checkDuplicated = useDuplicatedCheck(submit)
-  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
-  const [project, getProject] = useFetch('project/getProject', {})
-  const [updated, updateProject] = useFetch('project/updateProject')
+  const { data: sys, run: getSysInfo } = useRequest('common/getSysInfo', {
+    loading: false,
+  })
+  const { data: project, run: getProject } = useRequest('project/getProject', {
+    loading: false,
+  })
+  const { data: updated, run: updateProject } = useRequest('project/updateProject')
+  const { run: getDataset } = useRequest('dataset/getDataset', {
+    loading: false,
+  })
   const { runAsync: train } = useRequest('task/train', {
     debounceWait: 300,
   })
@@ -81,14 +87,14 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
   }, [])
 
   useEffect(() => {
-    setGPU(sys.gpu_count)
+    setGPU(sys?.gpu_count)
     if (!HIDDENMODULES.OPENPAI) {
-      setOpenpai(!!sys.openpai_enabled)
+      setOpenpai(!!sys?.openpai_enabled)
     }
   }, [sys])
 
   useEffect(() => {
-    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys.gpu_count || 0)
+    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys?.gpu_count || 0)
   }, [selectOpenpai])
 
   useEffect(() => {
@@ -107,11 +113,11 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
   }, [did])
 
   useEffect(() => {
-    did && func.getDataset(did)
+    did && getDataset(did)
   }, [did])
 
   useEffect(() => {
-    trainDataset && !iterationContext && !fromCopy && setAllKeywords()
+    trainDataset && !iterationContext && !fromCopy && setSelected(trainDataset?.gt?.keywords?.slice(0, 5))
     if (!trainDataset && fromCopy) {
       setSelectedKeywords([])
       form.setFieldsValue({ keywords: [] })
@@ -153,7 +159,10 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
   }, [location.state])
 
   function setAllKeywords() {
-    const kws = trainDataset?.gt?.keywords
+    setSelected(trainDataset?.gt?.keywords)
+  }
+
+  function setSelected(kws = []) {
     setSelectedKeywords(kws)
     form.setFieldsValue({ keywords: kws })
   }
@@ -199,7 +208,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
       strategy,
       name: 'group_' + randomNumber(),
       projectId: pid,
-      keywords: iterationContext ? project.keywords : values.keywords,
+      keywords: iterationContext ? project?.keywords : values.keywords,
       config,
     }
     const result = await train(params)
@@ -333,7 +342,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
               />
             </Form.Item>
           )}
-          <Form.Item label={t('dataset.train.form.samples')}>
+          <Form.Item label={t('dataset.train.form.analysis')}>
+            <Suggestion metrics={trainDataset?.metricLevels} hasHeader={false} />
             <SampleRates keywords={selectedKeywords} dataset={trainDataset} negative />
           </Form.Item>
           <Form.Item
@@ -393,30 +403,4 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
   )
 }
 
-const dis = (dispatch) => {
-  return {
-    getDatasets(pid, force = true) {
-      return dispatch({
-        type: 'dataset/queryAllDatasets',
-        payload: { pid, force },
-      })
-    },
-    getDataset(id, force) {
-      return dispatch({
-        type: 'dataset/getDataset',
-        payload: { id, force },
-      })
-    },
-    clearCache() {
-      return dispatch({ type: 'model/clearCache' })
-    },
-    train(payload) {
-      return dispatch({
-        type: 'task/train',
-        payload,
-      })
-    },
-  }
-}
-
-export default connect(null, dis)(Train)
+export default Train

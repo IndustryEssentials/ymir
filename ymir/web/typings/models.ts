@@ -80,7 +80,7 @@ declare namespace YModels {
   }
 
   type Keyword = {
-    name: string,
+    name: string
     aliases: string[]
   }
   type Keywords = {
@@ -124,6 +124,17 @@ declare namespace YModels {
     cks?: CKCounts
     tags?: CKCounts
     evaluated?: boolean
+    metrics: DatasetMetrics
+    metricLevels: DatasetMetrics<DatasetMetricEnum>
+  }
+  type DatasetMetricEnum = 0 | 1 | 2 | 3 | 4
+  type classMetric<M = number> = {
+    [cls: string]: M
+  }
+  type DatasetMetrics< M = number> = {
+    classBias: classMetric<M>
+    annotationDensity: M
+    annotationCount?: classMetric<M>
   }
 
   export interface Prediction extends Dataset<InferenceParams> {

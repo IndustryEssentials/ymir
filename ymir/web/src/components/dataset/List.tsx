@@ -48,6 +48,7 @@ import {
   BarChart2LineIcon,
 } from '@/components/common/Icons'
 import { ObjectType } from '@/constants/objectType'
+import SimpleSuggestion from './list/SimpleSuggestion'
 
 type IsType = {
   isTrainSet?: boolean
@@ -279,6 +280,11 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
         ellipsis: {
           showTitle: false,
         },
+      },
+      {
+        title: <StrongTitle label="dataset.column.suggestion" />,
+        dataIndex: 'metricLevels',
+        render: (levels) => <SimpleSuggestion metrics={levels} />,
       },
       {
         title: <StrongTitle label="dataset.column.state" />,

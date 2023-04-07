@@ -80,6 +80,8 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
   const { gt = {} } = data.keywords
   const assetCount = data.asset_count || 0
   const keywords = Object.keys(gt)
+  const analysis = data?.analysis || {}
+  const levels = data?.analysis_suggestion || {}
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -109,6 +111,16 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     description: data.description || '',
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
     tags: data.gt ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total) : undefined,
+    metrics: {
+      classBias: analysis.class_proportion,
+      annotationDensity: analysis.scene_density,
+      annotationCount: analysis.classwise_annos_count,
+    },
+    metricLevels: {
+      classBias: levels.class_proportion,
+      annotationDensity: levels.scene_density,
+      annotationCount: levels.classwise_annos_count,
+    },
   }
 }
 

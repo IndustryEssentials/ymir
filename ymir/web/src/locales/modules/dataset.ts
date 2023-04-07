@@ -9,6 +9,7 @@ const dataset = {
   'dataset.column.source': { cn: '数据集来源', en: 'Dataset Source' },
   'dataset.column.asset_count': { cn: '图片数', en: "Assets' Count" },
   'dataset.column.keyword': { cn: '类别', en: 'Classes' },
+  'dataset.column.suggestion': { cn: '数据集分析', en: 'Analysis' },
   'dataset.column.ignored_keyword': { cn: '忽略类别', en: 'Ignored Classes' },
   'dataset.column.state': { cn: '状态', en: 'Status' },
   'dataset.column.create_time': { cn: '创建时间', en: 'Create Time' },
@@ -133,6 +134,7 @@ const dataset = {
   'dataset.add.local.file.empty': { cn: '请上传本地文件', en: 'Please upload a zip file' },
   'dataset.samples.negative': { cn: '负样本', en: 'Negative Samples' },
   'dataset.train.form.samples': { cn: '正负样本', en: 'Neg./Pos. Samples' },
+  'dataset.train.form.analysis': { cn: '训练集分析', en: 'Training Analysis' },
   'dataset.detail.label.name': { cn: '数据集名称', en: 'Dataset Name' },
   'dataset.detail.label.assets': { cn: '图片数', en: 'Assets Count' },
   'dataset.detail.label.keywords': { cn: '类别', en: 'Classes' },
@@ -197,6 +199,27 @@ const dataset = {
   'dataset.assets.selector.evaluation.right': { cn: '预测正确', en: 'Correct' },
   'dataset.assets.selector.evaluation.fp': { cn: '预测错误-误检', en: 'FP' },
   'dataset.assets.selector.evaluation.fn': { cn: '预测错误-漏检', en: 'FN' },
+  'dataset.analysis.simple.suggest.annotationCount': { cn: '{count}类标注数量不足', en: 'Annotations imbalanced in {count}' },
+  'dataset.analysis.simple.suggest.classBias': { cn: '{count}类标注不均衡', en: 'Annotations imbalanced in {count}' },
+  'dataset.analysis.simple.suggest.annotationDensity': { cn: '场景聚集度{level}', en: 'Annotations density is {level}' },
+  'dataset.analysis.annotationDensity.0': { cn: '简单', en: 'simple' },
+  'dataset.analysis.annotationDensity.1': { cn: '一般', en: 'normal' },
+  'dataset.analysis.annotationDensity.2': { cn: '复杂', en: 'complex' },
+  'dataset.analysis.suggestion.annotationCount.title': { cn: '标注数量', en: 'Annotations Count' },
+  'dataset.analysis.suggestion.annotationCount': {
+    cn: '建议增加包含{classes}类别的图像，使各类别的标注数量到达500+。',
+    en: 'It is suggested to add more images containing {classes}, in order to reach a minimum annotation count of 500 for each class',
+  },
+  'dataset.analysis.suggestion.classBias.title': { cn: '标注均衡性', en: 'Annotations Balance' },
+  'dataset.analysis.suggestion.classBias': {
+    cn: '建议添加包含{classes}类别的图像，使各类别的标注数量大于最多标注类别的10%，提升类别的均衡性。',
+    en: 'It is suggested to add more images containing {classes} to achieve an annotation count greater than 10% of the maxium class for all classes, to improve the balance of classes.',
+  },
+  'dataset.analysis.suggestion.annotationDensity.title': { cn: '场景密集度', en: 'Scene Density' },
+  'dataset.analysis.suggestion.annotationDensity': {
+    cn: '建议添加包含多个类别的图像，丰富场景的多样性。',
+    en: 'It is recommended to add images containing multiple classes to increase the diversity of the scene.',
+  },
 }
 
 export default dataset

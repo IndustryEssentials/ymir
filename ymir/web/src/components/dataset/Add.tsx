@@ -52,7 +52,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
   const iterationContext = from === 'iteration'
 
   const [form] = useForm()
-  const [currentType, setCurrentType] = useState(Types.INTERNAL)
+  const [currentType, setCurrentType] = useState(Types.LOCAL)
   const [file, setFile] = useState('')
   const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : 0)
   const [newKeywords, setNewKeywords] = useState<string[]>([])

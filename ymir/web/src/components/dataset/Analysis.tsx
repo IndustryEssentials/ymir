@@ -1,15 +1,16 @@
 import { FC, useEffect, useState } from 'react'
-import { Form, Table, Card } from 'antd'
+import { Form, Table, Card, Row, Col } from 'antd'
 import { useParams } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 
 import { getAnnotationCharts, getAssetCharts, getTableColumns, ChartConfigType, ColumnType } from './analysis/AnalysisHelper'
-
-import style from './analysis/analysis.less'
 import ChartsContainer, { ChartType } from './analysis/ChartsContainer'
 import DataLoading from '@/components/common/DataLoading'
+import Suggestion from '@/components/dataset/Suggestion'
+
+import style from './analysis/analysis.less'
 
 const getVersionName = ({ name, versionName }: YModels.DatasetAnalysis) => `${name} ${versionName}`
 
@@ -99,19 +100,26 @@ const Analysis: FC<{ ids: number[] }> = ({ ids }) => {
   return (
     <Card className={style.container} title={t('breadcrumbs.dataset.analysis')}>
       {source.length ? (
-        <>
-          <Table
-            size="small"
-            dataSource={source}
-            rowKey={(record) => getVersionName(record)}
-            rowClassName={style.rowClass}
-            className={style.tableClass}
-            columns={tableColumns}
-            pagination={false}
-          />
-          <ChartsContainer label="dataset.analysis.annotations.metrics" charts={annotationCharts} />
-          <ChartsContainer label="dataset.analysis.assets.metrics" charts={assetCharts} />
-        </>
+        <Row gutter={20} className={style.dataContainer}>
+          <Col span={18} className={`${style.rowData} ${style.maxHeight}`}>
+            <Table
+              size="small"
+              dataSource={source}
+              rowKey={(record) => getVersionName(record)}
+              rowClassName={style.rowClass}
+              className={style.tableClass}
+              columns={tableColumns}
+              pagination={false}
+            />
+            <ChartsContainer label="dataset.analysis.annotations.metrics" charts={annotationCharts} />
+            <ChartsContainer label="dataset.analysis.assets.metrics" charts={assetCharts} />
+          </Col>
+          <Col span={6} className={`${style.maxHeight} rightForm`}>
+            {source.map((item) => (
+              <Suggestion title={item.name} metrics={item.metricLevels} />
+            ))}
+          </Col>
+        </Row>
       ) : (
         <DataLoading />
       )}
