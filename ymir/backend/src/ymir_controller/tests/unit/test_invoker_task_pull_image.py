@@ -4,11 +4,11 @@ import shutil
 import unittest
 from unittest import mock
 
-from google.protobuf.json_format import MessageToDict
-
 import tests.utils as test_utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from id_definition.error_codes import CTLResponseCode
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -52,23 +52,28 @@ class TestInvokerPullImage(unittest.TestCase):
 
     def _mock_run_func(*args, **kwargs):
         ret = type("", (), {})()
-        ret.returncode = 0
+        ret.returncode = ("inspect" in args[0])  # docker image inspect returns err
         ret.stdout = 'abcdefg'
+        ret.stderr = 'abcdefg'
         return ret
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
+        self.maxDiff = None
+        req_create_task = backend_pb2.ReqCreateTask()
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypePullImage
+        req_create_task.no_task_monitor = True
         response = make_invoker_cmd_call(
-            invoker=RequestTypeToInvoker[backend_pb2.CMD_PULL_IMAGE],
+            invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
             sandbox_root=self._sandbox_root,
-            req_type=backend_pb2.CMD_PULL_IMAGE,
+            req_type=backend_pb2.TASK_CREATE,
             user_id=self._user_name,
             repo_id=self._mir_repo_name,
             task_id=self._task_id,
             singleton_op="docker_image_name",
+            req_create_task=req_create_task,
         )
-        print(MessageToDict(response))
-
+        self.assertEqual(CTLResponseCode.CTR_OK, response.code)
         args_list = [
             mock.call(
                 "docker image inspect docker_image_name --format ignore_me".split(' '),
@@ -77,35 +82,10 @@ class TestInvokerPullImage(unittest.TestCase):
                 cwd=None,
             ),
             mock.call(
-                "docker images docker_image_name --format {{.ID}}".split(' '),
+                "docker pull docker_image_name".split(' '),
                 capture_output=True,
                 text=True,
                 cwd=None,
             ),
-            mock.call(
-                "docker run --rm docker_image_name cat /img-man/training-template.yaml".split(' '),
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                "docker run --rm docker_image_name cat /img-man/mining-template.yaml".split(' '),
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                "docker run --rm docker_image_name cat /img-man/infer-template.yaml".split(' '),
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                "docker run --rm docker_image_name cat /img-man/manifest.yaml".split(" "),
-                capture_output=True,
-                text=True,
-                cwd=None,
-            )
         ]
-
-        assert mock_run.call_args_list == args_list
+        self.assertEqual(args_list, mock_run.call_args_list)

@@ -35,7 +35,7 @@ enum RequestType {
     CMD_LABEL_ADD = 12;
     CMD_LABEL_GET = 13;
     CMD_TERMINATE = 14;
-    CMD_PULL_IMAGE = 16;
+    CMD_INSPECT_IMAGE = 16;
     CMD_GPU_INFO_GET = 17;
     CMD_SAMPLING = 18;
     CMD_EVALUATE = 19;

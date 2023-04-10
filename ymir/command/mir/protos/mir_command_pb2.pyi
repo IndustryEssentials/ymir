@@ -99,12 +99,13 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     TaskTypeSampling = TaskType.V(10)
     TaskTypeFusion = TaskType.V(11)
     TaskTypeInit = TaskType.V(12)
+    TaskTypeImportModel = TaskType.V(13)
     """/ used by ymir_controller"""
 
-    TaskTypeImportModel = TaskType.V(13)
     TaskTypeCopyModel = TaskType.V(14)
     TaskTypeDatasetInfer = TaskType.V(15)
     TaskTypeEvaluate = TaskType.V(16)
+    TaskTypePullImage = TaskType.V(17)
 
 TaskTypeUnknown = TaskType.V(0)
 TaskTypeTraining = TaskType.V(1)
@@ -119,12 +120,13 @@ TaskTypeInfer = TaskType.V(9)
 TaskTypeSampling = TaskType.V(10)
 TaskTypeFusion = TaskType.V(11)
 TaskTypeInit = TaskType.V(12)
+TaskTypeImportModel = TaskType.V(13)
 """/ used by ymir_controller"""
 
-TaskTypeImportModel = TaskType.V(13)
 TaskTypeCopyModel = TaskType.V(14)
 TaskTypeDatasetInfer = TaskType.V(15)
 TaskTypeEvaluate = TaskType.V(16)
+TaskTypePullImage = TaskType.V(17)
 global___TaskType = TaskType
 
 
