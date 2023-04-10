@@ -6,7 +6,7 @@ import { useParams, useHistory } from 'umi'
 
 import t from '@/utils/t'
 import { percent } from '@/utils/number'
-import { TYPES } from '@/constants/image'
+import { TYPES, getConfig } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 import { isSemantic } from '@/constants/objectType'
 import useRequest from '@/hooks/useRequest'
@@ -91,8 +91,7 @@ function Verify() {
     if (img) {
       setImage(img.url)
     }
-    const { configs } = img || {}
-    const configObj = (configs || []).find((conf) => conf.type === TYPES.INFERENCE) || {}
+    const configObj = getConfig(img, TYPES.INFERENCE, project.type)
     setConfig(configObj.config)
   }
 

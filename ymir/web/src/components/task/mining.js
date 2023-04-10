@@ -7,8 +7,7 @@ import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
-import { TYPES } from '@/constants/image'
-import { randomNumber } from '@/utils/number'
+import { TYPES, getConfig } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
@@ -38,7 +37,6 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState({})
   const [gpu_count, setGPU] = useState(0)
-  const [imageHasInference, setImageHasInference] = useState(false)
   const [live, setLiveCode] = useState(false)
   const [liveInitialValues, setLiveInitialValues] = useState({})
   const [openpai, setOpenpai] = useState(false)
@@ -105,7 +103,6 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
         modelStage: [model_id, model_stage_id],
         image: docker_image_id,
         topk: top_k,
-        inference: generate_annotations,
         description,
       })
       setShowConfig(true)
@@ -120,11 +117,11 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   }, [location.state])
 
   function imageChange(_, option = {}) {
-    const { url, configs = [] } = option.image
-    const configObj = configs.find((conf) => conf.type === TYPES.MINING) || {}
-    const hasInference = configs.some((conf) => conf.type === TYPES.INFERENCE)
-    setImageHasInference(hasInference)
-    form.setFieldsValue({ inference: hasInference && generate_annotations })
+    if (!option) {
+      return setConfig({})
+    }
+    const { image } = option
+    const configObj = getConfig(image, TYPES.MINING, dataset.type) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }

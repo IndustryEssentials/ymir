@@ -57,6 +57,7 @@ describe("constants: image", () => {
         trigger_crash: 0,
         type: 1
       },
+      object_type: 2,
       type
     })
     const createTime = "2022-03-10T03:39:09"
@@ -65,7 +66,6 @@ describe("constants: image", () => {
     const backendData = {
       name: "sample_image",
       state: 3,
-      object_type: 1,
       hash: "f3da055bacc7",
       url: "sample-tmi:stage-test-01",
       description: "test",
@@ -82,8 +82,8 @@ describe("constants: image", () => {
       createTime: format(createTime),
       description: "test",
       functions,
-      objectType: 1,
-      error_code: undefined,
+      objectTypes: [2],
+      errorCode: undefined,
       liveCode: undefined,
       id: 1,
       name: "sample_image",

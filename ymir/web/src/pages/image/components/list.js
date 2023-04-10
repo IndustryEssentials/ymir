@@ -27,7 +27,6 @@ const initQuery = {
   limit: 20,
 }
 
-// todo identify annotation types supported
 const ImageList = ({ role, filter, getImages }) => {
   const history = useHistory()
   const [images, setImages] = useState([])
@@ -151,11 +150,12 @@ const ImageList = ({ role, filter, getImages }) => {
     return <span className={s.stateIcon}>{states[state]}</span>
   }
 
-  const objectTypeLabel = (type) => {
-    const cls = getProjectTypeLabel(type)
-    const label = getProjectTypeLabel(type, true)
-    return type && cls ? <span className={`extraTag ${cls}`}>{t(label)}</span> : null
-  }
+  const objectTypeLabel = (types) =>
+    types.map((type) => {
+      const cls = getProjectTypeLabel(type)
+      const label = getProjectTypeLabel(type, true)
+      return type && cls ? <span className={`extraTag ${cls}`}>{t(label)}</span> : null
+    })
 
   const liveCodeState = (live) => {
     return <span className={live ? s.remote : s.local}>{t(live ? 'image.livecode.label.remote' : 'image.livecode.label.local')}</span>
@@ -174,12 +174,12 @@ const ImageList = ({ role, filter, getImages }) => {
         <Col flex={1}>
           <Space>
             <span>{item.name}</span>
-            {objectTypeLabel(item.objectType)}
+            {objectTypeLabel(item.objectTypes)}
             <StateTag state={item.state} code={item.errorCode} />
             {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
           </Space>
         </Col>
-        <Col onClick={e => e.stopPropagation()}>{more(item)}</Col>
+        <Col onClick={(e) => e.stopPropagation()}>{more(item)}</Col>
       </Row>
     )
     const type = isTrain(item.functions) ? 'train' : 'mining'

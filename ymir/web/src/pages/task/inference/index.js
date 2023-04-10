@@ -8,7 +8,7 @@ import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { string2Array } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
-import { TYPES } from '@/constants/image'
+import { TYPES, getConfig } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
@@ -16,7 +16,6 @@ import { randomNumber } from '@/utils/number'
 import ModelSelect from '@/components/form/modelSelect'
 import ImageSelect from '@/components/form/ImageSelect'
 import DatasetSelect from '@/components/form/datasetSelect'
-import useAddKeywords from '@/hooks/useAddKeywords'
 import AddKeywordsBtn from '@/components/keyword/addKeywordsBtn'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
@@ -38,7 +37,7 @@ const parseModelStage = (str = '') => {
 
 const Algorithm = () => [{ id: 'aldd', label: 'ALDD', checked: true }]
 
-function Inference({...func }) {
+function Inference({ ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -87,12 +86,6 @@ function Inference({...func }) {
 
     did && form.setFieldsValue({ datasets: did })
   }, [location.query.did])
-
-  useEffect(() => {}, [stage])
-
-  useEffect(() => {
-    pid && func.getDatasets(pid)
-  }, [pid])
 
   useEffect(() => {
     checkModelKeywords()
@@ -150,16 +143,12 @@ function Inference({...func }) {
     checkKeywords(keywords)
   }
 
-  async function fetchSysInfo() {
-    const result = await func.getSysInfo()
-    if (result) {
-      setGPU(result.gpu_count)
+  function imageChange(_, option) {
+    if (!option) {
+      return setConfig({})
     }
-  }
-
-  function imageChange(_, option = {}) {
-    const { url, configs = [] } = option.image
-    const configObj = configs.find((conf) => conf.type === TYPES.INFERENCE) || {}
+    const { image } = option
+    const configObj = getConfig(option.image, TYPES.INFERENCE, project?.type) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }
@@ -343,26 +332,6 @@ function Inference({...func }) {
 
 const dis = (dispatch) => {
   return {
-    getSysInfo() {
-      return dispatch({
-        type: 'common/getSysInfo',
-      })
-    },
-    getDatasets(pid) {
-      return dispatch({
-        type: 'dataset/queryAllDatasets',
-        payload: { pid, force: true },
-      })
-    },
-    getDataset(id, force) {
-      return dispatch({
-        type: 'dataset/getDataset',
-        payload: { id, force },
-      })
-    },
-    clearCache() {
-      return dispatch({ type: 'dataset/clearCache' })
-    },
     infer(payload) {
       return dispatch({
         type: 'task/infer',

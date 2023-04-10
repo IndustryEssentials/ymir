@@ -7,7 +7,7 @@ import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { generateName } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
-import { TYPES } from '@/constants/image'
+import { TYPES, getConfig } from '@/constants/image'
 import { randomNumber } from '@/utils/number'
 import useRequest from '@/hooks/useRequest'
 
@@ -176,9 +176,12 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
     setValidationDataset(option?.dataset)
   }
 
-  function imageChange(_, option = {}) {
-    const { configs } = option.image
-    const configObj = (configs || []).find((conf) => conf.type === TYPES.TRAINING) || {}
+  function imageChange(_, option) {
+    if(!option) {
+      setConfig({})
+    }
+    const { image } = option
+    const configObj = getConfig(image, TYPES.TRAINING, project.type)
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }

@@ -1,4 +1,4 @@
-import { format } from "@/utils/date"
+import { format } from '@/utils/date'
 
 export enum TYPES {
   UNKOWN = 0,
@@ -9,7 +9,7 @@ export enum TYPES {
 
 export enum STATES {
   PENDING = 1,
-  DONE =3,
+  DONE = 3,
   ERROR = 4,
 }
 
@@ -25,13 +25,13 @@ export const getImageTypeLabel = (functions: TYPES[] = []) => {
     [TYPES.INFERENCE]: 'image.type.inference',
   }
 
-  return functions.map(func => labels[func])
+  return functions.map((func) => labels[func])
 }
 
 /**
  * get image state label, default: ''
  * @param {number} state image state
- * @returns 
+ * @returns
  */
 export const getImageStateLabel = (state: STATES | undefined) => {
   if (!state) {
@@ -47,13 +47,18 @@ export const getImageStateLabel = (state: STATES | undefined) => {
 
 export function transferImage(data: YModels.BackendData): YModels.Image {
   const configs: YModels.DockerImageConfig[] = data.configs || []
+  const getConfigAttr = <K extends keyof YModels.DockerImageConfig>(attr: K): YModels.DockerImageConfig[K][] => [
+    ...new Set(configs.map((config) => config[attr])),
+  ]
+  const objectTypes = getConfigAttr('object_type').filter((t): t is YModels.ObjectType => !!t)
+  const functions = getConfigAttr('type')
   return {
     id: data.id,
     name: data.name,
     state: data.state,
     errorCode: data.error_code,
-    objectType: data.object_type,
-    functions: configs.map(config => config.type),
+    objectTypes,
+    functions,
     configs,
     url: data.url,
     liveCode: data.enable_livecode,
@@ -62,3 +67,6 @@ export function transferImage(data: YModels.BackendData): YModels.Image {
     createTime: format(data.create_datetime),
   }
 }
+
+export const getConfig = (image: YModels.Image, type: number, objectType: number) =>
+  image.configs.find((config) => config.type === type && (!config.object_type || config.object_type === objectType))
