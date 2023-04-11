@@ -22,7 +22,7 @@ from app.libs.projects import setup_sample_project_in_background
 from app.libs.labels import ensure_labels_exist
 from app.libs.metrics import send_project_metrics
 from common_utils.labels import UserLabels
-from id_definition.task_id import gen_task_hash
+from id_definition.task_id import gen_task_id
 
 router = APIRouter()
 
@@ -77,7 +77,7 @@ def create_sample_project(
         is_example=True,
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
-    project_task_hash = gen_task_hash(current_user.id, project.id)
+    project_task_hash = gen_task_id(current_user.id, project.id)
     training_class_ids = ensure_labels_exist(
         user_id=current_user.id,
         user_labels=user_labels,
@@ -135,7 +135,7 @@ def create_project(
     # 1.create project to get task_id for sending to controller
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
 
-    task_id = gen_task_hash(current_user.id, project.id)
+    task_id = gen_task_id(current_user.id, project.id)
 
     # 2.send to controller
     try:

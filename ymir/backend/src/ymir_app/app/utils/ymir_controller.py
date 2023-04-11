@@ -13,7 +13,7 @@ from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectTyp
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
-from id_definition.task_id import gen_repo_hash, gen_task_hash, gen_user_hash, TaskId
+from id_definition.task_id import gen_repo_hash, gen_task_id, gen_user_hash, TaskId
 from id_definition.error_codes import CTLResponseCode as controller_error_code
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2 as mirsvrpb
@@ -91,7 +91,7 @@ class ControllerRequest:
     def __post_init__(self) -> None:
         user_hash = gen_user_hash(self.user_id)
         repo_hash = gen_repo_hash(self.project_id)
-        task_hash = self.task_id or gen_task_hash(self.user_id, self.project_id)
+        task_hash = self.task_id or gen_task_id(self.user_id, self.project_id)
 
         request = mirsvrpb.GeneralReq(user_id=user_hash, repo_id=repo_hash, task_id=task_hash)
 

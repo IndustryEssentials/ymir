@@ -76,7 +76,7 @@ def gen_repo_hash(repo_id: int) -> str:
     return f"{repo_id:0>6}"
 
 
-def gen_seq_hashes(count: int, user_id: int, repo_id: int) -> Tuple[str, List[str]]:
+def gen_seq_ids(count: int, user_id: int, repo_id: int, hex_task_id: str = None) -> Tuple[str, List[str]]:
     """
     Generate sequential id and it's task ids
     Format:
@@ -86,12 +86,15 @@ def gen_seq_hashes(count: int, user_id: int, repo_id: int) -> Tuple[str, List[st
         b: total task count, one digit int
         c: user id, 4 digits
         d: repo id, 6 digits
+    Returns:
+        first: seq id
+        second: all it's task ids
     """
     user_hash = gen_user_hash(user_id)
     repo_hash = gen_repo_hash(repo_id)
     if count <= 1 or count > 9:
         raise ValueError(f"[gen_seq_ids]: invalid count: {count}")
-    hex_task_id = f"{secrets.token_hex(3)}{int(time.time())}"
+    hex_task_id = hex_task_id or f"{secrets.token_hex(3)}{int(time.time())}"
     sids: List[str] = []
     for idx in range(count + 1):
         sids.append(str(TaskId(id_type=IDType.ID_TYPE_SEQ_TASK.value,
@@ -104,7 +107,25 @@ def gen_seq_hashes(count: int, user_id: int, repo_id: int) -> Tuple[str, List[st
     return (sids[0], sids[1:])
 
 
-def gen_task_hash(user_id: int, repo_id: int) -> str:
+def rebuild_seq_ids(seq_task_id: str) -> Tuple[str, List[str]]:
+    """
+    Generate sequential id and it's task ids from a single seq task id
+    Returns:
+        first: seq id
+        second: all it's task ids
+    Raises:
+        ValueError: if seq_task_id not belongs to a sequential task
+    """
+    seq_id_typed = TaskId.from_task_id(seq_task_id)
+    if seq_id_typed.id_type != IDType.ID_TYPE_SEQ_TASK.value:
+        raise ValueError(f"seq_task_id not belongs to a sequential task: {seq_task_id}")
+    return gen_seq_ids(user_id=int(seq_id_typed.user_id),
+                       repo_id=int(seq_id_typed.repo_id),
+                       count=int(seq_id_typed.seq_task_count),
+                       hex_task_id=seq_id_typed.hex_task_id)
+
+
+def gen_task_id(user_id: int, repo_id: int) -> str:
     hex_task_id = f"{secrets.token_hex(3)}{int(time.time())}"
     return str(
         TaskId(id_type=IDType.ID_TYPE_TASK.value,

@@ -37,7 +37,7 @@ from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
 from app.utils.data import split_seq
 from common_utils.labels import UserLabels
-from id_definition.task_id import gen_task_hash
+from id_definition.task_id import gen_task_id
 
 
 class Retry(Exception):
@@ -94,7 +94,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         docker_image_getter,
         project_getter,
     )
-    task_hash = gen_task_hash(user_id, task_in.project_id)
+    task_hash = gen_task_id(user_id, task_in.project_id)
     try:
         controller_client = ControllerClient()
         resp = controller_client.create_task(

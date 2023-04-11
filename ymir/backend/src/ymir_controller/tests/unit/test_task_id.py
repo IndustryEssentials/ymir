@@ -13,7 +13,7 @@ class TestTaskId(unittest.TestCase):
         user_hash = task_id.gen_user_hash(self._user_id)
         repo_hash = task_id.gen_repo_hash(self._repo_id)
 
-        sids = task_id.gen_seq_hashes(count=2, user_id=self._user_id, repo_id=self._repo_id)
+        sids = task_id.gen_seq_ids(count=2, user_id=self._user_id, repo_id=self._repo_id)
         sid_typed = task_id.TaskId.from_task_id(sids[0])
         self.assertEqual(task_id.IDType.ID_TYPE_SEQ_TASK.value, sid_typed.id_type)
         self.assertEqual(2, int(sid_typed.seq_task_count))
@@ -32,8 +32,17 @@ class TestTaskId(unittest.TestCase):
 
     def test_gen_seq_id_01(self) -> None:
         with self.assertRaises(ValueError):
-            task_id.gen_seq_hashes(count=0, user_id=self._user_id, repo_id=self._repo_id)
+            task_id.gen_seq_ids(count=0, user_id=self._user_id, repo_id=self._repo_id)
         with self.assertRaises(ValueError):
-            task_id.gen_seq_hashes(count=1, user_id=self._user_id, repo_id=self._repo_id)
+            task_id.gen_seq_ids(count=1, user_id=self._user_id, repo_id=self._repo_id)
         with self.assertRaises(ValueError):
-            task_id.gen_seq_hashes(count=10, user_id=self._user_id, repo_id=self._repo_id)
+            task_id.gen_seq_ids(count=10, user_id=self._user_id, repo_id=self._repo_id)
+
+    def test_gen_seq_id_from_task_id_00(self) -> None:
+        sids = task_id.gen_seq_ids(count=2, user_id=self._user_id, repo_id=self._repo_id)
+        self.assertEqual(sids, task_id.rebuild_seq_ids(seq_task_id=sids[0]))
+        self.assertEqual(sids, task_id.rebuild_seq_ids(seq_task_id=sids[1][1]))
+
+        with self.assertRaises(ValueError):
+            self.assertIsNone(task_id.rebuild_seq_ids(task_id.gen_task_id(user_id=self._user_id,
+                                                                          repo_id=self._repo_id)))

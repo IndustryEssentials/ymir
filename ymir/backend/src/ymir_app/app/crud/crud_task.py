@@ -10,7 +10,7 @@ from app.crud.base import CRUDBase
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
 from app.schemas import CommonPaginationParams
-from id_definition.task_id import gen_task_hash
+from id_definition.task_id import gen_task_id
 
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
@@ -64,7 +64,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         - dataset fusion
         - model import
         """
-        task_hash = hash_ or gen_task_hash(user_id, project_id)
+        task_hash = hash_ or gen_task_id(user_id, project_id)
         # for a placeholder task, task state and percent are closely related
         percent = 1 if state_ is TaskState.done else 0
         db_obj = Task(
