@@ -33,10 +33,11 @@ from app.libs.metrics import send_keywords_metrics
 from app.libs.models import create_model_stages
 from app.utils.cache import CacheClient
 from app.utils.err import retry
-from app.utils.ymir_controller import ControllerClient, gen_task_hash
+from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
 from app.utils.data import split_seq
 from common_utils.labels import UserLabels
+from id_definition.task_id import gen_task_hash
 
 
 class Retry(Exception):

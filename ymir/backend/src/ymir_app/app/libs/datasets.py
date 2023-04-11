@@ -12,9 +12,10 @@ from app.api.errors.errors import (
     PrematureDatasets,
 )
 from app.constants.state import ResultState, TaskState
-from app.utils.ymir_controller import ControllerClient, gen_user_hash, gen_repo_hash
+from app.utils.ymir_controller import ControllerClient
 from app.schemas.common import ImportStrategy
 from id_definition.error_codes import APIErrorCode as error_codes
+from id_definition.task_id import gen_repo_hash, gen_user_hash
 
 
 def import_dataset_in_background(

@@ -10,7 +10,7 @@ from app.crud.base import CRUDBase
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
 from app.schemas import CommonPaginationParams
-from app.utils.ymir_controller import gen_task_hash
+from id_definition.task_id import gen_task_hash
 
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):

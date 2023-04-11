@@ -17,11 +17,12 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.constants.state import ResultState, RunningStates, TaskType, ObjectType
 from app.utils.cache import CacheClient
-from app.utils.ymir_controller import ControllerClient, gen_task_hash
+from app.utils.ymir_controller import ControllerClient
 from app.libs.projects import setup_sample_project_in_background
 from app.libs.labels import ensure_labels_exist
 from app.libs.metrics import send_project_metrics
 from common_utils.labels import UserLabels
+from id_definition.task_id import gen_task_hash
 
 router = APIRouter()
 

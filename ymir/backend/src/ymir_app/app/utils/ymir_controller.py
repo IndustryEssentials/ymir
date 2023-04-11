@@ -1,6 +1,4 @@
 import enum
-import secrets
-import time
 from dataclasses import dataclass
 from typing import Any, Dict, Generator, List, Optional, Union
 
@@ -15,7 +13,7 @@ from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectTyp
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
-from id_definition.task_id import TaskId
+from id_definition.task_id import gen_repo_hash, gen_task_hash, gen_user_hash, TaskId
 from id_definition.error_codes import CTLResponseCode as controller_error_code
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2 as mirsvrpb
@@ -79,21 +77,6 @@ def gen_typed_datasets(typed_datasets: List[Dict]) -> Generator:
         dataset_with_type.dataset_type = typed_dataset.get("type") or int(DatasetType.training)
         dataset_with_type.dataset_id = typed_dataset["hash"]
         yield dataset_with_type
-
-
-def gen_user_hash(user_id: int) -> str:
-    return f"{user_id:0>4}"
-
-
-def gen_repo_hash(project_id: int) -> str:
-    return f"{project_id:0>6}"
-
-
-def gen_task_hash(user_id: int, project_id: int) -> str:
-    user_hash = gen_user_hash(user_id)
-    repo_hash = gen_repo_hash(project_id)
-    hex_task_id = f"{secrets.token_hex(3)}{int(time.time())}"
-    return str(TaskId("t", "0", "00", user_hash, repo_hash, hex_task_id))
 
 
 @dataclass

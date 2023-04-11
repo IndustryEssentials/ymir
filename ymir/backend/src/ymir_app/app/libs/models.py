@@ -9,8 +9,9 @@ from app import crud, schemas
 from app.api.errors.errors import ModelNotFound, TaskNotFound, FieldValidationFailed
 from app.constants.state import ResultState, TaskType, TaskState
 from app.utils.files import NGINX_DATA_PATH
-from app.utils.ymir_controller import gen_user_hash, gen_repo_hash, ControllerClient
+from app.utils.ymir_controller import ControllerClient
 from id_definition.error_codes import APIErrorCode as error_codes
+from id_definition.task_id import gen_repo_hash, gen_user_hash
 
 
 def import_model_in_background(

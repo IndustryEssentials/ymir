@@ -22,10 +22,11 @@ from app.api.errors.errors import (
 from app.constants.state import FinalStates, TaskState, TaskType
 from app.config import settings
 from app.utils.timeutil import convert_datetime_to_timestamp
-from app.utils.ymir_controller import ControllerClient, gen_user_hash
+from app.utils.ymir_controller import ControllerClient
 from app.libs.redis_stream import RedisStream
 from app.libs.tasks import TaskResult, create_single_task
 from common_utils.labels import UserLabels
+from id_definition.task_id import gen_user_hash
 
 router = APIRouter()
 
