@@ -31,22 +31,3 @@ const getActions = (
 }
 
 export { getActions }
-
-// const Actions: FC<{ dataset: YModels.Dataset }> = ({ dataset }) => {
-//   const history = useHistory()
-//   const [actions, setActions] = useState<YComponents.Action[]>([])
-//   const [haveImages, sethaveImages] = useState(false)
-//   const [haveAnnotations, sethaveAnnotations] = useState(false)
-//   const [haveModels, sethaveModels] = useState(false)
-//   const [isRelatedDataset, setisRelatedDataset] = useState(false)
-//   const [seq, setSeq] = useState<ActionType[]>([])
-
-//   useEffect(() => {
-//     const seq = getSequence(haveImages, haveAnnotations, haveModels, isRelatedDataset)
-//     setSeq(seq)
-//   }, [haveImages, haveAnnotations, haveModels, isRelatedDataset])
-
-//   return <TableActions actions={actions} />
-// }
-
-// export default Actions

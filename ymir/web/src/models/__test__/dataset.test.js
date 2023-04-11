@@ -75,7 +75,7 @@ describe('models: dataset', () => {
   const allDatasets = { 1: items, 2: [...items, product(7)] }
   normalReducer(dataset, 'UPDATE_DATASETS', { [916]: datasets }, { [916]: datasets }, 'datasets', {})
   normalReducer(dataset, 'UPDATE_ALL_DATASETS', { [gid]: allDatasets }, { [gid]: allDatasets }, 'allDatasets', {})
-  normalReducer(dataset, 'UPDATE_VERSIONS', { id: gid, versions: items }, { [gid]: items }, 'versions', {})
+  normalReducer(dataset, 'UpdateVersions', { [gid]: items }, { [gid]: items }, 'versions', {})
   normalReducer(dataset, 'UPDATE_ALL_VERSIONS', allVersions, allVersions, 'versions', {})
   normalReducer(dataset, 'UPDATE_DATASET', { id: gid, dataset: product(534) }, { [gid]: product(534) }, 'dataset', {})
   normalReducer(dataset, 'UPDATE_ALL_DATASET', { [gid]: product(534), 644: product(644) }, { [gid]: product(534), 644: product(644) }, 'dataset', {})
@@ -111,15 +111,16 @@ describe('models: dataset', () => {
 
   it('effects: getDatasetGroups', () => {
     const saga = dataset.effects.getDatasetGroups
+    const pid = 134324
     const creator = {
       type: 'getDatasetGroups',
-      payload: {},
+      payload: { pid },
     }
     const datetime = '2022-02-14T10:03:49'
     const origin = [1, 2, 3, 4].map((item) => {
       return {
         id: item,
-        project_id: 1000 + item,
+        pid,
         name: 'name' + item,
         create_datetime: datetime,
       }
@@ -129,11 +130,19 @@ describe('models: dataset', () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const response = generator.next({
+    generator.next({
       code: 0,
       result: { items: origin, total: origin.length },
     })
-    const end = generator.next()
+    let end = {}
+    generator.next()
+    for (let index = 0; index < recieved.length; index++) {
+      if (index === recieved.length - 1) {
+        end = generator.next()
+      } else {
+        generator.next()
+      }
+    }
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)

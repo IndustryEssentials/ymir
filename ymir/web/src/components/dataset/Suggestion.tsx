@@ -1,11 +1,10 @@
 import { AnnotationCount, AnnotationDensity, ClassBias } from '@/constants/datasetAnalysis'
 import t from '@/utils/t'
 import { FC, useEffect, useState } from 'react'
-import Panel, { Props as PanelProps } from '@/components/form/panel'
 
 type Props = {
-  title?: string
   metrics?: YModels.DatasetMetrics
+  target?: string[]
 }
 
 const Suggest: FC<{ title?: string; content?: string }> = ({ title, content }) => {
@@ -17,7 +16,7 @@ const Suggest: FC<{ title?: string; content?: string }> = ({ title, content }) =
   )
 }
 
-const Suggestion: FC<Props & PanelProps> = ({ title, metrics, ...props }) => {
+const Suggestion: FC<Props> = ({ metrics, target }) => {
   const [aclasses, setAclasses] = useState<string[]>([])
   const [cclasses, setCclasses] = useState<string[]>([])
   const [simple, setSimple] = useState(false)
@@ -26,13 +25,13 @@ const Suggestion: FC<Props & PanelProps> = ({ title, metrics, ...props }) => {
     if (!metrics) {
       return
     }
-    setAclasses(calClasses(metrics.annotationCount, AnnotationCount.bad))
-    setCclasses(calClasses(metrics.classBias, ClassBias.bad))
+    setAclasses(calClasses(metrics.annotationCount, AnnotationCount.bad, target))
+    setCclasses(calClasses(metrics.classBias, ClassBias.bad, target))
     setSimple(metrics.annotationDensity === AnnotationDensity.simple)
   }, [metrics])
 
   return metrics ? (
-    <Panel {...props} toogleVisible={false} label={title}>
+    <div>
       {aclasses.length ? (
         <Suggest
           title={t('dataset.analysis.suggestion.annotationCount.title')}
@@ -49,11 +48,15 @@ const Suggestion: FC<Props & PanelProps> = ({ title, metrics, ...props }) => {
       {simple ? (
         <Suggest title={t('dataset.analysis.suggestion.annotationDensity.title')} content={t('dataset.analysis.suggestion.annotationDensity')} />
       ) : null}
-    </Panel>
+    </div>
   ) : null
 }
 
-const calClasses = (countObject: YModels.classMetric = {}, level: number) => {
-  return Object.keys(countObject).reduce<string[]>((prev, curr) => (countObject[curr] === level ? [...prev, curr] : prev), [])
+const calClasses = (countObject: YModels.classMetric = {}, level: number, classes?: string[]) => {
+  return Object.keys(countObject).reduce<string[]>(
+    (prev, curr) => (countObject[curr] === level && (!classes?.length || classes.includes(curr)) ? [...prev, curr] : prev),
+    [],
+  )
 }
+
 export default Suggestion

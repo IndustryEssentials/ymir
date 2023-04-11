@@ -68,11 +68,11 @@ const KeywordSelect: FC<Props> = ({ value, onChange = () => {}, keywords, filter
 
   return (
     <Select
+      showArrow
+      placeholder={t('task.train.form.keywords.label')}
       {...resProps}
       mode="multiple"
-      showArrow
       value={value}
-      placeholder={t('task.train.form.keywords.label')}
       filterOption={(value, option) => !!option && [option.value, ...(option.aliases || [])].some((key) => key.indexOf(value) >= 0)}
       options={filter(options)}
       onChange={onChange}

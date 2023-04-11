@@ -21,12 +21,14 @@ import DockerConfigForm from '@/components/form/items/dockerConfig'
 import OpenpaiForm from '@/components/form/items/openpai'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
-import Suggestion from '@/components/dataset/Suggestion'
 import useDuplicatedCheck from '@/hooks/useDuplicatedCheck'
 import TrainFormat from './training/trainFormat'
 import SubmitButtons from './SubmitButtons'
+import useModal from '@/hooks/useModal'
+import Analysis from '@/components/dataset/Analysis'
 
 import styles from './training/training.less'
+import { BarChart2LineIcon } from '@/components/common/Icons'
 
 const TrainType = [
   {
@@ -74,6 +76,10 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
     debounceWait: 300,
   })
   const [fromCopy, setFromCopy] = useState(false)
+  const [AnalysisModal, showAnalysisModal] = useModal(Analysis, {
+    width: '90%',
+    style: { paddingTop: 20 },
+  })
 
   const selectOpenpai = Form.useWatch('openpai', form)
   const [showConfig, setShowConfig] = useState(false)
@@ -113,11 +119,11 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   }, [did])
 
   useEffect(() => {
-    did && getDataset(did)
+    did && getDataset({ id: did })
   }, [did])
 
   useEffect(() => {
-    trainDataset && !iterationContext && !fromCopy && setSelected(trainDataset?.gt?.keywords?.slice(0, 5))
+    trainDataset && !iterationContext && !fromCopy && setSelected(trainDataset?.gt?.keywords)
     if (!trainDataset && fromCopy) {
       setSelectedKeywords([])
       form.setFieldsValue({ keywords: [] })
@@ -163,6 +169,9 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   }
 
   function setSelected(kws = []) {
+    if (kws.length > KeywordsMaxCount) {
+      return
+    }
     setSelectedKeywords(kws)
     form.setFieldsValue({ keywords: kws })
   }
@@ -302,14 +311,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
           ) : (
             <Form.Item
               label={t('task.train.form.keywords.label')}
-              name="keywords"
-              rules={[
-                {
-                  required: true,
-                  message: t('project.add.form.keyword.required'),
-                },
-              ]}
               tooltip={t('tip.task.filter.keywords')}
+              required
               help={
                 trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ? (
                   <Button type="link" size="small" style={{ marginLeft: '-10px' }} onClick={() => setAllKeywords()}>
@@ -318,37 +321,52 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
                 ) : null
               }
             >
-              <Select
-                mode="multiple"
-                showArrow
-                allowClear
-                placeholder={t('project.add.form.keyword.required')}
-                disabled={!trainSet}
-                title={trainSet ? '' : t('task.train.keywords.disabled.tip')}
-                onChange={setSelectedKeywords}
-                options={(trainDataset?.gt?.keywords || []).map((k) => ({
-                  label: k,
-                  value: k,
-                }))}
-                maxTagCount={KeywordsMaxCount}
-                maxTagPlaceholder={
-                  <Tooltip
-                    trigger="hover"
-                    color="white"
-                    title={selectedKeywords.slice(KeywordsMaxCount).map((k) => (
-                      <Tag key={k}>{k}</Tag>
-                    ))}
-                  >
-                    {selectedKeywords.length - KeywordsMaxCount}+
-                  </Tooltip>
-                }
-              />
+              <Form.Item
+                noStyle
+                name="keywords"
+                rules={[
+                  {
+                    required: true,
+                    message: t('project.add.form.keyword.required'),
+                  },
+                ]}
+              >
+                <Select
+                  mode="multiple"
+                  style={{ width: 'calc(100% - 30px)' }}
+                  showArrow
+                  allowClear
+                  placeholder={t('project.add.form.keyword.required')}
+                  disabled={!trainSet}
+                  title={trainSet ? '' : t('task.train.keywords.disabled.tip')}
+                  onChange={setSelectedKeywords}
+                  options={(trainDataset?.gt?.keywords || []).map((k) => ({
+                    label: k,
+                    value: k,
+                  }))}
+                  maxTagCount={KeywordsMaxCount}
+                  maxTagPlaceholder={
+                    <Tooltip
+                      trigger="hover"
+                      color="white"
+                      title={selectedKeywords.slice(KeywordsMaxCount).map((k) => (
+                        <Tag key={k}>{k}</Tag>
+                      ))}
+                    >
+                      {selectedKeywords.length - KeywordsMaxCount}+
+                    </Tooltip>
+                  }
+                />
+              </Form.Item>
+              <span style={{ display: trainSet ? 'inline-block' : 'none', width: 30, textAlign: 'right' }}>
+                <BarChart2LineIcon
+                  onClick={() => {
+                    showAnalysisModal()
+                  }}
+                />
+              </span>
             </Form.Item>
           )}
-          <Form.Item label={t('dataset.train.form.analysis')}>
-            <Suggestion metrics={trainDataset?.metricLevels} hasHeader={false} />
-            <SampleRates keywords={selectedKeywords} dataset={trainDataset} negative />
-          </Form.Item>
           <Form.Item
             label={t('task.train.form.testsets.label')}
             name="testset"
@@ -402,6 +420,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
         </div>
         <Form.Item wrapperCol={{ offset: 8 }}>{bottom ? bottom : <SubmitButtons label="common.action.train" />}</Form.Item>
       </Form>
+      <AnalysisModal ids={[trainSet]} classes={selectedKeywords} />
     </div>
   )
 }

@@ -54,30 +54,32 @@ const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
   const { path } = useRouteMatch()
   const params = useParams<{ id: string; [key: string | number]: string }>()
   const project = useSelector<YStates.Root, YModels.Project | undefined>(({ project }) => project.projects[params.id])
-  const { run: getProject} = useRequest<YModels.Project>('project/getProject', {
+  const { run: getProject } = useRequest<YModels.Project, [{ id: string }]>('project/getProject', {
     cacheKey: 'getProject',
-    loading: false
+    loading: false,
   })
   const crumbs = getCrumbs()
   const crumbItems = getCrumbItems(path, crumbs)
+  const isProjectDetail = (crumb: CrumbType) => crumb.id === 24
+  const datasetList = crumbs.find(({ id }) => id === 32)
 
   useEffect(() => {
     setTimeout(() => {
-      if (crumbItems.some((crumb) => crumb.id === 24) && params.id) {
+      if (crumbItems.some(isProjectDetail) && params.id) {
         getProject({ id: params.id })
       }
     }, 500)
   }, [params.id])
 
   const getLabel = (crumb: CrumbType, customTitle: string) => {
-    return project && (crumb.id === 24 ? project?.name : customTitle) || t(crumb.label)
+    return (project && (isProjectDetail(crumb) ? project?.name : customTitle)) || t(crumb.label)
   }
   return (
     <div className="breadcrumb">
       <Breadcrumb className="breadcrumbContent" separator="/">
         {crumbItems.map((crumb, index) => {
           const last = index === crumbItems.length - 1
-          const link = crumb.path.replace(/:([^\/]+)/g, (str, key: number) => {
+          const link = (isProjectDetail(crumb) ? datasetList?.path : crumb.path)?.replace(/:([^\/]+)/g, (str, key: number) => {
             return params[key] ? params[key] : ''
           })
           const label = getLabel(crumb, titles[index])

@@ -131,7 +131,7 @@ declare namespace YModels {
   type classMetric<M = number> = {
     [cls: string]: M
   }
-  type DatasetMetrics< M = number> = {
+  type DatasetMetrics<M = number> = {
     classBias: classMetric<M>
     annotationDensity: M
     annotationCount?: classMetric<M>
@@ -152,8 +152,8 @@ declare namespace YModels {
 
   type AllResult = Prediction | Dataset | Model
 
-  export interface DatasetAnalysis extends Omit<Dataset, 'keywords'> {
-    keywords: AnalysisChart
+  export interface DatasetAnalysis extends Dataset {
+    keywordCounts: AnalysisChart
     assetHWRatio: AnalysisChart
     assetArea: AnalysisChart
     assetQuality: AnalysisChart
@@ -388,14 +388,6 @@ declare namespace YModels {
     next?: string
     end?: boolean
     unskippable?: boolean
-  }
-
-  interface ShareImage {
-    docker_name: string
-    functions?: string
-    contributor?: string
-    organization?: string
-    description?: string
   }
 
   type PlainObject = {

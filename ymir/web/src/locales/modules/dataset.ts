@@ -220,6 +220,7 @@ const dataset = {
     cn: '建议添加包含多个类别的图像，丰富场景的多样性。',
     en: 'It is recommended to add images containing multiple classes to increase the diversity of the scene.',
   },
+  'dataset.unfold.all': {cn: '全部展开', en: 'Unfold All Versions'},
 }
 
 export default dataset

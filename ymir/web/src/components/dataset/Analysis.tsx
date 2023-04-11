@@ -11,11 +11,12 @@ import DataLoading from '@/components/common/DataLoading'
 import Suggestion from '@/components/dataset/Suggestion'
 
 import style from './analysis/analysis.less'
+import SampleRates from './SampleRates'
+import Panel from '../form/panel'
 
 const getVersionName = ({ name, versionName }: YModels.DatasetAnalysis) => `${name} ${versionName}`
 
-const Analysis: FC<{ ids: number[] }> = ({ ids }) => {
-  const [form] = Form.useForm()
+const Analysis: FC<{ ids: number[], classes?: string[] }> = ({ ids, classes = [] }) => {
   const { id } = useParams<{ id: string }>()
   const pid = Number(id)
   const { data: remoteSource, run: fetchSource } = useRequest<YModels.DatasetAnalysis[], [{ pid: number; datasets: number[] }]>('dataset/analysis')
@@ -101,7 +102,7 @@ const Analysis: FC<{ ids: number[] }> = ({ ids }) => {
     <Card className={style.container} title={t('breadcrumbs.dataset.analysis')}>
       {source.length ? (
         <Row gutter={20} className={style.dataContainer}>
-          <Col span={18} className={`${style.rowData} ${style.maxHeight}`}>
+          <Col span={16} className={`${style.rowData} ${style.maxHeight}`}>
             <Table
               size="small"
               dataSource={source}
@@ -114,9 +115,12 @@ const Analysis: FC<{ ids: number[] }> = ({ ids }) => {
             <ChartsContainer label="dataset.analysis.annotations.metrics" charts={annotationCharts} />
             <ChartsContainer label="dataset.analysis.assets.metrics" charts={assetCharts} />
           </Col>
-          <Col span={6} className={`${style.maxHeight} rightForm`}>
+          <Col span={8} className={`${style.maxHeight} rightForm`}>
             {source.map((item) => (
-              <Suggestion title={item.name} metrics={item.metricLevels} />
+              <Panel key={item.id} toogleVisible={false} label={item.name}>
+                <SampleRates keywords={classes} dataset={item} />
+                <Suggestion metrics={item.metricLevels} target={classes} />
+              </Panel>
             ))}
           </Col>
         </Row>

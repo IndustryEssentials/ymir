@@ -98,13 +98,12 @@ const ImageModel: YStates.ImageStore = {
         return image
       }
     }),
-    getValidImagesCount: createEffect<{ type?: ObjectType; example?: boolean }>(function* ({ payload: { type, example } }, { put }) {
+    getValidImagesCount: createEffect<{ type?: ObjectType }>(function* ({ payload: { type } }, { put }) {
       const result = yield put.resolve({
         type: 'getImages',
         payload: {
           state: STATES.DONE,
-          type,
-          example,
+          objectType: type,
         },
       })
       if (result?.total) {

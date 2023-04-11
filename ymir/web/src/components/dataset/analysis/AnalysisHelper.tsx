@@ -13,7 +13,7 @@ type Keys =
   | 'assetQuality'
   | 'areaRatio'
   | 'keywordAnnotationCount'
-  | 'keywords'
+  | 'keywordCounts'
   | 'keywordArea'
   | 'instanceArea'
   | 'crowdedness'
@@ -83,7 +83,7 @@ const charts: { [key: string]: ChartConfigWithoutData } = {
     },
     color: ['#2CBDE9', '#E8B900'],
   },
-  keywords: {
+  keywordCounts: {
     label: 'dataset.analysis.title.keyword_ratio',
     customOptions: {
       tooltipLabel: 'dataset.analysis.bar.anno.tooltip',
@@ -249,7 +249,7 @@ const getCharts = (keys: Keys[]) =>
 const getAnnotationCharts = (objectType: ObjectType) => {
   const maps = {
     [ObjectType.ObjectDetection]: ['complexity', 'keywordAnnotationCount', 'areaRatio'] as Keys[],
-    [ObjectType.SemanticSegmentation]: ['complexity', 'keywords', 'keywordArea'] as Keys[],
+    [ObjectType.SemanticSegmentation]: ['complexity', 'keywordCounts', 'keywordArea'] as Keys[],
     [ObjectType.InstanceSegmentation]: ['complexity', 'keywordAnnotationCount', 'crowdedness', 'instanceArea', 'keywordArea'] as Keys[],
   }
   const keys = maps[objectType]

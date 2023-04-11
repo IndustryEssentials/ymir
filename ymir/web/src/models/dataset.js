@@ -24,8 +24,9 @@ import { TASKTYPES } from '@/constants/task'
 const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
 
 const list = [
-  {name: 'UPDATE_ALL_DATASETS', field: 'allDatasets'},
-  { name: 'UpdateTotal', field: 'total'},
+  { name: 'UPDATE_ALL_DATASETS', field: 'allDatasets' },
+  { name: 'UpdateTotal', field: 'total' },
+  { name: 'UpdateVersions', field: 'versions' },
 ]
 
 const initState = {
@@ -54,6 +55,18 @@ export default {
           type: 'UPDATE_DATASETS',
           payload: { [pid]: payload },
         })
+        for (let index = 0; index < groups.length; index++) {
+          const group = groups[index]
+          if (!group) {
+            continue
+          }
+          yield put({
+            type: 'UpdateVersions',
+            payload: {
+              [group.id]: group.versions,
+            },
+          })
+        }
         return payload
       }
     },
@@ -127,10 +140,11 @@ export default {
       const { code, result } = yield call(getDatasetByGroup, gid)
       if (code === 0) {
         const vss = result.items.map((item) => transferDataset(item))
-        const vs = { id: gid, versions: vss }
         yield put({
-          type: 'UPDATE_VERSIONS',
-          payload: vs,
+          type: 'UpdateVersions',
+          payload: {
+            [gid]: vss,
+          },
         })
         return vss
       }
@@ -214,14 +228,14 @@ export default {
         return result
       }
     },
-    getValidDatasetsCount: createEffect(function *({ payload: pid }, { call, put }) {
+    getValidDatasetsCount: createEffect(function* ({ payload: pid }, { call, put }) {
       const result = yield put.resolve({
         type: 'queryDatasets',
         payload: {
           pid,
           state: ResultStates.VALID,
           empty: false,
-        }
+        },
       })
       if (result?.total) {
         yield put({
@@ -348,10 +362,9 @@ export default {
       // update versions
       const target = versions[ds.groupId] || []
       yield put({
-        type: 'UPDATE_VERSIONS',
+        type: 'UpdateVersions',
         payload: {
-          id: ds.groupId,
-          versions: [ds, ...target],
+          [ds.groupId]: [ds, ...target],
         },
       })
       // update dataset
@@ -368,10 +381,7 @@ export default {
       if (code === 0) {
         const { gt, pred, total_assets_count } = result
         const getStats = (o = {}) => transferAnnotationsCount(o.keywords, o.negative_assets_count, total_assets_count)
-        return {
-          pred: getStats(pred),
-          gt: getStats(gt),
-        }
+        return getStats(gt)
       }
     },
     *getCK({ payload }, { select, put }) {
@@ -401,15 +411,6 @@ export default {
       return {
         ...state,
         datasets: payload,
-      }
-    },
-    UPDATE_VERSIONS(state, { payload }) {
-      const { id, versions } = payload
-      const vs = state.versions
-      vs[id] = versions
-      return {
-        ...state,
-        versions: { ...vs },
       }
     },
     UPDATE_ALL_VERSIONS(state, { payload }) {

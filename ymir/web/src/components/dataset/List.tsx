@@ -46,6 +46,7 @@ import {
   CompareListIcon,
   DeleteIcon,
   BarChart2LineIcon,
+  ArrowUpIcon,
 } from '@/components/common/Icons'
 import { ObjectType } from '@/constants/objectType'
 import SimpleSuggestion from './list/SimpleSuggestion'
@@ -66,6 +67,7 @@ type DatasetGroup = YModels.DatasetGroup & ExtraLabel & IsType
 type VersionsType = YStates.IdMap<Dataset[]>
 
 const { useForm } = Form
+const DefaultVersionCount = 3
 
 const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   const location: Location<{ type: string }> = useLocation()
@@ -422,8 +424,8 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     getDatasets({ pid, query })
   }
 
-  function showVersions(id: number) {
-    setVisibles((old) => ({ ...old, [id]: !old[id] }))
+  function toggleVersions(id: number, force?: boolean) {
+    setVisibles((old) => ({ ...old, [id]: force || typeof old[id] !== 'undefined' && !old[id] }))
   }
 
   function fetchVersions(gid: number, force?: boolean) {
@@ -628,8 +630,8 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
         {datasets.map((group) => (
           <div className={styles.groupItem} key={group.id}>
             <Row className="groupTitle">
-              <Col flex={1} onClick={() => showVersions(group.id)}>
-                <span className="foldBtn">{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+              <Col flex={1} onClick={() => toggleVersions(group.id)}>
+                <span className="foldBtn">{visibles[group.id] !== false ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
                 <span className="groupName">{group.name}</span>
                 {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
               </Col>
@@ -641,10 +643,9 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
                 </Space>
               </Col>
             </Row>
-            <div className="groupTable" hidden={!visibles[group.id]}>
+            <div className="groupTable" hidden={visibles[group.id] === false}>
               <Table
-                dataSource={datasetVersions[group.id]}
-                // onChange={tableChange}
+                dataSource={typeof visibles[group.id] === 'undefined' ? (versions[group.id] || []).slice(0, DefaultVersionCount) : versions[group.id]}
                 rowKey={(record) => record.id}
                 rowSelection={{
                   selectedRowKeys: selectedVersions.versions[group.id],
@@ -654,6 +655,13 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
                 columns={columns(group.id)}
                 pagination={false}
               />
+              {!visibles[group.id] && (group.versions?.length || 0) > DefaultVersionCount ? (
+                <div style={{ textAlign: 'center' }}>
+                  <Button type="link" className="moreVersion" onClick={() => toggleVersions(group.id, true)}>
+                    <ArrowDownIcon /> {t('dataset.unfold.all')}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
         ))}

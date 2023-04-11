@@ -153,7 +153,7 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
     negative: data.negative_assets_count || 0,
     average: data.gt?.ave_annos_count || 0,
     totalArea,
-    keywords: keywords2ChartData(dataset.keywords, dataset.assetCount, dataset.gt?.count),
+    keywordCounts: keywords2ChartData(dataset.keywords, dataset.assetCount, dataset.gt?.count),
     assetArea: addTotal2ChartData(area, totalArea),
     assetQuality: addTotal2ChartData(quality, assetCount),
     assetHWRatio: addTotal2ChartData(hw_ratio, assetCount),
