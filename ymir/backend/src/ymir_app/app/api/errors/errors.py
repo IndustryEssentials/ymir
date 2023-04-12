@@ -444,3 +444,8 @@ class FailedToParseVizResponse(VizError):
 class VizTimeOut(VizError):
     code = error_codes.VIZ_TIMEOUT
     message = "Internal Viz Service Timeout"
+
+
+class MessageNotFound(NotFound):
+    code = error_codes.MESSAGE_NOT_FOUND
+    message = "Message Not Found"

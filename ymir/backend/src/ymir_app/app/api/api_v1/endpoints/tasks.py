@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import Any, Union
 from functools import partial
 import time
@@ -25,6 +26,7 @@ from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import ControllerClient
 from app.libs.redis_stream import RedisStream
 from app.libs.tasks import TaskResult, create_single_task
+from app.libs.messages import message_filter
 from common_utils.labels import UserLabels
 from id_definition.task_id import gen_user_hash
 
@@ -272,6 +274,13 @@ def update_task_status(
         payload = {updated_task.hash: task_update_msg.dict()}
         asyncio.run(request.app.sio.emit(event="update_taskstate", data=payload, namespace=namespace))
         logger.info("notify task update (%s) to frontend (%s)", payload, namespace)
+        if message_filter(task_update_msg):
+            msg = crud.message.create_message_from_task(db, task_info=schemas.Task.from_orm(updated_task).dict())
+            asyncio.run(
+                request.app.sio.emit(
+                    event="update_message", data=json.loads(schemas.Message.from_orm(msg).json()), namespace=namespace
+                )
+            )
 
     return {"result": task_in_db}
 

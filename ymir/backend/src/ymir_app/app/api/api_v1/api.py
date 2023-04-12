@@ -19,6 +19,7 @@ from app.api.api_v1.endpoints import (
     dataset_groups,
     model_groups,
     model_stages,
+    messages,
 )
 
 api_router = APIRouter()
@@ -41,3 +42,4 @@ api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
 api_router.include_router(info.router, prefix="/sys_info", tags=["sys"])
 api_router.include_router(upload.router, tags=["upload"])
 api_router.include_router(stats.router, prefix="/stats", tags=["stats"])
+api_router.include_router(messages.router, prefix="/messages", tags=["messages"])

@@ -102,3 +102,4 @@ from .user import (
     UserUpdate,
 )
 from .common import BatchOperations, CommonPaginationParams
+from .message import Message
