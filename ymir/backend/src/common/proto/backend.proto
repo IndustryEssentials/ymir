@@ -109,17 +109,18 @@ message GeneralResp {
     string message = 3;
     repeated string ext_strs = 4;
     string hash_id = 6;
-    map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
     repeated string sandbox_versions = 11;
+    // key: model object type, value: map<task_type, config>
+    // task_type: train, mine and infer, see mir.command.TaskType
+    map<int32, Int32ToStringMap> docker_image_config = 12;
     RespCMDInference objects = 1000;
     bool enable_livecode = 1001;
     mir.command.Evaluation evaluation = 1002;
-    mir.command.ObjectType object_type = 1003;
 
-    reserved 5;
+    reserved 5, 7, 1003;
 }
 
 // base args for create task request
@@ -220,6 +221,10 @@ message Label {
     repeated string aliases = 3;
     string create_time = 4;  // RFC 3339 date strings
     string update_time = 5;  // RFC 3339 date strings
+}
+
+message Int32ToStringMap {
+    map<int32, string> config = 1;
 }
 
 service mir_controller_service {

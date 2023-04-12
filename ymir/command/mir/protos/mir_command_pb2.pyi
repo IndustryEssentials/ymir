@@ -256,6 +256,24 @@ OST_SEG_POLYGON = ObjectSubType.V(31)
 global___ObjectSubType = ObjectSubType
 
 
+class ModelObjectType(_ModelObjectType, metaclass=_ModelObjectTypeEnumTypeWrapper):
+    pass
+class _ModelObjectType:
+    V = typing.NewType('V', builtins.int)
+class _ModelObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ModelObjectType.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    MOT_UNKNOWN = ModelObjectType.V(0)
+    MOT_DET_BOX = ModelObjectType.V(2)
+    MOT_SEM_SEG = ModelObjectType.V(3)
+    MOT_INS_SEG = ModelObjectType.V(4)
+
+MOT_UNKNOWN = ModelObjectType.V(0)
+MOT_DET_BOX = ModelObjectType.V(2)
+MOT_SEM_SEG = ModelObjectType.V(3)
+MOT_INS_SEG = ModelObjectType.V(4)
+global___ModelObjectType = ModelObjectType
+
+
 class ExportFormat(_ExportFormat, metaclass=_ExportFormatEnumTypeWrapper):
     pass
 class _ExportFormat:

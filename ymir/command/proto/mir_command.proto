@@ -138,6 +138,14 @@ enum ObjectSubType {
     OST_SEG_POLYGON = 31;
 }
 
+enum ModelObjectType {
+    MOT_UNKNOWN = 0;
+
+    MOT_DET_BOX = 2;
+    MOT_SEM_SEG = 3;
+    MOT_INS_SEG = 4;
+}
+
 enum ExportFormat {
     EF_NO_ANNOTATIONS = 0;
     EF_VOC_XML = 1;

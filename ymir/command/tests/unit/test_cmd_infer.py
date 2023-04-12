@@ -96,7 +96,7 @@ class TestCmdInfer(unittest.TestCase):
                                             },
                                             stages={model_stage.stage_name: model_stage},
                                             best_stage_name=model_stage.stage_name,
-                                            object_type=models.ModelObjectType.MOT_DET_BOX.value,
+                                            object_type=mirpb.ModelObjectType.MOT_DET_BOX,
                                             package_version=YMIR_MODEL_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:

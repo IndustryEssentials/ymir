@@ -165,7 +165,7 @@ class CmdInfer(base.BaseCommand):
             task_annotations.type = (mirpb.ObjectType.OT_DET_BOX if model_storage.object_type
                                      == mirpb.ObjectType.OT_DET_BOX else mirpb.ObjectType.OT_SEG)
             task_annotations.is_instance_segmentation = (
-                model_storage.object_type == models.ModelObjectType.MOT_INS_SEG.value)
+                model_storage.object_type == mirpb.ModelObjectType.MOT_INS_SEG)
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET_BOX else _process_infer_seg_coco_result)
             process_result_func(task_annotations, work_dir_out, class_id_mgr)

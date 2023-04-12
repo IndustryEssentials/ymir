@@ -1,6 +1,7 @@
 import json
 import logging
-from typing import Optional
+import os
+from typing import List, Optional, Tuple
 
 import sentry_sdk
 import yaml
@@ -30,14 +31,31 @@ class CmdInspectImageInvoker(BaseMirControllerInvoker):
                                                                         filepath=common_task_config.IMAGE_MANIFEST_PATH)
         manifest_config = json.loads(serialized_manifest_config) if serialized_manifest_config else {}
         response.enable_livecode = bool(manifest_config.get("enable_livecode", False))
-        response.object_type = int(manifest_config.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
+
+        manifest_object_types = manifest_config.get("object_type", mir_cmd_pb.ModelObjectType.MOT_DET_BOX)
+        object_type_and_dirs: List[Tuple[int, str]] = []  # 1st: object_type, 2nd: template root dir
+        if isinstance(manifest_object_types, list):
+            object_type_and_dirs.extend([(x,
+                                          os.path.join(common_task_config.IMAGE_CONFIG_ROOT,
+                                                       common_task_config.IMAGE_CONFIG_DIR_NAMES[x]))
+                                         for x in manifest_object_types])
+        elif isinstance(manifest_object_types, int):
+            object_type_and_dirs.append((manifest_object_types, common_task_config.IMAGE_CONFIG_ROOT))
+        else:
+            return utils.make_general_response(
+                CTLResponseCode.DOCKER_IMAGE_ERROR,
+                f"image {self._request.singleton_op} has invalid object types: {manifest_object_types}",
+            )
 
         # templates
-        for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
-            image_config = self._inspect_file_in_docker_image(docker_image_tag=self._request.singleton_op,
-                                                              filepath=image_config_path)
-            if image_config:
-                response.docker_image_config[image_type] = image_config
+        task_types = [mir_cmd_pb.TaskTypeTraining, mir_cmd_pb.TaskTypeMining, mir_cmd_pb.TaskTypeInfer]
+        for object_type, object_type_dir in object_type_and_dirs:
+            for task_type in task_types:
+                config_file_path = os.path.join(object_type_dir, common_task_config.IMAGE_CONFIG_FILE_NAMES[task_type])
+                image_config = self._inspect_file_in_docker_image(docker_image_tag=self._request.singleton_op,
+                                                                  filepath=config_file_path)
+                if image_config:
+                    response.docker_image_config[object_type].config[task_type] = image_config
 
         if len(response.docker_image_config) == 0:
             return utils.make_general_response(

@@ -607,6 +607,58 @@ func (ObjectSubType) EnumDescriptor() ([]byte, []int) {
 	return file_mir_command_proto_rawDescGZIP(), []int{9}
 }
 
+type ModelObjectType int32
+
+const (
+	ModelObjectType_MOT_UNKNOWN ModelObjectType = 0
+	ModelObjectType_MOT_DET_BOX ModelObjectType = 2
+	ModelObjectType_MOT_SEM_SEG ModelObjectType = 3
+	ModelObjectType_MOT_INS_SEG ModelObjectType = 4
+)
+
+// Enum value maps for ModelObjectType.
+var (
+	ModelObjectType_name = map[int32]string{
+		0: "MOT_UNKNOWN",
+		2: "MOT_DET_BOX",
+		3: "MOT_SEM_SEG",
+		4: "MOT_INS_SEG",
+	}
+	ModelObjectType_value = map[string]int32{
+		"MOT_UNKNOWN": 0,
+		"MOT_DET_BOX": 2,
+		"MOT_SEM_SEG": 3,
+		"MOT_INS_SEG": 4,
+	}
+)
+
+func (x ModelObjectType) Enum() *ModelObjectType {
+	p := new(ModelObjectType)
+	*p = x
+	return p
+}
+
+func (x ModelObjectType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ModelObjectType) Descriptor() protoreflect.EnumDescriptor {
+	return file_mir_command_proto_enumTypes[10].Descriptor()
+}
+
+func (ModelObjectType) Type() protoreflect.EnumType {
+	return &file_mir_command_proto_enumTypes[10]
+}
+
+func (x ModelObjectType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ModelObjectType.Descriptor instead.
+func (ModelObjectType) EnumDescriptor() ([]byte, []int) {
+	return file_mir_command_proto_rawDescGZIP(), []int{10}
+}
+
 type ExportFormat int32
 
 const (
@@ -646,11 +698,11 @@ func (x ExportFormat) String() string {
 }
 
 func (ExportFormat) Descriptor() protoreflect.EnumDescriptor {
-	return file_mir_command_proto_enumTypes[10].Descriptor()
+	return file_mir_command_proto_enumTypes[11].Descriptor()
 }
 
 func (ExportFormat) Type() protoreflect.EnumType {
-	return &file_mir_command_proto_enumTypes[10]
+	return &file_mir_command_proto_enumTypes[11]
 }
 
 func (x ExportFormat) Number() protoreflect.EnumNumber {
@@ -659,7 +711,7 @@ func (x ExportFormat) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExportFormat.Descriptor instead.
 func (ExportFormat) EnumDescriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{10}
+	return file_mir_command_proto_rawDescGZIP(), []int{11}
 }
 
 type ConfusionMatrixType int32
@@ -711,11 +763,11 @@ func (x ConfusionMatrixType) String() string {
 }
 
 func (ConfusionMatrixType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mir_command_proto_enumTypes[11].Descriptor()
+	return file_mir_command_proto_enumTypes[12].Descriptor()
 }
 
 func (ConfusionMatrixType) Type() protoreflect.EnumType {
-	return &file_mir_command_proto_enumTypes[11]
+	return &file_mir_command_proto_enumTypes[12]
 }
 
 func (x ConfusionMatrixType) Number() protoreflect.EnumNumber {
@@ -724,7 +776,7 @@ func (x ConfusionMatrixType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ConfusionMatrixType.Descriptor instead.
 func (ConfusionMatrixType) EnumDescriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{11}
+	return file_mir_command_proto_rawDescGZIP(), []int{12}
 }
 
 type EvaluationState int32
@@ -771,11 +823,11 @@ func (x EvaluationState) String() string {
 }
 
 func (EvaluationState) Descriptor() protoreflect.EnumDescriptor {
-	return file_mir_command_proto_enumTypes[12].Descriptor()
+	return file_mir_command_proto_enumTypes[13].Descriptor()
 }
 
 func (EvaluationState) Type() protoreflect.EnumType {
-	return &file_mir_command_proto_enumTypes[12]
+	return &file_mir_command_proto_enumTypes[13]
 }
 
 func (x EvaluationState) Number() protoreflect.EnumNumber {
@@ -784,7 +836,7 @@ func (x EvaluationState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use EvaluationState.Descriptor instead.
 func (EvaluationState) EnumDescriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{12}
+	return file_mir_command_proto_rawDescGZIP(), []int{13}
 }
 
 /// ========== metadatas.mir ==========
@@ -3941,29 +3993,34 @@ var file_mir_command_proto_rawDesc = []byte{
 	0x65, 0x12, 0x0e, 0x0a, 0x0a, 0x4f, 0x53, 0x54, 0x5f, 0x4e, 0x4f, 0x54, 0x53, 0x45, 0x54, 0x10,
 	0x00, 0x12, 0x10, 0x0a, 0x0c, 0x4f, 0x53, 0x54, 0x5f, 0x53, 0x45, 0x47, 0x5f, 0x4d, 0x41, 0x53,
 	0x4b, 0x10, 0x1e, 0x12, 0x13, 0x0a, 0x0f, 0x4f, 0x53, 0x54, 0x5f, 0x53, 0x45, 0x47, 0x5f, 0x50,
-	0x4f, 0x4c, 0x59, 0x47, 0x4f, 0x4e, 0x10, 0x1f, 0x2a, 0x67, 0x0a, 0x0c, 0x45, 0x78, 0x70, 0x6f,
-	0x72, 0x74, 0x46, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x12, 0x15, 0x0a, 0x11, 0x45, 0x46, 0x5f, 0x4e,
-	0x4f, 0x5f, 0x41, 0x4e, 0x4e, 0x4f, 0x54, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x53, 0x10, 0x00, 0x12,
-	0x0e, 0x0a, 0x0a, 0x45, 0x46, 0x5f, 0x56, 0x4f, 0x43, 0x5f, 0x58, 0x4d, 0x4c, 0x10, 0x01, 0x12,
-	0x0e, 0x0a, 0x0a, 0x45, 0x46, 0x5f, 0x41, 0x52, 0x4b, 0x5f, 0x54, 0x58, 0x54, 0x10, 0x02, 0x12,
-	0x0e, 0x0a, 0x0a, 0x45, 0x46, 0x5f, 0x4c, 0x53, 0x5f, 0x4a, 0x53, 0x4f, 0x4e, 0x10, 0x03, 0x12,
-	0x10, 0x0a, 0x0c, 0x45, 0x46, 0x5f, 0x43, 0x4f, 0x43, 0x4f, 0x5f, 0x4a, 0x53, 0x4f, 0x4e, 0x10,
-	0x04, 0x2a, 0x64, 0x0a, 0x13, 0x43, 0x6f, 0x6e, 0x66, 0x75, 0x73, 0x69, 0x6f, 0x6e, 0x4d, 0x61,
-	0x74, 0x72, 0x69, 0x78, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0a, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x53,
-	0x65, 0x74, 0x10, 0x00, 0x12, 0x06, 0x0a, 0x02, 0x54, 0x50, 0x10, 0x01, 0x12, 0x06, 0x0a, 0x02,
-	0x46, 0x50, 0x10, 0x02, 0x12, 0x06, 0x0a, 0x02, 0x46, 0x4e, 0x10, 0x03, 0x12, 0x06, 0x0a, 0x02,
-	0x54, 0x4e, 0x10, 0x04, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10,
-	0x05, 0x12, 0x07, 0x0a, 0x03, 0x4d, 0x54, 0x50, 0x10, 0x0b, 0x12, 0x0b, 0x0a, 0x07, 0x49, 0x47,
-	0x4e, 0x4f, 0x52, 0x45, 0x44, 0x10, 0x0c, 0x2a, 0x78, 0x0a, 0x0f, 0x45, 0x76, 0x61, 0x6c, 0x75,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x0e, 0x0a, 0x0a, 0x45, 0x53,
-	0x5f, 0x4e, 0x4f, 0x54, 0x5f, 0x53, 0x45, 0x54, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x45, 0x53,
-	0x5f, 0x52, 0x45, 0x41, 0x44, 0x59, 0x10, 0x01, 0x12, 0x14, 0x0a, 0x10, 0x45, 0x53, 0x5f, 0x4e,
-	0x4f, 0x5f, 0x47, 0x54, 0x5f, 0x4f, 0x52, 0x5f, 0x50, 0x52, 0x45, 0x44, 0x10, 0x02, 0x12, 0x14,
-	0x0a, 0x10, 0x45, 0x53, 0x5f, 0x45, 0x58, 0x43, 0x45, 0x45, 0x44, 0x53, 0x5f, 0x4c, 0x49, 0x4d,
-	0x49, 0x54, 0x10, 0x03, 0x12, 0x1b, 0x0a, 0x17, 0x45, 0x53, 0x5f, 0x4e, 0x4f, 0x54, 0x5f, 0x45,
-	0x4e, 0x4f, 0x55, 0x47, 0x48, 0x5f, 0x43, 0x4c, 0x41, 0x53, 0x53, 0x5f, 0x49, 0x44, 0x53, 0x10,
-	0x04, 0x42, 0x09, 0x5a, 0x07, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x4f, 0x4c, 0x59, 0x47, 0x4f, 0x4e, 0x10, 0x1f, 0x2a, 0x55, 0x0a, 0x0f, 0x4d, 0x6f, 0x64, 0x65,
+	0x6c, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0f, 0x0a, 0x0b, 0x4d,
+	0x4f, 0x54, 0x5f, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b,
+	0x4d, 0x4f, 0x54, 0x5f, 0x44, 0x45, 0x54, 0x5f, 0x42, 0x4f, 0x58, 0x10, 0x02, 0x12, 0x0f, 0x0a,
+	0x0b, 0x4d, 0x4f, 0x54, 0x5f, 0x53, 0x45, 0x4d, 0x5f, 0x53, 0x45, 0x47, 0x10, 0x03, 0x12, 0x0f,
+	0x0a, 0x0b, 0x4d, 0x4f, 0x54, 0x5f, 0x49, 0x4e, 0x53, 0x5f, 0x53, 0x45, 0x47, 0x10, 0x04, 0x2a,
+	0x67, 0x0a, 0x0c, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x46, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x12,
+	0x15, 0x0a, 0x11, 0x45, 0x46, 0x5f, 0x4e, 0x4f, 0x5f, 0x41, 0x4e, 0x4e, 0x4f, 0x54, 0x41, 0x54,
+	0x49, 0x4f, 0x4e, 0x53, 0x10, 0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x45, 0x46, 0x5f, 0x56, 0x4f, 0x43,
+	0x5f, 0x58, 0x4d, 0x4c, 0x10, 0x01, 0x12, 0x0e, 0x0a, 0x0a, 0x45, 0x46, 0x5f, 0x41, 0x52, 0x4b,
+	0x5f, 0x54, 0x58, 0x54, 0x10, 0x02, 0x12, 0x0e, 0x0a, 0x0a, 0x45, 0x46, 0x5f, 0x4c, 0x53, 0x5f,
+	0x4a, 0x53, 0x4f, 0x4e, 0x10, 0x03, 0x12, 0x10, 0x0a, 0x0c, 0x45, 0x46, 0x5f, 0x43, 0x4f, 0x43,
+	0x4f, 0x5f, 0x4a, 0x53, 0x4f, 0x4e, 0x10, 0x04, 0x2a, 0x64, 0x0a, 0x13, 0x43, 0x6f, 0x6e, 0x66,
+	0x75, 0x73, 0x69, 0x6f, 0x6e, 0x4d, 0x61, 0x74, 0x72, 0x69, 0x78, 0x54, 0x79, 0x70, 0x65, 0x12,
+	0x0a, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x53, 0x65, 0x74, 0x10, 0x00, 0x12, 0x06, 0x0a, 0x02, 0x54,
+	0x50, 0x10, 0x01, 0x12, 0x06, 0x0a, 0x02, 0x46, 0x50, 0x10, 0x02, 0x12, 0x06, 0x0a, 0x02, 0x46,
+	0x4e, 0x10, 0x03, 0x12, 0x06, 0x0a, 0x02, 0x54, 0x4e, 0x10, 0x04, 0x12, 0x0b, 0x0a, 0x07, 0x55,
+	0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x05, 0x12, 0x07, 0x0a, 0x03, 0x4d, 0x54, 0x50, 0x10,
+	0x0b, 0x12, 0x0b, 0x0a, 0x07, 0x49, 0x47, 0x4e, 0x4f, 0x52, 0x45, 0x44, 0x10, 0x0c, 0x2a, 0x78,
+	0x0a, 0x0f, 0x45, 0x76, 0x61, 0x6c, 0x75, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74,
+	0x65, 0x12, 0x0e, 0x0a, 0x0a, 0x45, 0x53, 0x5f, 0x4e, 0x4f, 0x54, 0x5f, 0x53, 0x45, 0x54, 0x10,
+	0x00, 0x12, 0x0c, 0x0a, 0x08, 0x45, 0x53, 0x5f, 0x52, 0x45, 0x41, 0x44, 0x59, 0x10, 0x01, 0x12,
+	0x14, 0x0a, 0x10, 0x45, 0x53, 0x5f, 0x4e, 0x4f, 0x5f, 0x47, 0x54, 0x5f, 0x4f, 0x52, 0x5f, 0x50,
+	0x52, 0x45, 0x44, 0x10, 0x02, 0x12, 0x14, 0x0a, 0x10, 0x45, 0x53, 0x5f, 0x45, 0x58, 0x43, 0x45,
+	0x45, 0x44, 0x53, 0x5f, 0x4c, 0x49, 0x4d, 0x49, 0x54, 0x10, 0x03, 0x12, 0x1b, 0x0a, 0x17, 0x45,
+	0x53, 0x5f, 0x4e, 0x4f, 0x54, 0x5f, 0x45, 0x4e, 0x4f, 0x55, 0x47, 0x48, 0x5f, 0x43, 0x4c, 0x41,
+	0x53, 0x53, 0x5f, 0x49, 0x44, 0x53, 0x10, 0x04, 0x42, 0x09, 0x5a, 0x07, 0x2f, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -3978,7 +4035,7 @@ func file_mir_command_proto_rawDescGZIP() []byte {
 	return file_mir_command_proto_rawDescData
 }
 
-var file_mir_command_proto_enumTypes = make([]protoimpl.EnumInfo, 13)
+var file_mir_command_proto_enumTypes = make([]protoimpl.EnumInfo, 14)
 var file_mir_command_proto_msgTypes = make([]protoimpl.MessageInfo, 56)
 var file_mir_command_proto_goTypes = []interface{}{
 	(TvtType)(0),                    // 0: mir.command.TvtType
@@ -3991,140 +4048,141 @@ var file_mir_command_proto_goTypes = []interface{}{
 	(AssetFormat)(0),                // 7: mir.command.AssetFormat
 	(ObjectType)(0),                 // 8: mir.command.ObjectType
 	(ObjectSubType)(0),              // 9: mir.command.ObjectSubType
-	(ExportFormat)(0),               // 10: mir.command.ExportFormat
-	(ConfusionMatrixType)(0),        // 11: mir.command.ConfusionMatrixType
-	(EvaluationState)(0),            // 12: mir.command.EvaluationState
-	(*MirMetadatas)(nil),            // 13: mir.command.MirMetadatas
-	(*MetadataAttributes)(nil),      // 14: mir.command.MetadataAttributes
-	(*Timestamp)(nil),               // 15: mir.command.Timestamp
-	(*MirAnnotations)(nil),          // 16: mir.command.MirAnnotations
-	(*SingleTaskAnnotations)(nil),   // 17: mir.command.SingleTaskAnnotations
-	(*SingleImageAnnotations)(nil),  // 18: mir.command.SingleImageAnnotations
-	(*SingleImageCks)(nil),          // 19: mir.command.SingleImageCks
-	(*ObjectAnnotation)(nil),        // 20: mir.command.ObjectAnnotation
-	(*Rect)(nil),                    // 21: mir.command.Rect
-	(*MirKeywords)(nil),             // 22: mir.command.MirKeywords
-	(*CiTagToIndex)(nil),            // 23: mir.command.CiTagToIndex
-	(*StringList)(nil),              // 24: mir.command.StringList
-	(*MapStringToInt32List)(nil),    // 25: mir.command.MapStringToInt32List
-	(*Int32List)(nil),               // 26: mir.command.Int32List
-	(*AssetAnnoIndex)(nil),          // 27: mir.command.AssetAnnoIndex
-	(*MirTasks)(nil),                // 28: mir.command.MirTasks
-	(*Task)(nil),                    // 29: mir.command.Task
-	(*ModelMeta)(nil),               // 30: mir.command.ModelMeta
-	(*ModelStage)(nil),              // 31: mir.command.ModelStage
-	(*Evaluation)(nil),              // 32: mir.command.Evaluation
-	(*EvaluateConfig)(nil),          // 33: mir.command.EvaluateConfig
-	(*SingleDatasetEvaluation)(nil), // 34: mir.command.SingleDatasetEvaluation
-	(*SegmentationMetrics)(nil),     // 35: mir.command.SegmentationMetrics
-	(*SingleIouEvaluation)(nil),     // 36: mir.command.SingleIouEvaluation
-	(*SingleEvaluationElement)(nil), // 37: mir.command.SingleEvaluationElement
-	(*IntPoint)(nil),                // 38: mir.command.IntPoint
-	(*FloatPoint)(nil),              // 39: mir.command.FloatPoint
-	(*MirContext)(nil),              // 40: mir.command.MirContext
-	(*SingleMapCount)(nil),          // 41: mir.command.SingleMapCount
-	(*AnnoStats)(nil),               // 42: mir.command.AnnoStats
-	(*ExportConfig)(nil),            // 43: mir.command.ExportConfig
-	nil,                             // 44: mir.command.MirMetadatas.AttributesEntry
-	nil,                             // 45: mir.command.MirAnnotations.ImageCksEntry
-	nil,                             // 46: mir.command.SingleTaskAnnotations.ImageAnnotationsEntry
-	nil,                             // 47: mir.command.SingleImageCks.CksEntry
-	nil,                             // 48: mir.command.ObjectAnnotation.TagsEntry
-	nil,                             // 49: mir.command.MirKeywords.CkIdxEntry
-	nil,                             // 50: mir.command.CiTagToIndex.CisEntry
-	nil,                             // 51: mir.command.CiTagToIndex.TagsEntry
-	nil,                             // 52: mir.command.MapStringToInt32List.KeyIdsEntry
-	nil,                             // 53: mir.command.AssetAnnoIndex.AssetAnnosEntry
-	nil,                             // 54: mir.command.AssetAnnoIndex.SubIndexesEntry
-	nil,                             // 55: mir.command.MirTasks.TasksEntry
-	nil,                             // 56: mir.command.Task.NewTypesEntry
-	nil,                             // 57: mir.command.ModelMeta.StagesEntry
-	nil,                             // 58: mir.command.Evaluation.SubCksEntry
-	nil,                             // 59: mir.command.SingleDatasetEvaluation.IouEvaluationsEntry
-	nil,                             // 60: mir.command.SegmentationMetrics.AccEntry
-	nil,                             // 61: mir.command.SegmentationMetrics.IoUEntry
-	nil,                             // 62: mir.command.SingleIouEvaluation.CiEvaluationsEntry
-	nil,                             // 63: mir.command.MirContext.CksCntEntry
-	nil,                             // 64: mir.command.SingleMapCount.SubCntEntry
-	nil,                             // 65: mir.command.AnnoStats.TagsCntEntry
-	nil,                             // 66: mir.command.AnnoStats.ClassIdsCntEntry
-	nil,                             // 67: mir.command.AnnoStats.ClassIdsMaskAreaEntry
-	nil,                             // 68: mir.command.AnnoStats.ClassIdsObjCntEntry
+	(ModelObjectType)(0),            // 10: mir.command.ModelObjectType
+	(ExportFormat)(0),               // 11: mir.command.ExportFormat
+	(ConfusionMatrixType)(0),        // 12: mir.command.ConfusionMatrixType
+	(EvaluationState)(0),            // 13: mir.command.EvaluationState
+	(*MirMetadatas)(nil),            // 14: mir.command.MirMetadatas
+	(*MetadataAttributes)(nil),      // 15: mir.command.MetadataAttributes
+	(*Timestamp)(nil),               // 16: mir.command.Timestamp
+	(*MirAnnotations)(nil),          // 17: mir.command.MirAnnotations
+	(*SingleTaskAnnotations)(nil),   // 18: mir.command.SingleTaskAnnotations
+	(*SingleImageAnnotations)(nil),  // 19: mir.command.SingleImageAnnotations
+	(*SingleImageCks)(nil),          // 20: mir.command.SingleImageCks
+	(*ObjectAnnotation)(nil),        // 21: mir.command.ObjectAnnotation
+	(*Rect)(nil),                    // 22: mir.command.Rect
+	(*MirKeywords)(nil),             // 23: mir.command.MirKeywords
+	(*CiTagToIndex)(nil),            // 24: mir.command.CiTagToIndex
+	(*StringList)(nil),              // 25: mir.command.StringList
+	(*MapStringToInt32List)(nil),    // 26: mir.command.MapStringToInt32List
+	(*Int32List)(nil),               // 27: mir.command.Int32List
+	(*AssetAnnoIndex)(nil),          // 28: mir.command.AssetAnnoIndex
+	(*MirTasks)(nil),                // 29: mir.command.MirTasks
+	(*Task)(nil),                    // 30: mir.command.Task
+	(*ModelMeta)(nil),               // 31: mir.command.ModelMeta
+	(*ModelStage)(nil),              // 32: mir.command.ModelStage
+	(*Evaluation)(nil),              // 33: mir.command.Evaluation
+	(*EvaluateConfig)(nil),          // 34: mir.command.EvaluateConfig
+	(*SingleDatasetEvaluation)(nil), // 35: mir.command.SingleDatasetEvaluation
+	(*SegmentationMetrics)(nil),     // 36: mir.command.SegmentationMetrics
+	(*SingleIouEvaluation)(nil),     // 37: mir.command.SingleIouEvaluation
+	(*SingleEvaluationElement)(nil), // 38: mir.command.SingleEvaluationElement
+	(*IntPoint)(nil),                // 39: mir.command.IntPoint
+	(*FloatPoint)(nil),              // 40: mir.command.FloatPoint
+	(*MirContext)(nil),              // 41: mir.command.MirContext
+	(*SingleMapCount)(nil),          // 42: mir.command.SingleMapCount
+	(*AnnoStats)(nil),               // 43: mir.command.AnnoStats
+	(*ExportConfig)(nil),            // 44: mir.command.ExportConfig
+	nil,                             // 45: mir.command.MirMetadatas.AttributesEntry
+	nil,                             // 46: mir.command.MirAnnotations.ImageCksEntry
+	nil,                             // 47: mir.command.SingleTaskAnnotations.ImageAnnotationsEntry
+	nil,                             // 48: mir.command.SingleImageCks.CksEntry
+	nil,                             // 49: mir.command.ObjectAnnotation.TagsEntry
+	nil,                             // 50: mir.command.MirKeywords.CkIdxEntry
+	nil,                             // 51: mir.command.CiTagToIndex.CisEntry
+	nil,                             // 52: mir.command.CiTagToIndex.TagsEntry
+	nil,                             // 53: mir.command.MapStringToInt32List.KeyIdsEntry
+	nil,                             // 54: mir.command.AssetAnnoIndex.AssetAnnosEntry
+	nil,                             // 55: mir.command.AssetAnnoIndex.SubIndexesEntry
+	nil,                             // 56: mir.command.MirTasks.TasksEntry
+	nil,                             // 57: mir.command.Task.NewTypesEntry
+	nil,                             // 58: mir.command.ModelMeta.StagesEntry
+	nil,                             // 59: mir.command.Evaluation.SubCksEntry
+	nil,                             // 60: mir.command.SingleDatasetEvaluation.IouEvaluationsEntry
+	nil,                             // 61: mir.command.SegmentationMetrics.AccEntry
+	nil,                             // 62: mir.command.SegmentationMetrics.IoUEntry
+	nil,                             // 63: mir.command.SingleIouEvaluation.CiEvaluationsEntry
+	nil,                             // 64: mir.command.MirContext.CksCntEntry
+	nil,                             // 65: mir.command.SingleMapCount.SubCntEntry
+	nil,                             // 66: mir.command.AnnoStats.TagsCntEntry
+	nil,                             // 67: mir.command.AnnoStats.ClassIdsCntEntry
+	nil,                             // 68: mir.command.AnnoStats.ClassIdsMaskAreaEntry
+	nil,                             // 69: mir.command.AnnoStats.ClassIdsObjCntEntry
 }
 var file_mir_command_proto_depIdxs = []int32{
-	44, // 0: mir.command.MirMetadatas.attributes:type_name -> mir.command.MirMetadatas.AttributesEntry
-	15, // 1: mir.command.MetadataAttributes.timestamp:type_name -> mir.command.Timestamp
+	45, // 0: mir.command.MirMetadatas.attributes:type_name -> mir.command.MirMetadatas.AttributesEntry
+	16, // 1: mir.command.MetadataAttributes.timestamp:type_name -> mir.command.Timestamp
 	0,  // 2: mir.command.MetadataAttributes.tvt_type:type_name -> mir.command.TvtType
 	1,  // 3: mir.command.MetadataAttributes.asset_type:type_name -> mir.command.AssetType
-	17, // 4: mir.command.MirAnnotations.ground_truth:type_name -> mir.command.SingleTaskAnnotations
-	17, // 5: mir.command.MirAnnotations.prediction:type_name -> mir.command.SingleTaskAnnotations
-	45, // 6: mir.command.MirAnnotations.image_cks:type_name -> mir.command.MirAnnotations.ImageCksEntry
-	46, // 7: mir.command.SingleTaskAnnotations.image_annotations:type_name -> mir.command.SingleTaskAnnotations.ImageAnnotationsEntry
+	18, // 4: mir.command.MirAnnotations.ground_truth:type_name -> mir.command.SingleTaskAnnotations
+	18, // 5: mir.command.MirAnnotations.prediction:type_name -> mir.command.SingleTaskAnnotations
+	46, // 6: mir.command.MirAnnotations.image_cks:type_name -> mir.command.MirAnnotations.ImageCksEntry
+	47, // 7: mir.command.SingleTaskAnnotations.image_annotations:type_name -> mir.command.SingleTaskAnnotations.ImageAnnotationsEntry
 	8,  // 8: mir.command.SingleTaskAnnotations.type:type_name -> mir.command.ObjectType
-	30, // 9: mir.command.SingleTaskAnnotations.model:type_name -> mir.command.ModelMeta
-	20, // 10: mir.command.SingleImageAnnotations.boxes:type_name -> mir.command.ObjectAnnotation
-	47, // 11: mir.command.SingleImageCks.cks:type_name -> mir.command.SingleImageCks.CksEntry
-	21, // 12: mir.command.ObjectAnnotation.box:type_name -> mir.command.Rect
-	48, // 13: mir.command.ObjectAnnotation.tags:type_name -> mir.command.ObjectAnnotation.TagsEntry
-	11, // 14: mir.command.ObjectAnnotation.cm:type_name -> mir.command.ConfusionMatrixType
-	38, // 15: mir.command.ObjectAnnotation.polygon:type_name -> mir.command.IntPoint
+	31, // 9: mir.command.SingleTaskAnnotations.model:type_name -> mir.command.ModelMeta
+	21, // 10: mir.command.SingleImageAnnotations.boxes:type_name -> mir.command.ObjectAnnotation
+	48, // 11: mir.command.SingleImageCks.cks:type_name -> mir.command.SingleImageCks.CksEntry
+	22, // 12: mir.command.ObjectAnnotation.box:type_name -> mir.command.Rect
+	49, // 13: mir.command.ObjectAnnotation.tags:type_name -> mir.command.ObjectAnnotation.TagsEntry
+	12, // 14: mir.command.ObjectAnnotation.cm:type_name -> mir.command.ConfusionMatrixType
+	39, // 15: mir.command.ObjectAnnotation.polygon:type_name -> mir.command.IntPoint
 	9,  // 16: mir.command.ObjectAnnotation.type:type_name -> mir.command.ObjectSubType
-	23, // 17: mir.command.MirKeywords.pred_idx:type_name -> mir.command.CiTagToIndex
-	23, // 18: mir.command.MirKeywords.gt_idx:type_name -> mir.command.CiTagToIndex
-	49, // 19: mir.command.MirKeywords.ck_idx:type_name -> mir.command.MirKeywords.CkIdxEntry
-	50, // 20: mir.command.CiTagToIndex.cis:type_name -> mir.command.CiTagToIndex.CisEntry
-	51, // 21: mir.command.CiTagToIndex.tags:type_name -> mir.command.CiTagToIndex.TagsEntry
-	52, // 22: mir.command.MapStringToInt32List.key_ids:type_name -> mir.command.MapStringToInt32List.KeyIdsEntry
-	53, // 23: mir.command.AssetAnnoIndex.asset_annos:type_name -> mir.command.AssetAnnoIndex.AssetAnnosEntry
-	54, // 24: mir.command.AssetAnnoIndex.sub_indexes:type_name -> mir.command.AssetAnnoIndex.SubIndexesEntry
-	55, // 25: mir.command.MirTasks.tasks:type_name -> mir.command.MirTasks.TasksEntry
+	24, // 17: mir.command.MirKeywords.pred_idx:type_name -> mir.command.CiTagToIndex
+	24, // 18: mir.command.MirKeywords.gt_idx:type_name -> mir.command.CiTagToIndex
+	50, // 19: mir.command.MirKeywords.ck_idx:type_name -> mir.command.MirKeywords.CkIdxEntry
+	51, // 20: mir.command.CiTagToIndex.cis:type_name -> mir.command.CiTagToIndex.CisEntry
+	52, // 21: mir.command.CiTagToIndex.tags:type_name -> mir.command.CiTagToIndex.TagsEntry
+	53, // 22: mir.command.MapStringToInt32List.key_ids:type_name -> mir.command.MapStringToInt32List.KeyIdsEntry
+	54, // 23: mir.command.AssetAnnoIndex.asset_annos:type_name -> mir.command.AssetAnnoIndex.AssetAnnosEntry
+	55, // 24: mir.command.AssetAnnoIndex.sub_indexes:type_name -> mir.command.AssetAnnoIndex.SubIndexesEntry
+	56, // 25: mir.command.MirTasks.tasks:type_name -> mir.command.MirTasks.TasksEntry
 	3,  // 26: mir.command.Task.type:type_name -> mir.command.TaskType
-	30, // 27: mir.command.Task.model:type_name -> mir.command.ModelMeta
-	32, // 28: mir.command.Task.evaluation:type_name -> mir.command.Evaluation
-	56, // 29: mir.command.Task.new_types:type_name -> mir.command.Task.NewTypesEntry
-	57, // 30: mir.command.ModelMeta.stages:type_name -> mir.command.ModelMeta.StagesEntry
-	33, // 31: mir.command.ModelMeta.evaluate_config:type_name -> mir.command.EvaluateConfig
-	37, // 32: mir.command.ModelStage.ci_averaged_evaluation:type_name -> mir.command.SingleEvaluationElement
-	33, // 33: mir.command.Evaluation.config:type_name -> mir.command.EvaluateConfig
-	34, // 34: mir.command.Evaluation.dataset_evaluation:type_name -> mir.command.SingleDatasetEvaluation
-	34, // 35: mir.command.Evaluation.main_ck:type_name -> mir.command.SingleDatasetEvaluation
-	58, // 36: mir.command.Evaluation.sub_cks:type_name -> mir.command.Evaluation.SubCksEntry
-	12, // 37: mir.command.Evaluation.state:type_name -> mir.command.EvaluationState
+	31, // 27: mir.command.Task.model:type_name -> mir.command.ModelMeta
+	33, // 28: mir.command.Task.evaluation:type_name -> mir.command.Evaluation
+	57, // 29: mir.command.Task.new_types:type_name -> mir.command.Task.NewTypesEntry
+	58, // 30: mir.command.ModelMeta.stages:type_name -> mir.command.ModelMeta.StagesEntry
+	34, // 31: mir.command.ModelMeta.evaluate_config:type_name -> mir.command.EvaluateConfig
+	38, // 32: mir.command.ModelStage.ci_averaged_evaluation:type_name -> mir.command.SingleEvaluationElement
+	34, // 33: mir.command.Evaluation.config:type_name -> mir.command.EvaluateConfig
+	35, // 34: mir.command.Evaluation.dataset_evaluation:type_name -> mir.command.SingleDatasetEvaluation
+	35, // 35: mir.command.Evaluation.main_ck:type_name -> mir.command.SingleDatasetEvaluation
+	59, // 36: mir.command.Evaluation.sub_cks:type_name -> mir.command.Evaluation.SubCksEntry
+	13, // 37: mir.command.Evaluation.state:type_name -> mir.command.EvaluationState
 	8,  // 38: mir.command.EvaluateConfig.type:type_name -> mir.command.ObjectType
-	59, // 39: mir.command.SingleDatasetEvaluation.iou_evaluations:type_name -> mir.command.SingleDatasetEvaluation.IouEvaluationsEntry
-	36, // 40: mir.command.SingleDatasetEvaluation.iou_averaged_evaluation:type_name -> mir.command.SingleIouEvaluation
-	35, // 41: mir.command.SingleDatasetEvaluation.segmentation_metrics:type_name -> mir.command.SegmentationMetrics
-	60, // 42: mir.command.SegmentationMetrics.Acc:type_name -> mir.command.SegmentationMetrics.AccEntry
-	61, // 43: mir.command.SegmentationMetrics.IoU:type_name -> mir.command.SegmentationMetrics.IoUEntry
-	62, // 44: mir.command.SingleIouEvaluation.ci_evaluations:type_name -> mir.command.SingleIouEvaluation.CiEvaluationsEntry
-	37, // 45: mir.command.SingleIouEvaluation.ci_averaged_evaluation:type_name -> mir.command.SingleEvaluationElement
-	39, // 46: mir.command.SingleEvaluationElement.pr_curve:type_name -> mir.command.FloatPoint
-	63, // 47: mir.command.MirContext.cks_cnt:type_name -> mir.command.MirContext.CksCntEntry
-	42, // 48: mir.command.MirContext.pred_stats:type_name -> mir.command.AnnoStats
-	42, // 49: mir.command.MirContext.gt_stats:type_name -> mir.command.AnnoStats
-	64, // 50: mir.command.SingleMapCount.sub_cnt:type_name -> mir.command.SingleMapCount.SubCntEntry
-	65, // 51: mir.command.AnnoStats.tags_cnt:type_name -> mir.command.AnnoStats.TagsCntEntry
-	66, // 52: mir.command.AnnoStats.class_ids_cnt:type_name -> mir.command.AnnoStats.ClassIdsCntEntry
-	67, // 53: mir.command.AnnoStats.class_ids_mask_area:type_name -> mir.command.AnnoStats.ClassIdsMaskAreaEntry
-	68, // 54: mir.command.AnnoStats.class_ids_obj_cnt:type_name -> mir.command.AnnoStats.ClassIdsObjCntEntry
+	60, // 39: mir.command.SingleDatasetEvaluation.iou_evaluations:type_name -> mir.command.SingleDatasetEvaluation.IouEvaluationsEntry
+	37, // 40: mir.command.SingleDatasetEvaluation.iou_averaged_evaluation:type_name -> mir.command.SingleIouEvaluation
+	36, // 41: mir.command.SingleDatasetEvaluation.segmentation_metrics:type_name -> mir.command.SegmentationMetrics
+	61, // 42: mir.command.SegmentationMetrics.Acc:type_name -> mir.command.SegmentationMetrics.AccEntry
+	62, // 43: mir.command.SegmentationMetrics.IoU:type_name -> mir.command.SegmentationMetrics.IoUEntry
+	63, // 44: mir.command.SingleIouEvaluation.ci_evaluations:type_name -> mir.command.SingleIouEvaluation.CiEvaluationsEntry
+	38, // 45: mir.command.SingleIouEvaluation.ci_averaged_evaluation:type_name -> mir.command.SingleEvaluationElement
+	40, // 46: mir.command.SingleEvaluationElement.pr_curve:type_name -> mir.command.FloatPoint
+	64, // 47: mir.command.MirContext.cks_cnt:type_name -> mir.command.MirContext.CksCntEntry
+	43, // 48: mir.command.MirContext.pred_stats:type_name -> mir.command.AnnoStats
+	43, // 49: mir.command.MirContext.gt_stats:type_name -> mir.command.AnnoStats
+	65, // 50: mir.command.SingleMapCount.sub_cnt:type_name -> mir.command.SingleMapCount.SubCntEntry
+	66, // 51: mir.command.AnnoStats.tags_cnt:type_name -> mir.command.AnnoStats.TagsCntEntry
+	67, // 52: mir.command.AnnoStats.class_ids_cnt:type_name -> mir.command.AnnoStats.ClassIdsCntEntry
+	68, // 53: mir.command.AnnoStats.class_ids_mask_area:type_name -> mir.command.AnnoStats.ClassIdsMaskAreaEntry
+	69, // 54: mir.command.AnnoStats.class_ids_obj_cnt:type_name -> mir.command.AnnoStats.ClassIdsObjCntEntry
 	7,  // 55: mir.command.ExportConfig.asset_format:type_name -> mir.command.AssetFormat
-	10, // 56: mir.command.ExportConfig.anno_format:type_name -> mir.command.ExportFormat
-	14, // 57: mir.command.MirMetadatas.AttributesEntry.value:type_name -> mir.command.MetadataAttributes
-	19, // 58: mir.command.MirAnnotations.ImageCksEntry.value:type_name -> mir.command.SingleImageCks
-	18, // 59: mir.command.SingleTaskAnnotations.ImageAnnotationsEntry.value:type_name -> mir.command.SingleImageAnnotations
-	27, // 60: mir.command.MirKeywords.CkIdxEntry.value:type_name -> mir.command.AssetAnnoIndex
-	25, // 61: mir.command.CiTagToIndex.CisEntry.value:type_name -> mir.command.MapStringToInt32List
-	27, // 62: mir.command.CiTagToIndex.TagsEntry.value:type_name -> mir.command.AssetAnnoIndex
-	26, // 63: mir.command.MapStringToInt32List.KeyIdsEntry.value:type_name -> mir.command.Int32List
-	26, // 64: mir.command.AssetAnnoIndex.AssetAnnosEntry.value:type_name -> mir.command.Int32List
-	25, // 65: mir.command.AssetAnnoIndex.SubIndexesEntry.value:type_name -> mir.command.MapStringToInt32List
-	29, // 66: mir.command.MirTasks.TasksEntry.value:type_name -> mir.command.Task
-	31, // 67: mir.command.ModelMeta.StagesEntry.value:type_name -> mir.command.ModelStage
-	34, // 68: mir.command.Evaluation.SubCksEntry.value:type_name -> mir.command.SingleDatasetEvaluation
-	36, // 69: mir.command.SingleDatasetEvaluation.IouEvaluationsEntry.value:type_name -> mir.command.SingleIouEvaluation
-	37, // 70: mir.command.SingleIouEvaluation.CiEvaluationsEntry.value:type_name -> mir.command.SingleEvaluationElement
-	41, // 71: mir.command.MirContext.CksCntEntry.value:type_name -> mir.command.SingleMapCount
-	41, // 72: mir.command.AnnoStats.TagsCntEntry.value:type_name -> mir.command.SingleMapCount
+	11, // 56: mir.command.ExportConfig.anno_format:type_name -> mir.command.ExportFormat
+	15, // 57: mir.command.MirMetadatas.AttributesEntry.value:type_name -> mir.command.MetadataAttributes
+	20, // 58: mir.command.MirAnnotations.ImageCksEntry.value:type_name -> mir.command.SingleImageCks
+	19, // 59: mir.command.SingleTaskAnnotations.ImageAnnotationsEntry.value:type_name -> mir.command.SingleImageAnnotations
+	28, // 60: mir.command.MirKeywords.CkIdxEntry.value:type_name -> mir.command.AssetAnnoIndex
+	26, // 61: mir.command.CiTagToIndex.CisEntry.value:type_name -> mir.command.MapStringToInt32List
+	28, // 62: mir.command.CiTagToIndex.TagsEntry.value:type_name -> mir.command.AssetAnnoIndex
+	27, // 63: mir.command.MapStringToInt32List.KeyIdsEntry.value:type_name -> mir.command.Int32List
+	27, // 64: mir.command.AssetAnnoIndex.AssetAnnosEntry.value:type_name -> mir.command.Int32List
+	26, // 65: mir.command.AssetAnnoIndex.SubIndexesEntry.value:type_name -> mir.command.MapStringToInt32List
+	30, // 66: mir.command.MirTasks.TasksEntry.value:type_name -> mir.command.Task
+	32, // 67: mir.command.ModelMeta.StagesEntry.value:type_name -> mir.command.ModelStage
+	35, // 68: mir.command.Evaluation.SubCksEntry.value:type_name -> mir.command.SingleDatasetEvaluation
+	37, // 69: mir.command.SingleDatasetEvaluation.IouEvaluationsEntry.value:type_name -> mir.command.SingleIouEvaluation
+	38, // 70: mir.command.SingleIouEvaluation.CiEvaluationsEntry.value:type_name -> mir.command.SingleEvaluationElement
+	42, // 71: mir.command.MirContext.CksCntEntry.value:type_name -> mir.command.SingleMapCount
+	42, // 72: mir.command.AnnoStats.TagsCntEntry.value:type_name -> mir.command.SingleMapCount
 	73, // [73:73] is the sub-list for method output_type
 	73, // [73:73] is the sub-list for method input_type
 	73, // [73:73] is the sub-list for extension type_name
@@ -4516,7 +4574,7 @@ func file_mir_command_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_mir_command_proto_rawDesc,
-			NumEnums:      13,
+			NumEnums:      14,
 			NumMessages:   56,
 			NumExtensions: 0,
 			NumServices:   0,

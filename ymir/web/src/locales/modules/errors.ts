@@ -107,6 +107,7 @@ const errors = {
   'error300002': { cn: '容器: 训练集或测试集错误', en: 'Container: Training / Validation dataset error', },
   'error300003': { cn: '容器: 图片格式错误', en: 'Container: Unknown image format', },
   'error300004': { cn: '容器: 模型错误', en: 'Container: Model error', },
+  'error300005': { cn: '容器: 数据或模型类型不支持', en: 'Container: Object type not supported', },
   'error300101': { cn: '容器: CUDA 与 GPU 不兼容', en: 'Container: CUDA and GPU mismatch', },
   'error300102': { cn: '容器: 未找到 GPU', en: 'Container: No GPU', },
   'error300103': { cn: '容器: 内存或显存不足', en: 'Container: Out Of Memory', },
