@@ -24,7 +24,7 @@ const Stats: FC<{ type: 'dataset' | 'model'; project: YModels.Project }> = ({ ty
   const statBlock = ({ label, count }: StatType) => (
     <>
       <div className="contentLabel">{t(label)}</div>
-      <div style={numStyles}>{count}</div>
+      <div className='contentCount' style={numStyles}>{count}</div>
     </>
   )
 
