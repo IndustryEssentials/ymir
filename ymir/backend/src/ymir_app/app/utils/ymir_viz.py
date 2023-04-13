@@ -89,6 +89,8 @@ class DatasetInfo:
     repo_index_ready: Optional[bool] = None
     evaluation_state: Optional[int] = None
 
+    analysis: Optional[Dict] = None
+
     @classmethod
     def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetInfo":
         total_assets_count = res["total_assets_count"]
@@ -98,6 +100,15 @@ class DatasetInfo:
             "gt": gt.keywords if gt else {},
             "pred": pred.keywords if pred else {},
         }
+        analysis: Dict = {}
+        if res.get("diagnosis_result"):
+            analysis = dict(res["diagnosis_result"])
+            for column in ["class_proportion", "class_obj_count"]:
+                analysis[column] = {
+                    key: class_ids_to_keywords(user_labels, class_ids)
+                    for key, class_ids in res["diagnosis_result"][column].items()
+                }
+
         return cls(
             gt=gt,
             pred=pred,
@@ -111,6 +122,7 @@ class DatasetInfo:
             total_assets_mbytes=res.get("total_assets_mbytes"),
             repo_index_ready=res.get("query_context", {}).get("repo_index_ready"),
             evaluation_state=res["evaluation_state"],
+            analysis=analysis,
         )
 
 
@@ -342,6 +354,7 @@ class VizClient:
     def get_dataset_analysis(
         self,
         dataset_hash: str,
+        user_labels: Optional[UserLabels] = None,
         keyword_ids: Optional[List[int]] = None,
         require_hist: bool = False,
     ) -> Dict:
@@ -349,6 +362,7 @@ class VizClient:
         viewer: GET /dataset_stats
         """
         url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_stats"
+        user_labels = user_labels or self._user_labels
 
         params = {
             "require_assets_hist": require_hist,
@@ -359,7 +373,7 @@ class VizClient:
 
         resp = self.get_resp(url, params=params)
         res = self.parse_resp(resp)
-        dataset_info = DatasetInfo.from_dict(res, self._user_labels)
+        dataset_info = DatasetInfo.from_dict(res, user_labels)
         return asdict(dataset_info)
 
     def get_negative_count(self, dataset_hash: str, keyword_ids: List[int]) -> int:

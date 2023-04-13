@@ -174,6 +174,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             dataset.keywords = json.dumps(result["keywords"])
             dataset.asset_count = result["total_assets_count"]
             dataset.keyword_count = result["keyword_count"]
+            dataset.analysis = result["analysis"]
 
         db.add(dataset)
         db.commit()

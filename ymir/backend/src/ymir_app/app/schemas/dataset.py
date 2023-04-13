@@ -86,24 +86,19 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
         orm_mode = True
 
 
-class DatasetInDB(DatasetInDBBase):
-    pass
-
-
 class DatasetBasicAnalysis(BaseModel):
     """
     used for dataset improvement suggestion
     """
-    classwise_area_rank: Optional[Dict]
-    class_proportion: Optional[float]
-    scene_density: Optional[float]
-    classwise_annos_count: Optional[Dict]
+
+    density_proportion: Optional[Dict]
+    class_proportion: Optional[Dict]
+    class_obj_count: Optional[Dict]
 
 
-# Properties to return to caller
-class Dataset(DatasetInDBBase):
+class DatasetInDB(DatasetInDBBase):
     keywords: Optional[Dict]
-    analysis: Optional[Dict]
+    analysis: Optional[DatasetBasicAnalysis]
 
     # make sure all the json dumped value is unpacked before returning to caller
     @validator("keywords", "analysis", pre=True)
@@ -114,6 +109,9 @@ class Dataset(DatasetInDBBase):
             return json.loads(v)
         return v
 
+
+# Properties to return to caller
+class Dataset(DatasetInDBBase):
     class Config:
         use_enum_values = True
         validate_all = True
@@ -167,7 +165,7 @@ class DatasetInfo(DatasetInDBBase):
     pred: Optional[DatasetAnnotation]
 
     keywords: Optional[Dict]
-    analysis: Optional[Dict]
+    analysis: Optional[DatasetBasicAnalysis]
     cks_count: Optional[Dict]
     cks_count_total: Optional[Dict]
 

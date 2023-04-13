@@ -184,18 +184,31 @@ class TaskResult:
 
     @cached_property
     def dataset_info(self) -> Optional[Dict]:
+        """
+        get dataset_info for prediction, which has a underlying dataset
+        """
         get_dataset_info = partial(self.viz.get_dataset_info, self.task_hash, self.user_labels)
         try:
-            dataset_info = retry(
-                get_dataset_info, n_times=3, wait=settings.CRON_UPDATE_TASK_RETRY_INTERVAL, backoff=True
-            )
+            dataset_info = retry(get_dataset_info, n_times=3, backoff=True)
         except Exception:
-            logger.exception("[update task] failed to get dataset_info, check viz log")
+            logger.exception("[update task] failed to get dataset_info, check viewer log")
             return None
-        if dataset_info["new_types_added"]:
+        return dataset_info
+
+    @cached_property
+    def dataset_analysis(self) -> Optional[Dict]:
+        get_dataset_analysis = partial(
+            self.viz.get_dataset_analysis, self.task_hash, self.user_labels, require_hist=True
+        )
+        try:
+            dataset_analysis = retry(get_dataset_analysis, n_times=3, backoff=True)
+        except Exception:
+            logger.exception("[update task] failed to get dataset_analysis, check viewer log")
+            return None
+        if dataset_analysis["new_types_added"]:
             logger.info("[update task] delete user keywords cache for new keywords from dataset")
             self.cache.delete_personal_keywords_cache()
-        return dataset_info
+        return dataset_analysis
 
     def ensure_dest_model_group_exists(self, dataset_id: int) -> int:
         model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
@@ -336,18 +349,18 @@ class TaskResult:
 
     def update_dataset_result(self, task_result: schemas.TaskUpdateStatus) -> None:
         """
-        Criterion for ready dataset: task state is DONE and viewer returns valid dataset_info
+        Criterion for ready dataset: task state is DONE and viewer returns valid dataset_analysis
         """
         dataset_record = crud.dataset.get_by_task_id(self.db, task_id=self.task.id)
         if not dataset_record:
             logger.error("[update task] task result (dataset) not found, skip")
             return
-        if task_result.state is TaskState.done and self.dataset_info:
+        if task_result.state is TaskState.done and self.dataset_analysis:
             crud.dataset.finish(
                 self.db,
                 dataset_record.id,
                 result_state=ResultState.ready,
-                result=self.dataset_info,
+                result=self.dataset_analysis,
             )
         else:
             crud.dataset.finish(
