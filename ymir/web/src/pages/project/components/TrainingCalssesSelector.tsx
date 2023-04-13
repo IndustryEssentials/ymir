@@ -28,6 +28,7 @@ const TrainingClassesSelector: FC<Props> = ({ pid, onChange, ...props }) => {
       placeholder={t('project.add.form.keyword.placeholder')}
       style={{ minWidth: 120 }}
       {...props}
+      value={project?.keywords}
       options={classes.map((cs) => ({ value: cs, label: cs }))}
       onChange={(value: string[], option) => {
         updateTrainClasses({ id: pid, classes: value })

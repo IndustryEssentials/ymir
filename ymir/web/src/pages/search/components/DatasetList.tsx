@@ -192,13 +192,6 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
         icon: <VectorIcon />,
       },
       {
-        key: 'preview',
-        label: t('common.action.preview'),
-        hidden: () => !validDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/dataset/${id}/assets`),
-        icon: <SearchIcon />,
-      },
-      {
         key: 'merge',
         label: t('common.action.merge'),
         hidden: () => !validDataset(record),

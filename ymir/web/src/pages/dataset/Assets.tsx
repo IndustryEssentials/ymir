@@ -81,7 +81,6 @@ const Dataset: FC = () => {
     const { offset = 0, limit = 20 } = filterParams
     setCurrentPage(offset / limit + 1)
     current?.id && filter(filterParams)
-    console.log('current:', current)
   }, [current, filterParams])
 
   const filterKw = ({ type, selected }: { type: string; selected?: string[] }) => {

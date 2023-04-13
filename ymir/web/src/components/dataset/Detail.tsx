@@ -55,7 +55,7 @@ const DatasetDetail: FC<{ dataset: YModels.Dataset }> = ({ dataset }) => {
             </Col>
 
             <Col hidden={dataset.state !== ResultStates.VALID}>
-              <Button type="primary" icon={<SearchIcon />} onClick={() => history.push(`/home/project/${dataset.projectId}/dataset/${dataset.id}/assets`)}>
+              <Button type="primary" icon={<SearchIcon />} onClick={() => history.push(`/home/project/${dataset.projectId}/dataset/${dataset.id}`)}>
                 {t('common.view')}
               </Button>
             </Col>

@@ -221,11 +221,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
               <Col flex={'50px'} style={{ textAlign: 'right' }}>
                 {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
                 {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-                {validDataset(record) && !!record.assetCount ? (
-                  <span title={t('common.action.preview')} onClick={() => history.push(`/home/project/${pid}/dataset/${id}/assets`)}>
-                    <SearchIcon className={styles.addBtnIcon} />
-                  </span>
-                ) : null}
                 <span
                   onClick={() => {
                     showAnalysisModal()

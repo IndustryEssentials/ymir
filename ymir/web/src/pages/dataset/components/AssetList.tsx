@@ -47,7 +47,7 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
             {rows.map((row, index) => {
               const len = row.length
               const h =
-                (width - ItemSpace * len) /
+                (width - ItemSpace * len) * len / columns /
                 row.reduce((prev, asset) => {
                   const { width = 0, height = 0 } = asset?.metadata || {}
                   return height ? prev + width / height : prev

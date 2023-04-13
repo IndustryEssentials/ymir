@@ -106,19 +106,10 @@ export const homeRoutes = [
   {
     path: "/home/project/:id/dataset/:did",
     name: "datasetDetail",
-    component: "@/pages/dataset/detail",
-    title: "dataset.title",
-    pid: 32,
-    id: 10,
-    breadcrumbLabel: "breadcrumbs.dataset",
-  },
-  {
-    path: "/home/project/:id/dataset/:did/assets",
-    name: "datasetDetail",
     component: "@/pages/dataset/Assets",
     title: "assets.title",
-    pid: 10,
-    id: 11,
+    pid: 32,
+    id: 10,
     breadcrumbLabel: "breadcrumbs.dataset.assets",
   },
   {
