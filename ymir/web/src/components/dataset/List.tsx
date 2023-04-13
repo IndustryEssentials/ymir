@@ -285,8 +285,8 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
       },
       {
         title: <StrongTitle label="dataset.column.suggestion" />,
-        dataIndex: 'metricLevels',
-        render: (levels) => <SimpleSuggestion metrics={levels} />,
+        dataIndex: 'suggestions',
+        render: (suggestions) => <SimpleSuggestion suggestions={suggestions} />,
       },
       {
         title: <StrongTitle label="dataset.column.state" />,

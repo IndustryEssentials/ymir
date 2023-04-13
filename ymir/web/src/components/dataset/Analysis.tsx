@@ -119,7 +119,7 @@ const Analysis: FC<{ ids: number[], classes?: string[] }> = ({ ids, classes = []
             {source.map((item) => (
               <Panel key={item.id} toogleVisible={false} label={item.name}>
                 <SampleRates keywords={classes} dataset={item} />
-                <Suggestion metrics={item.metricLevels} target={classes} />
+                <Suggestion suggestions={item.suggestions} target={classes} />
               </Panel>
             ))}
           </Col>

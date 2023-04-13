@@ -58,7 +58,6 @@ const ds = (id) => ({
   user_id: 2,
   related_task: task,
   analysis: {},
-  analysis_suggestion: {},
 })
 
 describe('constants: dataset', () => {
@@ -121,16 +120,7 @@ describe('constants: dataset', () => {
       taskName: task.name,
       task,
       description: '',
-      metricLevels: {
-        annotationCount: undefined,
-        annotationDensity: undefined,
-        classBias: undefined,
-      },
-      metrics: {
-        annotationCount: undefined,
-        annotationDensity: undefined,
-        classBias: undefined,
-      },
+      suggestions: {},
     }
     expect(transferDataset(dataset)).toEqual(expected)
   })

@@ -124,17 +124,14 @@ declare namespace YModels {
     cks?: CKCounts
     tags?: CKCounts
     evaluated?: boolean
-    metrics: DatasetMetrics
-    metricLevels: DatasetMetrics<DatasetMetricEnum>
+    suggestions: DatasetSuggestions
   }
-  type DatasetMetricEnum = 0 | 1 | 2 | 3 | 4
-  type classMetric<M = number> = {
-    [cls: string]: M
+  type Suggestion = {
+    bounding: number
+    values: string[]
   }
-  type DatasetMetrics<M = number> = {
-    classBias: classMetric<M>
-    annotationDensity: M
-    annotationCount?: classMetric<M>
+  type DatasetSuggestions = {
+    [key: string]: Suggestion
   }
 
   export interface Prediction extends Dataset<InferenceParams> {

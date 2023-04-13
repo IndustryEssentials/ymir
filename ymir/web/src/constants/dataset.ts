@@ -2,6 +2,7 @@ import { getLocale } from 'umi'
 import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from './common'
 import { ObjectType } from './project'
+import { transferSuggestion } from './datasetAnalysis'
 
 export enum AnnotationType {
   BoundingBox = 0,
@@ -81,7 +82,14 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
   const assetCount = data.asset_count || 0
   const keywords = Object.keys(gt)
   const analysis = data?.analysis || {}
-  const levels = data?.analysis_suggestion || {}
+  const suggestions = [
+    { source: 'class_proportion', key: 'classBias' },
+    { source: 'class_obj_count', key: 'annotationCount' },
+    { source: 'density_proportion', key: 'annotationDensity' },
+  ].reduce<YModels.DatasetSuggestions>((prev, { key, source }) => {
+    const suggest = transferSuggestion(analysis[source])
+    return suggest ? { ...prev, [key]: suggest } : prev
+  }, {})
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -111,16 +119,7 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     description: data.description || '',
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
     tags: data.gt ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total) : undefined,
-    metrics: {
-      classBias: analysis.class_proportion,
-      annotationDensity: analysis.scene_density,
-      annotationCount: analysis.classwise_annos_count,
-    },
-    metricLevels: {
-      classBias: levels.class_proportion,
-      annotationDensity: levels.scene_density,
-      annotationCount: levels.classwise_annos_count,
-    },
+    suggestions,
   }
 }
 
@@ -150,7 +149,7 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
   return {
     ...dataset,
     total: data.annos_count || 0,
-    negative: data.negative_assets_count || 0,
+    negative: gt.negative_assets_count || 0,
     average: data.gt?.ave_annos_count || 0,
     totalArea,
     keywordCounts: keywords2ChartData(dataset.keywords, dataset.assetCount, dataset.gt?.count),
