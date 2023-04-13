@@ -285,39 +285,39 @@ func (s *MongoServer) postIndexDatasetData(
 		if len(class_prt_targets) > 0 {
 			indexedMetadata.DiagnosisResult.ClassProportion[class_prt_ratio_key] = class_prt_targets
 		}
-	}
 
-	// Step 2: use class_counts hist for DensityProportion
-	class_counts_rank := map[string]int32{}
-	// re-map key to x-axies range.
-	class_counts_key_map := map[string]string{"0": "0-3", "4": "4-10", "10": "10+"}
-	class_counts_max := 0
-	for _, v := range *(*indexedMetadata.HistAnnosGt)["class_counts_rank"].Output {
-		cnt, err := strconv.Atoi(v["y"])
-		if err != nil {
-			panic(err)
-		}
+		// Step 2: use class_counts hist for DensityProportion
+		class_counts_rank := map[string]int32{}
+		// re-map key to x-axies range.
+		class_counts_key_map := map[string]string{"0": "0-3", "4": "4-10", "10": "10+"}
+		class_counts_max := 0
+		for _, v := range *(*indexedMetadata.HistAnnosGt)["class_counts_rank"].Output {
+			cnt, err := strconv.Atoi(v["y"])
+			if err != nil {
+				panic(err)
+			}
 
-		if remap_key, ok := class_counts_key_map[v["x"]]; ok {
-			class_counts_rank[remap_key] = int32(cnt)
-		} else {
-			panic(fmt.Sprintf("re-map key fail: expected %+v, got key %s", class_counts_key_map, v["x"]))
-		}
+			if remap_key, ok := class_counts_key_map[v["x"]]; ok {
+				class_counts_rank[remap_key] = int32(cnt)
+			} else {
+				panic(fmt.Sprintf("re-map key fail: expected %+v, got key %s", class_counts_key_map, v["x"]))
+			}
 
-		if class_counts_max < cnt {
-			class_counts_max = cnt
+			if class_counts_max < cnt {
+				class_counts_max = cnt
+			}
 		}
-	}
-	density_proportion_targets := []string{}
-	density_proportion_ratio := int32(10)
-	density_proportion_ratio_key := fmt.Sprintf("%f", 1.0/float64(density_proportion_ratio))
-	for k, v := range class_counts_rank {
-		if v*density_proportion_ratio < int32(class_counts_max) {
-			density_proportion_targets = append(density_proportion_targets, k)
+		density_proportion_targets := []string{}
+		density_proportion_ratio := int32(10)
+		density_proportion_ratio_key := fmt.Sprintf("%f", 1.0/float64(density_proportion_ratio))
+		for k, v := range class_counts_rank {
+			if v*density_proportion_ratio < int32(class_counts_max) {
+				density_proportion_targets = append(density_proportion_targets, k)
+			}
 		}
-	}
-	if len(density_proportion_targets) > 0 {
-		indexedMetadata.DiagnosisResult.DensityProportion[density_proportion_ratio_key] = density_proportion_targets
+		if len(density_proportion_targets) > 0 {
+			indexedMetadata.DiagnosisResult.DensityProportion[density_proportion_ratio_key] = density_proportion_targets
+		}
 	}
 
 	metadataCollection := s.getMetadataCollection()
