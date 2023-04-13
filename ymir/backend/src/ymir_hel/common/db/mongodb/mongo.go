@@ -289,6 +289,8 @@ func (s *MongoServer) postIndexDatasetData(
 
 	// Step 2: use class_counts hist for DensityProportion
 	class_counts_rank := map[string]int32{}
+	// re-map key to x-axies range.
+	class_counts_key_map := map[string]string{"0": "0-3", "4": "4-10", "10": "10+"}
 	class_counts_max := 0
 	for _, v := range *(*indexedMetadata.HistAnnosGt)["class_counts_rank"].Output {
 		cnt, err := strconv.Atoi(v["y"])
@@ -296,7 +298,12 @@ func (s *MongoServer) postIndexDatasetData(
 			panic(err)
 		}
 
-		class_counts_rank[v["x"]] = int32(cnt)
+		if remap_key, ok := class_counts_key_map[v["x"]]; ok {
+			class_counts_rank[remap_key] = int32(cnt)
+		} else {
+			panic(fmt.Sprintf("re-map key fail: expected %+v, got key %s", class_counts_key_map, v["x"]))
+		}
+
 		if class_counts_max < cnt {
 			class_counts_max = cnt
 		}
