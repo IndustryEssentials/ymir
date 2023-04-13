@@ -123,7 +123,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   }, [did])
 
   useEffect(() => {
-    trainDataset && !iterationContext && !fromCopy && setSelected(trainDataset?.gt?.keywords)
+    trainDataset && !iterationContext && !fromCopy && autoSetKeywords(trainDataset?.gt?.keywords)
     if (!trainDataset && fromCopy) {
       setSelectedKeywords([])
       form.setFieldsValue({ keywords: [] })
@@ -168,10 +168,14 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
     setSelected(trainDataset?.gt?.keywords)
   }
 
-  function setSelected(kws = []) {
+  function autoSetKeywords(kws = []) {
     if (kws.length > KeywordsMaxCount) {
       return
     }
+    setSelected(kws)
+  }
+
+  function setSelected(kws = []) {
     setSelectedKeywords(kws)
     form.setFieldsValue({ keywords: kws })
   }
