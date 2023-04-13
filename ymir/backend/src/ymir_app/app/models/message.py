@@ -30,6 +30,7 @@ class Message(Base):
     model_id = Column(Integer, index=True)
     prediction_id = Column(Integer, index=True)
     is_read = Column(Boolean, default=False, nullable=False)
+    is_deleted = Column(Boolean, default=False, nullable=False)
 
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

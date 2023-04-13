@@ -32,6 +32,7 @@ def upgrade() -> None:
         sa.Column('model_id', sa.Integer(), nullable=True),
         sa.Column('prediction_id', sa.Integer(), nullable=True),
         sa.Column('is_read', sa.Boolean(), nullable=False),
+        sa.Column('is_deleted', sa.Boolean(), nullable=False),
         sa.Column('create_datetime', sa.DateTime(), nullable=False),
         sa.Column('update_datetime', sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint('id'),

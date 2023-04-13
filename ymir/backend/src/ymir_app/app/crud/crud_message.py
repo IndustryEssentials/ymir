@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
@@ -46,7 +46,7 @@ class CRUDMessage(CRUDBase[Message, MessageCreate, MessageUpdate]):
         is_desc = pagination.is_desc
 
         query = db.query(self.model)
-        query = query.filter(self.model.user_id == user_id)
+        query = query.filter(self.model.user_id == user_id, not_(self.model.is_read))
 
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
