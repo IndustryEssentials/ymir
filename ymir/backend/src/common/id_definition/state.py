@@ -19,7 +19,7 @@ class TaskState(IntEnum):
     running = mir_cmd_pb.TaskStateRunning
     done = mir_cmd_pb.TaskStateDone
     error = mir_cmd_pb.TaskStateError
-    terminate = 100
+    terminate = mir_cmd_pb.TaskStateTerminate
 
 
 class ResultType(IntEnum):

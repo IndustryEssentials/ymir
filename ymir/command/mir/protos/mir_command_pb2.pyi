@@ -142,6 +142,7 @@ class _TaskStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enum
     TaskStateDone = TaskState.V(3)
     TaskStateError = TaskState.V(4)
     TaskStateMiss = TaskState.V(5)
+    TaskStateTerminate = TaskState.V(100)
 
 TaskStateUnknown = TaskState.V(0)
 TaskStatePending = TaskState.V(1)
@@ -149,6 +150,7 @@ TaskStateRunning = TaskState.V(2)
 TaskStateDone = TaskState.V(3)
 TaskStateError = TaskState.V(4)
 TaskStateMiss = TaskState.V(5)
+TaskStateTerminate = TaskState.V(100)
 global___TaskState = TaskState
 
 

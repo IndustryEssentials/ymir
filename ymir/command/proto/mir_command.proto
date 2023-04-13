@@ -62,6 +62,7 @@ enum TaskState {
     TaskStateDone = 3;
     TaskStateError = 4;
     TaskStateMiss = 5;
+    TaskStateTerminate = 100;
 };
 
 enum Sha1Type {
