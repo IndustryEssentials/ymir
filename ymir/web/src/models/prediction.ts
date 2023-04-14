@@ -3,6 +3,7 @@ import { actions } from '@/constants/common'
 import { transferPrediction } from '@/constants/prediction'
 import { batchAct, evaluate, getPrediction, getPredictions } from '@/services/prediction'
 import { createEffect, createReducers, transferList } from './_utils'
+import { PredictionStore } from '.'
 type PredictionsPayload = { pid: number; force?: boolean; [key: string]: any }
 type PredictionPayload = { id: number; force?: boolean }
 
@@ -19,14 +20,14 @@ const hideAction = (type: actions) =>
     }
   })
 
-const PredictionModel: YStates.PredictionStore = {
+const PredictionModel: PredictionStore = {
   namespace: 'prediction',
   state: {
     predictions: {},
     prediction: {},
   },
   effects: {
-    getPredictions: createEffect<PredictionsPayload>(function * ({ payload }, { call, select, put }) {
+    getPredictions: createEffect<PredictionsPayload>(function* ({ payload }, { call, select, put }) {
       const { pid, force, ...params } = payload
       if (!force) {
         const list = yield select(({ prediction }) => prediction.predictions[pid])
@@ -123,7 +124,18 @@ const PredictionModel: YStates.PredictionStore = {
 
     hide: hideAction(actions.hide),
     restore: hideAction(actions.restore),
-
+    batch: createEffect<{ ids: number[] }>(function* ({ payload: { ids } }, { put }) {
+      const list = []
+      for (let key = 0; key < ids.length; key++) {
+        const id = ids[key]
+        const pred = yield put.resolve({
+          type: 'getPrediction',
+          payload: { id },
+        })
+        list.push(pred)
+      }
+      return list
+    }),
     evaluate: createEffect<YParams.EvaluationParams>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(evaluate, payload)
       if (code === 0) {

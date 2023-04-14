@@ -90,7 +90,7 @@ describe('constants: dataset', () => {
       id,
       groupId: 1,
       projectId: 234,
-      name: 'dataset_training',
+      name: 'dataset_training V1',
       version: 1,
       versionName: 'V1',
       assetCount: 234,

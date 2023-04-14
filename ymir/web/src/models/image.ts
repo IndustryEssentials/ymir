@@ -3,13 +3,14 @@ import { STATES, transferImage } from '@/constants/image'
 import { createEffect, createReducers } from './_utils'
 import { EditImage, Image, QueryParams } from '@/services/image.d'
 import { ObjectType } from '@/constants/objectType'
+import { ImageStore } from '.'
 
 const reducers = [
   { name: 'UpdateImage', field: 'image' },
   { name: 'UpdateTotal', field: 'total' },
 ]
 
-const ImageModel: YStates.ImageStore = {
+const ImageModel: ImageStore = {
   namespace: 'image',
   state: {
     image: {},
@@ -113,6 +114,18 @@ const ImageModel: YStates.ImageStore = {
         })
         return result.total
       }
+    }),
+    batch: createEffect<{ ids: number[] }>(function* ({ payload: { ids } }, { put }) {
+      const list = []
+      for (let key = 0; key < ids.length; key++) {
+        const id = ids[key]
+        const image = yield put.resolve({
+          type: 'getImage',
+          payload: { id },
+        })
+        list.push(image)
+      }
+      return list
     }),
   },
   reducers: createReducers(reducers),

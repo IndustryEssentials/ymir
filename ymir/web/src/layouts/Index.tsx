@@ -13,6 +13,7 @@ import Foot from '@/components/common/Footer'
 
 import commonStyles from './common.less'
 import '@/assets/icons/iconfont.css'
+import Notification from '@/components/message/Notification'
 
 const { Header, Content, Sider, Footer } = Layout
 message.config({ maxCount: 1 })
@@ -58,6 +59,7 @@ const BasicLayout: FC = ({ children }) => {
         </Layout>
       </Layout>
       <Loading />
+      <Notification />
     </ConfigProvider>
   )
 }

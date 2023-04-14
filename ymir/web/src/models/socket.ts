@@ -3,6 +3,8 @@ import { readyState } from '@/constants/common'
 import { createEffect } from './_utils'
 import { history } from 'umi'
 import { Socket as SocketType } from 'socket.io-client'
+import { SocketStore } from '.'
+import { IdMap } from './typings/common'
 history
 const pageMaps = [
   { path: '/home/project/\\d+/dataset', method: 'dataset/updateDatasets' },
@@ -17,9 +19,9 @@ const pageMaps = [
   { path: '/home/project/\\d+/diagnose', method: 'dataset/updateDatasets' },
 ]
 
-const Socket: YStates.SocketStore = {
+const Socket: SocketStore = {
   state: {
-    socket: null,
+    socket: undefined,
     tasks: [],
   },
   namespace: 'socket',
@@ -39,13 +41,19 @@ const Socket: YStates.SocketStore = {
       })
       return socket
     }),
-    saveUpdatedTasks: createEffect<YStates.IdMap<YModels.ProgressTask>>(function* ({ payload = {} }, { put }) {
+    saveUpdatedTasks: createEffect<IdMap<YModels.ProgressTask>>(function* ({ payload = {} }, { put }) {
       const tasks = Object.keys(payload).map((hash) => ({
         ...payload[hash],
         hash,
         reload: !readyState(payload[hash].result_state),
       }))
       yield put({ type: 'saveTasks', payload: tasks })
+    }),
+    asyncMessages: createEffect<YModels.BackendData[]>(function * ({ payload }, { put }) {
+      yield put({
+        type: 'message/asyncMessages',
+        payload,
+      })
     }),
   },
   reducers: {
@@ -67,6 +75,8 @@ const Socket: YStates.SocketStore = {
             pageMaps.forEach((page) => dispatch({ type: page.method, payload: data }))
             // cache socket valid data
             dispatch({ type: 'saveUpdatedTasks', payload: data })
+          }).on('update_message', (data) => {
+            dispatch({ type: 'asyncMessages', payload: data })
           })
         }
       })

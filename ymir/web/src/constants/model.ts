@@ -20,16 +20,17 @@ export function transferModel(data: YModels.BackendData): YModels.Model {
     const st = transferStage(stage, otype)
     return { ...st, primaryMetricLabel: getPrimaryMetricsLabel(otype, true) }
   })
+  const versionName = getVersionLabel(data.version_num)
 
   return {
     id: data.id,
-    name: data.group_name,
+    name: `${data.group_name} ${versionName}`,
     groupId: data.model_group_id,
     projectId: data.project_id,
     type: data.object_type || ObjectType.ObjectDetection,
     hash: data.hash,
     version: data.version_num || 0,
-    versionName: getVersionLabel(data.version_num),
+    versionName,
     state: data.result_state,
     keywords: data?.keywords || [],
     map: data.map || 0,

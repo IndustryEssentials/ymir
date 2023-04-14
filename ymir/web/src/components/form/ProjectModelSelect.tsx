@@ -59,7 +59,7 @@ const ProjectModelSelect: FC<Props> = ({ pid, type, value, onChange, ...resProps
     if (result) {
       target.children = result.map(model => {
         return {
-          label: model.name + model.versionName,
+          label: model.name,
           value: model.id,
           isLeaf: true,
         }

@@ -1,7 +1,6 @@
 import { FC, useEffect } from 'react'
 import { Breadcrumb } from 'antd'
-import { Link, useParams, useRouteMatch } from 'umi'
-import { useSelector } from 'react-redux'
+import { Link, useParams, useRouteMatch, useSelector } from 'umi'
 import { homeRoutes } from '@/config/routes'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
@@ -53,7 +52,7 @@ function loop(id = 1, crumbs: CrumbType[]): CrumbType[] {
 const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
   const { path } = useRouteMatch()
   const params = useParams<{ id: string; [key: string | number]: string }>()
-  const project = useSelector<YStates.Root, YModels.Project | undefined>(({ project }) => project.projects[params.id])
+  const project = useSelector(({ project }) => project.projects[params.id])
   const { run: getProject } = useRequest<YModels.Project, [{ id: string }]>('project/getProject', {
     cacheKey: 'getProject',
     loading: false,

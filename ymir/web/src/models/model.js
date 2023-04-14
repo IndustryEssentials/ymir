@@ -133,6 +133,12 @@ export default {
         return models
       }
     },
+    batch: createEffect(function * ({ payload }, { put }) {
+      return yield put.resolve({
+        type: 'batchLocalModels',
+        payload,
+      })
+    }),
     *getModel({ payload }, { call, put, select }) {
       const { id, force } = payload
       if (!force) {

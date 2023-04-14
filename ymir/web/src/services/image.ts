@@ -8,7 +8,7 @@ import { QueryParams, Image, EditImage } from './image.d'
  * @returns
  */
 export function getImage(id: number) {
-  return request.get(`images/${id}`)
+  return request.get(`/images/${id}`)
 }
 
 /**
@@ -22,7 +22,7 @@ export function getImage(id: number) {
  * @param {QueryParams} { name, type, objectType, state, url, limit = 10, offset = 0 }
  */
 export function getImages({ name, type, objectType, state, url, limit = 10, offset = 0 }: QueryParams) {
-  return request.get('images/', {
+  return request.get('/images/', {
     params: {
       name,
       type,

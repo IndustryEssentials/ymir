@@ -51,7 +51,7 @@ const DatasetDetail: FC<{ dataset: YModels.Dataset }> = ({ dataset }) => {
         <Item label={t('dataset.detail.label.name')} span={2}>
           <Row>
             <Col flex={1}>
-              {dataset.name} {dataset.versionName}
+              {dataset.name}
             </Col>
 
             <Col hidden={dataset.state !== ResultStates.VALID}>

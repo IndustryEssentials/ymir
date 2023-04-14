@@ -14,7 +14,7 @@ import style from './analysis/analysis.less'
 import SampleRates from './SampleRates'
 import Panel from '../form/panel'
 
-const getVersionName = ({ name, versionName }: YModels.DatasetAnalysis) => `${name} ${versionName}`
+const getVersionName = ({ name }: YModels.DatasetAnalysis) => `${name}`
 
 const Analysis: FC<{ ids: number[], classes?: string[] }> = ({ ids, classes = [] }) => {
   const { id } = useParams<{ id: string }>()

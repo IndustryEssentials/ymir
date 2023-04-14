@@ -2,34 +2,29 @@ import useFetch from '@/hooks/useFetch'
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'umi'
 
-type Result = { name: string; versionName: string }
+type Result = { name: string }
 type Props = {
   id?: YModels.DatasetId
   result?: Result
   extra?: React.ReactElement | string
 }
 
-const VersionName: React.FC<Props> = ({ id, result, extra }) => {
-  const cache: Result | undefined = useSelector(({ dataset }: YStates.Root) => {
+const VersionName: React.FC<Props> = ({ id, result: res, extra }) => {
+  const cache: Result | undefined = useSelector(({ dataset }) => {
     return id ? dataset.dataset[id] : undefined
   })
-  const [dataset, setDataset] = useState<Result>()
-  const [label, setLabel] = useState('')
+  const [result, setResult] = useState<Result>()
   const [_, getDataset] = useFetch('dataset/getDataset')
 
   useEffect(() => id && getDataset({ id }), [id])
 
   useEffect(() => {
-    setDataset(cache || result)
-  }, [cache, result])
+    setResult(cache || res)
+  }, [cache, res])
 
-  useEffect(() => {
-    dataset && setLabel(`${dataset.name} ${dataset.versionName}`)
-  }, [dataset])
-
-  return dataset ? (
+  return result ? (
     <span className="versionName">
-      {label} {extra}
+      {result.name} {extra}
     </span>
   ) : null
 }

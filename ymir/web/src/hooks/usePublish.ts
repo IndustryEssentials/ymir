@@ -41,7 +41,7 @@ const usePublish = (): [(model: YModels.Model) => void, any] => {
       userId,
       userName,
       modelId: data.id,
-      modelName: `${data.name} ${data.versionName}`,
+      modelName: data.name,
       stage,
       url,
     }

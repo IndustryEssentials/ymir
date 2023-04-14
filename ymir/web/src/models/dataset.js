@@ -101,6 +101,12 @@ export default {
         return datasets || []
       }
     },
+    batch: createEffect(function* ({ payload }, { put }) {
+      return yield put.resolve({
+        type: 'batchLocalDatasets',
+        payload: { ...payload },
+      })
+    }),
     *getDataset({ payload }, { call, put, select }) {
       const { id, verbose, force } = payload
       if (!force) {

@@ -90,14 +90,15 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     const suggest = transferSuggestion(analysis[source])
     return suggest ? { ...prev, [key]: suggest } : prev
   }, {})
+  const versionName = getVersionLabel(data.version_num)
   return {
     id: data.id,
     groupId: data.dataset_group_id,
     projectId: data.project_id,
     type: data.object_type || ObjectType.ObjectDetection,
-    name: data.group_name,
+    name: `${data.group_name} ${versionName}`,
     version: data.version_num || 0,
-    versionName: getVersionLabel(data.version_num),
+    versionName,
     assetCount,
     keywords,
     keywordCount: keywords.length,

@@ -12,7 +12,7 @@ export function getModelCell(prediction: YModels.Prediction, models: YModels.Mod
     return
   }
   const content = <ReactJson src={prediction.task?.config} name={false} />
-  const label = `${model.name} ${model.versionName} ${stage.name}`
+  const label = `${model.name} ${stage.name}`
   return text ? (
     label
   ) : (
@@ -33,7 +33,7 @@ export function getCK(data: { iou_averaged_evaluation: { ck_evaluations: { [key:
   return uniqueCKs.map((k) => ({ value: k, label: k, parent: keyword }))
 }
 
-export const opt = (d: YModels.Result) => ({ value: d.id, label: `${d.name} ${d.versionName}` })
+export const opt = (d: YModels.Result) => ({ value: d.id, label: d.name })
 
 export const average = (nums: number[] = []) => nums.reduce((prev, num) => (!Number.isNaN(num) ? prev + num : prev), 0) / nums.length
 

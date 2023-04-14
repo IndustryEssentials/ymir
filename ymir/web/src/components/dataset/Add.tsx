@@ -215,7 +215,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
 
   function setCopyDefaultName(value: number, option: DatasetOptionType[]) {
     const dataset = option[1] ? option[1].dataset : null
-    const label = dataset ? `${dataset.name} ${dataset.versionName}` : ''
+    const label = dataset ? `${dataset.name}` : ''
     setDefaultName(label)
   }
 

@@ -32,11 +32,10 @@ const Terminate = forwardRef<RefProps, Props>(({ ok }, ref) => {
     ref,
     () => ({
       confirm: (result: Result) => {
-        const name = result.name + result.versionName
         const { id, type } = result.task
         setResult(result)
         setId(id)
-        setName(name)
+        setName(result.name)
         setType(type)
       },
     }),

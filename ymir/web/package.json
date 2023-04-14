@@ -25,7 +25,8 @@
     },
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "./src/**/*.{js,ts,tsx}",
+      "./src/**/*.{js,ts}",
+      "!./src/**/*.d.ts",
       "!./src/assets/**",
       "!./src/components/**",
       "!./src/pages/**",
