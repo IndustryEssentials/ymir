@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from sqlalchemy import desc, not_, and_
 from sqlalchemy.orm import Session
 
-from app.constants.state import DockerImageState, DockerImageType
+from app.constants.state import ResultState, DockerImageType
 from app.crud.base import CRUDBase
 from app.models.image import DockerImage
 from app.models.image_config import DockerImageConfig
@@ -24,7 +24,7 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         if filters.get("name"):
             query = query.filter(DockerImage.name.like(f"%{filters['name']}%"))
         if filters.get("state"):
-            query = query.filter(DockerImage.state == int(filters["state"]))
+            query = query.filter(DockerImage.result_state == int(filters["state"]))
         if filters.get("url"):
             query = query.filter(DockerImage.url == filters["url"])
         if filters.get("object_type") and filters.get("type"):
@@ -71,8 +71,8 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
             update_data = obj_in.dict(exclude_unset=True)
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def update_state(self, db: Session, *, docker_image: DockerImage, state: DockerImageState) -> DockerImage:
-        update_data = {"state": int(state)}
+    def update_state(self, db: Session, *, docker_image: DockerImage, state: ResultState) -> DockerImage:
+        update_data = {"result_state": int(state)}
         return self.update(db, db_obj=docker_image, obj_in=update_data)
 
     def update_sharing_status(self, db: Session, *, docker_image: DockerImage, is_shared: bool = True) -> DockerImage:

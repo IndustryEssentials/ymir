@@ -21,7 +21,6 @@ from .image import (
     DockerImageCreate,
     DockerImageOut,
     DockerImagesOut,
-    DockerImageState,
     DockerImageUpdate,
 )
 from .image_config import ImageConfigCreate, ImageConfigOut

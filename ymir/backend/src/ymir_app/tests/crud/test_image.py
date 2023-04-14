@@ -3,7 +3,7 @@ import json
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
-from app.constants.state import DockerImageState, DockerImageType
+from app.constants.state import ResultState, DockerImageType
 from app.schemas.image import DockerImageCreate
 from tests.utils.utils import random_lower_string
 
@@ -21,14 +21,14 @@ class TestCreateImage:
 
 class TestListImages:
     def test_list_images(self, db: Session) -> None:
-        images, count = crud.docker_image.get_multi_with_filter(db=db, state=DockerImageState.error)
+        images, count = crud.docker_image.get_multi_with_filter(db=db, state=ResultState.error)
         assert images == []
         assert count == 0
 
         image = crud.docker_image.get_multi(db=db, limit=1)[0]
-        crud.docker_image.update_state(db=db, docker_image=image, state=DockerImageState.error)
-        images, count = crud.docker_image.get_multi_with_filter(db=db, state=DockerImageState.error)
-        crud.docker_image.update_state(db=db, docker_image=image, state=DockerImageState.done)
+        crud.docker_image.update_state(db=db, docker_image=image, state=ResultState.error)
+        images, count = crud.docker_image.get_multi_with_filter(db=db, state=ResultState.error)
+        crud.docker_image.update_state(db=db, docker_image=image, state=ResultState.ready)
         assert images == [image]
         assert count == 1
 
@@ -45,7 +45,7 @@ class TestGetInferenceImages:
             hash=hash_,
             url=url,
             description=description,
-            state=DockerImageState.done,
+            state=ResultState.ready,
             config=json.dumps({}),
         )
         created_image = crud.docker_image.create(db=db, obj_in=obj_in)

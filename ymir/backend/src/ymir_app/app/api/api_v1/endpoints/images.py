@@ -11,7 +11,7 @@ from app.api.errors.errors import (
     DockerImageNotFound,
     DuplicateDockerImageError,
 )
-from app.constants.state import DockerImageState, DockerImageType, ObjectType
+from app.constants.state import DockerImageType, ObjectType, ResultState
 from app.schemas.image import DockerImageCreate
 from app.libs.tasks import create_pull_docker_image_task
 
@@ -24,7 +24,7 @@ def list_docker_images(
     current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     name: str = Query(None),
     url: str = Query(None),
-    state: DockerImageState = Query(None),
+    state: ResultState = Query(None),
     type_: DockerImageType = Query(None, alias="type"),
     object_type: ObjectType = Query(None),
     is_official: bool = Query(None),

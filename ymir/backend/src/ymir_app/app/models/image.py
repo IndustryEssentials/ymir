@@ -34,11 +34,11 @@ class DockerImage(Base):
     object_type = Column(SmallInteger, index=True, default=2, nullable=False)  # obsolete
 
     result_state = Column(SmallInteger, index=True, nullable=False)
-    task_id = Column(Integer, index=True, nullable=False)
+    task_id = Column(Integer, index=True, nullable=True)
 
     is_shared = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
-    is_official = Column(Boolean, default=False)
+    is_official = Column(Boolean, default=False, index=True)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
         DateTime,
