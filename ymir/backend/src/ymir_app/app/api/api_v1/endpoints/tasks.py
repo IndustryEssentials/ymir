@@ -229,11 +229,7 @@ def update_task_status(
     Update status of a task
     """
     # 1. Verification
-    logger.info(
-        "[update status] task %s, result: %s",
-        task_update.hash,
-        jsonable_encoder(task_update),
-    )
+    logger.info("[update status] task %s, result: %s", task_update.hash, jsonable_encoder(task_update))
     task_in_db = crud.task.get_by_hash(db, hash_=task_update.hash)
     if not task_in_db:
         raise TaskNotFound()
@@ -268,6 +264,7 @@ def update_task_status(
             result_model=updated_task.result_model,  # type: ignore
             result_dataset=updated_task.result_dataset,  # type: ignore
             result_prediction=updated_task.result_prediction,  # type: ignore
+            result_docker_image=updated_task.result_docker_image,  # type: ignore
         )
         # todo compatible with current frontend data structure
         #  reformatting is needed

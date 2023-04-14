@@ -23,6 +23,7 @@ from app.schemas.common import (
     DatasetResult,
     ModelResult,
     PredictionResult,
+    DockerImageResult,
     IdModelMixin,
     IsDeletedModelMixin,
     IterationContext,
@@ -351,6 +352,8 @@ class TaskInternal(TaskInDBBase):
             return ResultType.model
         elif task_type == TaskType.dataset_infer:
             return ResultType.prediction
+        elif task_type == TaskType.pull_image:
+            return ResultType.docker_image
         elif task_type in [
             TaskType.mining,
             TaskType.label,
@@ -372,6 +375,7 @@ class Task(TaskInternal):
     result_model: Optional[ModelResult]
     result_dataset: Optional[DatasetResult]
     result_prediction: Optional[PredictionResult]
+    result_docker_image: Optional[DockerImageResult]
 
     @root_validator
     def ensure_terminate_state(cls, values: Any) -> Any:
@@ -449,10 +453,16 @@ class TaskResultUpdateMessage(BaseModel):
     result_model: Optional[ModelResult]
     result_dataset: Optional[DatasetResult]
     result_prediction: Optional[PredictionResult]
+    result_docker_image: Optional[DockerImageResult]
 
     @root_validator(pre=True)
     def gen_result_state(cls, values: Any) -> Any:
-        result = values.get("result_model") or values.get("result_dataset") or values.get("result_prediction")
+        result = (
+            values.get("result_model")
+            or values.get("result_dataset")
+            or values.get("result_prediction")
+            or values.get("result_docker_image")
+        )
         if not result:
             raise ValueError("Invalid Task Result")
         values["result_state"] = result.result_state

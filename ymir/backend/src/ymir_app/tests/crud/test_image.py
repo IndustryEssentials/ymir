@@ -53,6 +53,7 @@ class TestGetInferenceImages:
         image_config_in = schemas.ImageConfigCreate(
             image_id=created_image.id,
             config=json.dumps({}),
+            object_type=2,
             type=int(DockerImageType.infer),
         )
         crud.image_config.create(db, obj_in=image_config_in)

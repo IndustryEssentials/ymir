@@ -15,6 +15,7 @@ from app.db.base_class import Base
 from app.models.model import Model  # noqa
 from app.models.dataset import Dataset  # noqa
 from app.models.prediction import Prediction  # noqa
+from app.models.image import DockerImage  # noqa
 
 
 class Message(Base):
@@ -29,6 +30,7 @@ class Message(Base):
     dataset_id = Column(Integer, index=True)
     model_id = Column(Integer, index=True)
     prediction_id = Column(Integer, index=True)
+    docker_image_id = Column(Integer, index=True)
     is_read = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
 
@@ -50,6 +52,12 @@ class Message(Base):
     prediction = relationship(
         "Prediction",
         primaryjoin="foreign(Prediction.id)==Message.prediction_id",
+        uselist=False,
+        viewonly=True,
+    )
+    docker_image = relationship(
+        "DockerImage",
+        primaryjoin="foreign(DockerImage.id)==Message.docker_image_id",
         uselist=False,
         viewonly=True,
     )

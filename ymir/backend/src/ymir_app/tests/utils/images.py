@@ -17,6 +17,7 @@ def create_docker_image_and_configs(db: Session, config: Dict = {}, image_type: 
     image_config_in = schemas.ImageConfigCreate(
         image_id=docker_image.id,
         config=json.dumps(config),
+        object_type=2,
         type=image_type,
     )
     image_config = crud.image_config.create(db, obj_in=image_config_in)

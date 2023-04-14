@@ -30,6 +30,7 @@ def init_db(db: Session) -> None:
                 image_config_in = schemas.ImageConfigCreate(
                     image_id=docker_image.id,
                     config=json.dumps(config),
+                    object_type=int(config["object_type"]),
                     type=int(config["type"]),
                 )
                 crud.image_config.create(db, obj_in=image_config_in)

@@ -19,12 +19,7 @@ from app.api.errors.errors import (
     DatasetGroupNotFound,
     RequiredFieldMissing,
 )
-from app.constants.state import (
-    FinalStates,
-    TaskState,
-    ResultType,
-    ResultState,
-)
+from app.constants.state import FinalStates, TaskState, TaskType, ResultType, ResultState
 from app.config import settings
 from app import schemas, crud, models
 from app.libs.datasets import ensure_datasets_are_ready
@@ -133,6 +128,32 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
     return task
 
 
+def create_pull_docker_image_task(db: Session, user_id: int, docker_image_in: schemas.DockerImageCreate) -> models.Task:
+    # docker image has nothing to do with project_id.
+    # but task hash require project_id(repo_id) anyway. Use 0 in this case.
+    project_id = 0
+    task_hash = gen_task_id(user_id, project_id)
+    try:
+        controller = ControllerClient()
+        resp = controller.pull_image(user_id, task_hash, url=docker_image_in.url)
+        logger.info("[create image] pull image controller response: %s", resp)
+    except ValueError:
+        logger.exception("[create image] controller error")
+        raise FailedtoCreateTask()
+    except KeyError:
+        logger.exception("[create image] parameter check failed")
+        raise RequiredFieldMissing()
+
+    task = crud.task.create_placeholder(
+        db, TaskType.pull_image, user_id, project_id, state_=TaskState.pending, hash_=task_hash
+    )
+    crud.docker_image.create(
+        db, obj_in=schemas.image.DockerImageCreateWithTask(task_id=task.id, **docker_image_in.dict())
+    )
+    logger.info("[create image] created related task(%s)", task.hash)
+    return task
+
+
 class TaskResult:
     def __init__(
         self,
@@ -209,6 +230,15 @@ class TaskResult:
             logger.info("[update task] delete user keywords cache for new keywords from dataset")
             self.cache.delete_personal_keywords_cache()
         return dataset_analysis
+
+    @cached_property
+    def docker_image_configs(self) -> Optional[Dict]:
+        docker_image = crud.docker_image.get_by_task_id(self.db, self.task.id)
+        if not docker_image:
+            return None
+        docker_configs = self.controller.inspect_image(self.user_id, docker_image.url)
+        logger.info("[update task] docker image(%s) configs: %s", docker_image.url, docker_configs)
+        return docker_configs
 
     def ensure_dest_model_group_exists(self, dataset_id: int) -> int:
         model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
@@ -325,6 +355,8 @@ class TaskResult:
             self.update_prediction_result(task_result)
         elif self.result_type is ResultType.model:
             self.update_model_result(task_result, task_in_db)
+        elif self.result_type is ResultType.docker_image:
+            self.update_docker_image_result(task_result)
 
     def update_model_result(self, task_result: schemas.TaskUpdateStatus, task_in_db: models.Task) -> None:
         """
@@ -390,3 +422,34 @@ class TaskResult:
                 prediction_record.id,
                 result_state=ResultState.error,
             )
+
+    def update_docker_image_result(self, task_result: schemas.TaskUpdateStatus) -> None:
+        docker_image = crud.docker_image.get_by_task_id(self.db, task_id=self.task.id)
+        if not docker_image:
+            logger.error("[update task] task(%s) result (docker_image) not found, skip", self.task.id)
+            return
+        if task_result.state is TaskState.done and self.docker_image_configs:
+            # create docker image configs
+            for object_type, object_type_configs in self.docker_image_configs["docker_image_config"].items():
+                for type_, serialized_config in object_type_configs["config"].items():
+                    crud.image_config.create(
+                        self.db,
+                        obj_in=schemas.ImageConfigCreate(
+                            image_id=docker_image.id,
+                            config=serialized_config,
+                            object_type=object_type,
+                            type=type_,
+                        ),
+                    )
+            updates = {
+                "hash": self.docker_image_configs["hash_id"],
+                "result_state": int(ResultState.ready),
+                "enable_livecode": self.docker_image_configs["enable_livecode"],
+            }
+        else:
+            updates = {"result_state": int(ResultState.error)}
+        crud.docker_image.update_from_dict(
+            self.db,
+            docker_image_id=docker_image.id,
+            updates=updates,
+        )

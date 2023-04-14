@@ -9,7 +9,7 @@ from google.protobuf.text_format import MessageToString
 
 from app.api.errors.errors import FailedtoCreateSegLabelTask, InvalidRepo
 from app.config import settings
-from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectType
+from app.constants.state import TaskType, RequestType, AnnotationType, DatasetType, ObjectType
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
@@ -28,7 +28,6 @@ class ExtraRequestType(enum.IntEnum):
     add_label = 400
     get_label = 401
     kill = 500
-    pull_image = 600
     get_gpu_info = 601
     create_user = 602
     evaluate = 603
@@ -81,7 +80,7 @@ def gen_typed_datasets(typed_datasets: List[Dict]) -> Generator:
 
 @dataclass
 class ControllerRequest:
-    type: Union[TaskType, ExtraRequestType]
+    type: Union[TaskType, ExtraRequestType, RequestType]
     user_id: int
     project_id: int = 0
     task_id: Optional[str] = None
@@ -248,7 +247,16 @@ class ControllerRequest:
         return request
 
     def prepare_pull_image(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.req_type = mirsvrpb.CMD_PULL_IMAGE
+        req_create_task = mirsvrpb.ReqCreateTask()
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypePullImage
+
+        request.req_type = mirsvrpb.RequestType.TASK_CREATE
+        request.singleton_op = args["url"]
+        request.req_create_task.CopyFrom(req_create_task)
+        return request
+
+    def prepare_inspect_image(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.RequestType.CMD_INSPECT_IMAGE
         request.singleton_op = args["url"]
         return request
 
@@ -431,12 +439,12 @@ class ControllerClient:
         resp = self.send(req)
         return resp
 
-    def pull_docker_image(self, url: str, user_id: int) -> Dict:
-        req = ControllerRequest(
-            type=ExtraRequestType.pull_image,
-            user_id=user_id,
-            args={"url": url},
-        )
+    def pull_image(self, user_id: int, task_hash: str, url: str) -> Dict:
+        req = ControllerRequest(type=TaskType.pull_image, user_id=user_id, task_id=task_hash, args={"url": url})
+        return self.send(req)
+
+    def inspect_image(self, user_id: int, url: str) -> Dict:
+        req = ControllerRequest(type=RequestType.inspect_image, user_id=user_id, args={"url": url})
         return self.send(req)
 
     def get_gpu_info(self, user_id: int) -> Dict[str, int]:

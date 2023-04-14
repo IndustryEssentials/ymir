@@ -25,6 +25,7 @@ class CRUDMessage(CRUDBase[Message, MessageCreate, MessageUpdate]):
             dataset_id=task_info["result_dataset"]["id"] if task_info.get("result_dataset") else None,
             model_id=task_info["result_model"]["id"] if task_info.get("result_model") else None,
             prediction_id=task_info["result_prediction"]["id"] if task_info.get("result_prediction") else None,
+            docker_image_id=task_info["result_docker_image"]["id"] if task_info.get("result_docker_image") else None,
             is_read=False,
         )
         db.add(db_obj)

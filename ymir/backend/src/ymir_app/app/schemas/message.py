@@ -21,6 +21,7 @@ class MessageBase(BaseModel):
     dataset_id: Optional[int]
     model_id: Optional[int]
     prediction_id: Optional[int]
+    docker_image_id: Optional[int]
     is_read: bool = False
 
 
@@ -65,6 +66,10 @@ class Message(MessageInDB):
             id_ = values["prediction_id"]
             type_ = ResultType.prediction
             state = values["prediction"].result_state
+        elif values.get("docker_image_id"):
+            id_ = values["docker_image_id"]
+            type_ = ResultType.docker_image
+            state = values["docker_image"].result_state
         else:
             raise ValueError("Message relates to invalid result")
         values["result"] = TaskResult(id=id_, type=type_, state=state)

@@ -2,13 +2,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.constants.state import DockerImageState, ObjectType
-from app.schemas.common import (
-    Common,
-    DateTimeModelMixin,
-    IdModelMixin,
-    IsDeletedModelMixin,
-)
+from app.constants.state import DockerImageState, ObjectType, ResultState
+from app.schemas.common import Common, DateTimeModelMixin, IdModelMixin, IsDeletedModelMixin
 from app.schemas.image_config import ImageConfig
 
 
@@ -20,11 +15,16 @@ class DockerImageBase(BaseModel):
     description: Optional[str]
     enable_livecode: Optional[bool] = False
     object_type: Optional[int] = ObjectType.unknown
+    result_state: Optional[ResultState] = ResultState.processing
 
 
 class DockerImageCreate(DockerImageBase):
     is_official: bool = False
     url: str
+
+
+class DockerImageCreateWithTask(DockerImageCreate):
+    task_id: int
 
 
 class DockerImageLinkCreate(BaseModel):
@@ -33,10 +33,12 @@ class DockerImageLinkCreate(BaseModel):
 
 class DockerImageUpdate(BaseModel):
     name: Optional[str]
+    hash: Optional[str]
     description: Optional[str]
     is_shared: Optional[bool]
     enable_livecode: Optional[bool]
     object_type: Optional[int]
+    result_state: Optional[ResultState]
 
 
 class DockerImageInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DockerImageBase):
