@@ -13,6 +13,7 @@ import LinkModal from './components/relate'
 import Del from './components/del'
 import ImagesLink from './components/imagesLink'
 import StateTag from '@/components/image/StateTag'
+import Configs from './components/Configs'
 
 import styles from './detail.less'
 import { EditIcon, PublishIcon, DeleteIcon, LinkIcon } from '@/components/common/Icons'
@@ -58,26 +59,6 @@ function ImageDetail() {
 
   function isError() {
     return image.state === STATES.ERROR
-  }
-
-  function renderConfigs(configs = []) {
-    return configs.map(({ config, type }) => {
-      return (
-        <div key={type} style={{ margin: '10px 0 20px' }}>
-          <h3>{t(getImageTypeLabel([type])[0])}</h3>
-          <div>{renderConfig(config)}</div>
-        </div>
-      )
-    })
-  }
-
-  function renderConfig(config = {}) {
-    return Object.keys(config).map((key) => (
-      <Row key={key}>
-        <Col style={{ width: 200, fontWeight: 'bold' }}>{key}:</Col>
-        <Col>{config[key]}</Col>
-      </Row>
-    ))
   }
 
   function renderTitle() {
@@ -132,7 +113,7 @@ function ImageDetail() {
               {image.description}
             </Item>
             <Item label={t('image.detail.label.config')} span={2}>
-              {renderConfigs(image.configs)}
+              <Configs configs={image.configs} />
             </Item>
             <Item label={t('image.detail.label.state')} span={2}>
               <StateTag label={true} state={image.state} />

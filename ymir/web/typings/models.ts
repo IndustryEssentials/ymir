@@ -324,7 +324,7 @@ declare namespace YModels {
   export type DockerImageConfig = {
     type: number
     config: ImageConfig
-    object_type?: ObjectType
+    object_type: ObjectType
   }
   export interface Image {
     id: number
