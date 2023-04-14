@@ -29,6 +29,10 @@ class ImageHandler(TaskBaseInvoker):
         check_image_command = ['docker', 'image', 'inspect', request.singleton_op, '--format', 'ignore_me']
         check_response = utils.run_command(check_image_command)
         if check_response.code == CTLResponseCode.CTR_OK:
+            PercentLogHandler.write_percent_log(log_file=os.path.join(subtask_workdir, "out", "monitor.txt"),
+                                                tid=subtask_id,
+                                                percent=1.0,
+                                                state=LogState.DONE)
             return check_response
 
         pull_command = ['docker', 'pull', request.singleton_op]

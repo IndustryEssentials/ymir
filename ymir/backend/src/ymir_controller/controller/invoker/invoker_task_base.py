@@ -29,7 +29,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                             prerequisites=[
                                                 checker.Prerequisites.CHECK_USER_ID,
                                                 checker.Prerequisites.CHECK_REPO_ID,
-                                                checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
                                             ])
         if checker_ret.code != CTLResponseCode.CTR_OK:
             return checker_ret
