@@ -111,7 +111,7 @@ class DatasetInDB(DatasetInDBBase):
 
 
 # Properties to return to caller
-class Dataset(DatasetInDBBase):
+class Dataset(DatasetInDB):
     class Config:
         use_enum_values = True
         validate_all = True
