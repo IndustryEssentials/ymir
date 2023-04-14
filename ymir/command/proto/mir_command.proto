@@ -127,6 +127,7 @@ enum ObjectType {
     OT_CLASS = 1; // Classification with class id, not implemented.
     OT_DET_BOX = 2; // Detection w. bounding box.
     OT_SEG = 3;  // semantic segmentation w. polygon or mask
+    OT_INS_SEG = 4; // used by controller and app
 
     OT_NO_ANNOTATIONS = 100;
 };
@@ -137,14 +138,6 @@ enum ObjectSubType {
     //OT_SEG sub types
     OST_SEG_MASK = 30;
     OST_SEG_POLYGON = 31;
-}
-
-enum ModelObjectType {
-    MOT_UNKNOWN = 0;
-
-    MOT_DET_BOX = 2;
-    MOT_SEM_SEG = 3;
-    MOT_INS_SEG = 4;
 }
 
 enum ExportFormat {

@@ -49,7 +49,7 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
             media_location=assets_config['assetskvlocation'],
             work_dir=subtask_workdir,
             unknown_types_strategy=import_dataset_request.unknown_types_strategy,
-            object_type=import_dataset_request.object_type,
+            object_type=request.object_type,
             is_instance_segmentation=import_dataset_request.is_instance_segmentation)
 
         if import_dataset_request.clean_dirs:

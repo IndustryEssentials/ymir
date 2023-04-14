@@ -97,6 +97,7 @@ message GeneralReq {
     mir.command.AnnotationType annotation_type = 28;
     // required by LabelFree API
     string user_token = 29;
+    mir.command.ObjectType object_type = 30;
     ReqCreateTask req_create_task = 1001;
     ReqCreateSequentialTask req_create_seq = 1002;
 
@@ -172,8 +173,9 @@ message TaskReqImportDataset {
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
-    mir.command.ObjectType object_type = 6;
     bool is_instance_segmentation = 7;
+
+    reserved 6;
 }
 
 message TaskReqExporting {
@@ -197,8 +199,9 @@ message TaskReqLabeling {
     string project_name = 3;
     bool export_annotation = 4;
     mir.command.AnnotationType annotation_type = 5;
-    mir.command.ObjectType object_type = 6;
     bool is_instance_segmentation = 7;
+
+    reserved 6;
 }
 
 message TaskReqImportModel {

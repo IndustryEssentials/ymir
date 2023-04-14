@@ -32,7 +32,7 @@ class CmdInspectImageInvoker(BaseMirControllerInvoker):
         manifest_config = json.loads(serialized_manifest_config) if serialized_manifest_config else {}
         response.enable_livecode = bool(manifest_config.get("enable_livecode", False))
 
-        manifest_object_types = manifest_config.get("object_type", mir_cmd_pb.ModelObjectType.MOT_DET_BOX)
+        manifest_object_types = manifest_config.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX)
         object_type_and_dirs: List[Tuple[int, str]] = []  # 1st: object_type, 2nd: template root dir
         if isinstance(manifest_object_types, list):
             object_type_and_dirs.extend([(x,

@@ -36,7 +36,6 @@ class TestTaskLabelingInvoker:
         label_req.labeler_accounts[:] = ["a@a.com"]
         label_req.project_name = "fake_project_name"
         in_dataset_ids = ["t000aaaabbbbbbzzzzzzzzzzzzzzb1"]
-        label_req.object_type = mir_cmd_pb.ObjectType.OT_DET_BOX
         label_req.expert_instruction_url = "url"
         label_req.export_annotation = False
 
@@ -79,6 +78,7 @@ class TestTaskLabelingInvoker:
                                          user_id=user_name,
                                          repo_id=mir_repo_name,
                                          task_id=task_id,
+                                         object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
                                          in_dataset_ids=in_dataset_ids,
                                          in_class_ids=in_class_ids,
                                          req_create_task=req_create_task)
@@ -95,6 +95,7 @@ class TestTaskLabelingInvoker:
                                          user_id=user_name,
                                          repo_id=mir_repo_name,
                                          task_id=task_id,
+                                         object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
                                          in_dataset_ids=in_dataset_ids,
                                          in_class_ids=in_class_ids,
                                          req_create_task=req_create_task)

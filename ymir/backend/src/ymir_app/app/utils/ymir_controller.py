@@ -156,7 +156,7 @@ class ControllerRequest:
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         import_dataset_request.clean_dirs = args["clean_dirs"]
 
-        import_dataset_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+        request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
         if args["object_type"] == ObjectType.instance_segmentation:
             import_dataset_request.is_instance_segmentation = True
 
@@ -180,7 +180,7 @@ class ControllerRequest:
         label_request.labeler_accounts[:] = args["labellers"]
 
         # ad hoc: controller's object_type has no instance_segmentation
-        label_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+        request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
         if args["object_type"] == ObjectType.instance_segmentation:
             label_request.is_instance_segmentation = True
 

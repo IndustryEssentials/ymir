@@ -19,7 +19,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
 
         if (
             label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO
-            and request.req_create_task.labeling.object_type == mir_cmd_pb.ObjectType.OT_SEG
+            and request.object_type == mir_cmd_pb.ObjectType.OT_SEG
         ):
             return utils.make_general_response(code=CTLResponseCode.INVOKER_LABEL_TASK_SEG_NOT_SUPPORTED,
                                                message="label_studio does not support segmentation")
@@ -62,7 +62,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
             collaborators=labeler_accounts,
             expert_instruction=labeling_request.expert_instruction_url,
             annotation_type=labeling_request.annotation_type,
-            object_type=labeling_request.object_type,
+            object_type=request.object_type,
             is_instance_segmentation=labeling_request.is_instance_segmentation,
             user_token=request.user_token,
         )

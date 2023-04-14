@@ -222,6 +222,9 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
+    OT_INS_SEG = ObjectType.V(4)
+    """used by controller and app"""
+
     OT_NO_ANNOTATIONS = ObjectType.V(100)
 
 OT_UNKNOWN = ObjectType.V(0)
@@ -233,6 +236,9 @@ OT_DET_BOX = ObjectType.V(2)
 
 OT_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
+
+OT_INS_SEG = ObjectType.V(4)
+"""used by controller and app"""
 
 OT_NO_ANNOTATIONS = ObjectType.V(100)
 global___ObjectType = ObjectType
@@ -256,24 +262,6 @@ OST_SEG_MASK = ObjectSubType.V(30)
 
 OST_SEG_POLYGON = ObjectSubType.V(31)
 global___ObjectSubType = ObjectSubType
-
-
-class ModelObjectType(_ModelObjectType, metaclass=_ModelObjectTypeEnumTypeWrapper):
-    pass
-class _ModelObjectType:
-    V = typing.NewType('V', builtins.int)
-class _ModelObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ModelObjectType.V], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    MOT_UNKNOWN = ModelObjectType.V(0)
-    MOT_DET_BOX = ModelObjectType.V(2)
-    MOT_SEM_SEG = ModelObjectType.V(3)
-    MOT_INS_SEG = ModelObjectType.V(4)
-
-MOT_UNKNOWN = ModelObjectType.V(0)
-MOT_DET_BOX = ModelObjectType.V(2)
-MOT_SEM_SEG = ModelObjectType.V(3)
-MOT_INS_SEG = ModelObjectType.V(4)
-global___ModelObjectType = ModelObjectType
 
 
 class ExportFormat(_ExportFormat, metaclass=_ExportFormatEnumTypeWrapper):

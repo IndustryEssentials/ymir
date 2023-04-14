@@ -125,6 +125,7 @@ class TestInvokerCMDInference(unittest.TestCase):
             model_hash=model_hash,
             model_stage=model_stage,
             work_dir=working_dir,
+            object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
         )
 
         label_storage_file = test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)

@@ -8,9 +8,9 @@ BACKEND_REDIS_URL = os.environ.get("BACKEND_REDIS_URL", "redis://:@127.0.0.1:637
 IMAGE_MANIFEST_PATH = "/img-man/manifest.yaml"
 IMAGE_CONFIG_ROOT = "/img-man"
 IMAGE_CONFIG_DIR_NAMES = {
-    mir_cmd_pb.ModelObjectType.MOT_DET_BOX: "det",
-    mir_cmd_pb.ModelObjectType.MOT_SEM_SEG: "semantic-seg",
-    mir_cmd_pb.ModelObjectType.MOT_INS_SEG: "instance-seg",
+    mir_cmd_pb.ObjectType.OT_DET_BOX: "det",
+    mir_cmd_pb.ObjectType.OT_SEG: "semantic-seg",
+    mir_cmd_pb.ObjectType.OT_INS_SEG: "instance-seg",
 }
 IMAGE_CONFIG_FILE_NAMES = {
     mir_cmd_pb.TaskType.TaskTypeTraining: "training-template.yaml",
