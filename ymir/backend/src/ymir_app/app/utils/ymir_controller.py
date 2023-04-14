@@ -107,6 +107,7 @@ class ControllerRequest:
 
     def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
+        request.object_type = args["object_type"]
         train_task_req = mirsvrpb.TaskReqTraining()
         for dataset in gen_typed_datasets(args["typed_datasets"]):
             train_task_req.in_dataset_types.append(dataset)
@@ -132,6 +133,7 @@ class ControllerRequest:
 
     def prepare_mining(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"]]
+        request.object_type = args["object_type"]
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k"):
             mine_task_req.top_k = args["top_k"]
@@ -222,6 +224,7 @@ class ControllerRequest:
 
     def prepare_inference(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_INFERENCE
+        request.object_type = args["object_type"]
         request.model_hash = args["model_hash"]
         request.model_stage = args["model_stage_name"]
         request.asset_dir = args["asset_dir"]
@@ -482,6 +485,7 @@ class ControllerClient:
         self,
         user_id: int,
         project_id: int,
+        object_type: int,
         model_hash: Optional[str],
         model_stage_name: Optional[str],
         asset_dir: str,
@@ -498,6 +502,7 @@ class ControllerClient:
                 "model_hash": model_hash,
                 "model_stage_name": model_stage_name,
                 "asset_dir": asset_dir,
+                "object_type": object_type,
                 "docker_image": docker_image,
                 "docker_image_config": docker_image_config,
             },

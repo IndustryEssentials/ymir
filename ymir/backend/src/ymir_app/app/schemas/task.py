@@ -83,11 +83,18 @@ class TaskParameterBase(BaseModel):
 
     merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
 
+    object_type: Optional[ObjectType]
+
     @validator("keywords")
     def normalize_keywords(cls, v: Optional[List[str]]) -> Optional[List[str]]:
         if v is None:
             return v
         return [keyword.strip() for keyword in v]
+
+    def update_with_project_context(self, project_context: Dict) -> None:
+        if project_context.get("object_type"):
+            self.object_type = project_context["object_type"]
+        return
 
 
 class LabelParameter(TaskParameterBase):
@@ -101,11 +108,6 @@ class LabelParameter(TaskParameterBase):
 
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
-
-    def update_with_project_context(self, project_getter: Callable) -> None:
-        project = project_getter()
-        self.object_type = project.object_type
-        return
 
 
 class TrainingParameter(TaskParameterBase):
@@ -252,7 +254,7 @@ class TaskCreate(TaskBase):
         iterations_getter: Callable,
         labels_getter: Callable,
         docker_image_getter: Callable,
-        project_getter: Callable,
+        project_context: Dict,
     ) -> None:
         """
         Update task parameters when database and user_labels are ready
@@ -261,8 +263,9 @@ class TaskCreate(TaskBase):
             # extra logic for dataset fusion:
             # reorder datasets based on merge_strategy
             self.parameters.update_with_iteration_context(iterations_getter)
-        elif isinstance(self.parameters, LabelParameter):
-            self.parameters.update_with_project_context(project_getter)
+
+        if project_context:
+            self.parameters.update_with_project_context(project_context)
 
         if self.parameters.typed_datasets:
             fillin_dataset_hashes(datasets_getter, self.parameters.typed_datasets)
