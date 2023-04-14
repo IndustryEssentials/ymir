@@ -107,7 +107,7 @@ function ImageDetail() {
         <div className="infoTable">
           <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('image.detail.title')}>
             <Item label={t('image.detail.label.name')}>{image.name}</Item>
-            <Item label={t('common.object.type')}>{image.objectTypes.map((type) => t(getProjectTypeLabel(type, true))).join(',')}</Item>
+            <Item label={t('common.object.type')}>{image?.objectTypes?.map((type) => t(getProjectTypeLabel(type, true))).join(',')}</Item>
             <Item label={t('image.detail.label.type')}>
               {getImageTypeLabel(image.functions)
                 .map((label) => t(label))

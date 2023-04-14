@@ -9,6 +9,7 @@ const task = {
   'task.type.import': { cn: '添加数据集', en: 'Dataset Add' },
   'task.type.copy': { cn: '复制', en: 'Copy' },
   'task.type.modelimport': { cn: '模型导入', en: 'Model Import' },
+  'task.type.imageimport': { cn: '镜像添加', en: 'Image Import' },
   'task.type.modelcopy': { cn: '模型复制', en: 'Copy Model' },
   'task.type.sys': { cn: '项目训练集', en: 'Project Training Dataset' },
   'task.state.pending': { cn: '排队中', en: 'Queuing' },

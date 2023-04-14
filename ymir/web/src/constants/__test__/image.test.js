@@ -9,15 +9,15 @@ describe("constants: image", () => {
     expect(TYPES.INFERENCE).toBe(9)
   })
   it("image states have right mapping", () => {
-    expect(STATES.PENDING).toBe(1)
-    expect(STATES.DONE).toBe(3)
-    expect(STATES.ERROR).toBe(4)
+    expect(STATES.READY).toBe(0)
+    expect(STATES.VALID).toBe(1)
+    expect(STATES.INVALID).toBe(2)
   })
   it('imageIsPending: image state is pending', () => {
 
-    expect(imageIsPending(STATES.PENDING)).toBe(true)
-    expect(imageIsPending(STATES.DONE)).toBe(false)
-    expect(imageIsPending(STATES.ERROR)).toBe(false)
+    expect(imageIsPending(STATES.READY)).toBe(true)
+    expect(imageIsPending(STATES.VALID)).toBe(false)
+    expect(imageIsPending(STATES.INVALID)).toBe(false)
     expect(imageIsPending()).toBe(false) // undefined
     expect(imageIsPending('1')).toBe(false) // type
   })
@@ -36,9 +36,9 @@ describe("constants: image", () => {
 
   })
   it('getImageStateLabel: get label by match state', () => {
-    const pendingLabel = getImageStateLabel(STATES.PENDING)
-    const doneLabel = getImageStateLabel(STATES.DONE)
-    const errorLabel = getImageStateLabel(STATES.ERROR)
+    const pendingLabel = getImageStateLabel(STATES.READY)
+    const doneLabel = getImageStateLabel(STATES.VALID)
+    const errorLabel = getImageStateLabel(STATES.INVALID)
     const emptyLabel = getImageStateLabel()
     const unmatchLabel = getImageStateLabel('34')
 
@@ -65,7 +65,7 @@ describe("constants: image", () => {
     const configs = functions.map(conf => config(1, conf))
     const backendData = {
       name: "sample_image",
-      state: 3,
+      result_state: 3,
       hash: "f3da055bacc7",
       url: "sample-tmi:stage-test-01",
       description: "test",

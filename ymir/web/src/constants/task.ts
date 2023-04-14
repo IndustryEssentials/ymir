@@ -10,6 +10,7 @@ export enum TASKTYPES {
   FUSION = 11,
   MODELIMPORT = 13,
   MODELCOPY = 14,
+  IMAGEIMPORT = 17,
   SYS = 105,
 }
 
@@ -38,6 +39,7 @@ export const getTaskTypeLabel = (type: TASKTYPES) => {
     [TASKTYPES.IMPORT]: 'task.type.import',
     [TASKTYPES.MODELIMPORT]: 'task.type.modelimport',
     [TASKTYPES.MODELCOPY]: 'task.type.modelcopy',
+    [TASKTYPES.IMAGEIMPORT]: 'task.type.imageimport',
     [TASKTYPES.SYS]: 'task.type.sys',
   }
   return maps[type] ? maps[type] : String(type)

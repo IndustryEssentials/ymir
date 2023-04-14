@@ -141,15 +141,6 @@ const ImageList = ({ role, filter, getImages }) => {
     )
   }
 
-  const imageState = (state) => {
-    const states = {
-      [STATES.PENDING]: <LoadingOutlined style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} />,
-      [STATES.DONE]: <SuccessIcon style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} />,
-      [STATES.ERROR]: <FailIcon style={{ color: 'rgba(242, 99, 123, 1)', fontSize: 16 }} />,
-    }
-    return <span className={s.stateIcon}>{states[state]}</span>
-  }
-
   const objectTypeLabel = (types) =>
     types.map((type) => {
       const cls = getProjectTypeLabel(type)

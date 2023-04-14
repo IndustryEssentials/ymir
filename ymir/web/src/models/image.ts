@@ -67,12 +67,8 @@ const ImageModel: ImageStore = {
     createImage: createEffect<Image>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(createImage, payload)
       if (code === 0) {
-        const image = transferImage(result)
-        yield put({
-          type: 'UpdateImage',
-          payload: { [image.id]: image },
-        })
-        return image
+        // response as task
+        return result
       }
     }),
     updateImage: createEffect<EditImage & { id: number }>(function* ({ payload }, { call, put }) {

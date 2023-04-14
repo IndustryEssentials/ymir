@@ -1,4 +1,5 @@
 import { format } from '@/utils/date'
+import { ResultStates as STATES } from './common'
 
 export enum TYPES {
   UNKOWN = 0,
@@ -7,14 +8,10 @@ export enum TYPES {
   INFERENCE = 9,
 }
 
-export enum STATES {
-  PENDING = 1,
-  DONE = 3,
-  ERROR = 4,
-}
+export { STATES }
 
 export function imageIsPending(state: number) {
-  return state === STATES.PENDING
+  return state === STATES.READY
 }
 
 export const getImageTypeLabel = (functions: TYPES[] = []) => {
@@ -33,14 +30,14 @@ export const getImageTypeLabel = (functions: TYPES[] = []) => {
  * @param {number} state image state
  * @returns
  */
-export const getImageStateLabel = (state: STATES | undefined) => {
-  if (!state) {
+export const getImageStateLabel = (state?: STATES) => {
+  if (typeof state === 'undefined') {
     return ''
   }
   const labels = {
-    [STATES.PENDING]: 'image.state.pending',
-    [STATES.DONE]: 'image.state.done',
-    [STATES.ERROR]: 'image.state.error',
+    [STATES.READY]: 'image.state.pending',
+    [STATES.VALID]: 'image.state.done',
+    [STATES.INVALID]: 'image.state.error',
   }
   return labels[state]
 }
@@ -50,12 +47,12 @@ export function transferImage(data: YModels.BackendData): YModels.Image {
   const getConfigAttr = <K extends keyof YModels.DockerImageConfig>(attr: K): YModels.DockerImageConfig[K][] => [
     ...new Set(configs.map((config) => config[attr])),
   ]
-  const objectTypes = getConfigAttr('object_type').filter((t): t is YModels.ObjectType => !!t)
+  const objectTypes = getConfigAttr('object_type').filter((t): t is YModels.ObjectType => !!t) || []
   const functions = getConfigAttr('type')
   return {
     id: data.id,
     name: data.name,
-    state: data.state,
+    state: data.result_state,
     errorCode: data.error_code,
     objectTypes,
     functions,

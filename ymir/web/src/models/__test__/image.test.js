@@ -113,17 +113,14 @@ describe('models: image', () => {
       payload: { name: 'new_image_name', type: 1 },
     }
 
-    const expected = transferImage(result)
-
     const generator = saga(creator, { put, call })
     generator.next()
-    generator.next({
+    const end = generator.next({
       code: 0,
       result,
     })
-    const end = generator.next()
 
-    expect(expected).toEqual(end.value)
+    expect(result).toEqual(end.value)
     expect(end.done).toBe(true)
   })
   it('effects: updateImage', () => {
