@@ -1,6 +1,5 @@
 import { ComponentProps, useCallback, useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { Link, Location, useHistory, useLocation } from 'umi'
+import { Link, Location, useHistory, useLocation, useSelector } from 'umi'
 import { Form, Button, Input, Table, Space, Row, Col, Tooltip, Pagination, message, Popover, TableColumnsType } from 'antd'
 
 import t from '@/utils/t'
@@ -50,6 +49,7 @@ import {
 } from '@/components/common/Icons'
 import { ObjectType } from '@/constants/objectType'
 import SimpleSuggestion from './list/SimpleSuggestion'
+import { IdMap, List } from '@/models/typings/common.d'
 
 type IsType = {
   isTrainSet?: boolean
@@ -64,7 +64,7 @@ type ExtraLabel = {
 }
 type Dataset = YModels.Dataset & ExtraLabel & IsType
 type DatasetGroup = YModels.DatasetGroup & ExtraLabel & IsType
-type VersionsType = YStates.IdMap<Dataset[]>
+type VersionsType = IdMap<Dataset[]>
 
 const { useForm } = Form
 const DefaultVersionCount = 3
@@ -95,10 +95,10 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     datasets: { [pid]: datasetList },
     versions,
     query,
-  } = useSelector<YStates.Root, YStates.DatasetState>(({ dataset }) => dataset)
+  } = useSelector(({ dataset }) => dataset)
 
-  const { run: getDatasets } = useRequest<YStates.List<YModels.DatasetGroup>>('dataset/getDatasetGroups')
-  const { run: getVersions } = useRequest<YStates.List<YModels.Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
+  const { run: getDatasets } = useRequest<List<YModels.DatasetGroup>>('dataset/getDatasetGroups')
+  const { run: getVersions } = useRequest<List<YModels.Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
   const { data: validTotal, run: getValidDatasetsCount } = useRequest<boolean, [number]>('dataset/getValidDatasetsCount')
@@ -585,11 +585,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     setSelectedVersions({ selected: [], versions: {} })
   }
 
-  const multipleInfer = () => {
-    const ids = selectedVersions.selected.join('|')
-    history.push(`/home/project/${pid}/inference?did=${ids}`)
-  }
-
   const batchMerge = () => {
     const ids = selectedVersions.selected.join(',')
     history.push(`/home/project/${pid}/merge?mid=${ids}`)
@@ -609,9 +604,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     <>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => readyState(state))} onClick={multipleHide}>
         <DeleteIcon /> {t('common.action.multiple.del')}
-      </Button>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => !validState(state))} onClick={multipleInfer}>
-        <WajueIcon /> {t('common.action.multiple.infer')}
       </Button>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => !validState(state))} onClick={batchMerge}>
         <WajueIcon /> {t('common.action.multiple.merge')}

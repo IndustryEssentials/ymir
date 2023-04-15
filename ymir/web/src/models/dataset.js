@@ -76,15 +76,16 @@ export default {
         type: 'getLocalDatasets',
         payload: ids,
       })
-      if (ids.length === cache.length) {
+      const fixedCache = cache.filter((item) => !item.needReload)
+      if (ids.length === fixedCache.length) {
         return cache
       }
-      const fetchIds = ids.filter((id) => cache.every((ds) => ds.id !== id))
+      const fetchIds = ids.filter((id) => fixedCache.every((ds) => ds.id !== id))
       const remoteDatasets = yield put.resolve({
         type: 'batchDatasets',
         payload: { pid, ids: fetchIds, ck },
       })
-      return [...cache, ...(remoteDatasets || [])]
+      return [...fixedCache, ...(remoteDatasets || [])]
     },
     *batchDatasets({ payload }, { call, put }) {
       const { pid, ids, ck } = payload
@@ -104,7 +105,7 @@ export default {
     batch: createEffect(function* ({ payload }, { put }) {
       return yield put.resolve({
         type: 'batchLocalDatasets',
-        payload: { ...payload },
+        payload,
       })
     }),
     *getDataset({ payload }, { call, put, select }) {

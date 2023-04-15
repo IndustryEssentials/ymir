@@ -1,9 +1,7 @@
-import { CSSProperties, FC, useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 
 import { Message } from '@/constants'
 import useRequest from '@/hooks/useRequest'
-import { STATES } from '@/constants/image'
-import { isImage } from '@/constants/TaskResultType'
 import { ResultStates, validState } from '@/constants/common'
 import { getTaskTypeLabel, TASKTYPES } from '@/constants/task'
 import t from '@/utils/t'
@@ -41,12 +39,7 @@ const BaseItem = (Template: FC<Props>) => {
     }, [message])
 
     const getTitle = (msg: Message, typeLabel: string) => {
-      let stateLabel = ''
-      if (isImage(msg.type)) {
-        stateLabel = getImageStateLabel(msg.resultState as STATES)
-      } else {
-        stateLabel = getStateLabel(msg.resultState as ResultStates)
-      }
+      let stateLabel = getStateLabel(msg.resultState)
 
       return `${typeLabel}${stateLabel}`
     }
@@ -56,7 +49,7 @@ const BaseItem = (Template: FC<Props>) => {
 
       const renderObject = {
         type: typeLabel,
-        state: isImage(message.resultState) ? getImageStateLabel(resultState as STATES) : getStateLabel(resultState as ResultStates),
+        state: getStateLabel(resultState),
         name: getName(message),
         metricLabel: '',
         metric: '',
@@ -80,7 +73,6 @@ const BaseItem = (Template: FC<Props>) => {
     const getState = (valid: boolean) => (valid ? 'finish' : 'failure')
 
     const getStateLabel = (state: ResultStates) => t(`task.state.${getState(validState(state))}`)
-    const getImageStateLabel = (state: STATES) => t(`task.state.${getState(state === STATES.DONE)}`)
     const getName = (message: Message) => {
       if (!message.result) {
         return ''

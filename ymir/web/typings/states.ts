@@ -1,3 +1,5 @@
+import { Image } from "@/constants"
+
 declare namespace YStates {
   type Root = {
     user: UserState
@@ -85,7 +87,7 @@ declare namespace YStates {
   }
 
   interface ImageState extends State {
-    image: IdMap<YModels.Image>
+    image: IdMap<Image>
     total: number
   }
 

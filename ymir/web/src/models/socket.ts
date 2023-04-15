@@ -16,7 +16,7 @@ const pageMaps = [
   { path: '/home/project/\\d+/iterations', method: 'model/updateModelState' },
   { path: '/home/project/\\d+/iterations', method: 'project/updateProjectTrainSet' },
   { path: '/home/project/\\d+/iterations', method: 'iteration/updateIterationCache' },
-  { path: '/home/project/\\d+/diagnose', method: 'dataset/updateDatasets' },
+  { path: '/home/project/\\d+/prediction', method: 'dataset/updateDatasets' },
 ]
 
 const Socket: SocketStore = {

@@ -1,10 +1,10 @@
 import { Spin } from 'antd'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'umi'
 import styles from './common.less'
 
 const Loading = () => {
-  const globalLoading = useSelector<YStates.Root, boolean>(({ loading }) => loading.global && !loading.models.Verify)
-  const commonLoading = useSelector<YStates.Root, boolean>(({ common }) => common.loading)
+  const globalLoading = useSelector(({ loading }) => loading.global && !loading.models.Verify)
+  const commonLoading = useSelector(({ common }) => common.loading)
   return (
     <div className={styles.loading} style={{ display: globalLoading && commonLoading ? '' : 'none' }}>
       <Spin size="large" />

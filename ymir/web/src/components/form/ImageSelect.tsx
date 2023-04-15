@@ -2,12 +2,15 @@ import { Col, Row, Select, SelectProps } from 'antd'
 import { FC, UIEvent, UIEventHandler, useCallback, useEffect, useState } from 'react'
 
 import { TYPES } from '@/constants/image'
-import { HIDDENMODULES } from '@/constants/common'
+import { HIDDENMODULES, validState } from '@/constants/common'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 import { QueryParams } from '@/services/image.d'
 import { DefaultOptionType } from 'antd/lib/select'
 import { useDebounce } from 'ahooks'
+import { Image } from '@/constants'
+import { List } from '@/models/typings/common'
+import { useSelector } from 'umi'
 
 interface Props extends SelectProps {
   pid: number
@@ -16,12 +19,16 @@ interface Props extends SelectProps {
 }
 
 type OptionType = DefaultOptionType & {
-  image?: YModels.Image
+  value?: number
+  image?: Image
 }
+
+type GO = OptionType
 
 const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, onChange = () => {}, ...resProps }) => {
   const [options, setOptions] = useState<OptionType[]>([])
-  const [groupOptions, setGroupOptions] = useState<{ label: string; options?: OptionType[] }[]>([])
+  const [groupOptions, setGroupOptions] = useState<OptionType[]>([])
+  const [selected, setSelected] = useState<number>()
   const [query, setQuery] = useState<QueryParams>({
     type,
     limit: 10,
@@ -30,20 +37,36 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   const [name, setSearchName] = useState<string>()
   const searchName = useDebounce(name, { wait: 400 })
   const [total, setTotal] = useState(0)
+  const { official } = useSelector(({ image }) => image)
   const {
     data: list,
     run: getImages,
     loading,
-  } = useRequest<YModels.ImageList, [QueryParams]>('image/getImages', {
+  } = useRequest<List<Image>, [QueryParams]>('image/getImages', {
     loading: false,
   })
-  const { data: trainImage, run: getRelatedImage } = useRequest<YModels.Image, [{ id: number }]>('image/getImage', {
+  const { data: trainImage, run: getRelatedImage } = useRequest<Image, [{ id: number }]>('image/getImage', {
     loading: false,
+  })
+  useRequest<Image, [{ id: number }]>('image/getOfficialImage', {
+    loading: false,
+    manual: false,
+    loadingDelay: 500,
   })
   const { data: project, run: getProject } = useRequest<YModels.Project, [{ id: number }]>('project/getProject', {
     cacheKey: 'getProject',
     loading: false,
   })
+
+  useEffect(() => {
+    if (value) {
+      setSelected(value)
+    } else if (official && validState(official.state)) {
+      setSelected(official.id)
+    } else {
+      setSelected(undefined)
+    }
+  }, [value, official])
 
   useEffect(() => {
     pid && getProject({ id: pid })
@@ -98,16 +121,16 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
 
   useEffect(() => {
     if (options.length === 1) {
-      if (!value) {
-        value = options[0].value
+      if (!selected) {
+        setSelected(options[0].value)
       }
     }
   }, [options])
 
   useEffect(() => {
-    if (value) {
-      const opt = options.find(({ image }) => image?.id === value)
-      opt && onChange(value, opt)
+    if (selected) {
+      const opt = options.find(({ image }) => image?.id === selected)
+      opt && onChange(selected, opt)
     }
   }, [options])
 
@@ -118,7 +141,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     getImages(query)
   }
 
-  const generateOption = (image: YModels.Image) => ({
+  const generateOption = (image: Image) => ({
     label: (
       <Row>
         <Col flex={1}>{image.name}</Col>
@@ -131,7 +154,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     value: image.id,
   })
 
-  const generateOptions = (images: YModels.Image[]) => images.map(generateOption)
+  const generateOptions = (images: Image[]) => images.map(generateOption)
 
   const scrollChange = (e: UIEvent<HTMLDivElement>) => {
     e.persist()
@@ -146,11 +169,11 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   }
 
   return (
-    <Select
-      value={value}
+    <Select<number, OptionType>
       optionFilterProp="label"
       allowClear
       {...resProps}
+      value={selected}
       onChange={(value, opt) => onChange(value, opt)}
       onPopupScroll={scrollChange}
       options={groupOptions.length ? groupOptions : options}

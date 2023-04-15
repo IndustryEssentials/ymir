@@ -13,6 +13,7 @@ import RelateModal from './relate'
 import Del from './del'
 import ImagesLink from './imagesLink'
 import StateTag from '@/components/image/StateTag'
+import OfficialTag from '@/components/image/OfficialTag'
 
 import s from './list.less'
 import { EditIcon, DeleteIcon, AddIcon, MoreIcon, PublishIcon, LinkIcon } from '@/components/common/Icons'
@@ -125,7 +126,7 @@ const ImageList = ({ role, filter, getImages }) => {
 
   const isTrain = (functions = []) => functions.indexOf(TYPES.TRAINING) >= 0
 
-  const isDone = (state) => state === STATES.DONE
+  const isDone = (state) => state === STATES.VALID
 
   const more = (item) => {
     return (
@@ -145,7 +146,7 @@ const ImageList = ({ role, filter, getImages }) => {
     types.map((type) => {
       const cls = getProjectTypeLabel(type)
       const label = getProjectTypeLabel(type, true)
-      return type && cls ? <span className={`extraTag ${cls}`}>{t(label)}</span> : null
+      return type && cls ? <span key={type} className={`extraTag ${cls}`}>{t(label)}</span> : null
     })
 
   const liveCodeState = (live) => {
@@ -165,6 +166,7 @@ const ImageList = ({ role, filter, getImages }) => {
         <Col flex={1}>
           <Space>
             <span>{item.name}</span>
+            <OfficialTag official={item.official} />
             {objectTypeLabel(item.objectTypes)}
             <StateTag state={item.state} code={item.errorCode} />
             {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}

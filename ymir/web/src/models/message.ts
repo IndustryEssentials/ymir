@@ -50,7 +50,7 @@ const getRelatedSource: Effect = createEffect<Message[]>(function* ({ payload: m
     if (module) {
       const list: Message['result'][] = yield put.resolve({
         type: `${module}/batch`,
-        payload: { ids: resultIds },
+        payload: resultIds,
       })
       messages.forEach((item, ind) => {
         const index = list?.findIndex((result) => result?.id === item.resultId)

@@ -124,13 +124,13 @@ const PredictionModel: PredictionStore = {
 
     hide: hideAction(actions.hide),
     restore: hideAction(actions.restore),
-    batch: createEffect<{ ids: number[] }>(function* ({ payload: { ids } }, { put }) {
+    batch: createEffect<number[]>(function* ({ payload: ids }, { put }) {
       const list = []
       for (let key = 0; key < ids.length; key++) {
         const id = ids[key]
         const pred = yield put.resolve({
           type: 'getPrediction',
-          payload: { id },
+          payload: { id, force: true },
         })
         list.push(pred)
       }

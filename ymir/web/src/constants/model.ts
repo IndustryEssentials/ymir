@@ -15,19 +15,15 @@ export function transferModelGroup(data: YModels.BackendData) {
 
 export function transferModel(data: YModels.BackendData): YModels.Model {
   const durationLabel = calDuration(data.related_task.duration, getLocale())
-  const otype = data.object_type || ObjectType.ObjectDetection
-  const stages = (data.related_stages || []).map((stage: YModels.BackendData) => {
-    const st = transferStage(stage, otype)
-    return { ...st, primaryMetricLabel: getPrimaryMetricsLabel(otype, true) }
-  })
+  const type = data.object_type || ObjectType.ObjectDetection
   const versionName = getVersionLabel(data.version_num)
 
-  return {
+  const model: YModels.Model =  {
     id: data.id,
     name: `${data.group_name} ${versionName}`,
     groupId: data.model_group_id,
     projectId: data.project_id,
-    type: data.object_type || ObjectType.ObjectDetection,
+    type,
     hash: data.hash,
     version: data.version_num || 0,
     versionName,
@@ -46,10 +42,20 @@ export function transferModel(data: YModels.BackendData): YModels.Model {
     durationLabel: calDuration(data.related_task.duration, getLocale()),
     task: { ...data.related_task, durationLabel },
     hidden: !data.is_visible,
-    stages,
+    stages: [],
     recommendStage: data.recommended_stage || 0,
     description: data.description || '',
   }
+
+  
+  const stages = (data.related_stages || []).map((stage: YModels.BackendData) => {
+    const st = transferStage(stage, model)
+    return { ...st, primaryMetricLabel: getPrimaryMetricsLabel(type, true) }
+  })
+
+  stages && (model.stages = stages)
+
+  return model
 }
 
 /**
@@ -88,14 +94,14 @@ export function getModelName(data: YModels.BackendData) {
  * @param {YModels.BackendData} data
  * @returns {YModels.Stage}
  */
-export function transferStage(data: YModels.BackendData, type: ObjectType): YModels.Stage {
-  const metrics = transferMetrics(data.metrics, type)
+export function transferStage(data: YModels.BackendData, model: YModels.Model): YModels.Stage {
+  const metrics = transferMetrics(data.metrics, model.type)
   return {
     id: data.id,
     name: data.name,
     primaryMetric: metrics.primary,
-    modelId: data.model?.id,
-    modelName: getModelName(data),
+    modelId: model.id,
+    modelName: model.name,
     metrics,
   }
 }

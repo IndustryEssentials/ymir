@@ -10,8 +10,8 @@ const ImageName: React.FC<Props> = ({ id, url = '' }) => {
   if (url) {
     return <>${url}</>
   }
-  const image: YModels.Image = useSelector(({ image }: YStates.Root) => {
-    return id && image.image[id]
+  const image = useSelector(({ image }) => {
+    return id ? image.image[id] : undefined
   })
   const [_, getImage] = useFetch('image/getImage')
 

@@ -96,8 +96,8 @@ type MiningParams = WithDocker & {
 
 type InferenceParams = WithDocker & {
   projectId: number
-  datasets: number[]
-  stages: modelStage[]
+  dataset: number[]
+  stage: modelStage
   name?: string
   openpai?: boolean
   description?: string

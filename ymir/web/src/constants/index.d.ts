@@ -1,5 +1,6 @@
 import { ResultStates } from './common'
 import { STATES } from './image'
+import { ObjectType } from './objectType'
 import { TASKSTATES, TASKTYPES } from './task'
 import { TaskResultType } from './TaskResultType'
 
@@ -14,14 +15,14 @@ type M = {
   [TaskResultType.dataset]: MessageBase<YModels.Dataset>,
   [TaskResultType.model]: MessageBase<YModels.Model>,
   [TaskResultType.prediction]: MessageBase<YModels.Prediction>,
-  [TaskResultType.image]: MessageBase<YModels.Image>,
+  [TaskResultType.image]: MessageBase<Image>,
 }
 
 type MessageBase<T> = {
   id: number
   pid: number
   resultId: number
-  resultState: T extends YModels.Image ? STATES : ResultStates
+  resultState: ResultStates
   taskId: number
   taskState: TASKSTATES
   taskType: TASKTYPES
@@ -36,7 +37,7 @@ interface Prediction extends Omit<YModels.Dataset<YModels.InferenceParams>, 'met
   inferModel?: YModels.Model
   inferDatasetId: number
   inferDataset?: YModels.Dataset
-  inferConfig: YModels.ImageConfig
+  inferConfig: ImageConfig
   rowSpan?: number
   evaluated: boolean
   pred: YModels.AnnotationsCount
@@ -44,4 +45,27 @@ interface Prediction extends Omit<YModels.Dataset<YModels.InferenceParams>, 'met
   odd?: boolean
 }
 
-export { Message, MessageResultModules, Prediction }
+
+type ImageConfig = { [key: string]: number | string }
+type DockerImageConfig = {
+  type: number
+  config: ImageConfig
+  object_type?: ObjectType
+}
+type Image = {
+  id: number
+  name: string
+  state: number
+  functions: number[]
+  configs: DockerImageConfig[]
+  objectTypes: ObjectType[]
+  url: string
+  description: string
+  createTime: string
+  official: boolean
+  related?: Array<Image>
+  liveCode?: boolean
+  errorCode?: string
+}
+
+export { Message, MessageResultModules, Prediction, Image, DockerImageConfig }

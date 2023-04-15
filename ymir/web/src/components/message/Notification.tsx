@@ -5,12 +5,6 @@ import BaseItem, { Props } from './BaseItem'
 
 const key = 'message'
 
-const Notification: FC = () => {
-  const message = useSelector(({ message }) => message.latest)
-  const Item = BaseItem(NotificationItem)
-  return <Item message={message} />
-}
-
 const NotificationItem: FC<Props> = ({ title, content, go, unread }) => {
   useEffect(() => {
     if (!title || !content) {
@@ -32,6 +26,17 @@ const NotificationItem: FC<Props> = ({ title, content, go, unread }) => {
     })
   }, [title, content])
   return <></>
+}
+
+const Item = BaseItem(NotificationItem)
+const Notification: FC = () => {
+  const message = useSelector(({ message }) => message.latest)
+  useEffect(() => {
+    if (!message) {
+      notification.close(key)
+    }
+  }, [message])
+  return <Item message={message} />
 }
 
 export default Notification

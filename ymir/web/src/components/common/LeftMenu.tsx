@@ -1,7 +1,6 @@
 import { FC, ReactNode, useEffect, useState } from 'react'
 import { Menu, Layout, MenuProps, MenuItemProps } from 'antd'
-import { useHistory, useLocation, withRouter } from 'umi'
-import { useSelector } from 'react-redux'
+import { useHistory, useLocation, withRouter, useSelector } from 'umi'
 import t from '@/utils/t'
 import { getDeployUrl, getPublicImageUrl } from '@/constants/common'
 import { isSuperAdmin } from '@/constants/user'
@@ -47,8 +46,8 @@ const getItem = (label: ReactNode, key: string, Icon?: FC<IconProps>, children?:
 const getGroupItem = (label: string, key: string, children: MenuItem[]) => getItem(label, key, undefined, children, 'group')
 
 function LeftMenu() {
-  const { role } = useSelector<YStates.Root, YStates.UserState>((state) => state.user)
-  const { projects } = useSelector<YStates.Root, YStates.ProjectState>((state) => state.project)
+  const { role } = useSelector((state) => state.user)
+  const { projects } = useSelector((state) => state.project)
   const history = useHistory()
   const { pathname } = useLocation()
   const [defaultKeys, setDefaultKeys] = useState<string[]>()
@@ -76,7 +75,7 @@ function LeftMenu() {
               project?.enableIteration ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon) : null,
               getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon),
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
-              getItem(t('model.diagnose'), `/home/project/${id}/pred`, DiagnosisIcon),
+              getItem(t('model.diagnose'), `/home/project/${id}/prediction`, DiagnosisIcon),
               getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
               getItem(t('common.trash.list'), `/home/project/${id}/trash`, DeleteIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),

@@ -13,7 +13,6 @@ import useRequest from '@/hooks/useRequest'
 
 import ImageSelect from '@/components/form/ImageSelect'
 import ModelSelect from '@/components/form/modelSelect'
-import SampleRates from '@/components/dataset/SampleRates'
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
@@ -154,7 +153,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
         setLiveCode(!!config.git_url)
         setLiveInitialValues(config)
       }
-      setTimeout(() => setConfig(config), 500)
+      setTimeout(() => {
+        setConfig(config)}, 800)
       setTestSet(validation_dataset_id)
       setTrainSet(dataset_id)
       setSelectedKeywords(keywords)

@@ -1,13 +1,15 @@
 import { getImage, getImages, delImage, createImage, updateImage, relateImage } from '@/services/image'
 import { STATES, transferImage } from '@/constants/image'
 import { createEffect, createReducers } from './_utils'
-import { EditImage, Image, QueryParams } from '@/services/image.d'
+import { EditImage, Image as CreateImageParams, QueryParams } from '@/services/image.d'
 import { ObjectType } from '@/constants/objectType'
 import { ImageStore } from '.'
+import { Image } from '@/constants'
 
 const reducers = [
   { name: 'UpdateImage', field: 'image' },
   { name: 'UpdateTotal', field: 'total' },
+  { name: 'UpdateOfficial', field: 'official' },
 ]
 
 const ImageModel: ImageStore = {
@@ -15,13 +17,14 @@ const ImageModel: ImageStore = {
   state: {
     image: {},
     total: 0,
+    official: undefined,
   },
   effects: {
     getImages: createEffect<QueryParams>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(getImages, payload)
       if (code === 0) {
         const { items, total } = result
-        const images: YModels.Image[] = items.map(transferImage)
+        const images: Image[] = items.map(transferImage)
         yield put({
           type: 'UpdateImage',
           payload: images.reduce(
@@ -64,7 +67,7 @@ const ImageModel: ImageStore = {
         return image
       }
     }),
-    createImage: createEffect<Image>(function* ({ payload }, { call, put }) {
+    createImage: createEffect<CreateImageParams>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(createImage, payload)
       if (code === 0) {
         // response as task
@@ -99,7 +102,7 @@ const ImageModel: ImageStore = {
       const result = yield put.resolve({
         type: 'getImages',
         payload: {
-          state: STATES.DONE,
+          state: STATES.VALID,
           objectType: type,
         },
       })
@@ -111,17 +114,37 @@ const ImageModel: ImageStore = {
         return result.total
       }
     }),
-    batch: createEffect<{ ids: number[] }>(function* ({ payload: { ids } }, { put }) {
+    batch: createEffect<number[]>(function* ({ payload: ids }, { put }) {
       const list = []
       for (let key = 0; key < ids.length; key++) {
         const id = ids[key]
         const image = yield put.resolve({
           type: 'getImage',
-          payload: { id },
+          payload: { id, force: true },
         })
         list.push(image)
       }
       return list
+    }),
+    getOfficialImage: createEffect<boolean>(function* ({ payload: force }, { put, select }) {
+      const { official } = select(({ image }) => image)
+      if (!force && official) {
+        return official
+      }
+      const images = yield put.resolve({
+        type: 'getImages',
+        payload: {
+          official: true,
+        },
+      })
+      if (images?.items?.length) {
+        const image = images.items[0]
+        yield put({
+          type: 'UpdateOfficial',
+          payload: image,
+        })
+        return image
+      }
     }),
   },
   reducers: createReducers(reducers),

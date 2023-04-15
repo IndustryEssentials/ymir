@@ -1,5 +1,5 @@
 import { isPlainObject } from '@/utils/object'
-import { Effect } from './typings/common.d'
+import { Effect, List } from './typings/common.d'
 export type ReducerType<S> = {
   name: string
   field: keyof S
@@ -20,7 +20,7 @@ const NormalReducer = <S, K extends keyof S>(field: K) => {
 const createReducers = <S>(list: ReducerType<S>[]) =>
   list.reduce((prev, { name, field }) => ({ ...prev, [name]: NormalReducer<S, typeof field>(field) }), {})
 
-const transferList = <R>(listResponse: YModels.ResponseResultList, func: (data: YModels.BackendData) => R): YStates.List<R> => {
+const transferList = <R>(listResponse: YModels.ResponseResultList, func: (data: YModels.BackendData) => R): List<R> => {
   const { items, total } = listResponse
   return { items: items.map((item) => func(item)), total }
 }

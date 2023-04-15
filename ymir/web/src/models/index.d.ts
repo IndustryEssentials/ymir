@@ -1,4 +1,4 @@
-import { Message } from '@/constants'
+import { Image, Message } from '@/constants'
 import { Socket } from 'socket.io-client'
 import { Loading } from 'umi'
 import { IdMap, List, StoreType } from './typings/common.d'
@@ -85,8 +85,9 @@ interface IterationState {
 }
 
 interface ImageState {
-  image: IdMap<YModels.Image>
+  image: IdMap<Image>
   total: number
+  official?: Image
 }
 
 type LabelState = {

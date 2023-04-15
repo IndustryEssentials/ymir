@@ -3,7 +3,7 @@ import type { FC, ReactNode } from 'react'
 
 import { useEffect, useState } from 'react'
 import { Col, ConfigProvider, Row, Select, SelectProps } from 'antd'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
@@ -38,7 +38,7 @@ const DatasetSelect: FC<Props> = ({
   changeByUser,
   ...resProps
 }) => {
-  const datasets = useSelector<YStates.Root, YModels.Dataset[]>(({ dataset }) => dataset.allDatasets[pid])
+  const datasets = useSelector(({ dataset }) => dataset.allDatasets[pid])
   const [options, setOptions] = useState<DefaultOptionType[]>([])
   const { run: getDatasets } = useRequest('dataset/queryAllDatasets', {
     debounceWait: 300,

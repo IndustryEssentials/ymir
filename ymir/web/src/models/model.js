@@ -112,15 +112,16 @@ export default {
         type: 'getLocalModels',
         payload: ids,
       })
-      if (ids.length === cache.length) {
+      const fixedCache = cache.filter(item => !item.needReload)
+      if (ids.length === fixedCache.length) {
         return cache
       }
-      const fetchIds = ids.filter((id) => cache.every((ds) => ds.id !== id))
+      const fetchIds = ids.filter((id) => fixedCache.every((ds) => ds.id !== id))
       const remoteModels = yield put.resolve({
         type: 'batchModels',
         payload: fetchIds,
       })
-      return [...cache, ...remoteModels]
+      return [...fixedCache, ...remoteModels]
     },
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)

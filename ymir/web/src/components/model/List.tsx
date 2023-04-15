@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import styles from './list.less'
-import { Link, Location, useHistory, useLocation } from 'umi'
-import { useSelector } from 'react-redux'
+import { Link, Location, useHistory, useLocation, useSelector } from 'umi'
+import {  } from 'react-redux'
 import { Form, Input, Table, Row, Col, Pagination, Space, Empty, Button, message, Popover, TableColumnsType } from 'antd'
 
 import { diffTime } from '@/utils/date'
@@ -44,6 +44,7 @@ import {
 import { ModuleType } from '@/pages/project/components/ListHoc'
 import useRequest from '@/hooks/useRequest'
 import StrongTitle from '../table/columns/StrongTitle'
+import { IdMap, List } from '@/models/typings/common.d'
 
 type IsType = {
   isInitModel?: boolean
@@ -55,7 +56,7 @@ type ExtraLabel = {
 }
 type ModelType = YModels.Model & ExtraLabel & IsType
 type ModelGroup = YModels.ModelGroup & ExtraLabel & IsType
-type Models = YStates.IdMap<ModelType[]>
+type Models = IdMap<ModelType[]>
 
 const { useForm } = Form
 
@@ -83,9 +84,9 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     versions,
     query,
     models: { [pid]: modelList },
-  } = useSelector<YStates.Root, YStates.ModelState>(({ model }) => model)
-  const { run: getModels } = useRequest<YStates.List<YModels.ModelGroup>, [{ pid: number; query: YParams.ModelsQuery }]>('model/getModelGroups')
-  const { run: getVersions } = useRequest<YStates.List<YModels.Model>, [{ gid: number; force?: boolean }]>('model/getModelVersions')
+  } = useSelector(({ model }) => model)
+  const { run: getModels } = useRequest<List<YModels.ModelGroup>, [{ pid: number; query: YParams.ModelsQuery }]>('model/getModelGroups')
+  const { run: getVersions } = useRequest<List<YModels.Model>, [{ gid: number; force?: boolean }]>('model/getModelVersions')
   const { run: updateQuery } = useRequest('model/updateQuery')
   const { run: resetQuery } = useRequest('model/resetQuery')
 
@@ -102,7 +103,6 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [groups])
 
   useEffect(() => {
-    console.log('modelList:', modelList)
     const mds = setGroupLabelsByProject(modelList?.items, project)
     setModels(mds)
     setTotal(modelList?.total || 1)
@@ -151,7 +151,6 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [name])
 
   useEffect(() => {
-    console.log('query, lock:', query, lock)
     if (!lock) {
       getData()
     }
@@ -318,7 +317,6 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   }
 
   function getData() {
-    console.log('pid, query:', pid, query)
     getModels({ pid, query })
   }
 
@@ -405,21 +403,6 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   const edit = (record: ModelGroup) => {
     editNameBoxRef.current?.show()
     setCurrent(record)
-  }
-
-  const multipleInfer = () => {
-    const { selected } = selectedVersions
-    const versionsObject = Object.values(versions).flat()
-    const stages = versionsObject
-      .filter((md) => selected.includes(md.id))
-      .map((md) => {
-        return [md.id, md.recommendStage].toString()
-      })
-    if (stages.length) {
-      history.push(`/home/project/${pid}/inference?mid=${stages.join('|')}`)
-    } else {
-      message.warning(t('model.list.batch.invalid'))
-    }
   }
 
   const multipleHide = () => {
@@ -527,9 +510,6 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     <>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => readyState(state))} onClick={multipleHide}>
         <DeleteIcon /> {t('common.action.multiple.del')}
-      </Button>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => !validState(state))} onClick={multipleInfer}>
-        <WajueIcon /> {t('common.action.multiple.infer')}
       </Button>
       <a href={trainingUrl} target="_blank">
         <Button type="primary" disabled={getDisabledStatus()}>

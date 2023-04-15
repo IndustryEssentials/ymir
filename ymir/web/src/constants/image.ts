@@ -1,5 +1,7 @@
 import { format } from '@/utils/date'
+import { DockerImageConfig, Image } from '.'
 import { ResultStates as STATES } from './common'
+import { ObjectType } from './objectType'
 
 export enum TYPES {
   UNKOWN = 0,
@@ -42,12 +44,12 @@ export const getImageStateLabel = (state?: STATES) => {
   return labels[state]
 }
 
-export function transferImage(data: YModels.BackendData): YModels.Image {
-  const configs: YModels.DockerImageConfig[] = data.configs || []
-  const getConfigAttr = <K extends keyof YModels.DockerImageConfig>(attr: K): YModels.DockerImageConfig[K][] => [
+export function transferImage(data: YModels.BackendData): Image {
+  const configs: DockerImageConfig[] = data.configs || []
+  const getConfigAttr = <K extends keyof DockerImageConfig>(attr: K): DockerImageConfig[K][] => [
     ...new Set(configs.map((config) => config[attr])),
   ]
-  const objectTypes = getConfigAttr('object_type').filter((t): t is YModels.ObjectType => !!t) || []
+  const objectTypes = getConfigAttr('object_type').filter((t): t is ObjectType => !!t) || []
   const functions = getConfigAttr('type')
   return {
     id: data.id,
@@ -58,6 +60,7 @@ export function transferImage(data: YModels.BackendData): YModels.Image {
     functions,
     configs,
     url: data.url,
+    official: data.is_official,
     liveCode: data.enable_livecode,
     related: data.related,
     description: data.description,
@@ -65,5 +68,5 @@ export function transferImage(data: YModels.BackendData): YModels.Image {
   }
 }
 
-export const getConfig = (image: YModels.Image, type: number, objectType: number) =>
+export const getConfig = (image: Image, type: TYPES, objectType: ObjectType) =>
   image.configs.find((config) => config.type === type && (!config.object_type || config.object_type === objectType))

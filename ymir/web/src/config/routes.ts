@@ -230,7 +230,7 @@ export const homeRoutes = [
     breadcrumbLabel: "breadcrumbs.models",
   },
   {
-    path: "/home/project/:id/pred",
+    path: "/home/project/:id/prediction",
     name: "predictions",
     component: "@/pages/project/diagnose",
     title: "model.diagnose.title",

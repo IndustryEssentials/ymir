@@ -21,7 +21,7 @@ export function getImage(id: number) {
  * @export
  * @param {QueryParams} { name, type, objectType, state, url, limit = 10, offset = 0 }
  */
-export function getImages({ name, type, objectType, state, url, limit = 10, offset = 0 }: QueryParams) {
+export function getImages({ name, type, objectType, state, url, limit = 10, offset = 0, official }: QueryParams) {
   return request.get('/images/', {
     params: {
       name,
@@ -31,6 +31,7 @@ export function getImages({ name, type, objectType, state, url, limit = 10, offs
       url,
       limit,
       offset,
+      is_official: official,
     },
   })
 }

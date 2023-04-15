@@ -14,6 +14,7 @@ import Del from './components/del'
 import ImagesLink from './components/imagesLink'
 import StateTag from '@/components/image/StateTag'
 import Configs from './components/Configs'
+import OfficialTag from '@/components/image/OfficialTag'
 
 import styles from './detail.less'
 import { EditIcon, PublishIcon, DeleteIcon, LinkIcon } from '@/components/common/Icons'
@@ -54,18 +55,19 @@ function ImageDetail() {
   }
 
   function isDone() {
-    return image.state === STATES.DONE
+    return image.state === STATES.VALID
   }
 
   function isError() {
-    return image.state === STATES.ERROR
+    return image.state === STATES.INVALID
   }
 
   function renderTitle() {
     return (
       <Row>
         <Col flex={1}>
-          {image.name}{' '}
+          <span>{image.name} </span>
+          <OfficialTag official={image.official} />
           {isAdmin() ? (
             <Link to={`/home/image/add/${id}`}>
               <EditIcon />

@@ -241,9 +241,8 @@ export function mine({ openpai, description, projectId, datasetId, modelStage, t
  * @export
  * @param {InferenceParams} { name, projectId, datasets, stages = [], config, image, openpai, description }
  */
-export function infer({ name, projectId, datasets, stages = [], config, image, openpai, description }: InferenceParams) {
-  const maps = datasets.map((dataset) => stages.map(([model, stage]) => ({ dataset, model, stage }))).flat()
-  const params = maps.map(({ model, stage, dataset }) => ({
+export function infer({ name, projectId, dataset, stage: [model, mstage], config, image, openpai, description }: InferenceParams) {
+  const params = {
     name,
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
@@ -252,10 +251,10 @@ export function infer({ name, projectId, datasets, stages = [], config, image, o
     parameters: {
       task_type: 'infer',
       model_id: model,
-      model_stage_id: stage,
+      model_stage_id: mstage,
       dataset_id: dataset,
       docker_image_id: image,
     },
-  }))
-  return request.post('/tasks/batch', { payloads: params })
+  }
+  return request.post('/tasks/', params)
 }
