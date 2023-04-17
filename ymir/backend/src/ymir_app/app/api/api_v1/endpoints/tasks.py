@@ -266,13 +266,12 @@ def update_task_status(
             result_prediction=updated_task.result_prediction,  # type: ignore
             result_docker_image=updated_task.result_docker_image,  # type: ignore
         )
-        # todo compatible with current frontend data structure
-        #  reformatting is needed
         payload = {updated_task.hash: task_update_msg.dict()}
         asyncio.run(request.app.sio.emit(event="update_taskstate", data=payload, namespace=namespace))
         logger.info("notify task update (%s) to frontend (%s)", payload, namespace)
-        if message_filter(task_update_msg):
-            msg = crud.message.create_message_from_task(db, task_info=schemas.Task.from_orm(updated_task).dict())
+        task_info = schemas.Task.from_orm(updated_task)
+        if message_filter(task_info.state, task_info.type):
+            msg = crud.message.create_message_from_task(db, task_info=task_info.dict())
             asyncio.run(
                 request.app.sio.emit(
                     event="update_message", data=json.loads(schemas.Message.from_orm(msg).json()), namespace=namespace

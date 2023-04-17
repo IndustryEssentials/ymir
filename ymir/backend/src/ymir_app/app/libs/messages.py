@@ -1,10 +1,15 @@
-from app.constants.state import FinalStates
-from app.schemas.task import TaskResultUpdateMessage
+from app.constants.state import TaskType, TaskState
 
 
-def message_filter(message: TaskResultUpdateMessage) -> bool:
+def message_filter(task_state: TaskState, task_type: TaskType) -> bool:
     """
     check if message meet the following criteria:
-    - Task state in FinalStates (done, error or terminated)
+    - task_state is done or error
+    - task_type in (training, mining, dataset_infer, label)
     """
-    return message.state in FinalStates
+    return task_state in [TaskState.done, TaskState.error] and task_type in [
+        TaskType.training,
+        TaskType.mining,
+        TaskType.dataset_infer,
+        TaskType.label,
+    ]
