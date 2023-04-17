@@ -12,4 +12,5 @@ def message_filter(task_state: TaskState, task_type: TaskType) -> bool:
         TaskType.mining,
         TaskType.dataset_infer,
         TaskType.label,
+        TaskType.pull_image,
     ]
