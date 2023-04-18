@@ -248,7 +248,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg', 'no-annotations'],
+                                           choices=['det-box', 'seg', 'no-annos'],
                                            help='annotations type\n')
     import_dataset_arg_parser.add_argument('--ins-seg',
                                            dest='is_instance_segmentation',

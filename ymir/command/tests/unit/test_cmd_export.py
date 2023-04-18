@@ -169,7 +169,7 @@ class TestCmdExport(unittest.TestCase):
                 'type': mirpb.ObjectType.OT_DET_BOX,
             },
             'ground_truth': {
-                'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
+                'type': mirpb.ObjectType.OT_NO_ANNOS,
             },
             'image_cks': {
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {

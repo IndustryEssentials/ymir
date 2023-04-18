@@ -298,9 +298,9 @@ class MirStorageOps():
         # update object type
         if isinstance(mir_storage_data, mirpb.MirAnnotations):
             if mir_storage_data.prediction.type == mirpb.ObjectType.OT_UNKNOWN:
-                mir_storage_data.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+                mir_storage_data.prediction.type = mirpb.ObjectType.OT_NO_ANNOS
             if mir_storage_data.ground_truth.type == mirpb.ObjectType.OT_UNKNOWN:
-                mir_storage_data.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+                mir_storage_data.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOS
 
         if as_dict:
             mir_storage_data = cls.__message_to_dict(mir_storage_data)

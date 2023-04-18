@@ -48,7 +48,7 @@ def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":
     _anno_dict: Dict[str, "mirpb.ObjectType.V"] = {
         "det-box": mirpb.ObjectType.OT_DET_BOX,
         "seg": mirpb.ObjectType.OT_SEG,
-        "no-annotations": mirpb.ObjectType.OT_NO_ANNOTATIONS,
+        "no-annos": mirpb.ObjectType.OT_NO_ANNOS,
     }
     return _anno_dict.get(object_type_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
@@ -66,6 +66,7 @@ def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
     _func_dict: Dict["mirpb.ObjectType.V", Callable] = {
         mirpb.ObjectType.OT_DET_BOX: _import_annotations_voc_xml,
         mirpb.ObjectType.OT_SEG: import_annotations_coco_json,
+        mirpb.ObjectType.OT_NO_ANNOS: _import_no_annotations,
     }
     if anno_type not in _func_dict:
         raise NotImplementedError()
@@ -181,7 +182,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         logging.warning(
             f"imported pred: {len(mir_annotation.prediction.image_annotations)} / {len(file_name_to_asset_ids)}")
     else:
-        mir_annotation.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotation.prediction.type = mirpb.ObjectType.OT_NO_ANNOS
         mir_annotation.prediction.is_instance_segmentation = False
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
@@ -203,7 +204,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         logging.warning(
             f"imported gt: {len(mir_annotation.ground_truth.image_annotations)} / {len(file_name_to_asset_ids)}")
     else:
-        mir_annotation.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotation.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOS
         mir_annotation.ground_truth.is_instance_segmentation = False
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
@@ -377,6 +378,13 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     logging.info(f"count of error format objects: {error_format_objects_cnt}")
     logging.info(f"count of zero size objects: {zero_size_count}")
     logging.info(f"count of duplicate objects: {duplicate_count}")
+
+
+def _import_no_annotations(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+                           annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
+                           unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
+                           image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    logging.info("user choose to import no annotations")
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
@@ -565,14 +573,14 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
 def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
                             guest_task_annotations: mirpb.SingleTaskAnnotations, strategy: MergeStrategy) -> None:
     # check type
-    if (host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
-            and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
+    if (host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOS
+            and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOS
             and host_task_annotations.type != guest_task_annotations.type
             and host_task_annotations.is_instance_segmentation != guest_task_annotations.is_instance_segmentation):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
                               error_message='host and guest object type / is_instance_segmentation unequal')
 
-    if host_task_annotations.type == mirpb.ObjectType.OT_NO_ANNOTATIONS:
+    if host_task_annotations.type == mirpb.ObjectType.OT_NO_ANNOS:
         host_task_annotations.type = guest_task_annotations.type
         host_task_annotations.is_instance_segmentation = guest_task_annotations.is_instance_segmentation
 
@@ -610,8 +618,8 @@ def match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
 
 def make_empty_mir_annotations() -> mirpb.MirAnnotations:
     mir_annotations = mirpb.MirAnnotations()
-    mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
-    mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+    mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOS
+    mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOS
     return mir_annotations
 
 

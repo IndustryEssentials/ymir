@@ -129,7 +129,7 @@ enum ObjectType {
     OT_SEG = 3;  // semantic segmentation w. polygon or mask
     OT_INS_SEG = 4; // used by controller and app
 
-    OT_NO_ANNOTATIONS = 100;
+    OT_NO_ANNOS = 100;
 };
 
 enum ObjectSubType {
