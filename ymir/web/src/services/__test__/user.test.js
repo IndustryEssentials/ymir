@@ -1,4 +1,4 @@
-import { login, loginout, getMeInfo, signup, resetPwd, modifyPwd, forgetPwd, getUsers, setUserState } from "../user"
+import { login, getMeInfo, signup, resetPwd, modifyPwd, forgetPwd, getUsers, setUserState } from "../user"
 
 import { products, requestExample } from './func'
 
@@ -7,11 +7,6 @@ describe("service: user", () => {
     const params = { username: "idol", password: "1q2w3e" }
     const expected = "token"
     requestExample(login, params, expected)
-  })
-  it("loginout -> success", () => {
-    const params = {}
-    const expected = "ok"
-    requestExample(loginout, params, expected, 'post')
   })
   it("getMeInfo -> success", () => {
     const expected = {

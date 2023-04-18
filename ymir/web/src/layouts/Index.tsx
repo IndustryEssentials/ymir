@@ -1,7 +1,6 @@
 import React, { FC, useEffect } from 'react'
 import { ConfigProvider, Layout, message } from 'antd'
-import { useHistory, withRouter } from 'umi'
-import { useSelector } from 'react-redux'
+import { useHistory, withRouter, useSelector } from 'umi'
 
 import useRequest from '@/hooks/useRequest'
 
@@ -20,7 +19,7 @@ message.config({ maxCount: 1 })
 
 const BasicLayout: FC = ({ children }) => {
   const history = useHistory()
-  const logined = useSelector<YStates.Root, boolean>(({ user }) => user.logined)
+  const logined = useSelector(({ user }) => user.logined)
   const { run: getUserInfo } = useRequest('user/getUserInfo')
 
   useEffect(() => {

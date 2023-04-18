@@ -198,7 +198,7 @@ function Inference({ ...func }) {
 
   const initialValues = {
     description: '',
-    stage: stage.length ? stage : undefined,
+    stage,
     image: image ? parseInt(image) : undefined,
     gpu_count: 0,
   }

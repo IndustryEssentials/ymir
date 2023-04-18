@@ -1,7 +1,6 @@
 import { FC, MouseEvent, ReactElement, useEffect, useState } from 'react'
 import { Alert, Button, Card, CardProps, CheckboxOptionType, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
-import { useParams, useHistory, useLocation } from 'umi'
-import { useSelector } from 'react-redux'
+import { useParams, useHistory, useSelector } from 'umi'
 
 import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
@@ -24,6 +23,7 @@ import SegSamplePic from '@/assets/sample_seg.png'
 import { ValidateErrorEntity } from 'rc-field-form/lib/interface'
 import TypeSelector from './add/TypeSelector'
 import { Types } from './add/AddTypes'
+import { List } from '@/models/typings/common'
 
 type DatasetOptionType = {
   value: number
@@ -60,14 +60,14 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
   const [ignoredKeywords, setIgnoredKeywords] = useState<string[]>([])
   const { data: { newer } = {}, run: checkKeywords } = useRequest<{ newer: string[] }>('keyword/checkDuplication')
   const [addResult, newDataset] = useFetch('dataset/createDataset')
-  const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<YStates.List<YModels.Dataset>>('dataset/getInternalDataset')
+  const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<List<YModels.Dataset>>('dataset/getInternalDataset')
   const { runAsync: addKeywords } = useRequest<{}, [{ keywords: string[]; dry_run?: boolean }]>('keyword/addKeywords')
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
   const [defaultName, setDefaultName] = useState('')
   const netUrl = Form.useWatch<string>('url', form)
   const path = Form.useWatch<string>('path', form)
   const [formatDetailModal, setFormatDetailModal] = useState(false)
-  const project = useSelector<YStates.Root, YModels.Project>(({ project }) => project.projects[pid] || {})
+  const project = useSelector(({ project }) => project.projects[pid] || {})
   const { run: getProject } = useRequest('project/getProject', {
     loading: false,
     refreshDeps: [pid],

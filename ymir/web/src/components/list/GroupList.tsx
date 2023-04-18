@@ -1,12 +1,12 @@
 import { FC, useEffect, useState } from 'react'
-import { Col, Pagination, Row, Space, Table } from 'antd'
-import t from '@/utils/t'
+import { Col, Pagination, Row } from 'antd'
 import styles from './groupList.less'
-import { EditIcon, ArrowDownIcon, ArrowRightIcon } from '@/components/common/Icons'
+import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/Icons'
 import GroupActions from './GroupActions'
 import DatasetItems from './DatasetItems'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'umi'
 import useRequest from '@/hooks/useRequest'
+import { List } from '@/models/typings/common'
 
 type Group = YModels.Group & {
   projectLabel?: string
@@ -14,7 +14,7 @@ type Group = YModels.Group & {
 type Props = {
   module: 'dataset' | 'model'
   pid: number
-  list: YStates.List<YModels.Group>
+  list: List<YModels.Group>
   initVisible?: boolean
   project?: YModels.Project
 }
@@ -24,15 +24,14 @@ const GroupList: FC<Props> = ({ module = 'dataset', pid, initVisible, children }
   const [visible, setVisible] = useState(initVisible)
   const [groups, setGroups] = useState<Group[]>([])
   const [total, setTotal] = useState(1)
-  const {[pid]: list} = useSelector<YStates.Root, YStates.IdMap<YStates.List<YModels.Dataset | YModels.Model>>>(({ dataset, model }) => isDataset ? dataset.datasets : model.models)
-  const project = useSelector<YStates.Root, YModels.Project>(({ project }) => project.projects[pid])
-  const query = useSelector<YStates.Root, YParams.ModelsQuery | YParams.DatasetsQuery>((state) => state[module].query)
-  const {run: updateQuery} = useRequest(`${module}/updateQuery`)
+  const { [pid]: list } = useSelector(({ dataset, model }) => (isDataset ? dataset.datasets : model.models))
+  const project = useSelector(({ project }) => project.projects[pid])
+  const query = useSelector((state) => state[module].query)
+  const { run: updateQuery } = useRequest(`${module}/updateQuery`)
 
   useEffect(() => {
     let groups = list.items
     if (list) {
-
     }
     if (project) {
       // add extra project info
@@ -52,9 +51,8 @@ const GroupList: FC<Props> = ({ module = 'dataset', pid, initVisible, children }
   const pagerChange = (current: number, pageSize: number) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    updateQuery({...query, limit, offset, current })
+    updateQuery({ ...query, limit, offset, current })
   }
-
 
   return (
     <>
@@ -62,7 +60,7 @@ const GroupList: FC<Props> = ({ module = 'dataset', pid, initVisible, children }
         {groups.map((group) => (
           <div className={styles.groupItem} key={group.id}>
             <Row className="groupTitle">
-              <Col flex={1} onClick={() => setVisible(v => !v)}>
+              <Col flex={1} onClick={() => setVisible((v) => !v)}>
                 <span className="foldBtn">{visible ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
                 <span className="groupName">{group.name}</span>
                 {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}

@@ -14,10 +14,11 @@ import InferModel from './columns/InferModel'
 import InferDataset from './columns/InferDataset'
 import InferConfig from './columns/InferConfig'
 import { getPrimaryMetricsLabel } from '@/constants/model'
+import Image from './columns/Image'
 
 export function getPredictionColumns(type: ObjectType): TableColumnsType<YModels.Prediction> {
   const label = type ? getPrimaryMetricsLabel(type) : undefined
-  return [InferModel(), InferDataset(), InferConfig(), Map(label), State(), CreateTime(false)]
+  return [InferModel(), InferDataset(), InferConfig(), Image(), State(), CreateTime(false)]
 }
 export function getDatasetColumns(): TableColumnsType<YModels.Dataset>  {
   return [Name(), Source(), Count(), Keywords(), State(), CreateTime()]

@@ -1,8 +1,7 @@
 import { ViewProps, EvaluationResult, TabIdType } from '.'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Space, Tag, RadioChangeEvent } from 'antd'
-import { useLocation } from 'umi'
-import { useSelector } from 'react-redux'
+import { useLocation, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import { ObjectType, isDetection, isSemantic } from '@/constants/objectType'
@@ -87,8 +86,8 @@ const Matrics: FC<Props> = ({ prediction }) => {
   const { data: remoteData, run: fetchDiagnosis } = useRequest<EvaluationResult, [YParams.EvaluationParams]>('prediction/evaluate')
 
   const selectedCK = Form.useWatch('ck', form)
-  const model = useSelector<YStates.Root, YModels.Model>(({ model }) => model.model[prediction.inferModelId[0].toString()])
-  const dataset = useSelector<YStates.Root, YModels.Dataset>(({ dataset }) => dataset.dataset[prediction.inferDatasetId.toString()])
+  const model = useSelector(({ model }) => model.model[prediction.inferModelId[0].toString()])
+  const dataset = useSelector(({ dataset }) => dataset.dataset[prediction.inferDatasetId.toString()])
 
   useEffect(() => {
     if (prediction?.type) {

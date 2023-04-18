@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import { QueryParams, Image, EditImage } from './image.d'
+import { QueryParams, Image, EditImage } from './typings/image.d'
 
 /** image service */
 /**

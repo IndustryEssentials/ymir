@@ -1,7 +1,6 @@
 import { Button, Card } from 'antd'
 import { FC, useEffect, useState } from 'react'
-import { useHistory, useLocation, useParams } from 'umi'
-import { useSelector } from 'react-redux'
+import { useHistory, useLocation, useParams, useSelector } from 'umi'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
 import t from '@/utils/t'
@@ -11,8 +10,7 @@ import Detail from '@/components/project/Detail'
 import useRequest from '@/hooks/useRequest'
 import Search from './components/Search'
 
-type Props = {
-}
+type Props = {}
 
 const tabsTitle = [
   { tab: t('project.tab.set.title'), key: 'dataset' },
@@ -26,9 +24,9 @@ const SearchIndex: FC<Props> = () => {
   const pid = Number(id)
   const [active, setActive] = useState(tabsTitle[0].key)
   const [searchName, setSearchName] = useState<string | undefined>('')
-  const project = useSelector<YStates.Root, YModels.Project>(({ project }) => project.projects[pid])
+  const project = useSelector(({ project }) => project.projects[pid])
   const { run: getProject } = useRequest('project/getProject', {
-    loading: false
+    loading: false,
   })
   const [query, updateQuery] = useState<YParams.ResultListQuery>()
 

@@ -4,6 +4,7 @@ import { DefaultOptionType } from 'antd/lib/select'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
+import { List } from '@/models/typings/common'
 
 type KeywordType = {
   name: string
@@ -20,7 +21,7 @@ type Props = SelectProps & {
 
 const KeywordSelect: FC<Props> = ({ value, onChange = () => {}, keywords, filter = (x) => x, ...resProps }) => {
   const [options, setOptions] = useState<OptionType[]>([])
-  const { data: keywordResult, run: getKeywords } = useRequest<YStates.List<KeywordType>, [{ limit?: number }]>('keyword/getKeywords')
+  const { data: keywordResult, run: getKeywords } = useRequest<List<KeywordType>, [{ limit?: number }]>('keyword/getKeywords')
 
   useEffect(() => {
     if (keywords) {

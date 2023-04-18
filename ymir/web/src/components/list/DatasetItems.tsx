@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'umi'
 import { Table } from 'antd'
 import { getDatasetColumns } from '../table/Columns'
 
@@ -9,7 +9,7 @@ type Props = {
 }
 
 const DatasetItems: FC<Props> = ({ gid, selectChange }) => {
-  const versions = useSelector<YStates.Root, YModels.Dataset[]>(({ dataset }) => dataset.versions[gid])
+  const versions = useSelector(({ dataset }) => dataset.versions[gid])
   const columns = getDatasetColumns()
   const [selected, setSelected] = useState<number[]>([])
 

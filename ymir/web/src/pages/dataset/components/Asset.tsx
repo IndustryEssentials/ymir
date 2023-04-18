@@ -17,10 +17,11 @@ import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import GtSelector from '@/components/form/GtSelector'
 import { evaluationTags } from '@/constants/dataset'
+import { List } from '@/models/typings/common'
 
 type Props = {
   id: string
-  asset: YModels.Asset
+  asset?: YModels.Asset
   dataset?: YModels.Dataset | YModels.Prediction
   pred?: boolean
   datasetKeywords?: KeywordsType
@@ -45,7 +46,7 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
   const [gtSelected, setGtSelected] = useState<string[]>([])
   const [evaluation, setEvaluation] = useState(0)
   const [colors, setColors] = useState<{ [key: string]: string }>({})
-  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('asset/getAssets')
+  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<List<YModels.Asset>>('asset/getAssets')
 
   useEffect(() => {
     setAsset(undefined)
@@ -84,9 +85,10 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
     type FilterType = (annotation: YModels.Annotation) => boolean
     const wrong = [evaluationTags.fn, evaluationTags.fp]
     const typeFilter: FilterType = (anno) => pred || !!anno.gt
-    const gtFilter: FilterType = (anno) => !pred || ((gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt))
+    const gtFilter: FilterType = (anno) => !pred || (gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt)
     const keywordFilter: FilterType = (annotation) => selectedKeywords.includes(annotation.keyword)
-    const evaluationFilter: FilterType = (annotation) => !evaluation || (!wrong.includes(evaluation) ? !wrong.includes(annotation.cm) : evaluation === annotation.cm)
+    const evaluationFilter: FilterType = (annotation) =>
+      !evaluation || (!wrong.includes(evaluation) ? !wrong.includes(annotation.cm) : evaluation === annotation.cm)
     const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && gtFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
     setShowAnnotations(visibleAnnotations)
   }, [selectedKeywords, evaluation, asset, gtSelected, pred])

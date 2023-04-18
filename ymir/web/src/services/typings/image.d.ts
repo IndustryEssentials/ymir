@@ -1,5 +1,5 @@
-import { TYPES } from '../constants/image'
-import { ObjectType } from '../constants/project'
+import { TYPES } from '../../constants/image'
+import { ObjectType } from '../../constants/project'
 
 type QueryParams = {
   name?: string

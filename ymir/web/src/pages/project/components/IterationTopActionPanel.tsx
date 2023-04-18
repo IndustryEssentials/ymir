@@ -1,6 +1,5 @@
 import { FC } from 'react'
-import { Link, useParams } from 'umi'
-import { useSelector } from 'react-redux'
+import { Link, useParams, useSelector } from 'umi'
 import { Button } from 'antd'
 import t from '@/utils/t'
 import { EditIcon, SearchEyeIcon, EyeOffIcon } from '@/components/common/Icons'
@@ -10,7 +9,7 @@ import TrainingClassesSelector from './TrainingCalssesSelector'
 
 const IterationTopActionPanel: FC<{ fold?: boolean }> = ({ fold }) => {
   const { id } = useParams<{ id: string }>()
-  const unfold = useSelector<YStates.Root, boolean>(({ iteration }) => iteration.actionPanelExpand)
+  const unfold = useSelector(({ iteration }) => iteration.actionPanelExpand)
   const { run: toggleActionPanel } = useRequest<boolean, [boolean]>('iteration/toggleActionPanel')
   return (
     <>

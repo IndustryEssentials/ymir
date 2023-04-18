@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from 'react'
 import { Card } from 'antd'
-import { useLocation, useParams } from 'umi'
-import { useSelector } from 'react-redux'
+import { useLocation, useParams, useSelector } from 'umi'
 
 import useRequest from '@/hooks/useRequest'
 import Breadcrumbs from '@/components/common/breadcrumb'
@@ -22,7 +21,7 @@ const ListHOC: ListType = (Module) => {
     const params = useParams<{ id: string }>()
     const id = Number(params.id)
     const [groups, setGroups] = useState<number[]>([])
-    const project = useSelector<YStates.Root, YModels.Project>(({ project }) => project.projects[id])
+    const project = useSelector(({ project }) => project.projects[id])
     const { run: getProject } = useRequest<null, [{ id: number; force?: boolean }]>('project/getProject', {
       loading: false,
     })

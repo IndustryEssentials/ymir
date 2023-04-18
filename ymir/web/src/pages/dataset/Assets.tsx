@@ -1,24 +1,22 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { ComponentProps, useEffect, useState } from 'react'
 import type { FC } from 'react'
 import { useLocation, useParams } from 'umi'
-import { Pagination, Row, Col, Button, Space, Card, Tag, Modal, Select } from 'antd'
+import { Pagination, Button, Space, Card } from 'antd'
 
 import t from '@/utils/t'
 import { randomBetween } from '@/utils/number'
 import useRequest from '@/hooks/useRequest'
+import useModal from '@/hooks/useModal'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
-import KeywordSelector from '@/components/form/KeywordFilter'
-import EvaluationSelector from '@/components/form/EvaluationSelector'
 import Asset from './components/Asset'
 import List from './components/AssetList'
+import AssetsTitle, { FormValues } from './components/AssetsTitle'
 
 import styles from './assets.less'
-import DatasetInfo from './components/DatasetInfo'
-import ListColumnCountSelect from './components/ListColumnCountSelect'
-import ListVisualSelect from './components/ListVisualSelect'
-import VisualModes from './components/VisualModes'
-import { isDetection } from '@/constants/objectType'
+
+import { List as ListType } from '@/models/typings/common'
+import { ValueType } from '@/components/form/KeywordFilter'
 
 type IndexType = {
   hash: string
@@ -39,14 +37,11 @@ const Dataset: FC = () => {
   }
   const [filterParams, setFilterParams] = useState<YParams.AssetQueryParams>(initQuery)
   const [currentPage, setCurrentPage] = useState(1)
-  const [assetVisible, setAssetVisible] = useState(false)
   const [currentAsset, setCurrentAsset] = useState<IndexType>({
     hash: '',
     index: 0,
   })
-  const [columns, setColumns] = useState(5)
   const [isPred, setPred] = useState(false)
-  const [mode, setMode] = useState<VisualModes>(VisualModes.Gt)
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
   })
@@ -55,13 +50,19 @@ const Dataset: FC = () => {
   })
   const [current, setCurrent] = useState<YModels.Prediction | YModels.Dataset>()
   const { data: { items: assets, total } = { items: [], total: 0 }, run: getAssets } = useRequest<
-    YStates.List<YModels.Asset>,
+    ListType<YModels.Asset>,
     [
       YParams.AssetQueryParams & {
         datasetKeywords?: string[]
       },
     ]
   >('asset/getAssets')
+  const [AssetModal, showAssetModal] = useModal<ComponentProps<typeof Asset>>(Asset, {
+    width: '100%',
+    className: styles.assetDetail,
+    title: t('dataset.asset.title'),
+  })
+  const [filterValues, setFilterValues] = useState<FormValues>({})
 
   useEffect(() => {
     ;(type === 'pred' ? getPrediction : getDataset)({ id, verbose: true, force: true })
@@ -70,7 +71,6 @@ const Dataset: FC = () => {
   useEffect(() => {
     const isPred = type === 'pred'
     setPred(isPred)
-    setMode(isPred ? VisualModes.All : VisualModes.Gt)
   }, [type])
 
   useEffect(() => {
@@ -83,7 +83,19 @@ const Dataset: FC = () => {
     current?.id && filter(filterParams)
   }, [current, filterParams])
 
-  const filterKw = ({ type, selected }: { type: string; selected?: string[] }) => {
+  useEffect(() => {
+    filterValues.keywords && filterKw(filterValues.keywords)
+  }, [filterValues.keywords])
+
+  useEffect(() => {
+    setFilterParams((query) => ({
+      ...query,
+      cm: filterValues.evaluation,
+      offset: initQuery.offset,
+    }))
+  }, [filterValues.evaluation])
+
+  const filterKw = ({ type, selected }: ValueType) => {
     if (!selected?.length && !filterParams.keywords?.length) {
       return
     }
@@ -107,7 +119,8 @@ const Dataset: FC = () => {
   const goAsset = (asset: YModels.Asset, hash: string, current: number) => {
     const index = (filterParams.offset || 0) + current
     setCurrentAsset({ asset, hash, index })
-    setAssetVisible(true)
+    // setAssetVisible(true)
+    showAssetModal()
   }
 
   const randomPage = () => {
@@ -117,16 +130,8 @@ const Dataset: FC = () => {
     filterPage(page, limit)
   }
 
-  const updateFilterParams = (value: string | string[] | number, field: string) => {
-    setFilterParams((query) => ({
-      ...query,
-      [field]: value,
-      offset: initQuery.offset,
-    }))
-  }
-
-  const reset = () => {
-    setFilterParams({ ...initQuery, keywords: [] })
+  const filterChange = (values: FormValues) => {
+    setFilterValues(values)
   }
 
   const randomPageButton = (
@@ -135,63 +140,26 @@ const Dataset: FC = () => {
     </Button>
   )
 
-  const renderTitle = (
-    <Row className={styles.labels}>
-      <Col flex={1}>
-        <DatasetInfo dataset={current} />
-      </Col>
-      <Col>
-        <ListColumnCountSelect value={columns} onChange={setColumns} />
-      </Col>
-      <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
-        <Space size={20} wrap={true} style={{ textAlign: 'left' }}>
-          <ListVisualSelect value={mode} style={{ width: 200 }} pred={isPred} seg={!isDetection(current?.type)} onChange={setMode} />
-          {isPred && current?.evaluated ? (
-            <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} />
-          ) : null}
-          <KeywordSelector onChange={filterKw} dataset={current} />
-        </Space>
-      </Col>
-    </Row>
-  )
-
-  const assetDetail = (
-    <Modal
-      className={styles.assetDetail}
-      destroyOnClose
-      title={t('dataset.asset.title')}
-      visible={assetVisible}
-      onCancel={() => setAssetVisible(false)}
-      centered
-      width={'100%'}
-      footer={null}
-    >
-      {currentAsset.asset ? (
-        <Asset
-          id={id}
-          pred={isPred}
-          asset={currentAsset.asset}
-          datasetKeywords={current?.keywords}
-          filters={filterParams}
-          filterKeyword={assetVisible ? filterParams.keywords : undefined}
-          index={currentAsset.index}
-          total={total}
-          dataset={current}
-        />
-      ) : null}
-    </Modal>
-  )
-
   return (
     <div className={styles.datasetDetail}>
       <Breadcrumbs />
-      {assetDetail}
-      <Card className="list" title={renderTitle}>
+      <AssetModal
+        id={id}
+        pred={isPred}
+        asset={currentAsset.asset}
+        datasetKeywords={current?.keywords}
+        filters={filterParams}
+        filterKeyword={filterParams?.keywords}
+        index={currentAsset.index}
+        total={total}
+        dataset={current}
+      />
+      <Card className="list" title={<AssetsTitle isPred={isPred} current={current} onChange={filterChange} />}>
         <List
           list={assets}
           goAsset={goAsset}
-          columns={columns}
-          mode={mode}
+          columns={filterValues.columns}
+          mode={filterValues.mode}
           pager={
             <Space className={styles.pagi}>
               <Pagination

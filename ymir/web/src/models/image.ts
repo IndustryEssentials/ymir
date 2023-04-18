@@ -1,7 +1,7 @@
 import { getImage, getImages, delImage, createImage, updateImage, relateImage } from '@/services/image'
 import { STATES, transferImage } from '@/constants/image'
 import { createEffect, createReducers } from './_utils'
-import { EditImage, Image as CreateImageParams, QueryParams } from '@/services/image.d'
+import { EditImage, Image as CreateImageParams, QueryParams } from '@/services/typings/image.d'
 import { ObjectType } from '@/constants/objectType'
 import { ImageStore } from '.'
 import { Image } from '@/constants'

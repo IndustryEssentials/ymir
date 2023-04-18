@@ -5,6 +5,7 @@ import { useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
+import { List } from '@/models/typings/common'
 
 type OptionType = DefaultOptionType & {
   value: string
@@ -15,10 +16,7 @@ type Props = SelectProps
 const UserKeywordsSelector: FC<Props> = (props) => {
   const [options, setOptions] = useState<OptionType[]>([])
   const keywords = useSelector(({ keyword }) => keyword.allKeywords)
-  const {
-    run: getAllKeywords,
-    loading,
-  } = useRequest<YStates.List<YModels.Keyword>>('keyword/getAllKeywords', {
+  const { run: getAllKeywords, loading } = useRequest<List<YModels.Keyword>>('keyword/getAllKeywords', {
     loading: false,
   })
 

@@ -6,7 +6,7 @@ import useFetch from '@/hooks/useFetch'
 
 type Props = { id?: number; result?: YModels.Model; stageId?: number }
 const ModelVersionName: React.FC<Props> = ({ id, result, stageId }) => {
-  const cache = useSelector(({ model }: YStates.Root) => {
+  const cache = useSelector(({ model }) => {
     return id ? model.model[id] : undefined
   })
   const [_, getModel] = useFetch('model/getModel')

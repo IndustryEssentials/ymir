@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Card, ConfigProvider, Pagination, Table, TableColumnsType } from 'antd'
-import { useHistory, useParams } from 'umi'
-import { useSelector } from 'react-redux'
+import { useHistory, useParams, useSelector } from 'umi'
+import {  } from 'react-redux'
 
 import t from '@/utils/t'
 import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask, validState } from '@/constants/common'
@@ -15,7 +15,7 @@ import Empty from '@/components/empty/Pred'
 
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
-
+import { List } from '@/models/typings/common'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -25,13 +25,13 @@ const Predictions: React.FC = () => {
   const [predictions, setPredictions] = useState<YModels.Prediction[]>([])
   const [query, setQuery] = useState(initQuery)
   const hideRef = useRef<RefProps>(null)
-  const { data: { items, total } = { items: [], total: 0 }, run: getPredictions } = useRequest<YStates.List<YModels.Prediction>>('prediction/getPredictions')
+  const { data: { items, total } = { items: [], total: 0 }, run: getPredictions } = useRequest<List<YModels.Prediction>>('prediction/getPredictions')
   const cols = getPredictionColumns(predictions[0]?.type)
   const [currentPrediction, setCurrentPrediction] = useState<YModels.Prediction>()
   const [metricsModalVisible, setMModalVisible] = useState(false)
-  const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
-  const cacheModels = useSelector<YStates.Root, YStates.IdMap<YModels.Model>>((state) => state.model.model)
-  const progressTasks = useSelector<YStates.Root, YModels.ProgressTask[]>(({ socket }) => socket.tasks)
+  const cacheDatasets = useSelector((state) => state.dataset.dataset)
+  const cacheModels = useSelector((state) => state.model.model)
+  const progressTasks = useSelector(({ socket }) => socket.tasks)
   const actions = (record: YModels.Prediction): YComponents.Action[] => [
     {
       key: 'diagnose',
