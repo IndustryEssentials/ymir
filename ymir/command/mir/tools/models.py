@@ -57,6 +57,8 @@ class ModelStorage(BaseModel):
         if values.get('object_type', mirpb.ObjectType.OT_UNKNOWN) == mirpb.ObjectType.OT_UNKNOWN:
             logging.warning("Unknown model object type, treat as detection models")
             values['object_type'] = mirpb.ObjectType.OT_DET_BOX
+        if not values.get("stages"):
+            raise ValueError("Need model stages")
 
         return values
 

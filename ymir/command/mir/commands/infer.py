@@ -134,7 +134,7 @@ class CmdInfer(base.BaseCommand):
         class_names = model_storage.class_names
         if not class_names:
             raise MirRuntimeError(
-                error_code=MirCode.RC_CMD_INVALID_FILE,
+                error_code=MirCode.RC_CMD_INVALID_MODEL,
                 error_message=f"empty class names in model: {model_storage.model_hash}@{model_storage.stage_name}")
 
         model_names = model_storage.stages[model_storage.stage_name].files
@@ -239,7 +239,7 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
 
     detections = results.get('detection')
     if not isinstance(detections, dict):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
                               error_message=f"Invalid infer result file: {infer_result_file}, have no detection dict")
 
     unknown_class_id_annos_cnt = 0
