@@ -336,6 +336,7 @@ type GeneralReq struct {
 	MergeStrategy      MergeStrategy `protobuf:"varint,20,opt,name=merge_strategy,json=mergeStrategy,proto3,enum=ymir.backend.MergeStrategy" json:"merge_strategy,omitempty"`
 	TerminatedTaskType TaskType      `protobuf:"varint,21,opt,name=terminated_task_type,json=terminatedTaskType,proto3,enum=mir.command.TaskType" json:"terminated_task_type,omitempty"`
 	// Types that are assignable to Sampling:
+	//
 	//	*GeneralReq_SamplingCount
 	//	*GeneralReq_SamplingRate
 	Sampling        isGeneralReq_Sampling `protobuf_oneof:"sampling"`
@@ -1112,8 +1113,9 @@ type TaskReqImportDataset struct {
 	// or URL to dataset zip file
 	AssetDir string `protobuf:"bytes,1,opt,name=asset_dir,json=assetDir,proto3" json:"asset_dir,omitempty"`
 	// pred and gt file dir
-	//  for voc: single pascal xml per asset, same base_filename as in asset-folder
-	//  for coco: coco-annotations.json in that dir
+	//
+	//	for voc: single pascal xml per asset, same base_filename as in asset-folder
+	//	for coco: coco-annotations.json in that dir
 	PredDir string `protobuf:"bytes,2,opt,name=pred_dir,json=predDir,proto3" json:"pred_dir,omitempty"`
 	GtDir   string `protobuf:"bytes,3,opt,name=gt_dir,json=gtDir,proto3" json:"gt_dir,omitempty"`
 	// strategy for unknown class types: stop, ignore or add
@@ -1485,7 +1487,7 @@ type RespCMDInference struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	/// key: image id, value: annotations of that single image
+	// / key: image id, value: annotations of that single image
 	ImageAnnotations map[string]*SingleImageAnnotations `protobuf:"bytes,1,rep,name=image_annotations,json=imageAnnotations,proto3" json:"image_annotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
@@ -2421,6 +2423,7 @@ type HelTaskRequestFuse struct {
 	// Sample task
 	//
 	// Types that are assignable to Sampling:
+	//
 	//	*HelTaskRequestFuse_SamplingCount
 	//	*HelTaskRequestFuse_SamplingRate
 	Sampling isHelTaskRequestFuse_Sampling `protobuf_oneof:"sampling"`
