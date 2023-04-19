@@ -9,6 +9,7 @@ import { getTensorboardLink } from '@/constants/common'
 import { TASKTYPES, getTaskTypeLabel } from '@/constants/task'
 import useFetch from '@/hooks/useFetch'
 
+import renderLiveCodeItem from '@/components/task/items/livecode'
 import VersionName from '@/components/result/VersionName'
 import ModelVersionName from '@/components/result/ModelVersionName'
 import ImageName from '@/components/image/ImageName'

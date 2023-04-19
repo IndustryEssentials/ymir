@@ -30,7 +30,6 @@ const getMessages: Effect<QueryParams & { simple?: boolean }> = createEffect(fun
     yield put({ type: 'UpdateMessages', payload: messages })
     yield put({ type: 'UpdateTotal', payload: total })
     yield put({ type: 'UpdateFresh', payload: false })
-    yield put.resolve({ type: 'UpdateLatest', payload: messages[0] })
     if (!simple) {
       const list: Message[] = yield put.resolve({ type: 'getRelatedSource', payload: messages })
       if (list?.length) {

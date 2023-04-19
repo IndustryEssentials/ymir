@@ -128,6 +128,10 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [history.location])
 
   useEffect(() => {
+    console.log('analysisDatasets:', analysisDatasets)
+  }, [analysisDatasets])
+
+  useEffect(() => {
     const initVisibles = groups?.reduce((prev, group) => ({ ...prev, [group]: true }), {})
     setVisibles(initVisibles || {})
   }, [groups])
@@ -211,24 +215,25 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
         dataIndex: 'versionName',
         className: styles[`column_name`],
         render: (name, record) => {
-          const { id, description, projectLabel, iterationLabel } = record
+          const { id, description, projectLabel, iterationLabel, state, assetCount } = record
           const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
           const content = (
-            <Row>
-              <Col flex={1}>
-                <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>
-              </Col>
+            <Row key={id}>
+              <Col flex={1}>{readyState(state) ? name : <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>}</Col>
               <Col flex={'50px'} style={{ textAlign: 'right' }}>
                 {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
                 {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-                <span
-                  onClick={() => {
-                    showAnalysisModal()
-                    setADatasets([id])
-                  }}
-                >
-                  <BarChart2LineIcon />
-                </span>
+                {validState(state) && assetCount ? (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      showAnalysisModal()
+                      setADatasets([id])
+                    }}
+                  >
+                    <BarChart2LineIcon />
+                  </span>
+                ) : null}
               </Col>
             </Row>
           )
@@ -420,7 +425,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   }
 
   function toggleVersions(id: number, force?: boolean) {
-    setVisibles((old) => ({ ...old, [id]: force || typeof old[id] !== 'undefined' && !old[id] }))
+    setVisibles((old) => ({ ...old, [id]: force || (typeof old[id] !== 'undefined' && !old[id]) }))
   }
 
   function fetchVersions(gid: number, force?: boolean) {

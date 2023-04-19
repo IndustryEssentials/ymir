@@ -173,7 +173,7 @@ const dataset = {
   'dataset.analysis.title.keyword_ratio': { cn: '样本分布占比', en: 'Classes Ratio Statistics' },
   'dataset.analysis.title.keyword_area': { cn: '标注面积统计', en: 'Annotations Area Statistics' },
   'dataset.analysis.title.instance_area': { cn: '实例面积分布', en: 'Instances Area Distribution' },
-  'dataset.analysis.title.crowdedness': { cn: '目标聚集度', en: 'Object Crowdedness Statistics' },
+  'dataset.analysis.title.crowdedness': { cn: '目标密集度', en: 'Object Crowdedness Statistics' },
   'dataset.analysis.title.complexity': { cn: '场景复杂度', en: 'Scene Complexity' },
   'dataset.analysis.bar.asset.tooltip': { cn: ' 占比：{ratio} 数量：{amount} 张', en: ' Ratio: {ratio} Amount: {amount}' },
   'dataset.analysis.bar.anno.tooltip': { cn: ' 占比：{ratio} 数量：{amount} 个', en: ' Ratio: {ratio} Amount: {amount}' },
@@ -199,9 +199,9 @@ const dataset = {
   'dataset.assets.selector.evaluation.right': { cn: '预测正确', en: 'Correct' },
   'dataset.assets.selector.evaluation.fp': { cn: '预测错误-误检', en: 'FP' },
   'dataset.assets.selector.evaluation.fn': { cn: '预测错误-漏检', en: 'FN' },
-  'dataset.analysis.simple.suggest.annotationCount': { cn: '{count}类标注数量不足', en: 'Annotations imbalanced in {count}' },
-  'dataset.analysis.simple.suggest.classBias': { cn: '{count}类标注不均衡', en: 'Annotations imbalanced in {count}' },
-  'dataset.analysis.simple.suggest.annotationDensity': { cn: '场景聚集度不均衡', en: 'Annotations density is unbalanced' },
+  'dataset.analysis.simple.suggest.annotationCount': { cn: '{count}类标注数量不足', en: 'Insufficient annotations for {count} classes' },
+  'dataset.analysis.simple.suggest.classBias': { cn: '{count}类标注不均衡', en: 'Annotations imbalanced in {count} classes' },
+  'dataset.analysis.simple.suggest.annotationDensity': { cn: '目标密集度不均衡', en: 'Object density is imbalanced' },
   'dataset.analysis.annotationDensity.0': { cn: '简单', en: 'simple' },
   'dataset.analysis.annotationDensity.1': { cn: '一般', en: 'normal' },
   'dataset.analysis.annotationDensity.2': { cn: '复杂', en: 'complex' },
@@ -215,12 +215,12 @@ const dataset = {
     cn: '建议添加包含{values}类别的图像，使各类别的标注数量大于最多标注类别的{boundingLabel}，提升类别的均衡性。',
     en: 'It is suggested to add more images containing {values} to achieve an annotation count greater than {boundingLabel} of the maxium class for all classes, to improve the balance of classes.',
   },
-  'dataset.analysis.suggestion.annotationDensity.title': { cn: '场景密集度', en: 'Scene Density' },
+  'dataset.analysis.suggestion.annotationDensity.title': { cn: '目标密集度', en: 'Object Density' },
   'dataset.analysis.suggestion.annotationDensity': {
-    cn: '建议添加{values}种类别的图像到{boundingLabel}+，平衡场景的密集度。',
-    en: 'It is recommended to add images containing {values} classes greater than {boundingLabel} of the maxium to increase the balance of the scene density.',
+    cn: '建议添加{values}种类别的图像到{boundingLabel}+，平衡目标的密集度。',
+    en: 'It is recommended to add images containing {values} classes greater than {boundingLabel} of the maxium to increase the balance of the object density.',
   },
-  'dataset.unfold.all': {cn: '全部展开', en: 'Unfold All Versions'},
+  'dataset.unfold.all': { cn: '全部展开', en: 'Unfold All Versions' },
 }
 
 export default dataset

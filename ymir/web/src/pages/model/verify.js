@@ -87,11 +87,11 @@ function Verify() {
   }, [seniorConfig])
 
   function imageChange(value, option = {}) {
-    const img = option.image
-    if (img) {
-      setImage(img.url)
+    const { image, objectType } = option
+    if (image) {
+      setImage(image.url)
     }
-    const configObj = getConfig(img, TYPES.INFERENCE, project.type)
+    const configObj = getConfig(image, TYPES.INFERENCE, objectType)
     setConfig(configObj.config)
   }
 

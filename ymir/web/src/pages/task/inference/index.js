@@ -127,8 +127,8 @@ function Inference({ ...func }) {
     if (!option) {
       return setConfig({})
     }
-    const { image } = option
-    const configObj = getConfig(option.image, TYPES.INFERENCE, project?.type) || {}
+    const { image, objectType } = option
+    const configObj = getConfig(option.image, TYPES.INFERENCE, objectType) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }

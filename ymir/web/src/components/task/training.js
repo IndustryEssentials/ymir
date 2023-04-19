@@ -193,8 +193,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
     if(!option) {
       setConfig({})
     }
-    const { image } = option
-    const configObj = getConfig(image, TYPES.TRAINING, project.type)
+    const { image, objectType } = option
+    const configObj = getConfig(image, TYPES.TRAINING, objectType)
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }

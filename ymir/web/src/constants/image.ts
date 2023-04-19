@@ -46,9 +46,7 @@ export const getImageStateLabel = (state?: STATES) => {
 
 export function transferImage(data: YModels.BackendData): Image {
   const configs: DockerImageConfig[] = data.configs || []
-  const getConfigAttr = <K extends keyof DockerImageConfig>(attr: K): DockerImageConfig[K][] => [
-    ...new Set(configs.map((config) => config[attr])),
-  ]
+  const getConfigAttr = <K extends keyof DockerImageConfig>(attr: K): DockerImageConfig[K][] => [...new Set(configs.map((config) => config[attr]))]
   const objectTypes = getConfigAttr('object_type').filter((t): t is ObjectType => !!t) || []
   const functions = getConfigAttr('type')
   return {
@@ -69,4 +67,4 @@ export function transferImage(data: YModels.BackendData): Image {
 }
 
 export const getConfig = (image: Image, type: TYPES, objectType: ObjectType) =>
-  image.configs.find((config) => config.type === type && (!config.object_type || config.object_type === objectType))
+  image.configs.find((config) => config.type === type && config.object_type === objectType)

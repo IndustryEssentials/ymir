@@ -29,7 +29,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image, topK, config, iterationId, generate_annotations = true } = query
+  const { mid, image, topK, config, iterationId } = query
   const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
   const did = Number(query.did)
   const [dataset, setDataset] = useState({})
@@ -120,8 +120,8 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
     if (!option) {
       return setConfig({})
     }
-    const { image } = option
-    const configObj = getConfig(image, TYPES.MINING, dataset.type) || {}
+    const { image, objectType } = option
+    const configObj = getConfig(image, TYPES.MINING, objectType) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }

@@ -11,6 +11,7 @@ import { useDebounce } from 'ahooks'
 import { Image } from '@/constants'
 import { List } from '@/models/typings/common'
 import { useSelector } from 'umi'
+import { ObjectType } from '@/constants/objectType'
 
 interface Props extends SelectProps {
   pid: number
@@ -21,6 +22,7 @@ interface Props extends SelectProps {
 type OptionType = DefaultOptionType & {
   value?: number
   image?: Image
+  objectType?: ObjectType
 }
 
 type GO = OptionType
@@ -128,11 +130,11 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   }, [options])
 
   useEffect(() => {
-    if (selected) {
+    if (options.length && selected) {
       const opt = options.find(({ image }) => image?.id === selected)
       opt && onChange(selected, opt)
     }
-  }, [options])
+  }, [options, selected])
 
   const fetchImages = () => {
     if (!project) {
@@ -141,7 +143,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     getImages(query)
   }
 
-  const generateOption = (image: Image) => ({
+  const generateOption = useCallback((image: Image) => ({
     label: (
       <Row>
         <Col flex={1}>{image.name}</Col>
@@ -152,7 +154,8 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     ),
     image,
     value: image.id,
-  })
+    objectType: project?.type,
+  }), [project])
 
   const generateOptions = (images: Image[]) => images.map(generateOption)
 
@@ -174,7 +177,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       allowClear
       {...resProps}
       value={selected}
-      onChange={(value, opt) => onChange(value, opt)}
+      onChange={onChange}
       onPopupScroll={scrollChange}
       options={groupOptions.length ? groupOptions : options}
       loading={loading}
