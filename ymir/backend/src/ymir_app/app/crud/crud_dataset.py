@@ -134,6 +134,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             project_id=obj_in.project_id,
             user_id=obj_in.user_id,
             task_id=obj_in.task_id,
+            is_visible=obj_in.is_visible,
         )
         db.add(db_obj)
         db.commit()

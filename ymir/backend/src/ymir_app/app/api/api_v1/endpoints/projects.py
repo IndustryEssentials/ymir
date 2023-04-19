@@ -174,6 +174,7 @@ def create_project(
             source=task.type,
             result_state=ResultState.ready,
             task_id=task.id,
+            is_visible=False,
         )
         initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
 

@@ -58,6 +58,7 @@ class DatasetCreate(DatasetBase):
     hash: str = Field(description="related task hash")
     task_id: int
     user_id: int
+    is_visible: bool = True
 
     class Config:
         use_enum_values = True
