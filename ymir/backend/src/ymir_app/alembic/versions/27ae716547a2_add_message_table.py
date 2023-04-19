@@ -57,6 +57,9 @@ def upgrade() -> None:
         batch_op.create_index(batch_op.f("ix_message_task_type"), ["task_type"], unique=False)
         batch_op.create_index(batch_op.f("ix_message_user_id"), ["user_id"], unique=False)
 
+    with op.batch_alter_table("project", schema=None) as batch_op:
+        batch_op.add_column(sa.Column("recommended_docker_image_id", sa.Integer(), nullable=True))
+
     with op.batch_alter_table("dataset", schema=None) as batch_op:
         batch_op.add_column(sa.Column("analysis", sa.JSON(), nullable=True))
     conn = op.get_bind()
@@ -109,6 +112,9 @@ def downgrade() -> None:
 
     with op.batch_alter_table("dataset", schema=None) as batch_op:
         batch_op.drop_column("analysis")
+
+    with op.batch_alter_table("project", schema=None) as batch_op:
+        batch_op.drop_column("recommended_docker_image_id")
 
     with op.batch_alter_table("message", schema=None) as batch_op:
         batch_op.drop_index(batch_op.f("ix_message_user_id"))

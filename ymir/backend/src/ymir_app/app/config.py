@@ -77,6 +77,7 @@ class Settings(BaseSettings):
     SAMPLE_PROJECT_VALIDATION_DATASET_URL: str = "http://web/val.zip"
     SAMPLE_PROJECT_MINING_DATASET_URL: str = "http://web/mining.zip"
     SAMPLE_PROJECT_MODEL_URL: str = "http://web/683f4fa14d1baa733a87d9644bb0457cbed5aba8"
+    SAMPLE_PROJECT_DOCKER_IMAGE_URL: str = "industryessentials/executor-example:latest"
 
     # OpenPAI
     OPENPAI_ENABLED: bool = False

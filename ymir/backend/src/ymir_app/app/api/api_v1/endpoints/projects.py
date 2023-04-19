@@ -70,11 +70,15 @@ def create_sample_project(
     Create sample project
     """
     project_name = f"sample_project_{uuid.uuid4().hex[:8]}"
+
+    # FIXME remove adhoc recommended_docker_image_id
+    sample_docker_image = crud.docker_image.get_by_url(db, settings.SAMPLE_PROJECT_DOCKER_IMAGE_URL)
     project_in = schemas.ProjectCreate(
         name=project_name,
         training_keywords=settings.SAMPLE_PROJECT_KEYWORDS,
         chunk_size=2,
         is_example=True,
+        recommended_docker_image_id=sample_docker_image.id if sample_docker_image else None
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
     project_task_hash = gen_task_id(current_user.id, project.id)
