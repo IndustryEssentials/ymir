@@ -155,13 +155,15 @@ class ControllerRequest:
         import_dataset_request = mirsvrpb.TaskReqImportDataset()
 
         import_dataset_request.asset_dir = args["asset_dir"]
-        strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         import_dataset_request.clean_dirs = args["clean_dirs"]
-
-        request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
         if args["object_type"] == ObjectType.instance_segmentation:
             import_dataset_request.is_instance_segmentation = True
 
+        strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
+        if strategy == ImportStrategy.no_annotations:
+            request.object_type = mir_cmd_pb.ObjectType.OT_NO_ANNOS
+        else:
+            request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
