@@ -305,7 +305,7 @@ def create_filter_dataset_task(
     return task
 
 
-@router.post("/import_docker_image", response_model=schemas.msg.Msg)
+@router.post("/import_docker_image", response_model=schemas.task.CreateTaskResponse)
 def create_import_docker_image_task(
     *,
     app: AppClient = Depends(deps.get_app_client),
@@ -316,4 +316,4 @@ def create_import_docker_image_task(
     resp = app.post(url, json={"url": task_in.url, "name": task_in.url.split("/")[-1]})
     task = resp.json()
     logger.info("import docker image task result: %s", task)
-    return {"result": task_in.url}
+    return task
