@@ -1,6 +1,6 @@
 import { FC, ReactNode, useEffect, useState } from 'react'
 import { Menu, Layout, MenuProps, MenuItemProps } from 'antd'
-import { useHistory, useLocation, withRouter, useSelector } from 'umi'
+import { useHistory, useLocation, withRouter, useSelector, useParams } from 'umi'
 import t from '@/utils/t'
 import { getDeployUrl, getPublicImageUrl } from '@/constants/common'
 import { isSuperAdmin } from '@/constants/user'
@@ -29,6 +29,7 @@ import {
 import IterationIcon from '@/components/icon/Xiangmudiedai'
 import type { IconProps } from './icons/IconProps'
 import useRequest from '@/hooks/useRequest'
+import SampleProjectTip from './SampleProjectTip'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -136,6 +137,7 @@ function LeftMenu() {
   return items.length ? (
     <Sider className="sidebar scrollbar">
       <Menu items={items} mode="inline" defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys} />
+      <SampleProjectTip id={id} />
     </Sider>
   ) : null
 }

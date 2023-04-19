@@ -50,6 +50,7 @@ import {
 import { ObjectType } from '@/constants/objectType'
 import SimpleSuggestion from './list/SimpleSuggestion'
 import { IdMap, List } from '@/models/typings/common.d'
+import Empty from '../empty/Dataset'
 
 type IsType = {
   isTrainSet?: boolean
@@ -101,7 +102,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   const { run: getVersions } = useRequest<List<YModels.Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
-  const { data: validTotal, run: getValidDatasetsCount } = useRequest<boolean, [number]>('dataset/getValidDatasetsCount')
+  const [datasetAdded, setDatasetAdded] = useState(false)
   const [AnalysisModal, showAnalysisModal] = useModal<ComponentProps<typeof Analysis>>(Analysis, {
     width: '90%',
     style: { paddingTop: 20 },
@@ -113,12 +114,17 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   })
 
   useEffect(() => {
-    getValidDatasetsCount(pid)
     getModelsCount(pid)
   }, [pid])
   useEffect(() => {
     project && getImagesCount({ type: project.type, example: true })
   }, [project])
+
+  useEffect(() => {
+    const datasets = Object.values(versions).flat()
+    const added = datasets.filter((dataset) => validState(dataset.state) || readyState(dataset.state))
+    setDatasetAdded(!!added.length)
+  }, [versions])
 
   useEffect(() => {
     if (history.action !== 'POP') {
@@ -616,7 +622,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     </>
   )
 
-  const renderGroups = (
+  const renderGroups = datasets.length ? (
     <>
       <div className="groupList">
         {datasets.map((group) => (
@@ -668,15 +674,17 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
         onChange={listChange}
       />
     </>
+  ) : (
+    <Empty />
   )
 
   return (
     <div className={styles.dataset}>
-      <Detail project={project} type="dataset" />
+      <Detail pid={pid} type="dataset" />
       <Row className="actions">
         <Col flex={1}>
           <Space>
-            <AddButton className={!validTotal ? 'wave' : ''} id={pid} />
+            <AddButton className={!datasetAdded ? 'wave' : ''} />
             {renderMultipleActions}
           </Space>
         </Col>

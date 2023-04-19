@@ -17,6 +17,7 @@ interface Props extends SelectProps {
   pid: number
   relatedId?: number
   type?: TYPES
+  fixedSelected?: number
 }
 
 type OptionType = DefaultOptionType & {
@@ -27,7 +28,7 @@ type OptionType = DefaultOptionType & {
 
 type GO = OptionType
 
-const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, onChange = () => {}, ...resProps }) => {
+const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, onChange = () => {}, fixedSelected, ...resProps }) => {
   const [options, setOptions] = useState<OptionType[]>([])
   const [groupOptions, setGroupOptions] = useState<OptionType[]>([])
   const [selected, setSelected] = useState<number>()
@@ -61,14 +62,16 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   })
 
   useEffect(() => {
-    if (value) {
+    if (project?.recommendImage) {
+      setSelected(project?.recommendImage)
+    } else if (value) {
       setSelected(value)
     } else if (official && validState(official.state)) {
       setSelected(official.id)
     } else {
       setSelected(undefined)
     }
-  }, [value, official])
+  }, [value, official, project?.recommendImage])
 
   useEffect(() => {
     pid && getProject({ id: pid })
@@ -184,6 +187,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       onSearch={setSearchName}
       showSearch
       filterOption={false}
+      disabled={!!project?.recommendImage}
     ></Select>
   )
 }

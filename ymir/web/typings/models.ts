@@ -318,6 +318,7 @@ declare namespace YModels {
     modelCount: number
     modelProcessingCount: number
     modelErrorCount: number
+    recommendImage: number
   }
 
   export type ImageConfig = { [key: string]: number | string }

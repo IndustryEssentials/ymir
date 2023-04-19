@@ -15,7 +15,7 @@ export default ({ style = {} }) => {
     <Space className={styles.empty} style={style} direction="vertical">
       <NoSjjIcon className={styles.primaryIcon} style={{ fontSize: 80 }} />
       <h3>{t("dataset.empty.label")}</h3>
-      <AddButton id={id} />
+      <AddButton />
     </Space>
   )
 }

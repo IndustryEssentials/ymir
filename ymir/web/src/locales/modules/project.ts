@@ -330,6 +330,10 @@ const project = {
   'project.stats.models.total': { en: 'Project Type', cn: '可用模型' },
   'project.stats.models.processing': { en: 'Project Type', cn: '生产中' },
   'project.stats.models.invalid': { en: 'Project Type', cn: '生产失败' },
+  'project.example.tip': {
+    en: 'This project is a sample project. Training, mining, and inference can only be tested using the example docker image for process testing and cannot be actually used for production.',
+    cn: '本项目是示例项目，训练、挖掘和推理只能使用示例镜像进行流程测试，不能真正用于生产。',
+  },
 }
 
 export default project

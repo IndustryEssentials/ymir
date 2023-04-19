@@ -93,7 +93,7 @@ function ProjectDetail(func) {
             </Button>
           </Col>
           <Col>
-            <AddButton id={id} />
+            <AddButton />
           </Col>
           <Col>
             <Button type="primary" onClick={goTraining}>

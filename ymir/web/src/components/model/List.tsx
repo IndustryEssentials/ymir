@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import styles from './list.less'
 import { Link, Location, useHistory, useLocation, useSelector } from 'umi'
-import {  } from 'react-redux'
-import { Form, Input, Table, Row, Col, Pagination, Space, Empty, Button, message, Popover, TableColumnsType } from 'antd'
+import {} from 'react-redux'
+import { Form, Input, Table, Row, Col, Pagination, Space, Button, message, Popover, TableColumnsType } from 'antd'
 
 import { diffTime } from '@/utils/date'
 import { readyState, validState } from '@/constants/common'
@@ -25,6 +25,7 @@ import Detail from '@/components/project/Detail'
 import EditStageCell from './StageCellEdit'
 import { DescPop } from '../common/DescPop'
 import useRerunAction from '@/hooks/useRerunAction'
+import Empty from '../empty/Model'
 
 import {
   ShieldIcon,
@@ -519,44 +520,40 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     </>
   )
 
-  const renderGroups = (
+  const renderGroups = models.length ? (
     <>
       <div className="groupList">
-        {models.length ? (
-          models.map((group) => (
-            <div className={styles.groupItem} key={group.id}>
-              <Row className="groupTitle">
-                <Col flex={1} onClick={() => showVersions(group.id)}>
-                  <span className="foldBtn">{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
-                  <span className="groupName">{group.name}</span>
-                  {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
-                </Col>
-                <Col>
-                  <Space>
-                    <a onClick={() => edit(group)} title={t('common.modify')}>
-                      <EditIcon />
-                    </a>
-                  </Space>
-                </Col>
-              </Row>
-              <div className="groupTable" hidden={!visibles[group.id]}>
-                <Table
-                  dataSource={modelVersions[group.id]}
-                  rowKey={(record) => record.id}
-                  rowSelection={{
-                    selectedRowKeys: selectedVersions.versions[group.id],
-                    onChange: (keys) => rowSelectChange(group.id, keys as number[]),
-                  }}
-                  rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
-                  columns={columns}
-                  pagination={false}
-                />
-              </div>
+        {models.map((group) => (
+          <div className={styles.groupItem} key={group.id}>
+            <Row className="groupTitle">
+              <Col flex={1} onClick={() => showVersions(group.id)}>
+                <span className="foldBtn">{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+                <span className="groupName">{group.name}</span>
+                {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
+              </Col>
+              <Col>
+                <Space>
+                  <a onClick={() => edit(group)} title={t('common.modify')}>
+                    <EditIcon />
+                  </a>
+                </Space>
+              </Col>
+            </Row>
+            <div className="groupTable" hidden={!visibles[group.id]}>
+              <Table
+                dataSource={modelVersions[group.id]}
+                rowKey={(record) => record.id}
+                rowSelection={{
+                  selectedRowKeys: selectedVersions.versions[group.id],
+                  onChange: (keys) => rowSelectChange(group.id, keys as number[]),
+                }}
+                rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
+                columns={columns}
+                pagination={false}
+              />
             </div>
-          ))
-        ) : (
-          <Empty />
-        )}
+          </div>
+        ))}
       </div>
       <Pagination
         className={`pager ${styles.pager}`}
@@ -568,11 +565,13 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
         onChange={listChange}
       />
     </>
+  ) : (
+    <Empty />
   )
 
   return (
     <div className={styles.model}>
-      <Detail type='model' project={project} />
+      <Detail pid={pid} type="model" />
       <Row className="actions">
         <Col flex={1}>
           <Space>
