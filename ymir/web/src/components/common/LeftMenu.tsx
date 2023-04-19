@@ -28,6 +28,7 @@ import {
 } from '@/components/common/Icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
 import type { IconProps } from './icons/IconProps'
+import useRequest from '@/hooks/useRequest'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -35,12 +36,13 @@ const { Sider } = Layout
 
 const projectModule = /^.*\/project\/(\d+).*$/
 
-const getItem = (label: ReactNode, key: string, Icon?: FC<IconProps>, children?: MenuItem[], type?: 'group'): MenuItem => ({
+const getItem = (label: ReactNode, key: string, Icon?: FC<IconProps>, children?: MenuItem[], type?: 'group', disabled?: boolean): MenuItem => ({
   key,
   icon: Icon ? <Icon size="20" fill="rgba(0, 0, 0, 0.6)" /> : null,
   label,
   children,
   type,
+  disabled,
 })
 
 const getGroupItem = (label: string, key: string, children: MenuItem[]) => getItem(label, key, undefined, children, 'group')
@@ -54,6 +56,14 @@ function LeftMenu() {
   const [items, setItems] = useState<MenuItem[]>([])
   const [id, setId] = useState(0)
   const [project, setProject] = useState<YModels.Project>()
+  const { trainingDatasetCount, tasks } = useSelector(({ dataset, socket }) => ({ trainingDatasetCount: dataset.trainingDatasetCount, tasks: socket.tasks }))
+  const { run: getTrainingDatasetCount } = useRequest('dataset/getTrainingDatasetCount', {
+    loading: false,
+  })
+
+  useEffect(() => {
+    project?.id && getTrainingDatasetCount()
+  }, [project?.id, tasks])
 
   useEffect(() => {
     setDefaultKeys([pathname])
@@ -66,7 +76,7 @@ function LeftMenu() {
   }, [id, projects])
 
   useEffect(() => {
-    const showProjectList= projectModule.test(pathname)
+    const showProjectList = projectModule.test(pathname)
     setItems([
       getGroupItem(t('breadcrumbs.projects'), 'project', [
         getItem(t('projects.title'), `/home/project`, ProjectIcon),
@@ -76,7 +86,7 @@ function LeftMenu() {
               getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon),
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
               getItem(t('model.diagnose'), `/home/project/${id}/prediction`, DiagnosisIcon),
-              getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
+              getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon, undefined, undefined, !trainingDatasetCount),
               getItem(t('common.trash.list'), `/home/project/${id}/trash`, DeleteIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),
             ])
@@ -113,7 +123,7 @@ function LeftMenu() {
         'outer/github',
       ),
     ])
-  }, [id, project, role])
+  }, [id, project, role, trainingDatasetCount])
 
   const clickHandle: Handler = ({ key }) => {
     const outer = /^outer\//.test(key)

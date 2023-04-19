@@ -14,7 +14,13 @@ const Item: FC<Props> = ({ title, content, go, unread }) => {
   return (
     <List.Item onClick={go} style={{ cursor: 'pointer', padding: '24px', position: 'relative' }}>
       <List.Item.Meta title={title} description={content} />
-      <span style={closeStyle} onClick={unread}>
+      <span
+        style={closeStyle}
+        onClick={(e) => {
+          e.stopPropagation()
+          unread()
+        }}
+      >
         <CloseOutlined />
       </span>
     </List.Item>

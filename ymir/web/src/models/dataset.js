@@ -25,7 +25,8 @@ const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 2
 
 const list = [
   { name: 'UPDATE_ALL_DATASETS', field: 'allDatasets' },
-  { name: 'UpdateTotal', field: 'total' },
+  { name: 'UpdateValidDatasetCount', field: 'validDatasetCount' },
+  { name: 'UpdateTrainingDatasetCount', field: 'trainingDatasetCount' },
   { name: 'UpdateVersions', field: 'versions' },
 ]
 
@@ -38,7 +39,8 @@ const initState = {
   asset: { annotations: [] },
   allDatasets: {},
   publicDatasets: [],
-  total: 0,
+  validDatasetCount: 0,
+  trainingDatasetCount: 0,
 }
 
 export default {
@@ -102,10 +104,10 @@ export default {
         return datasets || []
       }
     },
-    batch: createEffect(function* ({ payload }, { put }) {
+    batch: createEffect(function* ({ payload: ids }, { put }) {
       return yield put.resolve({
         type: 'batchLocalDatasets',
-        payload,
+        payload: { ids },
       })
     }),
     *getDataset({ payload }, { call, put, select }) {
@@ -246,7 +248,25 @@ export default {
       })
       if (result?.total) {
         yield put({
-          type: 'UpdateTotal',
+          type: 'UpdateValidDatasetCount',
+          payload: result.total,
+        })
+        return result.total
+      }
+    }),
+    getTrainingDatasetCount: createEffect(function* ({ payload: pid }, { put }) {
+      const result = yield put.resolve({
+        type: 'queryDatasets',
+        payload: {
+          pid,
+          state: ResultStates.VALID,
+          haveClasses: true,
+        },
+      })
+
+      if (result?.total) {
+        yield put({
+          type: 'UpdateTrainingDatasetCount',
           payload: result.total,
         })
         return result.total

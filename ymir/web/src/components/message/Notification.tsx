@@ -2,10 +2,11 @@ import { FC, useEffect } from 'react'
 import { notification } from 'antd'
 import { useSelector } from 'umi'
 import BaseItem, { Props } from './BaseItem'
+import t from '@/utils/t'
 
 const key = 'message'
 
-const NotificationItem: FC<Props> = ({ title, content, go, unread }) => {
+const NotificationItem: FC<Props> = ({ total, title, content, go, unread }) => {
   useEffect(() => {
     if (!title || !content) {
       return notification.close(key)
@@ -13,7 +14,14 @@ const NotificationItem: FC<Props> = ({ title, content, go, unread }) => {
     notification.open({
       key,
       message: title,
-      description: <div style={{ cursor: 'pointer' }}>{content}</div>,
+      description: (
+        <div style={{ cursor: 'pointer' }}>
+          {content}
+          <span onClick={(e) => e.stopPropagation()} style={{ display: 'block', textAlign: 'right' }}>
+            {t('message.unread.label', { count: total - 1 })}
+          </span>
+        </div>
+      ),
       onClick: () => {
         go()
         notification.close(key)

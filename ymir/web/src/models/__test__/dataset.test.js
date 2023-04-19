@@ -83,7 +83,8 @@ describe('models: dataset', () => {
   normalReducer(dataset, 'UPDATE_ASSET', product(6445), product(6445), 'asset', {})
   normalReducer(dataset, 'UPDATE_PUBLICDATASETS', datasets, datasets, 'publicDatasets', { items: [], total: 0 })
   normalReducer(dataset, 'UPDATE_QUERY', { limit: 20 }, { limit: 20 }, 'query', {})
-  normalReducer(dataset, 'UpdateTotal', 15, 15, 'total', 0)
+  normalReducer(dataset, 'UpdateTrainingDatasetCount', 15, 15, 'trainingDatasetCount', 0)
+  normalReducer(dataset, 'UpdateValidDatasetCount', 18, 18, 'validDatasetCount', 0)
 
   it('reducers: CLEAR_ALL', () => {
     const state = {
@@ -100,7 +101,8 @@ describe('models: dataset', () => {
       asset: { annotations: [] },
       allDatasets: {},
       publicDatasets: [],
-      total: 0
+      trainingDatasetCount: 0,
+      validDatasetCount: 0,
     }
     const action = {
       payload: null,
@@ -478,6 +480,23 @@ describe('models: dataset', () => {
       payload: pid
     }
     const total = 3
+    const result = {items: products(total), total }
+    const generator = saga(creator, { put })
+    generator.next()
+    generator.next(result)
+    const end = generator.next()
+
+    expect(end.value).toBe(total)
+  })
+
+  it('effects: getTrainingDatasetCount', () => {
+    const saga = dataset.effects.getTrainingDatasetCount
+    const pid = 63343
+    const creator = {
+      type: 'getTrainingDatasetCount',
+      payload: pid
+    }
+    const total = 4
     const result = {items: products(total), total }
     const generator = saga(creator, { put })
     generator.next()

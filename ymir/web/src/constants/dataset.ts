@@ -72,7 +72,7 @@ export function transferDatasetGroup(data: YModels.BackendData) {
     projectId: data.project_id,
     name: data.name,
     createTime: format(data.create_datetime),
-    versions: data.datasets ? data.datasets.map((ds: YModels.BackendData) => transferDataset(ds)) : [],
+    versions: data.datasets ? data.datasets.reverse().map((ds: YModels.BackendData) => transferDataset(ds)) : [],
   }
   return group
 }

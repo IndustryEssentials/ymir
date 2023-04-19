@@ -8,9 +8,11 @@ import t from '@/utils/t'
 
 import { getRecommendStage } from '@/constants/model'
 import { percent } from '@/utils/number'
-import { useHistory } from 'umi'
+import { useHistory, useSelector } from 'umi'
+import { getDetailPage } from '@/services/common'
 
 export type Props = {
+  total: number
   title: string
   content: string
   go: () => void
@@ -22,6 +24,7 @@ const BaseItem = (Template: FC<Props>) => {
     const history = useHistory()
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
+    const total = useSelector(({ message }) => message.total)
     const { run: readMessage } = useRequest<null, [id: number]>('message/readMessage', {
       loading: false,
     })
@@ -77,14 +80,16 @@ const BaseItem = (Template: FC<Props>) => {
       if (!message.result) {
         return ''
       }
-      return `${message.result.name}`
+      return message.result.name ? `${message.result.name}` : ''
     }
 
     const go = () => {
       if (!message) {
         return
       }
-      history.push(`/home/project/${message?.pid}/${message?.resultModule}/${message?.resultId}`)
+      const url =
+        message.resultModule === 'prediction' ? `/home/project/${message.pid}/prediction` : getDetailPage(message.resultModule, message.resultId, message.pid)
+      history.push(url)
       unread()
     }
 
@@ -92,7 +97,7 @@ const BaseItem = (Template: FC<Props>) => {
       message?.id && readMessage(message.id)
     }
 
-    return <Template key={message?.id} title={title} content={content} go={go} unread={unread} />
+    return message ? <Template key={message.id} total={total} title={title} content={content} go={go} unread={unread} /> : null
   }
   return RenderItem
 }

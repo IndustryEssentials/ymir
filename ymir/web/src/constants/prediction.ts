@@ -30,15 +30,15 @@ export function transferPrediction(data: YModels.BackendData): Prediction {
   const assetCount = data.asset_count || 0
   const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
   const evaluated = data.evaluation_state === 1
-  const versionName = getVersionLabel(data.version_num)
+  // const versionName = getVersionLabel(data.version_num)
   return {
     id: data.id,
     projectId: data.project_id,
     groupId: params?.model_id || 0,
     type: data.object_type || ObjectType.ObjectDetection,
-    name: `${data.group_name} ${versionName}`,
+    name: ``,
     version: data.version_num || 0,
-    versionName,
+    // versionName,
     assetCount,
     keywords,
     keywordCount: keywords.length,

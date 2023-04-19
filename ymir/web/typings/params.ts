@@ -20,6 +20,7 @@ declare namespace YParams {
     keywords?: string[]
     excludeType?: number
     empty?: boolean
+    haveClasses?: boolean
   }
 
   interface ModelsQuery extends ResultListQuery {

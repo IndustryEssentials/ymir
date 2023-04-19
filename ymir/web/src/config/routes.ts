@@ -113,7 +113,7 @@ export const homeRoutes = [
     breadcrumbLabel: "breadcrumbs.dataset.assets",
   },
   {
-    path: "/home/project/:id/prediction/:did",
+    path: "/home/project/:id/prediction/:prid",
     name: "predDetail",
     component: "@/pages/dataset/Assets",
     title: "assets.title",

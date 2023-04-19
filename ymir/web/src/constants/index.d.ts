@@ -32,7 +32,7 @@ type MessageBase<T> = {
 
 type MessageResultModules = 'dataset' | 'model' | 'prediction' | 'image'
 
-interface Prediction extends Omit<YModels.Dataset<YModels.InferenceParams>, 'suggestions'> {
+interface Prediction extends Omit<YModels.Dataset<YModels.InferenceParams>, 'suggestions' | 'versionName'> {
   inferModelId: number[]
   inferModel?: YModels.Model
   inferDatasetId: number

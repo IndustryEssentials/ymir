@@ -30,6 +30,7 @@ const getMessages: Effect<QueryParams & { simple?: boolean }> = createEffect(fun
     yield put({ type: 'UpdateMessages', payload: messages })
     yield put({ type: 'UpdateTotal', payload: total })
     yield put({ type: 'UpdateFresh', payload: false })
+    yield put.resolve({ type: 'UpdateLatest', payload: messages[0] })
     if (!simple) {
       const list: Message[] = yield put.resolve({ type: 'getRelatedSource', payload: messages })
       if (list?.length) {
@@ -48,8 +49,9 @@ const getRelatedSource: Effect = createEffect<Message[]>(function* ({ payload: m
   for (const module in ids) {
     const resultIds = ids[module]
     if (module) {
+      const type = `${module}/batch`
       const list: Message['result'][] = yield put.resolve({
-        type: `${module}/batch`,
+        type,
         payload: resultIds,
       })
       messages.forEach((item, ind) => {
@@ -59,14 +61,15 @@ const getRelatedSource: Effect = createEffect<Message[]>(function* ({ payload: m
         }
       })
     }
-    return messages
   }
+  return messages
 })
 
 const readMessage: Effect<number> = createEffect(function* ({ payload: id }, { call, put, select }) {
   const { code, result } = yield call(readMsg, id)
   if (code === 0) {
-    const { latest, messages }: MessageState = yield select(({ message }) => message)
+    const { latest, messages, total }: MessageState = yield select(({ message }) => message)
+    yield put({ type: 'UpdateTotal', payload: total - 1 })
     if (messages.some((msg) => msg.id === id)) {
       yield put({ type: 'getMessages', payload: {} })
     }

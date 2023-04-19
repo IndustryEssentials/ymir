@@ -118,6 +118,7 @@ const common = {
   'message.content.model.failure': { en: '{type} failed. Click to view more about {name}', cn: '{type}失败：请查看{name}' },
   'message.content.common': { en: '{type}{state}. Click to view more about {name}', cn: '{type}{state}。请查看{name}' },
   'message.list.title': { en: '{count} Unread Messages', cn: '未读消息({count})' },
+  'message.unread.label': { en: '{count} Unread', cn: '尚有{count}条未读消息' },
 }
 
 export default common

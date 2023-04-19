@@ -25,12 +25,13 @@ type IndexType = {
 }
 
 const Dataset: FC = () => {
-  const { id: pid, did: id } = useParams<{ id: string; did: string; type: string }>()
+  const { id: pid, did, prid } = useParams<{ id: string; did: string; type: string, prid?: string }>()
   const location = useLocation()
-  const type = location.hash.replace(/^#/, '')
+  const isPred = !!prid
+  const id = prid ? prid : did
   const initQuery = {
     pid,
-    annoType: type === 'pred' ? 2 : 1,
+    annoType: isPred ? 2 : 1,
     id,
     offset: 0,
     limit: 20,
@@ -41,7 +42,6 @@ const Dataset: FC = () => {
     hash: '',
     index: 0,
   })
-  const [isPred, setPred] = useState(false)
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
   })
@@ -65,17 +65,12 @@ const Dataset: FC = () => {
   const [filterValues, setFilterValues] = useState<FormValues>({})
 
   useEffect(() => {
-    ;(type === 'pred' ? getPrediction : getDataset)({ id, verbose: true, force: true })
+    ;(isPred ? getPrediction : getDataset)({ id, verbose: true, force: true })
   }, [id])
 
   useEffect(() => {
-    const isPred = type === 'pred'
-    setPred(isPred)
-  }, [type])
-
-  useEffect(() => {
     setCurrent(isPred ? prediction : dataset)
-  }, [dataset, prediction, type])
+  }, [dataset, prediction, isPred])
 
   useEffect(() => {
     const { offset = 0, limit = 20 } = filterParams

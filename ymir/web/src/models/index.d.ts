@@ -50,7 +50,8 @@ interface DatasetState {
   allDatasets: { [pid: number]: YModels.Dataset[] }
   publicDatasets: YModels.Dataset[]
   query: YParams.DatasetsQuery
-  total: number
+  validDatasetCount: number
+  trainingDatasetCount: number
 }
 
 interface PredictionState {

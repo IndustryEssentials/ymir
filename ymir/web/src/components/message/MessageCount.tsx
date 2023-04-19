@@ -19,7 +19,7 @@ const MessageCount: FC<PopoverProps> = (props) => {
   return (
     <Popover trigger={'click'} placement={'topRight'} overlayStyle={{ borderRadius: '10px' }} title={title} {...props} content={<List />}>
       <span style={{ color: '#fff' }}>
-        <NotifyIcon /> {unreadCount}
+        <NotifyIcon className={unreadCount ? 'rotate' : ''} /> {unreadCount}
       </span>
     </Popover>
   )
