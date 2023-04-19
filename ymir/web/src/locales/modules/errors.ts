@@ -26,6 +26,7 @@ const errors = {
   'error110207': { cn: '用户角色权限不匹配', en: 'Invalid role for user', },
   'error110209': { cn: '用户手机号重复', en: 'Duplicated phone number, please use another one', },
   'error110401': { cn: '找不到数据集', en: 'Dataset is not found', },
+  'error113001': { cn: '找不到推理结果', en: 'Prediction is not found', },
   'error110403': { cn: '数据集未授权访问', en: 'Dataset inaccessable', },
   'error110404': { cn: '数据集创建失败', en: 'DATASET_FAILED_TO_CREATE: failed to create dataset', },
   'error110407': {
@@ -65,7 +66,8 @@ const errors = {
   'error111902': { cn: '调用CMD进行数据集比对失败', en: 'Evaluate error from CMD', },
   'error111903': { cn: '完成数据集比对，但找不到相应的结果', en: 'Evaluate done, but can not find result', },
   'error111905': { cn: '推理结果缺乏标注或预测标注，诊断失败', en: 'Evaluation failed for no GT or prediction', },
-  'error111906': { cn: '模型推理尚未完成，诊断失败', en: 'Evaluate failed for inference unfinished', },
+  'error111906': { cn: '数据集未处理完成', en: 'Dataset is not ready', },
+  'error113002': { cn: '推理结果未处理完成', en: 'Prediction is not ready', },
   'error112103': { cn: '内部请求超时', en: 'Internal request timeout', },
   'error130602': { cn: '创建标注任务出错', en: 'Error when create label task', },
   'error130603': { cn: '创建标注任务出现网络错误', en: 'Network error when create label task', },
