@@ -158,7 +158,10 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             self.update_duration(db, task=task)
         return task
 
-    def update_last_message_datetime(self, db: Session, *, task: Task, dt: datetime) -> Task:
+    def update_last_message_datetime(self, db: Session, *, id: int, dt: datetime) -> Optional[Task]:
+        task = self.get(db, id=id)
+        if not task:
+            return task
         task.last_message_datetime = dt
         db.add(task)
         db.commit()

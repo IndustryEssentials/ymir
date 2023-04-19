@@ -318,10 +318,7 @@ class TaskResult:
         else:
             logger.info("[create task] no task result record needed")
 
-    def update(
-        self,
-        task_result: schemas.TaskUpdateStatus,
-    ) -> models.Task:
+    def update(self, task_result: schemas.TaskUpdateStatus) -> models.Task:
         task_in_db = crud.task.get(self.db, id=self.task.id)
         if not task_in_db:
             logger.error(
