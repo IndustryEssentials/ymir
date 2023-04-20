@@ -17,9 +17,9 @@ from yapi.schemas.common import (
 
 
 class TaskResult(BaseModel):
-    id: int = Field(description="dataset / model / docker image id")
-    version_id: int = Field(description="dataset / model version id")
-    type: ResultType = Field(description="result type: dataset / model /docker image")
+    id: int = Field(description="dataset / model / prediction / docker image id")
+    version_id: Optional[int] = Field(description="dataset / model version id")
+    type: ResultType = Field(description="result type: dataset / model / prediction / docker image")
 
 
 class TaskBase(BaseModel):
@@ -45,11 +45,15 @@ class TaskBase(BaseModel):
             elif values.get("result_prediction"):
                 type_ = ResultType.prediction.value
                 id_ = values["result_prediction"]["id"]
-                version_id = 0
+                version_id = None
             elif values.get("result_model"):
                 type_ = ResultType.model.value
                 id_ = values["result_model"]["model_group_id"]
                 version_id = values["result_model"]["id"]
+            if values.get("result_docker_image"):
+                type_ = ResultType.docker_image.value
+                id_ = values["result_docker_image"]["id"]
+                version_id = None
             else:
                 type_, id_, version_id = ResultType.no_result.value, -1, -1
             values["result"] = {

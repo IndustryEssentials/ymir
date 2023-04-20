@@ -27,6 +27,7 @@ class ResultType(IntEnum):
     dataset = 1
     model = 2
     prediction = 3
+    docker_image = 4
 
 
 class ResultState(IntEnum):
