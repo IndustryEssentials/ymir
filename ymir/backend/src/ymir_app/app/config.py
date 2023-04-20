@@ -110,5 +110,9 @@ class Settings(BaseSettings):
     CRON_UPDATE_TASK_BATCH_SIZE: int = 10
     CRON_UPDATE_TASK_RETRY_INTERVAL: int = 5
 
+    # official docker image
+    OFFICIAL_DOCKER_IMAGE_NAME: str = "Detection & Segmentation"
+    OFFICIAL_DOCKER_IMAGE_URL: str = "industryessentials/ymir-executor:ymir2.4.0-detection-instance-sementic-in-one"
+
 
 settings = Settings(_env_file=".env")  # type: ignore
