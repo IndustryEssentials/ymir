@@ -53,7 +53,7 @@ export function transferImage(data: YModels.BackendData): Image {
     id: data.id,
     name: data.name,
     state: data.result_state,
-    errorCode: data.error_code,
+    errorCode: data.related_task?.error_code,
     objectTypes,
     functions,
     configs,

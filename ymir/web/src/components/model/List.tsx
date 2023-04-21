@@ -5,7 +5,7 @@ import {} from 'react-redux'
 import { Form, Input, Table, Row, Col, Pagination, Space, Button, message, Popover, TableColumnsType } from 'antd'
 
 import { diffTime } from '@/utils/date'
-import { readyState, validState } from '@/constants/common'
+import { DefaultShowVersionCount, readyState, validState } from '@/constants/common'
 import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from '@/utils/t'
 import usePublish from '@/hooks/usePublish'
@@ -108,14 +108,6 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     setModels(mds)
     setTotal(modelList?.total || 1)
   }, [modelList, project])
-
-  useEffect(() => {
-    const hasModel = Object.keys(versions).length
-    const emptyModel = Object.values(versions).some((models) => !models.length)
-    if (hasModel && emptyModel) {
-      getData()
-    }
-  }, [versions])
 
   useEffect(() => {
     Object.keys(versions).forEach((gid) => {
@@ -254,9 +246,9 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
       }
     })
   }
-
-  async function showVersions(id: number) {
-    setVisibles((old) => ({ ...old, [id]: !old[id] }))
+  
+  function toggleVersions(id: number, force?: boolean) {
+    setVisibles((old) => ({ ...old, [id]: force || (typeof old[id] !== 'undefined' && !old[id]) }))
   }
 
   function setVersionLabelsByIterations(versions: Models, iterations: YModels.Iteration[]) {
@@ -526,8 +518,8 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
         {models.map((group) => (
           <div className={styles.groupItem} key={group.id}>
             <Row className="groupTitle">
-              <Col flex={1} onClick={() => showVersions(group.id)}>
-                <span className="foldBtn">{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+              <Col flex={1} onClick={() => toggleVersions(group.id)}>
+                <span className="foldBtn">{visibles[group.id] !== false ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
                 <span className="groupName">{group.name}</span>
                 {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
               </Col>
@@ -539,9 +531,10 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
                 </Space>
               </Col>
             </Row>
-            <div className="groupTable" hidden={!visibles[group.id]}>
+            <div className="groupTable" hidden={visibles[group.id] === false}>
               <Table
-                dataSource={modelVersions[group.id]}
+                dataSource={typeof visibles[group.id] === 'undefined' ? (versions[group.id] || []).slice(0, DefaultShowVersionCount) : versions[group.id]}
+                // dataSource={modelVersions[group.id]}
                 rowKey={(record) => record.id}
                 rowSelection={{
                   selectedRowKeys: selectedVersions.versions[group.id],
@@ -551,6 +544,13 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
                 columns={columns}
                 pagination={false}
               />
+              {!visibles[group.id] && (group.versions?.length || 0) > DefaultShowVersionCount ? (
+                <div style={{ textAlign: 'center' }}>
+                  <Button type="link" className="moreVersion" onClick={() => toggleVersions(group.id, true)}>
+                    <ArrowDownIcon /> {t('dataset.unfold.all')}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
         ))}

@@ -126,13 +126,13 @@ describe('utils: request', () => {
 
     const error401Result = reqHandler.rejected(error401)
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
-    expect(error401Result).toBeUndefined()
+    expect(error401Result).toEqual({ code: 401 })
 
     // 403
     const error403Result = reqHandler.rejected(error403)
     expect(getDvaApp).toHaveBeenCalled()
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
-    expect(error403Result).toBeUndefined()
+    expect(error403Result).toEqual({ code: 403 })
 
     // 400 -> 1003
     const error4001003Result = reqHandler.rejected(error4001003)
@@ -142,7 +142,7 @@ describe('utils: request', () => {
     const error400110104Result = reqHandler.rejected(error400110104)
     expect(getDvaApp).toHaveBeenCalled()
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
-    expect(error400110104Result).toBeUndefined()
+    expect(error400110104Result).toEqual(error400110104.response.data)
 
     // 405
     const error405Result = reqHandler.rejected(error405)

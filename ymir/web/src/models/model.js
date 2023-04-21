@@ -62,6 +62,18 @@ export default {
           type: 'UPDATE_MODELS',
           payload: { [pid]: models },
         })
+        for (let index = 0; index < groups.length; index++) {
+          const group = groups[index]
+          if (!group) {
+            continue
+          }
+          yield put({
+            type: 'UPDATE_VERSIONS',
+            payload: {
+              [group.id]: group.versions,
+            },
+          })
+        }
         return models
       }
     },
@@ -112,7 +124,7 @@ export default {
         type: 'getLocalModels',
         payload: ids,
       })
-      const fixedCache = cache.filter(item => !item.needReload)
+      const fixedCache = cache.filter((item) => !item.needReload)
       if (ids.length === fixedCache.length) {
         return cache
       }
@@ -134,7 +146,7 @@ export default {
         return models
       }
     },
-    batch: createEffect(function * ({ payload }, { put }) {
+    batch: createEffect(function* ({ payload }, { put }) {
       return yield put.resolve({
         type: 'batchLocalModels',
         payload,
@@ -191,6 +203,13 @@ export default {
           type: 'UPDATE_MODEL',
           payload: models,
         })
+        yield put({
+          type: 'project/getProject',
+          payload: {
+            id: pid,
+            force: true,
+          },
+        })
         return Object.values(models)
       }
     },
@@ -201,6 +220,13 @@ export default {
         yield put({
           type: 'UPDATE_MODEL',
           payload: models,
+        })
+        yield put({
+          type: 'project/getProject',
+          payload: {
+            id: pid,
+            force: true,
+          },
         })
         return Object.values(models)
       }

@@ -56,7 +56,7 @@ const charts: { [key: string]: ChartConfigWithoutData } = {
   },
   assetArea: {
     label: 'dataset.analysis.title.asset_area',
-    xUnit: 'px',
+    xUnit: 'px*px',
     xRange: true,
     renderX: (x: number) => `${x / 10000}W`,
     color: ['#36CBCB', '#F2637B'],
@@ -95,7 +95,7 @@ const charts: { [key: string]: ChartConfigWithoutData } = {
     customOptions: {
       tooltipLabel: 'dataset.analysis.bar.area.tooltip',
     },
-    xUnit: 'px',
+    xUnit: 'px*px',
     color: ['#2CBDE9', '#E8B900'],
   },
   instanceArea: {
@@ -103,18 +103,20 @@ const charts: { [key: string]: ChartConfigWithoutData } = {
     customOptions: {
       tooltipLabel: 'dataset.analysis.bar.anno.tooltip',
     },
-    xUnit: 'px',
+    xUnit: 'px*px',
     xMax: true,
     xRange: true,
     color: ['#10BC5E', '#F2637B'],
   },
   crowdedness: {
     label: 'dataset.analysis.title.crowdedness',
+    xUnit: t('dataset.analysis.unit.crowdedness'),
     xMax: true,
     color: ['#10BC5E', '#F2637B'],
   },
   complexity: {
     label: 'dataset.analysis.title.complexity',
+    xUnit: t('dataset.analysis.unit.complexity'),
     xMax: true,
     xRange: true,
     color: ['#10BC5E', '#F2637B'],
@@ -231,7 +233,7 @@ const getCharts = (keys: Keys[]) =>
         const list = data.map(({ x, y }, index) => {
           const next = data[index + 1]
           const renderRangeX = (x: string, xRange?: boolean) => {
-            return xRange ? (xMax && next ? x : `[${x},${next ? renderX(next.x as number) : '+'})`) : x
+            return xRange ? (xMax && !next ? x : `[${x},${next ? renderX(next.x as number) : '+'})`) : x
           }
           return {
             x: renderRangeX(renderX(x as number), xRange),

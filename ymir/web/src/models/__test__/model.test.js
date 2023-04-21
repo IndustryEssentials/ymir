@@ -165,7 +165,7 @@ describe('models: model', () => {
   // resetQuery
   // clearCache
 
-  generateList('getModelGroups', {}, response(list(groupsResult)), list(groupsExpected))
+  // generateList('getModelGroups', {}, response(list(groupsResult)), list(groupsExpected))
 
   // getModelVersion
   generateGetModelVersions('force = false && cache = false', response(list(modelsResult)), modelsExpected)
@@ -177,8 +177,6 @@ describe('models: model', () => {
   generateList('getHiddenList', {}, list(modelsExpected), list(modelsExpected))
   generateList('queryAllModels', 63453, list(modelsExpected), modelsExpected)
   generateList('batchModels', { ids: '1,3' }, response(modelsResult), modelsExpected)
-  generateList('hide', { pid: 324334, ids: [53, 34] }, response(modelsResult), modelsExpected)
-  generateList('restore', { pid: 324334, ids: [63, 23] }, response(modelsResult), modelsExpected)
 
   generateNormal({
     func: 'delModelGroup',

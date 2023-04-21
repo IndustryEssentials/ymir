@@ -256,7 +256,9 @@ declare namespace YModels {
     modelName?: string
     metrics?: StageMetrics
   }
-  export interface ModelGroup extends Group {}
+  export interface ModelGroup extends Group {
+    versions?: Model[]
+  }
   export interface Model<P = TaskParams> extends Result<P> {
     map: number
     url: string
@@ -423,6 +425,8 @@ declare namespace YModels {
     percent: number
     state: number
     reload?: boolean
+    result_dataset?: { id: number }
+    result_model?: { id: number }
   }
 
   type TaskParams = FusionParams | FilterParams | MergeParams | TrainingParams | LabelParams | MiningParams | InferenceParams

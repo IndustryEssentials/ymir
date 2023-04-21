@@ -71,18 +71,11 @@ describe('models: dataset', () => {
   const gid = 534234
   const items = products(4)
   const datasets = { items, total: items.length }
-  const allVersions = { 1: items, 2: [...items, product(8)] }
-  const allDatasets = { 1: items, 2: [...items, product(7)] }
-  normalReducer(dataset, 'UPDATE_DATASETS', { [916]: datasets }, { [916]: datasets }, 'datasets', {})
-  normalReducer(dataset, 'UPDATE_ALL_DATASETS', { [gid]: allDatasets }, { [gid]: allDatasets }, 'allDatasets', {})
+  normalReducer(dataset, 'UpdateDatasets', { [916]: datasets }, { [916]: datasets }, 'datasets', {})
   normalReducer(dataset, 'UpdateVersions', { [gid]: items }, { [gid]: items }, 'versions', {})
-  normalReducer(dataset, 'UPDATE_ALL_VERSIONS', allVersions, allVersions, 'versions', {})
-  normalReducer(dataset, 'UPDATE_DATASET', { id: gid, dataset: product(534) }, { [gid]: product(534) }, 'dataset', {})
-  normalReducer(dataset, 'UPDATE_ALL_DATASET', { [gid]: product(534), 644: product(644) }, { [gid]: product(534), 644: product(644) }, 'dataset', {})
-  normalReducer(dataset, 'UPDATE_ASSETS', datasets, datasets, 'assets', { items: [], total: 0 })
-  normalReducer(dataset, 'UPDATE_ASSET', product(6445), product(6445), 'asset', {})
-  normalReducer(dataset, 'UPDATE_PUBLICDATASETS', datasets, datasets, 'publicDatasets', { items: [], total: 0 })
-  normalReducer(dataset, 'UPDATE_QUERY', { limit: 20 }, { limit: 20 }, 'query', {})
+  normalReducer(dataset, 'UpdateDataset', { [gid]: product(534) }, { [gid]: product(534) }, 'dataset', {})
+  normalReducer(dataset, 'UpdatePublicDatasets', datasets, datasets, 'publicDatasets', { items: [], total: 0 })
+  normalReducer(dataset, 'UpdateQuery', { limit: 20 }, { limit: 20 }, 'query', {})
   normalReducer(dataset, 'UpdateTrainingDatasetCount', 15, 15, 'trainingDatasetCount', 0)
   normalReducer(dataset, 'UpdateValidDatasetCount', 18, 18, 'validDatasetCount', 0)
 
@@ -97,8 +90,6 @@ describe('models: dataset', () => {
       datasets: {},
       versions: {},
       dataset: {},
-      assets: { items: [], total: 0 },
-      asset: { annotations: [] },
       allDatasets: {},
       publicDatasets: [],
       trainingDatasetCount: 0,

@@ -5,7 +5,7 @@ import { Form, Button, Input, Table, Space, Row, Col, Tooltip, Pagination, messa
 import t from '@/utils/t'
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
-import { readyState, validState } from '@/constants/common'
+import { DefaultShowVersionCount, readyState, validState } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
 import useRequest from '@/hooks/useRequest'
 
@@ -68,7 +68,6 @@ type DatasetGroup = YModels.DatasetGroup & ExtraLabel & IsType
 type VersionsType = IdMap<Dataset[]>
 
 const { useForm } = Form
-const DefaultVersionCount = 3
 
 const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   const location: Location<{ type: string }> = useLocation()
@@ -134,10 +133,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [history.location])
 
   useEffect(() => {
-    console.log('analysisDatasets:', analysisDatasets)
-  }, [analysisDatasets])
-
-  useEffect(() => {
     const initVisibles = groups?.reduce((prev, group) => ({ ...prev, [group]: true }), {})
     setVisibles(initVisibles || {})
   }, [groups])
@@ -157,14 +152,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
       }
     })
   }, [visibles])
-
-  useEffect(() => {
-    const hasDataset = Object.keys(versions).length
-    const emptyDataset = Object.values(versions).some((dss) => !dss.length)
-    if (hasDataset && emptyDataset) {
-      fetchDatasets()
-    }
-  }, [versions])
 
   useEffect(() => {
     let dvs = versions
@@ -643,7 +630,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
             </Row>
             <div className="groupTable" hidden={visibles[group.id] === false}>
               <Table
-                dataSource={typeof visibles[group.id] === 'undefined' ? (versions[group.id] || []).slice(0, DefaultVersionCount) : versions[group.id]}
+                dataSource={typeof visibles[group.id] === 'undefined' ? (versions[group.id] || []).slice(0, DefaultShowVersionCount) : versions[group.id]}
                 rowKey={(record) => record.id}
                 rowSelection={{
                   selectedRowKeys: selectedVersions.versions[group.id],
@@ -653,7 +640,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
                 columns={columns(group.id)}
                 pagination={false}
               />
-              {!visibles[group.id] && (group.versions?.length || 0) > DefaultVersionCount ? (
+              {!visibles[group.id] && (group.versions?.length || 0) > DefaultShowVersionCount ? (
                 <div style={{ textAlign: 'center' }}>
                   <Button type="link" className="moreVersion" onClick={() => toggleVersions(group.id, true)}>
                     <ArrowDownIcon /> {t('dataset.unfold.all')}

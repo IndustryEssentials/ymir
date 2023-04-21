@@ -25,12 +25,14 @@ export enum actions {
 
 export const OPENPAI_MAX_GPU_COUNT = 8
 
-export function updateResultState(result: YModels.AllResult, tasks: YModels.BackendData) {
+export const DefaultShowVersionCount = 3
+
+export function updateResultState<T extends YModels.AllResult>(result: T, tasks: YModels.BackendData) {
   const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
     return result
   }
-  return updateResultByTask(result, task)
+  return updateResultByTask<T>(result, task)
 }
 
 export function updateResultByTask<T extends YModels.AllResult>(result: T, task?: YModels.ProgressTask): T | undefined {

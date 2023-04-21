@@ -72,7 +72,7 @@ export function transferDatasetGroup(data: YModels.BackendData) {
     projectId: data.project_id,
     name: data.name,
     createTime: format(data.create_datetime),
-    versions: data.datasets ? data.datasets.reverse().map((ds: YModels.BackendData) => transferDataset(ds)) : [],
+    versions: data.datasets ? data.datasets.reverse().map(transferDataset) : [],
   }
   return group
 }
@@ -145,7 +145,7 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
   const dataset = transferDataset(data)
   const keywords = dataset.keywords
   const total = dataset.gt?.total
-  const totalArea = data.total_mask_area || 0
+  const totalArea = data.gt?.total_mask_area || 0
   const assetCount = dataset.assetCount
   return {
     ...dataset,

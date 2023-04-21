@@ -17,6 +17,7 @@ import styles from './assets.less'
 
 import { List as ListType } from '@/models/typings/common'
 import { ValueType } from '@/components/form/KeywordFilter'
+import { validState } from '@/constants/common'
 
 type IndexType = {
   hash: string
@@ -25,7 +26,7 @@ type IndexType = {
 }
 
 const Dataset: FC = () => {
-  const { id: pid, did, prid } = useParams<{ id: string; did: string; type: string, prid?: string }>()
+  const { id: pid, did, prid } = useParams<{ id: string; did: string; type: string; prid?: string }>()
   const location = useLocation()
   const isPred = !!prid
   const id = prid ? prid : did
@@ -73,9 +74,11 @@ const Dataset: FC = () => {
   }, [dataset, prediction, isPred])
 
   useEffect(() => {
-    const { offset = 0, limit = 20 } = filterParams
-    setCurrentPage(offset / limit + 1)
-    current?.id && filter(filterParams)
+    if (current?.id && validState(current.state)) {
+      const { offset = 0, limit = 20 } = filterParams
+      setCurrentPage(offset / limit + 1)
+      filter(filterParams)
+    }
   }, [current, filterParams])
 
   useEffect(() => {

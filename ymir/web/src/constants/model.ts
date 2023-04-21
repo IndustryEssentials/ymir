@@ -9,6 +9,7 @@ export function transferModelGroup(data: YModels.BackendData) {
     name: data.name,
     projectId: data.project_id,
     createTime: format(data.create_datetime),
+    versions: data.models ? data.models.reverse().map(transferModel) : [],
   }
   return group
 }

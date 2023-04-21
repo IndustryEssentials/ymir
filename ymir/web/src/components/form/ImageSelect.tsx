@@ -135,7 +135,11 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   useEffect(() => {
     if (options.length && selected) {
       const opt = options.find(({ image }) => image?.id === selected)
-      opt && onChange(selected, opt)
+      if (opt) {
+        onChange(selected, opt)
+      } else {
+        setSelected(undefined)
+      }
     }
   }, [options, selected])
 

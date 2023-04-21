@@ -45,8 +45,6 @@ interface DatasetState {
   datasets: IdMap<List<YModels.Dataset>>
   versions: IdMap<YModels.Dataset[]>
   dataset: IdMap<YModels.Dataset>
-  assets: List<YModels.Asset>
-  asset: YModels.Asset
   allDatasets: { [pid: number]: YModels.Dataset[] }
   publicDatasets: YModels.Dataset[]
   query: YParams.DatasetsQuery

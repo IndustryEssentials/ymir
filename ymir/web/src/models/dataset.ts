@@ -17,9 +17,11 @@ import {
 } from '@/services/dataset'
 import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAnnotationsCount } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
-import { createEffect, createReducers } from './_utils'
+import { createEffect, createReducersByState } from './_utils'
 import { deepClone } from '@/utils/object'
 import { TASKTYPES } from '@/constants/task'
+import { DatasetState, DatasetStore } from '.'
+import { List } from './typings/common'
 
 const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
 
@@ -35,26 +37,26 @@ const initState = {
   datasets: {},
   versions: {},
   dataset: {},
-  assets: { items: [], total: 0 },
-  asset: { annotations: [] },
   allDatasets: {},
   publicDatasets: [],
   validDatasetCount: 0,
   trainingDatasetCount: 0,
 }
 
-export default {
+const reducers = createReducersByState<DatasetState>(initState)
+
+const DatasetModal: DatasetStore = {
   namespace: 'dataset',
   state: deepClone(initState),
   effects: {
-    *getDatasetGroups({ payload }, { call, put }) {
+    getDatasetGroups: createEffect(function* ({ payload }, { call, put }) {
       const { pid, query } = payload
       const { code, result } = yield call(getDatasetGroups, pid, query)
       if (code === 0) {
-        const groups = result.items.map((item) => transferDatasetGroup(item))
+        const groups = (result as List<YModels.BackendData>).items.map(transferDatasetGroup)
         const payload = { items: groups, total: result.total }
         yield put({
-          type: 'UPDATE_DATASETS',
+          type: 'UpdateDatasets',
           payload: { [pid]: payload },
         })
         for (let index = 0; index < groups.length; index++) {
@@ -71,10 +73,10 @@ export default {
         }
         return payload
       }
-    },
-    *batchLocalDatasets({ payload }, { call, put }) {
+    }),
+    batchLocalDatasets: createEffect<{ pid: number; ids: number[]; ck?: boolean }>(function* ({ payload }, { call, put }) {
       const { pid, ids, ck } = payload
-      const cache = yield put.resolve({
+      const cache: YModels.Dataset[] = yield put.resolve({
         type: 'getLocalDatasets',
         payload: ids,
       })
@@ -88,29 +90,29 @@ export default {
         payload: { pid, ids: fetchIds, ck },
       })
       return [...fixedCache, ...(remoteDatasets || [])]
-    },
-    *batchDatasets({ payload }, { call, put }) {
+    }),
+    batchDatasets: createEffect<{ pid: number; ids: number[]; ck?: boolean }>(function* ({ payload }, { call, put }) {
       const { pid, ids, ck } = payload
       if (!ids?.length) {
         return []
       }
       const { code, result } = yield call(batchDatasets, pid, ids, ck)
       if (code === 0) {
-        const datasets = result.map((ds) => transferDataset(ds))
+        const datasets = (result as YModels.BackendData[]).map(transferDataset)
         yield put({
           type: 'updateLocalDatasets',
           payload: datasets,
         })
         return datasets || []
       }
-    },
+    }),
     batch: createEffect(function* ({ payload: ids }, { put }) {
       return yield put.resolve({
         type: 'batchLocalDatasets',
         payload: { ids },
       })
     }),
-    *getDataset({ payload }, { call, put, select }) {
+    getDataset: createEffect<{ id: number; verbose?: boolean; force?: boolean }>(function* ({ payload }, { call, put, select }) {
       const { id, verbose, force } = payload
       if (!force) {
         const dataset = yield select((state) => state.dataset.dataset[id])
@@ -132,13 +134,13 @@ export default {
           }
         }
         yield put({
-          type: 'UPDATE_DATASET',
-          payload: { id: dataset.id, dataset },
+          type: 'UpdateDataset',
+          payload: { [id]: dataset },
         })
         return dataset
       }
-    },
-    *getDatasetVersions({ payload }, { select, call, put }) {
+    }),
+    getDatasetVersions: createEffect<{ gid: number; force?: boolean }>(function* ({ payload }, { select, call, put }) {
       const { gid, force } = payload
       if (!force) {
         const versions = yield select(({ dataset }) => dataset.versions)
@@ -148,7 +150,7 @@ export default {
       }
       const { code, result } = yield call(getDatasetByGroup, gid)
       if (code === 0) {
-        const vss = result.items.map((item) => transferDataset(item))
+        const vss = (result as List<YModels.BackendData>).items.map((item) => transferDataset(item))
         yield put({
           type: 'UpdateVersions',
           payload: {
@@ -157,27 +159,27 @@ export default {
         })
         return vss
       }
-    },
-    *queryDatasets({ payload }, { select, call, put }) {
+    }),
+    queryDatasets: createEffect<YParams.DatasetQuery>(function* ({ payload }, { select, call, put }) {
       const { code, result } = yield call(queryDatasets, payload)
       if (code === 0) {
-        return { items: result.items.map((ds) => transferDataset(ds)), total: result.total }
+        return { items: (result as List<YModels.BackendData>).items.map((ds) => transferDataset(ds)), total: result.total }
       }
-    },
-    *getHiddenList({ payload }, { put }) {
+    }),
+    getHiddenList: createEffect<Omit<YParams.DatasetQuery, 'excludeType' | 'visible'>>(function* ({ payload }, { put }) {
       const query = { order_by: 'update_datetime', ...payload, excludeType: TASKTYPES.INFERENCE, visible: false }
       return yield put({
         type: 'queryDatasets',
         payload: query,
       })
-    },
-    *queryAllDatasets({ payload }, { select, call, put }) {
+    }),
+    queryAllDatasets: createEffect<{ pid: number; force?: boolean }>(function* ({ payload }, { select, call, put }) {
       const loading = yield select(({ loading }) => {
         return loading.effects['dataset/queryDatasets']
       })
       const { pid, force } = payload
       if (!force) {
-        const dssCache = yield select((state) => state.dataset.allDatasets[pid])
+        const dssCache: YModels.Dataset[] = yield select((state) => state.dataset.allDatasets[pid])
         if (dssCache.length) {
           return dssCache
         }
@@ -193,51 +195,65 @@ export default {
         })
         return dss.items
       }
-    },
-    *delDataset({ payload }, { call, put }) {
+    }),
+    delDataset: createEffect<number>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
       if (code === 0) {
         yield put({
-          type: 'UPDATE_DATASET',
-          payload: { id: payload, dataset: null },
+          type: 'UpdateDataset',
+          payload: { [payload]: null },
         })
         return result
       }
-    },
-    *delDatasetGroup({ payload }, { call, put }) {
+    }),
+    delDatasetGroup: createEffect<number>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(delDatasetGroup, payload)
       if (code === 0) {
         return result
       }
-    },
-    *hide({ payload: { pid, ids = [] } }, { call, put }) {
+    }),
+    hide: createEffect<{ pid: number; ids: number[] }>(function* ({ payload: { pid, ids } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.hide, pid, ids)
       if (code === 0) {
+        yield put({
+          type: 'project/getProject',
+          payload: {
+            id: pid,
+            force: true,
+          },
+        })
         return result.map(transferDataset)
       }
-    },
-    *restore({ payload: { pid, ids = [] } }, { call, put }) {
+    }),
+    restore: createEffect<{ pid: number; ids: number[] }>(function* ({ payload: { pid, ids } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.restore, pid, ids)
       if (code === 0) {
+        yield put({
+          type: 'project/getProject',
+          payload: {
+            id: pid,
+            force: true,
+          },
+        })
         yield put.resolve({ type: 'clearCache' })
         return result
       }
-    },
-    *createDataset({ payload }, { call, put }) {
+    }),
+    createDataset: createEffect<YParams.DatasetCreateParams>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
       if (code === 0) {
         // yield put.resolve({ type: 'clearCache' })
         return result
       }
-    },
-    *updateDataset({ payload }, { call, put }) {
+    }),
+    updateDataset: createEffect<{ id: number; name: string }>(function* ({ payload }, { call, put }) {
       const { id, name } = payload
       const { code, result } = yield call(updateDataset, id, name)
       if (code === 0) {
         return result
       }
-    },
-    getValidDatasetsCount: createEffect(function* ({ payload: pid }, { call, put }) {
+    }),
+    getValidDatasetsCount: createEffect<number>(function* ({ payload: pid }, { call, put }) {
       const result = yield put.resolve({
         type: 'queryDatasets',
         payload: {
@@ -254,7 +270,7 @@ export default {
         return result.total
       }
     }),
-    getTrainingDatasetCount: createEffect(function* ({ payload: pid }, { put }) {
+    getTrainingDatasetCount: createEffect<number>(function* ({ payload: pid }, { put }) {
       const result = yield put.resolve({
         type: 'queryDatasets',
         payload: {
@@ -272,27 +288,27 @@ export default {
         return result.total
       }
     }),
-    *updateVersion({ payload }, { call, put }) {
+    updateVersion: createEffect<{ id: number; description: string }>(function* ({ payload }, { call, put }) {
       const { id, description } = payload
       const { code, result } = yield call(updateVersion, id, description)
       if (code === 0) {
         return transferDataset(result)
       }
-    },
-    *getInternalDataset({ payload }, { call, put }) {
+    }),
+    getInternalDataset: createEffect(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(getInternalDataset, payload)
       if (code === 0) {
-        const dss = result.items.map((item) => transferDataset(item))
+        const dss = (result as List<YModels.BackendData>).items.map((item) => transferDataset(item))
         const ds = { items: dss, total: result.total }
         yield put({
-          type: 'UPDATE_PUBLICDATASETS',
+          type: 'UpdatePublicDatasets',
           payload: ds,
         })
         return ds
       }
-    },
-    *updateDatasets({ payload }, { put, select }) {
-      const versions = yield select((state) => state.dataset.versions)
+    }),
+    updateDatasets: createEffect<{ [key: string]: YModels.ProgressTask }>(function* ({ payload }, { put, select }) {
+      const versions: DatasetState['versions'] = yield select((state) => state.dataset.versions)
       const tasks = payload || {}
       Object.keys(versions).forEach((gid) => {
         const datasets = versions[gid]
@@ -303,12 +319,12 @@ export default {
         versions[gid] = updatedDatasets
       })
       yield put({
-        type: 'UPDATE_ALL_VERSIONS',
+        type: 'UpdateVersions',
         payload: { ...versions },
       })
       return { ...versions }
-    },
-    *updateAllDatasets({ payload: tasks = {} }, { put, select }) {
+    }),
+    updateAllDatasets: createEffect<YModels.ProgressTask[]>(function* ({ payload: tasks = {} }, { put, select }) {
       const newDatasets = Object.values(tasks)
         .filter((task) => task.result_state === ResultStates.VALID)
         .map((task) => ({ id: task?.result_dataset?.id, needReload: true }))
@@ -319,13 +335,13 @@ export default {
           payload: { pid, force: true },
         })
       }
-    },
-    *updateDatasetState({ payload }, { put, select }) {
+    }),
+    updateDatasetState: createEffect<{ [key: string]: YModels.ProgressTask }>(function* ({ payload }, { put, select }) {
       const caches = yield select((state) => state.dataset.dataset)
       const tasks = Object.values(payload || {})
       for (let index = 0; index < tasks.length; index++) {
         const task = tasks[index]
-        const dataset = caches[task?.result_dataset?.id]
+        const dataset = task?.result_dataset?.id ? caches[task?.result_dataset?.id] : undefined
         if (!dataset) {
           continue
         }
@@ -338,49 +354,44 @@ export default {
             })
           } else {
             yield put({
-              type: 'UPDATE_DATASET',
+              type: 'UpdateDataset',
               payload: { id: updated.id, dataset: { ...updated } },
             })
           }
         }
       }
-    },
-    *updateQuery({ payload = {} }, { put, select }) {
-      const query = yield select(({ task }) => task.query)
+    }),
+    updateQuery: createEffect<YParams.DatasetsQuery>(function* ({ payload = {} }, { put, select }) {
       yield put({
-        type: 'UPDATE_QUERY',
-        payload: {
-          ...query,
-          ...payload,
-          offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
-        },
+        type: 'UpdateQuery',
+        payload,
       })
-    },
-    *resetQuery({}, { put }) {
+    }),
+    resetQuery: createEffect(function* ({}, { put }) {
       yield put({
-        type: 'UPDATE_QUERY',
+        type: 'UpdateQuery',
         payload: initQuery,
       })
-    },
-    *clearCache({}, { put }) {
+    }),
+    clearCache: createEffect(function* ({}, { put }) {
       yield put({ type: 'CLEAR_ALL' })
-    },
-    *analysis({ payload }, { call, put }) {
+    }),
+    analysis: createEffect<{ pid: number; datasets: number[] }>(function* ({ payload }, { call, put }) {
       const { pid, datasets } = payload
       const { code, result } = yield call(analysis, pid, datasets)
       if (code === 0) {
-        return result.map((item) => transferDatasetAnalysis(item))
+        return result.map((item: YModels.BackendData) => transferDatasetAnalysis(item))
       }
-    },
-    *checkDuplication({ payload }, { call, put, select }) {
+    }),
+    checkDuplication: createEffect<{ trainSet: number; validationSet: number }>(function* ({ payload }, { call, put, select }) {
       const { trainSet, validationSet } = payload
       const pid = yield select(({ project }) => project.current?.id)
       const { code, result } = yield call(checkDuplication, pid, trainSet, validationSet)
       if (code === 0) {
         return result
       }
-    },
-    *update({ payload }, { put, select }) {
+    }),
+    update: createEffect<YModels.BackendData>(function* ({ payload }, { put, select }) {
       const ds = transferDataset(payload)
       if (!ds.id) {
         return
@@ -396,97 +407,47 @@ export default {
       })
       // update dataset
       yield put({
-        type: 'UPDATE_DATASET',
+        type: 'UpdateDataset',
         payload: {
           id: ds.id,
           dataset: ds,
         },
       })
-    },
-    *getNegativeKeywords({ payload }, { put, call, select }) {
+    }),
+    getNegativeKeywords: createEffect<YParams.DatasetQuery>(function* ({ payload }, { put, call, select }) {
       const { code, result } = yield call(getNegativeKeywords, { ...payload })
       if (code === 0) {
-        const { gt, pred, total_assets_count } = result
-        const getStats = (o = {}) => transferAnnotationsCount(o.keywords, o.negative_assets_count, total_assets_count)
-        return getStats(gt)
+        const dataset = transferDataset(result)
+        return dataset.gt
       }
-    },
-    *getCK({ payload }, { select, put }) {
+    }),
+    getCK: createEffect<{ ids?: number[]; pid: number }>(function* ({ payload }, { select, put }) {
       const { ids = [], pid } = payload
       const datasets = yield put.resolve({ type: 'batchDatasets', payload: { pid, ids, ck: true } })
       return datasets || []
-    },
-    *updateLocalDatasets({ payload: datasets }, { put }) {
+    }),
+    updateLocalDatasets: createEffect<YModels.Dataset[]>(function* ({ payload: datasets }, { put }) {
       for (let i = 0; i < datasets.length; i++) {
         const dataset = datasets[i]
         if (dataset?.id) {
           yield put({
-            type: 'UPDATE_DATASET',
+            type: 'UpdateDataset',
             payload: { id: dataset.id, dataset },
           })
         }
       }
-    },
-    *getLocalDatasets({ payload: ids = [] }, { put, select }) {
+    }),
+    getLocalDatasets: createEffect<number[] | undefined>(function* ({ payload: ids = [] }, { put, select }) {
       const datasets = yield select(({ dataset }) => dataset.dataset)
       return ids.map((id) => datasets[id]).filter((d) => d)
-    },
+    }),
   },
   reducers: {
-    ...createReducers(list),
-    UPDATE_DATASETS(state, { payload }) {
-      return {
-        ...state,
-        datasets: payload,
-      }
-    },
-    UPDATE_ALL_VERSIONS(state, { payload }) {
-      return {
-        ...state,
-        versions: { ...payload },
-      }
-    },
-    UPDATE_DATASET(state, { payload }) {
-      const { id, dataset } = payload
-      const dss = { ...state.dataset, [id]: dataset }
-      return {
-        ...state,
-        dataset: dss,
-      }
-    },
-    UPDATE_ALL_DATASET(state, { payload }) {
-      const dataset = payload
-      return {
-        ...state,
-        dataset,
-      }
-    },
-    UPDATE_ASSETS(state, { payload }) {
-      return {
-        ...state,
-        assets: payload,
-      }
-    },
-    UPDATE_ASSET(state, { payload }) {
-      return {
-        ...state,
-        asset: payload,
-      }
-    },
-    UPDATE_PUBLICDATASETS(state, { payload }) {
-      return {
-        ...state,
-        publicDatasets: payload,
-      }
-    },
-    UPDATE_QUERY(state, { payload }) {
-      return {
-        ...state,
-        query: payload,
-      }
-    },
+    ...reducers,
     CLEAR_ALL() {
       return deepClone(initState)
     },
   },
 }
+
+export default DatasetModal

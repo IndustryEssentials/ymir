@@ -18,18 +18,11 @@ type Props = {
 const Detail: FC<Props> = ({ pid, type, back }) => {
   const history = useHistory()
   const project = useSelector(({ project }) => project.projects[pid])
-  const { versions } = useSelector(({ dataset }) => dataset)
-  const { versions: modelVersions } = useSelector(({ model }) => model)
   const { run: getProject } = useRequest<null, [{ id: number; force?: boolean }]>('project/getProject', { loading: false, loadingDelay: 500 })
 
   useEffect(() => {
     pid && getProject({ id: pid })
   }, [pid])
-
-  useEffect(() => {
-    const needReload = [...Object.values(versions), ...Object.values(modelVersions)].flat().some((dataset) => dataset.needReload)
-    needReload && getProject({ id: pid, force: true })
-  }, [versions, modelVersions])
 
   const backBtn = (
     <Button className={s.back} onClick={() => history.goBack()}>
