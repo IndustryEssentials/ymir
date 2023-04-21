@@ -22,11 +22,18 @@ const Suggestion: FC<Props> = ({ suggestions, target }) => {
       {Object.keys(suggestions).map((key) => {
         const suggest = suggestions[key]
         const label = `dataset.analysis.suggestion.${key}`
-        return <Suggest key={key} title={t(`${label}.title`)} content={t(label, {
-          bounding: suggest.bounding,
-          boundingLabel: percent(suggest.bounding, 0),
-          values: suggest.values.filter(value => !target?.length || target.includes(value)).join(', ')
-        })} />
+        const values = suggest.values.filter((value) => suggest.type !== 'keyword' || !target?.length || target.includes(value)).join(', ')
+        return (
+          <Suggest
+            key={key}
+            title={t(`${label}.title`)}
+            content={t(label, {
+              bounding: suggest.bounding,
+              boundingLabel: percent(suggest.bounding, 0),
+              values,
+            })}
+          />
+        )
       })}
     </div>
   ) : null

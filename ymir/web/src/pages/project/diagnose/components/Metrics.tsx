@@ -24,8 +24,9 @@ import VersionName from '@/components/result/VersionName'
 import ReactJson from 'react-json-view'
 import IouSlider from './IouSlider'
 import { getInferClassesFromResult } from './common'
+import { Prediction } from '@/constants'
 type Props = {
-  prediction: YModels.Prediction
+  prediction: Prediction
 }
 type TabType = {
   value: TabIdType

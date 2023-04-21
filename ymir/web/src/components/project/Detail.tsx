@@ -18,11 +18,19 @@ type Props = {
 const Detail: FC<Props> = ({ pid, type, back }) => {
   const history = useHistory()
   const project = useSelector(({ project }) => project.projects[pid])
+  const tasks = useSelector(({ socket }) => socket.tasks)
   const { run: getProject } = useRequest<null, [{ id: number; force?: boolean }]>('project/getProject', { loading: false, loadingDelay: 500 })
 
   useEffect(() => {
     pid && getProject({ id: pid })
   }, [pid])
+
+  useEffect(() => {
+    const needUpdate = tasks.some(task => task.reload)
+    if (needUpdate) {
+      getProject({ id: pid, force: true })
+    }
+  }, [tasks])
 
   const backBtn = (
     <Button className={s.back} onClick={() => history.goBack()}>

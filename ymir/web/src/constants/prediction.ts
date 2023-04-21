@@ -38,7 +38,7 @@ export function transferPrediction(data: YModels.BackendData): Prediction {
     type: data.object_type || ObjectType.ObjectDetection,
     name: ``,
     version: data.version_num || 0,
-    // versionName,
+    versionName: '',
     assetCount,
     keywords,
     keywordCount: keywords.length,

@@ -1,10 +1,10 @@
 import { ColumnType } from 'antd/lib/table'
-import { Link } from 'umi'
 
 import StrongTitle from './StrongTitle'
 import ImageName from '@/components/image/ImageName'
+import { Prediction } from '@/constants'
 
-const Image = <T extends YModels.Prediction>(): ColumnType<T> => ({
+const Image = <T extends Prediction>(): ColumnType<T> => ({
   title: <StrongTitle label="pred.column.image" />,
   dataIndex: 'image',
   render: (_, { task, projectId }) => {

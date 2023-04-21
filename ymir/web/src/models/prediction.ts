@@ -2,15 +2,17 @@ import { diffTime } from '@/utils/date'
 import { actions } from '@/constants/common'
 import { transferPrediction } from '@/constants/prediction'
 import { batchAct, evaluate, getPrediction, getPredictions } from '@/services/prediction'
-import { createEffect, createReducers, transferList } from './_utils'
-import { PredictionStore } from '.'
+import { createEffect, createReducersByState, transferList } from './_utils'
+import { PredictionState, PredictionStore } from '.'
+import { Prediction } from '@/constants'
 type PredictionsPayload = { pid: number; force?: boolean; [key: string]: any }
 type PredictionPayload = { id: number; force?: boolean }
 
-const reducersList = [
-  { name: 'UpdatePredictions', field: 'predictions' },
-  { name: 'UpdatePrediction', field: 'prediction' },
-]
+const state: PredictionState =  {
+  predictions: {},
+  prediction: {},
+}
+const reducers = createReducersByState(state)
 
 const hideAction = (type: actions) =>
   createEffect<{ pid: number; ids: number[] }>(function* ({ payload: { pid, ids = [] } }, { call, put }) {
@@ -22,10 +24,7 @@ const hideAction = (type: actions) =>
 
 const PredictionModel: PredictionStore = {
   namespace: 'prediction',
-  state: {
-    predictions: {},
-    prediction: {},
-  },
+  state,
   effects: {
     getPredictions: createEffect<PredictionsPayload>(function* ({ payload }, { call, select, put }) {
       const { pid, force, ...params } = payload
@@ -54,7 +53,7 @@ const PredictionModel: PredictionStore = {
         })
 
         const listResponse = groupByModel(result)
-        const predictions = transferList<YModels.Prediction>(listResponse, transferPrediction)
+        const predictions = transferList(listResponse, transferPrediction)
 
         const getIds = (key: keyof YModels.InferenceParams) => {
           const ids = predictions.items
@@ -143,7 +142,7 @@ const PredictionModel: PredictionStore = {
       }
     }),
   },
-  reducers: createReducers(reducersList),
+  reducers,
 }
 
 export default PredictionModel

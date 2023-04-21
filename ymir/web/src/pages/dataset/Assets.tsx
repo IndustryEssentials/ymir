@@ -18,6 +18,7 @@ import styles from './assets.less'
 import { List as ListType } from '@/models/typings/common'
 import { ValueType } from '@/components/form/KeywordFilter'
 import { validState } from '@/constants/common'
+import { Prediction } from '@/constants'
 
 type IndexType = {
   hash: string
@@ -27,13 +28,12 @@ type IndexType = {
 
 const Dataset: FC = () => {
   const { id: pid, did, prid } = useParams<{ id: string; did: string; type: string; prid?: string }>()
-  const location = useLocation()
   const isPred = !!prid
-  const id = prid ? prid : did
+  const [id, setId] = useState(0)
   const initQuery = {
     pid,
     annoType: isPred ? 2 : 1,
-    id,
+    id: 0,
     offset: 0,
     limit: 20,
   }
@@ -49,7 +49,7 @@ const Dataset: FC = () => {
   const { data: prediction, run: getPrediction } = useRequest<YModels.Dataset>('prediction/getPrediction', {
     loading: false,
   })
-  const [current, setCurrent] = useState<YModels.Prediction | YModels.Dataset>()
+  const [current, setCurrent] = useState<Prediction | YModels.Dataset>()
   const { data: { items: assets, total } = { items: [], total: 0 }, run: getAssets } = useRequest<
     ListType<YModels.Asset>,
     [
@@ -66,8 +66,13 @@ const Dataset: FC = () => {
   const [filterValues, setFilterValues] = useState<FormValues>({})
 
   useEffect(() => {
-    ;(isPred ? getPrediction : getDataset)({ id, verbose: true, force: true })
-  }, [id])
+    const id = Number(prid ? prid : did)
+    setId(id)
+  }, [did, prid])
+
+  useEffect(() => {
+    id && (isPred ? getPrediction : getDataset)({ id, verbose: true, force: true })
+  }, [id, isPred])
 
   useEffect(() => {
     setCurrent(isPred ? prediction : dataset)
@@ -77,7 +82,7 @@ const Dataset: FC = () => {
     if (current?.id && validState(current.state)) {
       const { offset = 0, limit = 20 } = filterParams
       setCurrentPage(offset / limit + 1)
-      filter(filterParams)
+      filter({ ...filterParams, id: current.id })
     }
   }, [current, filterParams])
 

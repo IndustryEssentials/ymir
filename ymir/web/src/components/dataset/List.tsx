@@ -5,7 +5,7 @@ import { Form, Button, Input, Table, Space, Row, Col, Tooltip, Pagination, messa
 import t from '@/utils/t'
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
-import { DefaultShowVersionCount, readyState, validState } from '@/constants/common'
+import { DefaultShowVersionCount, getLabelToolUrl, readyState, validState } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
 import useRequest from '@/hooks/useRequest'
 
@@ -382,14 +382,24 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
           hidden: () => !canHide(record, project),
           icon: <DeleteIcon />,
         },
+        labeltool: {
+          key: 'labeltool',
+          label: t('dataset.action.labeltool'),
+          link: getLabelToolUrl(),
+          target: '_blank',
+        },
       }
-      return getActions(acts, {
+      const normalActions = getActions(acts, {
         hasImages: !!imagesCount,
         haveAnnotations: !!record.keywords.length,
         haveModels: !!modelsCount,
       })
+      if (record.taskType === TASKTYPES.LABEL) {
+        return [acts.labeltool, ...normalActions]
+      }
+      return normalActions
     },
-    [modelsCount, imagesCount],
+    [modelsCount, imagesCount, versions],
   )
 
   const getTypeFilter = (gid: number) => {

@@ -72,7 +72,6 @@ describe("constants: image", () => {
       is_deleted: false,
       create_datetime: createTime,
       id: 1,
-      is_shared: false,
       related: [],
       configs,
     }

@@ -49,7 +49,7 @@ const Socket: SocketStore = {
       }))
       yield put({ type: 'saveTasks', payload: tasks })
     }),
-    asyncMessages: createEffect<YModels.BackendData[]>(function * ({ payload }, { put }) {
+    asyncMessages: createEffect<YModels.BackendData[]>(function* ({ payload }, { put }) {
       yield put({
         type: 'message/asyncMessages',
         payload,
@@ -67,18 +67,19 @@ const Socket: SocketStore = {
   subscriptions: {
     setup({ dispatch, history }) {
       return history.listen(async (location) => {
-        if (pageMaps.some((page) => new RegExp(`^${page.path}$`).test(location.pathname))) {
-          let socket = await dispatch<any, SocketType>({
-            type: 'getSocket',
-          })
-          socket.off().on('update_taskstate', (data) => {
+        let socket = await dispatch<any, SocketType>({
+          type: 'getSocket',
+        })
+        socket
+          .off()
+          .on('update_taskstate', (data) => {
             pageMaps.forEach((page) => dispatch({ type: page.method, payload: data }))
             // cache socket valid data
             dispatch({ type: 'saveUpdatedTasks', payload: data })
-          }).on('update_message', (data) => {
+          })
+          .on('update_message', (data) => {
             dispatch({ type: 'asyncMessages', payload: data })
           })
-        }
       })
     },
   },

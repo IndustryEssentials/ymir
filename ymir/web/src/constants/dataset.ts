@@ -83,11 +83,11 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
   const keywords = Object.keys(gt)
   const analysis = data?.analysis || {}
   const suggestions = [
-    { source: 'class_proportion', key: 'classBias' },
-    { source: 'class_obj_count', key: 'annotationCount' },
+    { source: 'class_proportion', key: 'classBias', type: 'keyword' },
+    { source: 'class_obj_count', key: 'annotationCount', type: 'keyword' },
     { source: 'density_proportion', key: 'annotationDensity' },
-  ].reduce<YModels.DatasetSuggestions>((prev, { key, source }) => {
-    const suggest = transferSuggestion(analysis[source])
+  ].reduce<YModels.DatasetSuggestions>((prev, { key, source, type }) => {
+    const suggest = transferSuggestion(analysis[source], type)
     return suggest ? { ...prev, [key]: suggest } : prev
   }, {})
   const versionName = getVersionLabel(data.version_num)

@@ -58,7 +58,7 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
                   {row.map((asset, rowIndex) => (
                     <Item
                       asset={asset}
-                      key={index * columns + rowIndex}
+                      key={asset.hash}
                       showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)}
                       height={h}
                       mode={mode}

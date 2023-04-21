@@ -5,8 +5,9 @@ import ModelVersionName from '@/components/result/ModelVersionName'
 import { Link } from 'umi'
 import usePrimaryMetric from '@/hooks/usePrimaryMetric'
 import { getRecommendStage } from '@/constants/model'
+import { Prediction } from '@/constants'
 
-const Model = <T extends YModels.Prediction>(): ColumnType<T> => ({
+const Model = <T extends Prediction>(): ColumnType<T> => ({
   title: <StrongTitle label="dataset.column.model" />,
   dataIndex: 'model',
   render: (_, { type, projectId, inferModel, inferModelId }) => {

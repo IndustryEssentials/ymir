@@ -3,9 +3,10 @@ import ReactJson from 'react-json-view'
 
 import StrongTitle from './StrongTitle'
 import t from '@/utils/t'
+import { Prediction } from '@/constants'
 
 const title = 'model.diagnose.label.config'
-const InferConfig = <T extends YModels.Prediction>(): TableColumnType<T> => ({
+const InferConfig = <T extends Prediction>(): TableColumnType<T> => ({
   title: <StrongTitle label={title} />,
   dataIndex: 'inferConfig',
   render: (config) => {

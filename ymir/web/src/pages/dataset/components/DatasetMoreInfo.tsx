@@ -126,7 +126,7 @@ const DatasetMoreInfo: FC<{ task: YModels.Task }> = ({ task }) => {
   }
 
   function renderTypes() {
-    const maps: {[key: number]: () => ReactNode} = {
+    const maps: { [key: number]: () => ReactNode } = {
       [TASKTYPES.TRAINING]: renderTraining,
       [TASKTYPES.MINING]: renderMining,
       [TASKTYPES.LABEL]: renderLabel,
@@ -141,7 +141,7 @@ const DatasetMoreInfo: FC<{ task: YModels.Task }> = ({ task }) => {
       [TASKTYPES.SYS]: renderSys,
     }
     const render = maps[task.type]
-    return render ? render(): null
+    return render ? render() : null
   }
 
   const renderSys = () => <Item label={t('dataset.column.source')}>{t('task.detail.source.sys')}</Item>
@@ -189,9 +189,7 @@ const DatasetMoreInfo: FC<{ task: YModels.Task }> = ({ task }) => {
           <Tag key={keyword}>{keyword}</Tag>
         ))}
       </Item>
-      <Item label={t('task.label.form.keep_anno.label')}>
-        {renderKeepAnnotations(task.parameters.annotation_type)}
-      </Item>
+      <Item label={t('task.label.form.keep_anno.label')}>{renderKeepAnnotations(task.parameters.annotation_type)}</Item>
       <Item label={t('task.label.form.desc.label')}>
         {task.parameters.extra_url ? (
           <a target="_blank" href={task.parameters.extra_url}>
@@ -268,8 +266,12 @@ const DatasetMoreInfo: FC<{ task: YModels.Task }> = ({ task }) => {
   )
   const renderMerge = () => (
     <>
-      <Item label={t('task.detail.include_datasets.label')} span={2}>{renderDatasetNames(task?.parameters?.include_datasets)}</Item>
-      <Item label={t('task.detail.exclude_datasets.label')} span={2}>{renderDatasetNames(task?.parameters?.exclude_datasets)}</Item>
+      <Item label={t('task.detail.include_datasets.label')} span={2}>
+        {renderDatasetNames(task?.parameters?.include_datasets)}
+      </Item>
+      <Item label={t('task.detail.exclude_datasets.label')} span={2}>
+        {renderDatasetNames(task?.parameters?.exclude_datasets)}
+      </Item>
       {renderCreateTime(task.create_datetime)}
     </>
   )

@@ -26,6 +26,7 @@ const dataset = {
   'dataset.action.detail': { cn: '详情', en: 'Detail' },
   'dataset.action.edit': { cn: '编辑', en: 'Rename' },
   'dataset.action.inference': { cn: '推理', en: 'Inference' },
+  'dataset.action.labeltool': { cn: '标注平台', en: 'Label Platform' },
   'dataset.empty.label': { cn: '去导入一个数据集', en: 'Import A Dataset' },
   'dataset.import.label': { cn: '添加数据集', en: 'Add Dataset' },
   'dataset.query.name': { cn: '名称', en: 'Dataset Name' },

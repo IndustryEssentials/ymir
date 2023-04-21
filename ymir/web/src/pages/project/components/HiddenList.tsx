@@ -15,9 +15,10 @@ import Stages from '@/components/table/columns/Stages'
 import InferDataset from '@/components/table/columns/InferDataset'
 import Model from '@/components/table/columns/InferModel'
 import { List } from '@/models/typings/common'
+import { Prediction } from '@/constants'
 
 export type AType = 'dataset' | 'model' | 'prediction'
-type DataType = YModels.Dataset | YModels.Model | YModels.Prediction
+type DataType = YModels.Dataset | YModels.Model | Prediction
 type ColumnType = TableColumnType<DataType>
 type ColumnsType = TableColumnsType<DataType>
 type Props = {
@@ -52,8 +53,8 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
 
   useEffect(() => {
     if (active === 'prediction' && list.length) {
-      const predictions = list as YModels.Prediction[]
-      const updatedPredictions = predictions.map((prediction: YModels.Prediction) => {
+      const predictions = list as Prediction[]
+      const updatedPredictions = predictions.map((prediction: Prediction) => {
         const { inferDatasetId, inferModelId } = prediction
         const inferModel = inferModelId[0] ? cacheModels[inferModelId[0]] : undefined
         const inferDataset = inferDatasetId ? cacheDatasets[inferDatasetId] : undefined

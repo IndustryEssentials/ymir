@@ -16,23 +16,24 @@ import Empty from '@/components/empty/Pred'
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
 import { List } from '@/models/typings/common'
+import { Prediction } from '@/constants'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
 const Predictions: React.FC = () => {
   const { id: pid } = useParams<{ id?: string }>()
   const history = useHistory()
-  const [predictions, setPredictions] = useState<YModels.Prediction[]>([])
+  const [predictions, setPredictions] = useState<Prediction[]>([])
   const [query, setQuery] = useState(initQuery)
   const hideRef = useRef<RefProps>(null)
-  const { data: { items, total } = { items: [], total: 0 }, run: getPredictions } = useRequest<List<YModels.Prediction>>('prediction/getPredictions')
+  const { data: { items, total } = { items: [], total: 0 }, run: getPredictions } = useRequest<List<Prediction>>('prediction/getPredictions')
   const cols = getPredictionColumns(predictions[0]?.type)
-  const [currentPrediction, setCurrentPrediction] = useState<YModels.Prediction>()
+  const [currentPrediction, setCurrentPrediction] = useState<Prediction>()
   const [metricsModalVisible, setMModalVisible] = useState(false)
   const cacheDatasets = useSelector((state) => state.dataset.dataset)
   const cacheModels = useSelector((state) => state.model.model)
   const progressTasks = useSelector(({ socket }) => socket.tasks)
-  const actions = (record: YModels.Prediction): YComponents.Action[] => [
+  const actions = (record: Prediction): YComponents.Action[] => [
     {
       key: 'diagnose',
       label: t('common.action.diagnose'),
@@ -55,7 +56,7 @@ const Predictions: React.FC = () => {
       icon: <DeleteIcon />,
     },
   ]
-  const actionCol: TableColumnsType<YModels.Prediction> = [
+  const actionCol: TableColumnsType<Prediction> = [
     {
       dataIndex: 'action',
       title: t('common.action'),
@@ -75,7 +76,7 @@ const Predictions: React.FC = () => {
         fetchPredictions()
       } else {
         const updatedDatasets = predictions.map((dataset) => {
-          const ds = updateResultByTask<typeof dataset>(
+          const ds = updateResultByTask(
             dataset,
             progressTasks.find((task) => task.hash === dataset.task.hash),
           )
@@ -101,7 +102,7 @@ const Predictions: React.FC = () => {
     )
   }, [cacheDatasets, cacheModels, items])
 
-  const popupModal = (prediction: YModels.Prediction) => {
+  const popupModal = (prediction: Prediction) => {
     setCurrentPrediction(prediction)
     setMModalVisible(true)
   }
@@ -116,7 +117,7 @@ const Predictions: React.FC = () => {
     return getPredictions({ pid, ...query })
   }
 
-  const hide = (dataset: YModels.Prediction) => {
+  const hide = (dataset: Prediction) => {
     hideRef?.current?.hide([dataset])
   }
 

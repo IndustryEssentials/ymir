@@ -16,7 +16,7 @@ enum AnnotationCount {
   normal = 3,
   bad = 4,
 }
-const transferSuggestion = (sug?: { [bounding: string]: string[] }) => {
+const transferSuggestion = (sug?: { [bounding: string]: string[] }, type?: string) => {
   if (!sug) {
     return
   }
@@ -25,6 +25,7 @@ const transferSuggestion = (sug?: { [bounding: string]: string[] }) => {
   const suggest: YModels.Suggestion = {
     bounding: Number(bounding),
     values,
+    type,
   }
   return Number(bounding) ? suggest : undefined
 }

@@ -12,10 +12,10 @@ type Matable<U> = {
 type Message = Matable<M>
 
 type M = {
-  [TaskResultType.dataset]: MessageBase<YModels.Dataset>,
-  [TaskResultType.model]: MessageBase<YModels.Model>,
-  [TaskResultType.prediction]: MessageBase<YModels.Prediction>,
-  [TaskResultType.image]: MessageBase<Image>,
+  [TaskResultType.dataset]: MessageBase<YModels.Dataset>
+  [TaskResultType.model]: MessageBase<YModels.Model>
+  [TaskResultType.prediction]: MessageBase<Prediction>
+  [TaskResultType.image]: MessageBase<Image>
 }
 
 type MessageBase<T> = {
@@ -32,7 +32,7 @@ type MessageBase<T> = {
 
 type MessageResultModules = 'dataset' | 'model' | 'prediction' | 'image'
 
-interface Prediction extends Omit<YModels.Dataset<YModels.InferenceParams>, 'suggestions' | 'versionName'> {
+interface Prediction extends Omit<YModels.Dataset<YModels.InferenceParams>, 'suggestions'> {
   inferModelId: number[]
   inferModel?: YModels.Model
   inferDatasetId: number
@@ -44,7 +44,6 @@ interface Prediction extends Omit<YModels.Dataset<YModels.InferenceParams>, 'sug
   inferClass?: Array<string>
   odd?: boolean
 }
-
 
 type ImageConfig = { [key: string]: number | string }
 type DockerImageConfig = {
@@ -68,4 +67,22 @@ type Image = {
   errorCode?: string
 }
 
-export { Message, MessageResultModules, Prediction, Image, DockerImageConfig }
+type Task = {
+  name: string
+  type: TASKTYPES
+  project_id: number
+  create_datetime: string
+  update_datetime: string
+  id: number
+  hash: string
+  state: TASKSTATES
+  error_code: string
+  duration: number
+  percent: number
+  parameters: any
+  config: any
+  is_terminated: boolean
+  result_type: number
+}
+
+export { Message, MessageResultModules, Prediction, Image, DockerImageConfig, Task }

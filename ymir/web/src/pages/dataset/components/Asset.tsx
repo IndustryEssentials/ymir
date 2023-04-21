@@ -18,11 +18,12 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import GtSelector from '@/components/form/GtSelector'
 import { evaluationTags } from '@/constants/dataset'
 import { List } from '@/models/typings/common'
+import { Prediction } from '@/constants'
 
 type Props = {
-  id: string
+  id: number
   asset?: YModels.Asset
-  dataset?: YModels.Dataset | YModels.Prediction
+  dataset?: YModels.Dataset | Prediction
   pred?: boolean
   datasetKeywords?: KeywordsType
   filterKeyword?: KeywordsType

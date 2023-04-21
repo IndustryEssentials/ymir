@@ -1,4 +1,4 @@
-import { Image, Message } from '@/constants'
+import { Image, Message, Prediction } from '@/constants'
 import { Socket } from 'socket.io-client'
 import { Loading } from 'umi'
 import { IdMap, List, StoreType } from './typings/common.d'
@@ -53,8 +53,8 @@ interface DatasetState {
 }
 
 interface PredictionState {
-  predictions: IdMap<List<YModels.Prediction>>
-  prediction: IdMap<YModels.Prediction>
+  predictions: IdMap<List<Prediction>>
+  prediction: IdMap<Prediction>
 }
 
 interface AssetState {

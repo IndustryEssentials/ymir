@@ -129,6 +129,7 @@ declare namespace YModels {
   type Suggestion = {
     bounding: number
     values: string[]
+    type?: string
   }
   type DatasetSuggestions = {
     [key: string]: Suggestion

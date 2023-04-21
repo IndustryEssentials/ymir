@@ -1,6 +1,7 @@
 import { Cascader, Col, Row, Select } from 'antd'
 import t from '@/utils/t'
 import { FC, useEffect, useState } from 'react'
+import { Prediction } from '@/constants';
 
 enum Type {
   keywords = 'keywords',
@@ -11,7 +12,7 @@ export type ValueType = { type: Type; selected?: string[] }
 type Props = {
   value?: ValueType
   onChange?: (value: ValueType) => void
-  dataset?: YModels.Dataset | YModels.Prediction
+  dataset?: YModels.Dataset | Prediction
 }
 type KeywordOptionsType = {
   [key in Type]: KeywordOption[]

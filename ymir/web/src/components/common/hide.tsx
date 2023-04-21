@@ -6,11 +6,12 @@ import useRequest from '@/hooks/useRequest'
 
 import confirmConfig from '@/components/common/DangerConfirm'
 import VersionName from '@/components/result/VersionName'
+import { Prediction } from '@/constants'
 type ResultType = 'dataset' | 'model' | 'prediction'
 type Result<K extends ResultType> = {
   'dataset': YModels.Dataset
   'model' : YModels.Model
-  'prediction': YModels.Prediction
+  'prediction': Prediction
 }[K]
 export type RefProps = {
   hide: (dss: YModels.Result[], exclude?: number[]) => void

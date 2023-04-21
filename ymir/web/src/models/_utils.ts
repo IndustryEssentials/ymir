@@ -30,7 +30,7 @@ const createReducersByState = <S extends Root[keyof Root]>(state: S) => {
   }, {})
 }
 
-const transferList = <R>(listResponse: YModels.ResponseResultList, func: (data: YModels.BackendData) => R): List<R> => {
+const transferList = <R extends any = any>(listResponse: YModels.ResponseResultList, func: (data: YModels.BackendData) => R) => {
   const { items, total } = listResponse
   return { items: items.map((item) => func(item)), total }
 }

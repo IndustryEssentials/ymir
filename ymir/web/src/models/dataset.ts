@@ -25,13 +25,6 @@ import { List } from './typings/common'
 
 const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
 
-const list = [
-  { name: 'UPDATE_ALL_DATASETS', field: 'allDatasets' },
-  { name: 'UpdateValidDatasetCount', field: 'validDatasetCount' },
-  { name: 'UpdateTrainingDatasetCount', field: 'trainingDatasetCount' },
-  { name: 'UpdateVersions', field: 'versions' },
-]
-
 const initState = {
   query: { ...initQuery },
   datasets: {},
@@ -355,7 +348,7 @@ const DatasetModal: DatasetStore = {
           } else {
             yield put({
               type: 'UpdateDataset',
-              payload: { id: updated.id, dataset: { ...updated } },
+              payload: { [updated.id]: { ...updated } },
             })
           }
         }
@@ -385,7 +378,7 @@ const DatasetModal: DatasetStore = {
     }),
     checkDuplication: createEffect<{ trainSet: number; validationSet: number }>(function* ({ payload }, { call, put, select }) {
       const { trainSet, validationSet } = payload
-      const pid = yield select(({ project }) => project.current?.id)
+      const pid: number = yield select(({ project }) => project.current?.id)
       const { code, result } = yield call(checkDuplication, pid, trainSet, validationSet)
       if (code === 0) {
         return result
@@ -409,8 +402,7 @@ const DatasetModal: DatasetStore = {
       yield put({
         type: 'UpdateDataset',
         payload: {
-          id: ds.id,
-          dataset: ds,
+          [ds.id]: ds,
         },
       })
     }),
@@ -432,7 +424,7 @@ const DatasetModal: DatasetStore = {
         if (dataset?.id) {
           yield put({
             type: 'UpdateDataset',
-            payload: { id: dataset.id, dataset },
+            payload: { [dataset.id]: dataset },
           })
         }
       }

@@ -18,6 +18,7 @@ const NotificationItem: FC<Props> = ({ total, title, content, go, unread }) => {
         <div style={{ cursor: 'pointer' }}>
           {content}
           <span onClick={(e) => e.stopPropagation()} style={{ display: 'block', textAlign: 'right' }}>
+            {console.log('total:', total)}
             {t('message.unread.label', { count: total - 1 })}
           </span>
         </div>
@@ -32,7 +33,7 @@ const NotificationItem: FC<Props> = ({ total, title, content, go, unread }) => {
         unread()
       },
     })
-  }, [title, content])
+  }, [title, content, total])
   return <></>
 }
 
