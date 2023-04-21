@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from app.constants.state import DockerImageState, ObjectType, ResultState
 from app.schemas.common import Common, DateTimeModelMixin, IdModelMixin, IsDeletedModelMixin
 from app.schemas.image_config import ImageConfig
+from app.schemas.task import TaskInternal
 
 
 class DockerImageBase(BaseModel):
@@ -46,6 +47,8 @@ class DockerImageInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin,
     state: DockerImageState = DockerImageState.pending
     is_shared: Optional[bool]
     is_official: Optional[bool] = False
+
+    related_task: Optional[TaskInternal]
 
     class Config:
         orm_mode = True
