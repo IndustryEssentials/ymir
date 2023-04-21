@@ -41,7 +41,6 @@ class ModelVersionBase(BaseModel):
 
 
 class ModelVersion(ModelVersionBase, IdModelMixin, DateTimeModelMixin):
-    #   model_id: int
     task_id: int
     result_state: int
     object_type: int

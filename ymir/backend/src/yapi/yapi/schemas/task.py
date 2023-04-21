@@ -50,7 +50,7 @@ class TaskBase(BaseModel):
                 type_ = ResultType.model.value
                 id_ = values["result_model"]["model_group_id"]
                 version_id = values["result_model"]["id"]
-            if values.get("result_docker_image"):
+            elif values.get("result_docker_image"):
                 type_ = ResultType.docker_image.value
                 id_ = values["result_docker_image"]["id"]
                 version_id = None
