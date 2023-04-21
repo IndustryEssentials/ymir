@@ -190,7 +190,7 @@ const DatasetModal: DatasetStore = {
       const dss = yield put.resolve({ type: 'queryDatasets', payload: { pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
         yield put({
-          type: 'UPDATE_ALL_DATASETS',
+          type: 'UpdateAllDatasets',
           payload: { [pid]: dss.items },
         })
         return dss.items
