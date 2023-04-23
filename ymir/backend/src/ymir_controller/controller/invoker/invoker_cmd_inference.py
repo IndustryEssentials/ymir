@@ -78,7 +78,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         prediction_pb_path = os.path.join(self._work_dir, "out", "prediction.mir")
         if not os.path.isfile(prediction_pb_path):
-            return utils.make_general_response(CTLResponseCode.DOCKER_IMAGE_ERROR,
+            return utils.make_general_response(CTLResponseCode.RUN_COMMAND_ERROR,
                                                f"Inference result not found: {prediction_pb_path}")
         prediction = mir_cmd_pb.SingleTaskAnnotations()
         with open(prediction_pb_path, 'rb') as f:

@@ -2,6 +2,18 @@
 
 ## ymir-controller
 
+### 130401
+
+#### 描述
+
+无法拉取或解析 docker 镜像
+
+#### 建议处理方式
+
+1. 检查 docker 镜像的名称是否拼写正确
+
+2. docker 镜像可能未提供合适的描述文件，请参考 ymir-workplace/ymir-data/logs/ymir_controller.log 以获取更详细的错误信息，并将相关错误信息提供给镜像作者以解决问题
+
 ### 130602
 
 #### 描述

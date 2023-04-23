@@ -69,6 +69,7 @@ const errors = {
   'error111906': { cn: '数据集未处理完成', en: 'Dataset is not ready', },
   'error113002': { cn: '推理结果未处理完成', en: 'Prediction is not ready', },
   'error112103': { cn: '内部请求超时', en: 'Internal request timeout', },
+  'error130401': { cn: '无法拉取或解析 docker 镜像', en: 'Error when pull or inspect docker image', },
   'error130602': { cn: '创建标注任务出错', en: 'Error when create label task', },
   'error130603': { cn: '创建标注任务出现网络错误', en: 'Network error when create label task', },
   'error130604': {
