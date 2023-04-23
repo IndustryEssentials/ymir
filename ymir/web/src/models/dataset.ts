@@ -273,10 +273,10 @@ const DatasetModal: DatasetStore = {
         },
       })
 
-      if (result?.total) {
+      if (result) {
         yield put({
           type: 'UpdateTrainingDatasetCount',
-          payload: result.total,
+          payload: result?.total || 0,
         })
         return result.total
       }

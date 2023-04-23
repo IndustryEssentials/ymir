@@ -6,7 +6,7 @@ const sequences: { [key: number]: ActionType[] } = {
   [2]: ['merge', 'filter', 'copy', 'label', 'edit', 'rerun', 'stop', 'del'],
   [4]: ['label', 'merge', 'filter', 'copy', 'edit', 'rerun', 'stop', 'del'],
   [1 + 2]: ['train', 'merge', 'filter', 'label', 'copy', 'edit', 'rerun', 'stop', 'del'],
-  [1 + 4]: ['mining', 'label', 'inference', 'merge', 'filter', 'label', 'copy', 'edit', 'rerun', 'stop', 'del'],
+  [1 + 4]: ['mining', 'label', 'inference', 'merge', 'filter', 'copy', 'edit', 'rerun', 'stop', 'del'],
   [2 + 4]: ['merge', 'filter', 'label', 'copy', 'edit', 'rerun', 'stop', 'del'],
   [1 + 2 + 4]: ['inference', 'train', 'merge', 'mining', 'filter', 'label', 'copy', 'edit', 'rerun', 'stop', 'del'],
   [1 + 2 + 4 + 8]: ['merge', 'copy', 'filter', 'label', 'train', 'mining', 'inference', 'edit', 'rerun', 'stop', 'del'],

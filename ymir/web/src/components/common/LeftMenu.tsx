@@ -58,12 +58,12 @@ function LeftMenu() {
   const [id, setId] = useState(0)
   const [project, setProject] = useState<YModels.Project>()
   const { trainingDatasetCount, tasks } = useSelector(({ dataset, socket }) => ({ trainingDatasetCount: dataset.trainingDatasetCount, tasks: socket.tasks }))
-  const { run: getTrainingDatasetCount } = useRequest('dataset/getTrainingDatasetCount', {
+  const { run: getTrainingDatasetCount } = useRequest<null, [number]>('dataset/getTrainingDatasetCount', {
     loading: false,
   })
 
   useEffect(() => {
-    project?.id && getTrainingDatasetCount()
+    project?.id && getTrainingDatasetCount(project.id)
   }, [project?.id, tasks])
 
   useEffect(() => {
