@@ -135,21 +135,6 @@ declare namespace YModels {
     [key: string]: Suggestion
   }
 
-  export interface Prediction extends Dataset<InferenceParams> {
-    inferModelId: number[]
-    inferModel?: Model
-    inferDatasetId: number
-    inferDataset?: Dataset
-    inferConfig: ImageConfig
-    rowSpan?: number
-    evaluated: boolean
-    pred: AnnotationsCount
-    inferClass?: Array<string>
-    odd?: boolean
-  }
-
-  type AllResult = Prediction | Dataset | Model
-
   export interface DatasetAnalysis extends Dataset {
     keywordCounts: AnalysisChart
     assetHWRatio: AnalysisChart
@@ -325,30 +310,6 @@ declare namespace YModels {
   }
 
   export type ImageConfig = { [key: string]: number | string }
-  export type DockerImageConfig = {
-    type: number
-    config: ImageConfig
-    object_type: ObjectType
-  }
-  export interface Image {
-    id: number
-    name: string
-    state: number
-    functions: Array<number>
-    configs: Array<DockerImageConfig>
-    url: string
-    description: string
-    createTime: string
-    objectTypes: ObjectType[]
-    related?: Array<Image>
-    liveCode?: boolean
-    errorCode?: string
-  }
-
-  export interface ImageList {
-    items: Image[]
-    total: number
-  }
 
   type ResultType = 'dataset' | 'model'
   export interface Iteration {

@@ -63,8 +63,11 @@ export function transferImage(data: YModels.BackendData): Image {
     related: data.related,
     description: data.description,
     createTime: format(data.create_datetime),
+    isSample: data.id === 1,
   }
 }
 
 export const getConfig = (image: Image, type: TYPES, objectType: ObjectType) =>
   image.configs.find((config) => config.type === type && config.object_type === objectType)
+
+export const isSampleImage = (image?: Image) => image?.isSample

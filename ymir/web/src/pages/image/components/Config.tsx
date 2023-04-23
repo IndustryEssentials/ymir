@@ -2,8 +2,9 @@ import { FC } from 'react'
 import { Card, Col, Row } from 'antd'
 import { getImageTypeLabel } from '@/constants/image'
 import t from '@/utils/t'
+import { DockerImageConfig } from '@/constants'
 
-const Config: FC<{ configs?: YModels.DockerImageConfig[] }> = ({ configs = [] }) => {
+const Config: FC<{ configs?: DockerImageConfig[] }> = ({ configs = [] }) => {
   return (
     <Row gutter={16}>
       {configs.map(({ type, config }) => (

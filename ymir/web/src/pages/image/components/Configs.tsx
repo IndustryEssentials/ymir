@@ -3,10 +3,11 @@ import t from '@/utils/t'
 import { getProjectTypeLabel } from '@/constants/objectType'
 import Config from './Config'
 import { Card } from 'antd'
+import { DockerImageConfig } from '@/constants'
 
-const Configs: FC<{ configs?: YModels.DockerImageConfig[] }> = ({ configs = [] }) => {
+const Configs: FC<{ configs?: DockerImageConfig[] }> = ({ configs = [] }) => {
   const groupByObjectType = Object.values(
-    configs.reduce<{ [key: number]: YModels.DockerImageConfig[] }>((prev, curr) => {
+    configs.reduce<{ [key: number]: DockerImageConfig[] }>((prev, curr) => {
       const list = prev[curr.object_type] ? [...prev[curr.object_type], curr] : [curr]
       return { ...prev, [curr.object_type]: list }
     }, {}),

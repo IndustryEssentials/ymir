@@ -6,7 +6,7 @@ import { List, Skeleton, Space, Button, Pagination, Col, Row, Alert } from 'antd
 import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { ROLES } from '@/constants/user'
-import { TYPES, STATES, getImageTypeLabel, imageIsPending } from '@/constants/image'
+import { TYPES, STATES, getImageTypeLabel, isSampleImage } from '@/constants/image'
 import { getProjectTypeLabel } from '@/constants/project'
 
 import RelateModal from './relate'
@@ -17,13 +17,10 @@ import OfficialTag from '@/components/image/OfficialTag'
 
 import s from './list.less'
 import { EditIcon, DeleteIcon, AddIcon, MoreIcon, PublishIcon, LinkIcon } from '@/components/common/Icons'
-import { FailIcon, SuccessIcon } from '@/components/common/Icons'
-import { LoadingOutlined } from '@ant-design/icons'
 
 const initQuery = {
   name: undefined,
   type: undefined,
-  current: 1,
   offset: 0,
   limit: 20,
 }
@@ -33,6 +30,7 @@ const ImageList = ({ role, filter, getImages }) => {
   const [images, setImages] = useState([])
   const [total, setTotal] = useState(1)
   const [query, setQuery] = useState(initQuery)
+  const [current, setCurrent] = useState(1)
   const linkModalRef = useRef(null)
   const delRef = useRef(null)
 
@@ -42,13 +40,15 @@ const ImageList = ({ role, filter, getImages }) => {
   }, [query])
 
   useEffect(() => {
+    console.log('filter:', filter)
     JSON.stringify(filter) !== JSON.stringify(query) && setQuery({ ...query, ...filter })
   }, [filter])
 
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, current, limit, offset }))
+    setCurrent(current)
+    setQuery((old) => ({ ...old, limit, offset }))
   }
 
   async function getData() {
@@ -56,6 +56,7 @@ const ImageList = ({ role, filter, getImages }) => {
       ...query,
     }
 
+    console.log('params:', params)
     const result = await getImages(params)
     if (result) {
       const { items, total } = result
@@ -91,7 +92,7 @@ const ImageList = ({ role, filter, getImages }) => {
       {
         key: 'del',
         label: t('image.action.del'),
-        hidden: () => !isAdmin() || imageIsPending(state),
+        hidden: () => !isAdmin() || isSampleImage(record),
         onclick: () => del(id, name),
         icon: <DeleteIcon />,
       },
@@ -146,7 +147,11 @@ const ImageList = ({ role, filter, getImages }) => {
     types.map((type) => {
       const cls = getProjectTypeLabel(type)
       const label = getProjectTypeLabel(type, true)
-      return type && cls ? <span key={type} className={`extraTag ${cls}`}>{t(label)}</span> : null
+      return type && cls ? (
+        <span key={type} className={`extraTag ${cls}`}>
+          {t(label)}
+        </span>
+      ) : null
     })
 
   const liveCodeState = (live) => {
@@ -221,8 +226,8 @@ const ImageList = ({ role, filter, getImages }) => {
       <Pagination
         className="pager"
         onChange={pageChange}
-        current={query.current}
-        defaultCurrent={query.current}
+        current={current}
+        defaultCurrent={current}
         defaultPageSize={query.limit}
         total={total}
         showTotal={() => t('image.list.total', { total })}

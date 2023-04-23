@@ -1,5 +1,4 @@
 import { ResultStates } from './common'
-import { STATES } from './image'
 import { ObjectType } from './objectType'
 import { TASKSTATES, TASKTYPES } from './task'
 import { TaskResultType } from './TaskResultType'
@@ -49,7 +48,7 @@ type ImageConfig = { [key: string]: number | string }
 type DockerImageConfig = {
   type: number
   config: ImageConfig
-  object_type?: ObjectType
+  object_type: ObjectType
 }
 type Image = {
   id: number
@@ -65,6 +64,7 @@ type Image = {
   related?: Array<Image>
   liveCode?: boolean
   errorCode?: string
+  isSample?: boolean
 }
 
 type Task = {

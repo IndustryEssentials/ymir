@@ -3,7 +3,7 @@ import { Descriptions, Space, Card, Button, Row, Col } from 'antd'
 import { useParams, Link, useHistory, useSelector } from 'umi'
 
 import t from '@/utils/t'
-import { TYPES, STATES, getImageTypeLabel } from '@/constants/image'
+import { TYPES, STATES, getImageTypeLabel, isSampleImage } from '@/constants/image'
 import { getProjectTypeLabel } from '@/constants/project'
 import { ROLES } from '@/constants/user'
 import useFetch from '@/hooks/useFetch'
@@ -126,7 +126,7 @@ function ImageDetail() {
                 <Button hidden={!isAdmin() || !isDone()} onClick={() => publish(image)} icon={<PublishIcon />}>
                   {t('image.action.publish')}
                 </Button>
-                <Button hidden={!isAdmin() || (!isDone() && !isError())} onClick={del} icon={<DeleteIcon />}>
+                <Button hidden={!isAdmin() || isSampleImage(image)} onClick={del} icon={<DeleteIcon />}>
                   {t('common.del')}
                 </Button>
               </Space>

@@ -40,7 +40,11 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   const [name, setSearchName] = useState<string>()
   const searchName = useDebounce(name, { wait: 400 })
   const [total, setTotal] = useState(0)
-  const { official } = useSelector(({ image }) => image)
+  const { official, trainImage, sampleImage } = useSelector(({ image }) => ({
+    ...image,
+    trainImage: relatedId ? image.image[relatedId] : undefined,
+    sampleImage: project?.recommendImage ? image.image[project?.recommendImage] : undefined,
+  }))
   const {
     data: list,
     run: getImages,
@@ -48,7 +52,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   } = useRequest<List<Image>, [QueryParams]>('image/getImages', {
     loading: false,
   })
-  const { data: trainImage, run: getRelatedImage } = useRequest<Image, [{ id: number }]>('image/getImage', {
+  const { run: getImage } = useRequest<Image, [{ id: number }]>('image/getImage', {
     loading: false,
   })
   useRequest<Image, [{ id: number }]>('image/getOfficialImage', {
@@ -78,16 +82,27 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   }, [pid])
 
   useEffect(() => {
+    project?.recommendImage && getImage({ id: project.recommendImage })
+  }, [project?.recommendImage])
+
+  useEffect(() => {
     if (list?.items?.length) {
-      const items = list.items.filter((item) => options.every((opt) => opt.value !== item.id))
+      let items = list.items
+      if (sampleImage) {
+        items = withPriorityImage(list.items, sampleImage)
+      }
+      if (official) {
+        items = withPriorityImage(items, official)
+      }
+      items = items.filter((item) => options.every((opt) => opt.value !== item.id))
       const opts = generateOptions(items)
       setOptions((options) => [...options, ...opts])
     }
     list && setTotal(list?.total)
-  }, [list])
+  }, [list, official, sampleImage])
 
   useEffect(() => {
-    relatedId && getRelatedImage({ id: relatedId })
+    relatedId && getImage({ id: relatedId })
   }, [relatedId])
 
   useEffect(() => {
@@ -150,19 +165,24 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     getImages(query)
   }
 
-  const generateOption = useCallback((image: Image) => ({
-    label: (
-      <Row>
-        <Col flex={1}>{image.name}</Col>
-        {!HIDDENMODULES.LIVECODE ? (
-          <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col>
-        ) : null}
-      </Row>
-    ),
-    image,
-    value: image.id,
-    objectType: project?.type,
-  }), [project])
+  const withPriorityImage = (list: Image[], image?: Image) => (image ? [image, ...list.filter(({ id }) => id !== image.id)] : list)
+
+  const generateOption = useCallback(
+    (image: Image) => ({
+      label: (
+        <Row>
+          <Col flex={1}>{image.name}</Col>
+          {!HIDDENMODULES.LIVECODE ? (
+            <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col>
+          ) : null}
+        </Row>
+      ),
+      image,
+      value: image.id,
+      objectType: project?.type,
+    }),
+    [project],
+  )
 
   const generateOptions = (images: Image[]) => images.map(generateOption)
 
