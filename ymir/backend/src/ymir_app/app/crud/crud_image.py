@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from fastapi.logger import logger
 from sqlalchemy import desc, not_, and_
 from sqlalchemy.orm import Session
 
@@ -50,6 +51,10 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         query = query.filter(DockerImage.configs.any(DockerImageConfig.type == int(DockerImageType.infer)))
         return query.filter(self.model.url == url).first()  # type: ignore
 
+    def get_official_docker_images(self, db: Session) -> List[DockerImage]:
+        query = db.query(self.model).filter(not_(self.model.is_deleted))
+        return query.filter(self.model.is_official).all()
+
     def get_by_url(self, db: Session, url: str) -> Optional[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
         return query.filter(self.model.url == url).first()  # type: ignore
@@ -75,15 +80,28 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         update_data = {"result_state": int(state)}
         return self.update(db, db_obj=docker_image, obj_in=update_data)
 
-    def update_sharing_status(self, db: Session, *, docker_image: DockerImage, is_shared: bool = True) -> DockerImage:
-        update_data = {"is_shared": is_shared}
-        return self.update(db, db_obj=docker_image, obj_in=update_data)
+    def toggle_offical_image(self, db: Session, *, docker_image_id: int, is_official: bool) -> Optional[DockerImage]:
+        docker_image = self.get(db, docker_image_id)
+        if not docker_image:
+            return docker_image
+        return self.update(db, db_obj=docker_image, obj_in={"is_official": is_official})
 
     def update_from_dict(self, db: Session, *, docker_image_id: int, updates: Dict) -> Optional[DockerImage]:
         docker_image = self.get(db, id=docker_image_id)
-        if docker_image:
-            return self.update(db, db_obj=docker_image, obj_in=updates)
-        return docker_image
+        if not docker_image:
+            return docker_image
+        if updates.get("is_official"):
+            # ensure there is at most one offical image
+            logger.info(f"updating {docker_image_id} as official docker_image, unsetting others")
+            for existing_image in self.get_official_docker_images(db):
+                logger.info(f"unsetting official docker_image {existing_image.id}")
+                self.toggle_offical_image(db, docker_image_id=existing_image.id, is_official=False)
+            # Note that we have to re-get docker_image SQLAlchemy ORM object
+            # because updating other docker images has ended original session
+            docker_image = self.get(db, id=docker_image_id)
+            if not docker_image:  # make mypy happy
+                return docker_image
+        return self.update(db, db_obj=docker_image, obj_in=updates)
 
 
 docker_image = CRUDDockerImage(DockerImage)

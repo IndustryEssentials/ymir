@@ -448,7 +448,8 @@ class TaskResult:
             updates = {
                 "hash": self.docker_image_configs["hash_id"],
                 "result_state": int(ResultState.ready),
-                "enable_livecode": self.docker_image_configs["enable_livecode"],
+                "enable_livecode": self.docker_image_configs["docker_image_enable_livecode"],
+                "is_official": self.docker_image_configs["docker_image_is_official"],
             }
         else:
             updates = {"result_state": int(ResultState.error)}

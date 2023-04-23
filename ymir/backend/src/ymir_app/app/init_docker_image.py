@@ -15,9 +15,8 @@ def init_docker_image() -> None:
     docker_image_in = schemas.image.DockerImageCreate(
         name=settings.OFFICIAL_DOCKER_IMAGE_NAME,
         url=settings.OFFICIAL_DOCKER_IMAGE_URL,
-        is_official=True,
     )
-    if crud.docker_image.get_by_url(db, docker_image_in.url) or crud.docker_image.get_by_name(db, docker_image_in.name):
+    if crud.docker_image.get_official_docker_images(db):
         logger.info("Official docker image exists. Skip initialization")
         return
 

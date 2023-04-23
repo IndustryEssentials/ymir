@@ -38,6 +38,7 @@ class DockerImageUpdate(BaseModel):
     description: Optional[str]
     is_shared: Optional[bool]
     enable_livecode: Optional[bool]
+    is_official: Optional[bool]
     object_type: Optional[int]
     result_state: Optional[ResultState]
 
