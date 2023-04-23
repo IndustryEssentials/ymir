@@ -153,8 +153,12 @@ def check_general_req_user_and_repo(req: backend_pb2.GeneralReq) -> None:
     else:
         all_tids.extend(req.in_dataset_ids)
 
+    check_repo = req.req_create_task.task_type not in {mir_cmd_pb.TaskTypeCopyData, mir_cmd_pb.TaskTypeCopyModel}
     for tid in all_tids:
         task_id = task_id_proto.TaskId.from_task_id(tid)
-        if req.user_id != task_id.user_id or req.repo_id != task_id.repo_id:
+        if req.user_id != task_id.user_id:
             raise MirCtrError(error_code=CTLResponseCode.INVOKER_INVALID_ARGS,
-                              error_message=f"Task id mismatch: {tid}, user: {req.user_id}, repo: {req.repo_id}")
+                              error_message=f"Task id mismatch: {tid} vs user: {req.user_id}")
+        if check_repo and req.repo_id != task_id.repo_id:
+            raise MirCtrError(error_code=CTLResponseCode.INVOKER_INVALID_ARGS,
+                              error_message=f"Task id mismatch: {tid} vs repo: {req.repo_id}")

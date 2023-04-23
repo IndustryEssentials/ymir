@@ -63,8 +63,6 @@ class BaseMirControllerInvoker(ABC):
             self._repo_id = request.repo_id
             self._repo_root = os.path.join(self._user_root, request.repo_id)
 
-        utils.check_general_req_user_and_repo(req=request)
-
         self._send_request_metrics()
 
     def _send_request_metrics(self) -> None:
