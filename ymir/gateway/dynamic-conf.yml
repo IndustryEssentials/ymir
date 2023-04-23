@@ -95,8 +95,8 @@ http:
 
     APIRateLimiter:
       rateLimit:
-        average: 3
-        burst: 10
+        average: 10
+        burst: 20
 
     updateSocketPath:
       stripPrefix:
