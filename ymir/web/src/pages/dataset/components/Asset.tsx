@@ -42,7 +42,7 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
   const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState<YModels.Annotation[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<KeywordsType>([])
-  const [currentIndex, setCurrentIndex] = useState<IndexType>({ index: 0 })
+  const [currentIndex, setCurrentIndex] = useState<IndexType>()
   const [assetHistory, setAssetHistory] = useState<IndexType[]>([])
   const [gtSelected, setGtSelected] = useState<string[]>([])
   const [evaluation, setEvaluation] = useState(0)
@@ -96,19 +96,19 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
 
   function fetchAssetHash() {
     setAsset((asset) => (asset ? { ...asset, annotations: [] } : undefined))
-    getAssets({ id, ...filters, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1, datasetKeywords })
+    getAssets({ ...filters, id, keyword: currentIndex?.keyword, offset: currentIndex?.index || 0, limit: 1, datasetKeywords })
   }
 
   function next() {
-    setCurrentIndex((cu) => ({ ...cu, index: cu.index + 1 }))
+    setCurrentIndex((cu) => ({ ...cu, index: (cu?.index || 0) + 1 }))
   }
 
   function prev() {
-    setCurrentIndex((cu) => ({ ...cu, index: cu.index - 1 }))
+    setCurrentIndex((cu) => ({ ...cu, index: (cu?.index || 0) - 1 }))
   }
 
   function random() {
-    setCurrentIndex((cu) => ({ ...cu, index: randomBetween(0, total - 1, cu.index) }))
+    setCurrentIndex((cu) => ({ ...cu, index: randomBetween(0, total - 1, (cu?.index || 0)) }))
   }
 
   function back() {
@@ -138,7 +138,7 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
       <div className={styles.info}>
         <Row className={styles.infoRow} align="middle" wrap={false}>
           <Col flex={'20px'} style={{ alignSelf: 'center' }}>
-            <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
+            <LeftOutlined hidden={(currentIndex?.index || 0) <= 0} className={styles.prev} onClick={prev} />
           </Col>
           <Col flex={1} className={`${styles.asset_img} scrollbar`}>
             {asset.annotations ? <AssetAnnotation asset={{ ...asset, annotations: showAnnotations }} /> : null}
@@ -224,7 +224,7 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
             </Space>
           </Col>
           <Col style={{ alignSelf: 'center' }} flex={'20px'}>
-            <RightOutlined hidden={currentIndex.index >= total - 1} className={styles.next} onClick={next} />
+            <RightOutlined hidden={(currentIndex?.index || 0) >= total - 1} className={styles.next} onClick={next} />
           </Col>
         </Row>
       </div>

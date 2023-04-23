@@ -120,7 +120,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [project])
 
   useEffect(() => {
-    const datasets = Object.values(versions).flat()
+    const datasets = Object.values(versions).flat().filter(ds => ds.projectId === pid)
     const added = datasets.filter((dataset) => validState(dataset.state) || readyState(dataset.state))
     setDatasetAdded(!!added.length)
   }, [versions])

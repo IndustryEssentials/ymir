@@ -118,7 +118,7 @@ function ImageDetail() {
               <Configs configs={image.configs} />
             </Item>
             <Item label={t('image.detail.label.state')} span={2}>
-              <StateTag label={true} state={image.state} />
+              <StateTag label={true} state={image.state} code={image.errorCode} />
             </Item>
 
             <Item label={''} span={2}>

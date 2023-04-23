@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect } from 'react'
+import { Alert } from 'antd'
 import { useParams, useSelector } from 'umi'
 
 import t from '@/utils/t'
-import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Iteration from './iterations/iteration'
@@ -39,6 +39,7 @@ function Iterations() {
     <div className={s.iterations}>
       <Breadcrumbs />
       <div className={s.header}>
+        <Alert message={t('iteration.training.target.warning')} showIcon type='warning' style={{ marginBottom: 10 }} />
         <ProjectDetail project={project} extra={<ActionPanel fold={project.round > 0} />} />
         {project.round > 0 ? <Iteration project={project} fresh={fresh} /> : <Prepare project={project} fresh={fresh} />}
       </div>
