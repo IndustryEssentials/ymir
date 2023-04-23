@@ -118,8 +118,9 @@ message GeneralResp {
     // task_type: train, mine and infer, see mir.command.TaskType
     map<int32, Int32ToStringMap> docker_image_config = 12;
     RespCMDInference objects = 1000;
-    bool enable_livecode = 1001;
+    bool docker_image_enable_livecode = 1001;
     mir.command.Evaluation evaluation = 1002;
+    bool docker_image_is_official = 1004;
 
     reserved 5, 7, 1003;
 }

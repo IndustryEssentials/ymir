@@ -48,7 +48,7 @@ class TestInvokerInspectImage(unittest.TestCase):
             ret.stdout = "fake_hash"
         elif "/img-man/manifest.yaml" in args[0]:
             # manifest.yaml
-            ret.stdout = "object_type: 2"
+            ret.stdout = "object_type: 2\nis_official: False\nenable_livecode: False"
         else:
             # xxx-template.yaml
             ret.stdout = "config_key: config_value"
@@ -61,7 +61,7 @@ class TestInvokerInspectImage(unittest.TestCase):
             ret.stdout = "fake_hash_2"
         elif "/img-man/manifest.yaml" in args[0]:
             # manifest.yaml
-            ret.stdout = "object_type: [2, 4]"
+            ret.stdout = "object_type: [2, 4]\nis_official: True"
         else:
             # xxx-template.yaml
             ret.stdout = "config_key: config_value"
@@ -116,6 +116,8 @@ class TestInvokerInspectImage(unittest.TestCase):
         self.assertEqual("fake_hash", response.hash_id)
         self.assertEqual({2}, set(response.docker_image_config.keys()))
         self.assertEqual({1, 2, 9}, set(response.docker_image_config[2].config.keys()))
+        self.assertFalse(response.docker_image_enable_livecode)
+        self.assertFalse(response.docker_image_is_official)
 
     @mock.patch("subprocess.run", side_effect=_mock_manifest_multi_object_type)
     def test_multi_object_type_00(self, mock_run):
@@ -183,3 +185,5 @@ class TestInvokerInspectImage(unittest.TestCase):
         self.assertEqual("fake_hash_2", response.hash_id)
         self.assertEqual({2, 4}, set(response.docker_image_config.keys()))
         self.assertEqual({1, 2, 9}, set(response.docker_image_config[2].config.keys()))
+        self.assertFalse(response.docker_image_enable_livecode)
+        self.assertTrue(response.docker_image_is_official)
