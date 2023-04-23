@@ -160,7 +160,7 @@ const DatasetModal: DatasetStore = {
       }
     }),
     getHiddenList: createEffect<Omit<YParams.DatasetQuery, 'excludeType' | 'visible'>>(function* ({ payload }, { put }) {
-      const query = { order_by: 'update_datetime', ...payload, excludeType: TASKTYPES.INFERENCE, visible: false }
+      const query = { order_by: 'update_datetime', ...payload, excludeType: TASKTYPES.SYS, visible: false }
       return yield put({
         type: 'queryDatasets',
         payload: query,
