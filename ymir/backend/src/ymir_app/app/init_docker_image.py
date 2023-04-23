@@ -18,6 +18,7 @@ def init_docker_image() -> None:
         is_official=True,
     )
     if crud.docker_image.get_by_url(db, docker_image_in.url) or crud.docker_image.get_by_name(db, docker_image_in.name):
+        logger.info("Official docker image exists. Skip initialization")
         return
 
     init_user_id = 1
@@ -25,6 +26,9 @@ def init_docker_image() -> None:
 
 
 def main() -> None:
+    if not settings.INIT_OFFICIAL_DOCKER_IMAGE:
+        logger.warning("Skip pulling official docker image. Check INIT_OFFICIAL_DOCKER_IMAGE from .env")
+        return
     logger.info("Prepare to pull official docker image")
     try:
         init_docker_image()

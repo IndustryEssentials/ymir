@@ -113,6 +113,7 @@ class Settings(BaseSettings):
     # official docker image
     OFFICIAL_DOCKER_IMAGE_NAME: str = "Detection & Segmentation"
     OFFICIAL_DOCKER_IMAGE_URL: str = "industryessentials/ymir-executor:ymir2.4.0-detection-instance-sementic-in-one"
+    INIT_OFFICIAL_DOCKER_IMAGE: bool = True
 
 
 settings = Settings(_env_file=".env")  # type: ignore
