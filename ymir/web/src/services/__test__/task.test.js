@@ -1,7 +1,6 @@
 import {
   getTasks,
   getTask,
-  deleteTask,
   updateTask,
   fusion,
   filter,
@@ -9,7 +8,6 @@ import {
   label,
   train,
   mine,
-  createTask,
   stopTask,
 } from "../task"
 import { product, products, requestExample } from './func'
@@ -135,11 +133,11 @@ describe("service: tasks", () => {
   })
   it("mine -> success", () => {
     const params = {
-      model: 'modelhash',
+      modelStage: [34],
       topk: 1000,
-      datasets: [1, 2],
-      exclude_sets: [],
-      algorithm: 'LYDD',
+      datasetId: 23454,
+      image: 234,
+      config: {},
       name: 'taskname',
     }
     const expected = { id: 610 }
@@ -155,11 +153,6 @@ describe("service: tasks", () => {
     }
     const expected = { id: 609 }
     requestExample(label, params, expected, 'post')
-  })
-  it("deleteTask -> success", () => {
-    const id = 608
-    const expected = "ok"
-    requestExample(deleteTask, id, expected)
   })
   it("stopTask -> success -> throw result", () => {
     const id = 607
@@ -177,12 +170,5 @@ describe("service: tasks", () => {
     const name = 'newnameoftask'
     const expected = { id, name }
     requestExample(updateTask, [id, name], expected)
-  })
-  it("createTask -> success", () => {
-    const params = {
-      name: 'newtask',
-    }
-    const expected = "ok"
-    requestExample(createTask, params, expected, 'post')
   })
 })

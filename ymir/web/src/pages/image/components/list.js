@@ -6,33 +6,31 @@ import { List, Skeleton, Space, Button, Pagination, Col, Row, Alert } from 'antd
 import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { ROLES } from '@/constants/user'
-import { TYPES, STATES, getImageTypeLabel, imageIsPending } from '@/constants/image'
+import { TYPES, STATES, getImageTypeLabel, isSampleImage } from '@/constants/image'
 import { getProjectTypeLabel } from '@/constants/project'
 
 import RelateModal from './relate'
 import Del from './del'
 import ImagesLink from './imagesLink'
 import StateTag from '@/components/image/StateTag'
+import OfficialTag from '@/components/image/OfficialTag'
 
 import s from './list.less'
 import { EditIcon, DeleteIcon, AddIcon, MoreIcon, PublishIcon, LinkIcon } from '@/components/common/Icons'
-import { FailIcon, SuccessIcon } from '@/components/common/Icons'
-import { LoadingOutlined } from '@ant-design/icons'
 
 const initQuery = {
   name: undefined,
   type: undefined,
-  current: 1,
   offset: 0,
   limit: 20,
 }
 
-// todo identify annotation types supported
 const ImageList = ({ role, filter, getImages }) => {
   const history = useHistory()
   const [images, setImages] = useState([])
   const [total, setTotal] = useState(1)
   const [query, setQuery] = useState(initQuery)
+  const [current, setCurrent] = useState(1)
   const linkModalRef = useRef(null)
   const delRef = useRef(null)
 
@@ -42,13 +40,15 @@ const ImageList = ({ role, filter, getImages }) => {
   }, [query])
 
   useEffect(() => {
+    console.log('filter:', filter)
     JSON.stringify(filter) !== JSON.stringify(query) && setQuery({ ...query, ...filter })
   }, [filter])
 
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, current, limit, offset }))
+    setCurrent(current)
+    setQuery((old) => ({ ...old, limit, offset }))
   }
 
   async function getData() {
@@ -56,6 +56,7 @@ const ImageList = ({ role, filter, getImages }) => {
       ...query,
     }
 
+    console.log('params:', params)
     const result = await getImages(params)
     if (result) {
       const { items, total } = result
@@ -91,7 +92,7 @@ const ImageList = ({ role, filter, getImages }) => {
       {
         key: 'del',
         label: t('image.action.del'),
-        hidden: () => !isAdmin() || imageIsPending(state),
+        hidden: () => !isAdmin() || isSampleImage(record),
         onclick: () => del(id, name),
         icon: <DeleteIcon />,
       },
@@ -126,7 +127,7 @@ const ImageList = ({ role, filter, getImages }) => {
 
   const isTrain = (functions = []) => functions.indexOf(TYPES.TRAINING) >= 0
 
-  const isDone = (state) => state === STATES.DONE
+  const isDone = (state) => state === STATES.VALID
 
   const more = (item) => {
     return (
@@ -142,20 +143,16 @@ const ImageList = ({ role, filter, getImages }) => {
     )
   }
 
-  const imageState = (state) => {
-    const states = {
-      [STATES.PENDING]: <LoadingOutlined style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} />,
-      [STATES.DONE]: <SuccessIcon style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} />,
-      [STATES.ERROR]: <FailIcon style={{ color: 'rgba(242, 99, 123, 1)', fontSize: 16 }} />,
-    }
-    return <span className={s.stateIcon}>{states[state]}</span>
-  }
-
-  const objectTypeLabel = (type) => {
-    const cls = getProjectTypeLabel(type)
-    const label = getProjectTypeLabel(type, true)
-    return type && cls ? <span className={`extraTag ${cls}`}>{t(label)}</span> : null
-  }
+  const objectTypeLabel = (types) =>
+    types.map((type) => {
+      const cls = getProjectTypeLabel(type)
+      const label = getProjectTypeLabel(type, true)
+      return type && cls ? (
+        <span key={type} className={`extraTag ${cls}`}>
+          {t(label)}
+        </span>
+      ) : null
+    })
 
   const liveCodeState = (live) => {
     return <span className={live ? s.remote : s.local}>{t(live ? 'image.livecode.label.remote' : 'image.livecode.label.local')}</span>
@@ -174,12 +171,13 @@ const ImageList = ({ role, filter, getImages }) => {
         <Col flex={1}>
           <Space>
             <span>{item.name}</span>
-            {objectTypeLabel(item.objectType)}
+            <OfficialTag official={item.official} />
+            {objectTypeLabel(item.objectTypes)}
             <StateTag state={item.state} code={item.errorCode} />
             {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
           </Space>
         </Col>
-        <Col onClick={e => e.stopPropagation()}>{more(item)}</Col>
+        <Col onClick={(e) => e.stopPropagation()}>{more(item)}</Col>
       </Row>
     )
     const type = isTrain(item.functions) ? 'train' : 'mining'
@@ -228,8 +226,8 @@ const ImageList = ({ role, filter, getImages }) => {
       <Pagination
         className="pager"
         onChange={pageChange}
-        current={query.current}
-        defaultCurrent={query.current}
+        current={current}
+        defaultCurrent={current}
         defaultPageSize={query.limit}
         total={total}
         showTotal={() => t('image.list.total', { total })}

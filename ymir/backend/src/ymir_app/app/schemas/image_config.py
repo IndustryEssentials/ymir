@@ -9,6 +9,7 @@ from app.schemas.common import Common
 class ImageConfigBase(BaseModel):
     image_id: int
     config: str
+    object_type: int
     type: int
 
 

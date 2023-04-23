@@ -1,27 +1,20 @@
 // import { history } from "umi"
-import { message } from "antd"
-import storage from "@/utils/storage"
-import t from "@/utils/t"
-import {
-  login,
-  loginout,
-  modifyPwd,
-  resetPwd,
-  forgetPwd,
-  getMeInfo,
-  updateUserInfo,
-  getUsers,
-  setUserState,
-  signup,
-} from "@/services/user"
+import { message } from 'antd'
+import storage from '@/utils/storage'
+import t from '@/utils/t'
+import { login, modifyPwd, resetPwd, forgetPwd, getMeInfo, updateUserInfo, getUsers, setUserState, signup, refreshToken } from '@/services/user'
 import { ROLES } from '@/constants/user'
 
-const neverShow = storage.get("never_show")
+const neverShow = storage.get('never_show')
+
+const setToken = (token) => {
+  storage.set('access_token', token || '')
+}
 
 const emptyUser = {
-  username: "",
-  email: "",
-  phone: "",
+  username: '',
+  email: '',
+  phone: '',
   avatar: '',
   hash: '',
   uuid: '',
@@ -30,10 +23,10 @@ const emptyUser = {
 }
 
 const model = {
-  namespace: "user",
+  namespace: 'user',
   state: {
     ...emptyUser,
-    logined: !!storage.get("access_token"),
+    logined: !!storage.get('access_token'),
     neverShow,
     guideVisible: false,
   },
@@ -56,25 +49,34 @@ const model = {
       const neverShow = yield select(({ user }) => user.neverShow)
       const { code, result } = yield call(login, payload)
       if (code === 0 && result?.access_token) {
-        storage.set("access_token", result.access_token || "")
-        message.success(t("login.login.success"))
+        storage.set('access_token', result.access_token || '')
+        message.success(t('login.login.success'))
         yield put({ type: 'setGuideVisible', payload: !neverShow })
-        yield put({ type: "UPDATE_LOGINED", payload: true })
-        yield put({ type: "getUserInfo" })
+        yield put({ type: 'UPDATE_LOGINED', payload: true })
+        yield put({ type: 'getUserInfo' })
       }
       return result
     },
     *getToken({ payload }, { call, put, select }) {
       const { code, result } = yield call(login, payload)
-      if (code === 0 && result?.access_token) {
-        storage.set("access_token", result.access_token || "")
+      if (code === 0) {
+        setToken(result?.access_token)
       }
       return result
+    },
+    setToken({ payload: token }) {
+      storage.set('access_token', token || '')
+    },
+    *refreshToken({ payload }, { call, put, select }) {
+      const { code, result } = yield call(refreshToken)
+      if (code === 0) {
+        setToken(result?.access_token)
+      }
     },
     *forgetPwd({ payload }, { call, put, select }) {
       const { code, result } = yield call(forgetPwd, payload)
       if (code === 0) {
-        message.success(t("forget.send.success"))
+        message.success(t('forget.send.success'))
         return true
       }
     },
@@ -82,7 +84,7 @@ const model = {
       const { code, result } = yield call(modifyPwd, payload)
       if (code === 0) {
         yield put({
-          type: "UPDATE_USERINFO",
+          type: 'UPDATE_USERINFO',
           payload: result,
         })
         return result
@@ -100,7 +102,7 @@ const model = {
       const { result } = yield call(getMeInfo)
       if (result) {
         yield put({
-          type: "UPDATE_USERINFO",
+          type: 'UPDATE_USERINFO',
           payload: result,
         })
         return result
@@ -110,15 +112,15 @@ const model = {
       const { result } = yield call(updateUserInfo, payload)
       if (result) {
         yield put({
-          type: "UPDATE_USERINFO",
+          type: 'UPDATE_USERINFO',
           payload: result,
         })
         return result
       }
     },
     *loginout({ payload }, { call, put, select }) {
-      storage.remove("access_token")
-      yield put({ type: "UPDATE_LOGINED", payload: false })
+      storage.remove('access_token')
+      yield put({ type: 'UPDATE_LOGINED', payload: false })
       yield put({ type: 'UPDATE_USERINFO', payload: emptyUser })
       return true
     },

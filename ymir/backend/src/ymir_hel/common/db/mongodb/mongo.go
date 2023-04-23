@@ -6,6 +6,7 @@ import (
 	"log"
 	"runtime/debug"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -87,6 +88,7 @@ func (s *MongoServer) IndexDatasetData(
 	mirRepo *constants.MirRepo,
 	mirMetadatas *protos.MirMetadatas,
 	mirAnnotations *protos.MirAnnotations,
+	mirContext *protos.MirContext,
 ) {
 	exist, _ := s.CheckDatasetIndex(mirRepo)
 	if exist {
@@ -146,7 +148,7 @@ func (s *MongoServer) IndexDatasetData(
 		}
 	}
 	s.buildCollectionIndex(collection)
-	s.postIndexDatasetData(collection, collectionName)
+	s.postIndexDatasetData(collection, collectionName, mirContext)
 }
 
 func (s *MongoServer) buildMirAssetDetail(
@@ -200,15 +202,24 @@ func (s *MongoServer) buildMirAssetDetail(
 	return &mirAssetDetail
 }
 
-func (s *MongoServer) postIndexDatasetData(collection *mongo.Collection, collectionName string) {
+func (s *MongoServer) postIndexDatasetData(
+	collection *mongo.Collection,
+	collectionName string,
+	mirContext *protos.MirContext,
+) {
 	defer tools.TimeTrack(time.Now(), collectionName)
 
 	indexedMetadata := constants.IndexedDatasetMetadata{
 		HistAssets:    &map[string]*constants.MirHist{},
 		HistAnnosGt:   &map[string]*constants.MirHist{},
 		HistAnnosPred: &map[string]*constants.MirHist{},
-		Ready:         true,
-		Exist:         true,
+		DiagnosisResult: &constants.DatasetDiagnosisElement{
+			DensityProportion: map[string][]string{},
+			ClassProportion:   map[string][]int32{},
+			ClassObjCount:     map[string][]int32{},
+		},
+		Ready: true,
+		Exist: true,
 	}
 	for histKey, hist := range constants.ConstAssetsMirHist {
 		assetHist := hist
@@ -243,6 +254,72 @@ func (s *MongoServer) postIndexDatasetData(collection *mongo.Collection, collect
 		))
 		(*indexedMetadata.HistAnnosPred)[histKey] = &annoHist
 	}
+
+	// Build dataset diagnosis result
+	// Step 1: use ClassIdsObjCnt for ClassObjCount and ClassProportion.
+	gtStats := mirContext.GtStats
+	if gtStats != nil && gtStats.ClassIdsObjCnt != nil {
+		obj_cnt_max := int32(0)
+		for _, v := range gtStats.ClassIdsObjCnt {
+			if v > obj_cnt_max {
+				obj_cnt_max = v
+			}
+		}
+
+		class_obj_cnt_thres := int32(500)
+		class_obj_cnt_targets := []int32{}
+		class_prt_ratio := int32(10)
+		class_prt_ratio_key := fmt.Sprintf("%f", 1.0/float64(class_prt_ratio))
+		class_prt_targets := []int32{}
+		for k, v := range gtStats.ClassIdsObjCnt {
+			if v < class_obj_cnt_thres {
+				class_obj_cnt_targets = append(class_obj_cnt_targets, k)
+			}
+			if v*class_prt_ratio < obj_cnt_max {
+				class_prt_targets = append(class_prt_targets, k)
+			}
+		}
+		if len(class_obj_cnt_targets) > 0 {
+			indexedMetadata.DiagnosisResult.ClassObjCount[strconv.Itoa(int(class_obj_cnt_thres))] = class_obj_cnt_targets
+		}
+		if len(class_prt_targets) > 0 {
+			indexedMetadata.DiagnosisResult.ClassProportion[class_prt_ratio_key] = class_prt_targets
+		}
+
+		// Step 2: use class_counts hist for DensityProportion
+		class_counts_rank := map[string]int32{}
+		// re-map key to x-axies range.
+		class_counts_key_map := map[string]string{"1": "1-3", "4": "4-10", "10": "10+"}
+		class_counts_max := 0
+		for _, v := range *(*indexedMetadata.HistAnnosGt)["class_counts_rank"].Output {
+			cnt, err := strconv.Atoi(v["y"])
+			if err != nil {
+				panic(err)
+			}
+
+			if remap_key, ok := class_counts_key_map[v["x"]]; ok {
+				class_counts_rank[remap_key] = int32(cnt)
+			} else {
+				panic(fmt.Sprintf("re-map key fail: expected %+v, got key %s", class_counts_key_map, v["x"]))
+			}
+
+			if class_counts_max < cnt {
+				class_counts_max = cnt
+			}
+		}
+		density_proportion_targets := []string{}
+		density_proportion_ratio := int32(10)
+		density_proportion_ratio_key := fmt.Sprintf("%f", 1.0/float64(density_proportion_ratio))
+		for k, v := range class_counts_rank {
+			if v*density_proportion_ratio < int32(class_counts_max) {
+				density_proportion_targets = append(density_proportion_targets, k)
+			}
+		}
+		if len(density_proportion_targets) > 0 {
+			indexedMetadata.DiagnosisResult.DensityProportion[density_proportion_ratio_key] = density_proportion_targets
+		}
+	}
+
 	metadataCollection := s.getMetadataCollection()
 	s.upsertDocument(metadataCollection, collectionName, indexedMetadata)
 }
@@ -584,6 +661,7 @@ func (s *MongoServer) QueryDatasetStats(
 			queryData.Gt.AnnotationsHist = metadata.HistAnnosGt
 			queryData.Pred.AnnotationsHist = metadata.HistAnnosPred
 		}
+		queryData.DiagnosisResult = metadata.DiagnosisResult
 	}
 
 	// Count negative samples in specific classes.

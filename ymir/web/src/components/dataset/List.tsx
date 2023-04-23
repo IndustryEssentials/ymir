@@ -1,16 +1,16 @@
-import React, { FC, useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
-import styles from './list.less'
-import { Link, Location, useHistory, useLocation } from 'umi'
-import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover, TableColumnsType } from 'antd'
+import { ComponentProps, useCallback, useEffect, useRef, useState } from 'react'
+import { Link, Location, useHistory, useLocation, useSelector } from 'umi'
+import { Form, Button, Input, Table, Space, Row, Col, Tooltip, Pagination, message, Popover, TableColumnsType } from 'antd'
 
 import t from '@/utils/t'
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
-import { readyState, ResultStates, validState } from '@/constants/common'
+import { DefaultShowVersionCount, getLabelToolUrl, readyState, validState } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
+import useRequest from '@/hooks/useRequest'
 
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
+import type { RefProps as ERefProps } from '@/components/form/editBox'
 import EditNameBox from '@/components/form/editNameBox'
 import EditDescBox from '@/components/form/editDescBox'
 import Terminate, { RefProps as TRefProps } from '@/components/task/terminate'
@@ -21,7 +21,15 @@ import Actions from '@/components/table/Actions'
 import AssetCount from '@/components/dataset/AssetCount'
 import Detail from '@/components/project/Detail'
 import AddButton from '@/components/dataset/AddButton'
+import { DescPop } from '../common/DescPop'
+import useRerunAction from '@/hooks/useRerunAction'
+import StrongTitle from '../table/columns/StrongTitle'
+import { ModuleType } from '@/pages/project/components/ListHoc'
+import useModal from '@/hooks/useModal'
+import Analysis from './Analysis'
+import { getActions } from './list/Actions'
 
+import styles from './list.less'
 import {
   ScreenIcon,
   TaggingIcon,
@@ -36,11 +44,13 @@ import {
   ArrowRightIcon,
   CompareListIcon,
   DeleteIcon,
+  BarChart2LineIcon,
+  ArrowUpIcon,
 } from '@/components/common/Icons'
-import { DescPop } from '../common/DescPop'
-import useRerunAction from '@/hooks/useRerunAction'
-import useRequest from '@/hooks/useRequest'
-import StrongTitle from '../table/columns/StrongTitle'
+import { ObjectType } from '@/constants/objectType'
+import SimpleSuggestion from './list/SimpleSuggestion'
+import { IdMap, List } from '@/models/typings/common.d'
+import Empty from '../empty/Dataset'
 
 type IsType = {
   isTrainSet?: boolean
@@ -55,19 +65,12 @@ type ExtraLabel = {
 }
 type Dataset = YModels.Dataset & ExtraLabel & IsType
 type DatasetGroup = YModels.DatasetGroup & ExtraLabel & IsType
-type VersionsType = YStates.IdMap<Dataset[]>
-
-type Props = {
-  pid: number
-  project?: YModels.Project
-  groups?: number[]
-  iterations?: YModels.Iteration[]
-}
+type VersionsType = IdMap<Dataset[]>
 
 const { useForm } = Form
 
-const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
-  const location: Location<{ type: string}> = useLocation()
+const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
+  const location: Location<{ type: string }> = useLocation()
   const { name } = location.query as { name?: string }
   const history = useHistory()
   const [datasets, setDatasets] = useState<DatasetGroup[]>([])
@@ -81,17 +84,46 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
     versions: {},
   })
   const hideRef = useRef<RefProps>(null)
+  const editNameBoxRef = useRef<ERefProps>(null)
+  const editDescBoxRef = useRef<ERefProps>(null)
   let [lock, setLock] = useState(true)
   const terminateRef = useRef<TRefProps>(null)
   const [testingSetIds, setTestingSetIds] = useState<number[]>([])
   const generateRerun = useRerunAction()
   const [editingDataset, setEditingDataset] = useState<Dataset>()
-  const { datasets: datasetList, versions, query } = useSelector<YStates.Root, YStates.DatasetState>(({ dataset }) => dataset)
+  const {
+    datasets: { [pid]: datasetList },
+    versions,
+    query,
+  } = useSelector(({ dataset }) => dataset)
 
-  const { run: getDatasets } = useRequest<YStates.List<YModels.DatasetGroup>>('dataset/getDatasetGroups')
-  const { run: getVersions } = useRequest<YStates.List<YModels.Dataset>, [{ gid: number, force?: boolean}]>('dataset/getDatasetVersions')
+  const { run: getDatasets } = useRequest<List<YModels.DatasetGroup>>('dataset/getDatasetGroups')
+  const { run: getVersions } = useRequest<List<YModels.Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
+  const [datasetAdded, setDatasetAdded] = useState(false)
+  const [AnalysisModal, showAnalysisModal] = useModal<ComponentProps<typeof Analysis>>(Analysis, {
+    width: '90%',
+    style: { paddingTop: 20 },
+  })
+  const [analysisDatasets, setADatasets] = useState<number[]>([])
+  const { data: modelsCount = 0, run: getModelsCount } = useRequest<number, [number]>('model/getValidModelsCount', { loading: false })
+  const { data: imagesCount = 0, run: getImagesCount } = useRequest<number, [{ type?: ObjectType; example?: boolean }]>('image/getValidImagesCount', {
+    loading: false,
+  })
+
+  useEffect(() => {
+    getModelsCount(pid)
+  }, [pid])
+  useEffect(() => {
+    project && getImagesCount({ type: project.type, example: true })
+  }, [project])
+
+  useEffect(() => {
+    const datasets = Object.values(versions).flat().filter(ds => ds.projectId === pid)
+    const added = datasets.filter((dataset) => validState(dataset.state) || readyState(dataset.state))
+    setDatasetAdded(!!added.length)
+  }, [versions])
 
   useEffect(() => {
     if (history.action !== 'POP') {
@@ -106,9 +138,9 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
   }, [groups])
 
   useEffect(() => {
-    const list = setGroupLabelsByProject(datasetList.items, project)
+    const list = setGroupLabelsByProject(datasetList?.items, project)
     setDatasets(list)
-    setTotal(datasetList.total)
+    setTotal(datasetList?.total || 1)
     setTestingSetIds(project?.testingSets || [])
   }, [datasetList, project])
 
@@ -120,14 +152,6 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
       }
     })
   }, [visibles])
-
-  useEffect(() => {
-    const hasDataset = Object.keys(versions).length
-    const emptyDataset = Object.values(versions).some((dss) => !dss.length)
-    if (hasDataset && emptyDataset) {
-      fetchDatasets()
-    }
-  }, [versions])
 
   useEffect(() => {
     let dvs = versions
@@ -183,16 +207,26 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
         key: 'name',
         dataIndex: 'versionName',
         className: styles[`column_name`],
-        render: (name, { id, description, projectLabel, iterationLabel }) => {
+        render: (name, record) => {
+          const { id, description, projectLabel, iterationLabel, state, assetCount } = record
           const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
           const content = (
-            <Row>
-              <Col flex={1}>
-                <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>
-              </Col>
-              <Col flex={'50px'}>
+            <Row key={id}>
+              <Col flex={1}>{readyState(state) ? name : <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>}</Col>
+              <Col flex={'50px'} style={{ textAlign: 'right' }}>
                 {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
                 {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+                {validState(state) && assetCount ? (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      showAnalysisModal()
+                      setADatasets([id])
+                    }}
+                  >
+                    <BarChart2LineIcon />
+                  </span>
+                ) : null}
               </Col>
             </Row>
           )
@@ -243,6 +277,11 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
         },
       },
       {
+        title: <StrongTitle label="dataset.column.suggestion" />,
+        dataIndex: 'suggestions',
+        render: (suggestions) => <SimpleSuggestion suggestions={suggestions} />,
+      },
+      {
         title: <StrongTitle label="dataset.column.state" />,
         dataIndex: 'state',
         render: (state, record) => RenderProgress(state, record),
@@ -268,91 +307,100 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
     ]
   }
 
-  const actionMenus = (record: Dataset): YComponents.Action[] => {
-    const { id, groupId, state, taskState, task, assetCount } = record
-    const invalidDataset = ({ state, assetCount }: Dataset) => !validState(state) || assetCount === 0
-    return [
-      {
-        key: 'label',
-        label: t('dataset.action.label'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
-        icon: <TaggingIcon />,
-      },
-      {
-        key: 'train',
-        label: t('dataset.action.train'),
-        hidden: () => invalidDataset(record) || isTestingDataset(id) || !record.keywords.length,
-        onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
-        icon: <TrainIcon />,
-      },
-      {
-        key: 'mining',
-        label: t('dataset.action.mining'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
-        icon: <VectorIcon />,
-      },
-      {
-        key: 'preview',
-        label: t('common.action.preview'),
-        hidden: () => !validDataset(record) || !assetCount,
-        onclick: () => history.push(`/home/project/${pid}/dataset/${id}/assets`),
-        icon: <SearchIcon className={styles.addBtnIcon} />,
-      },
-      {
-        key: 'merge',
-        label: t('common.action.merge'),
-        hidden: () => !validState(state),
-        onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
-        icon: <CompareListIcon className={styles.addBtnIcon} />,
-      },
-      {
-        key: 'filter',
-        label: t('common.action.filter'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
-        icon: <ScreenIcon className={styles.addBtnIcon} />,
-      },
-      {
-        key: 'inference',
-        label: t('dataset.action.inference'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
-        icon: <WajueIcon />,
-      },
-      {
-        key: 'copy',
-        label: t('task.action.copy'),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
-        icon: <CopyIcon />,
-      },
-      {
-        key: 'edit',
-        label: t('common.action.edit.desc'),
-        onclick: () => editDesc(record),
-        icon: <EditIcon />,
-      },
-      {
-        key: 'stop',
-        label: t('task.action.terminate'),
-        onclick: () => stop(record),
-        hidden: () => taskState === TASKSTATES.PENDING || !readyState(state) || task.is_terminated,
-        icon: <StopIcon />,
-      },
-      generateRerun(record),
-      {
-        key: 'hide',
-        label: t('common.action.del'),
-        onclick: () => hide(record),
-        hidden: () => !canHide(record, project),
-        icon: <DeleteIcon />,
-      },
-    ]
-  }
-
-  // const tableChange = ({ current, pageSize }, filters, sorters = {}) => {}
+  const actionMenus = useCallback(
+    (record: Dataset): YComponents.Action[] => {
+      const { id, groupId, state, taskState, task, assetCount } = record
+      const invalidDataset = ({ state, assetCount }: Dataset) => !validState(state) || assetCount === 0
+      const acts = {
+        label: {
+          key: 'label',
+          label: t('dataset.action.label'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
+          icon: <TaggingIcon />,
+        },
+        train: {
+          key: 'train',
+          label: t('dataset.action.train'),
+          hidden: () => invalidDataset(record) || isTestingDataset(id),
+          onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
+          icon: <TrainIcon />,
+        },
+        mining: {
+          key: 'mining',
+          label: t('dataset.action.mining'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
+          icon: <VectorIcon />,
+        },
+        merge: {
+          key: 'merge',
+          label: t('common.action.merge'),
+          hidden: () => !validState(state),
+          onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
+          icon: <CompareListIcon className={styles.addBtnIcon} />,
+        },
+        filter: {
+          key: 'filter',
+          label: t('common.action.filter'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
+          icon: <ScreenIcon className={styles.addBtnIcon} />,
+        },
+        inference: {
+          key: 'inference',
+          label: t('dataset.action.inference'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
+          icon: <WajueIcon />,
+        },
+        copy: {
+          key: 'copy',
+          label: t('task.action.copy'),
+          hidden: () => invalidDataset(record),
+          onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
+          icon: <CopyIcon />,
+        },
+        edit: {
+          key: 'edit',
+          label: t('common.action.edit.desc'),
+          onclick: () => editDesc(record),
+          icon: <EditIcon />,
+        },
+        stop: {
+          key: 'stop',
+          label: t('task.action.terminate'),
+          onclick: () => stop(record),
+          hidden: () => taskState === TASKSTATES.PENDING || !readyState(state) || task.is_terminated,
+          icon: <StopIcon />,
+        },
+        rerun: generateRerun(record),
+        del: {
+          key: 'del',
+          label: t('common.action.del'),
+          onclick: () => hide(record),
+          hidden: () => !canHide(record, project),
+          icon: <DeleteIcon />,
+        },
+        labeltool: {
+          key: 'labeltool',
+          label: t('dataset.action.labeltool'),
+          link: getLabelToolUrl(),
+          target: '_blank',
+        },
+      }
+      const normalActions = getActions(acts, {
+        hasImages: !!imagesCount,
+        haveAnnotations: !!record.keywords.length,
+        haveModels: !!modelsCount,
+      })
+      if (record.taskType === TASKTYPES.LABEL) {
+        return [acts.labeltool, ...normalActions]
+      }
+      return normalActions
+    },
+    [modelsCount, imagesCount, versions],
+  )
 
   const getTypeFilter = (gid: number) => {
     return getFilters(gid, 'taskType', (type) => (type ? t(getTaskTypeLabel(type as TASKTYPES)) : ''))
@@ -379,15 +427,15 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
     getDatasets({ pid, query })
   }
 
-  function showVersions(id: number) {
-    setVisibles((old) => ({ ...old, [id]: !old[id] }))
+  function toggleVersions(id: number, force?: boolean) {
+    setVisibles((old) => ({ ...old, [id]: force || (typeof old[id] !== 'undefined' && !old[id]) }))
   }
 
   function fetchVersions(gid: number, force?: boolean) {
     getVersions({ gid, force })
   }
 
-  function setGroupLabelsByProject(datasets: DatasetGroup[], project?: YModels.Project) {
+  function setGroupLabelsByProject(datasets: DatasetGroup[] = [], project?: YModels.Project) {
     return datasets.map((item) => {
       delete item.projectLabel
       item = project?.trainSet?.id ? setLabelByProject<DatasetGroup>(project.trainSet.id, 'isTrainSet', item) : item
@@ -472,8 +520,8 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
   }
 
   const edit = (record: DatasetGroup) => {
-    setCurrent(undefined)
-    setTimeout(() => setCurrent(record), 0)
+    editNameBoxRef.current?.show()
+    setCurrent(record)
   }
 
   const saveNameHandle = (result: Dataset) => {
@@ -504,8 +552,8 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
   }
 
   const editDesc = (dataset: Dataset) => {
-    setEditingDataset(undefined)
-    setTimeout(() => setEditingDataset(dataset), 0)
+    editDescBoxRef.current?.show()
+    setEditingDataset(dataset)
   }
 
   const add = () => {
@@ -545,11 +593,6 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
     setSelectedVersions({ selected: [], versions: {} })
   }
 
-  const multipleInfer = () => {
-    const ids = selectedVersions.selected.join('|')
-    history.push(`/home/project/${pid}/inference?did=${ids}`)
-  }
-
   const batchMerge = () => {
     const ids = selectedVersions.selected.join(',')
     history.push(`/home/project/${pid}/merge?mid=${ids}`)
@@ -570,23 +613,20 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
       <Button type="primary" disabled={getDisabledStatus(({ state }) => readyState(state))} onClick={multipleHide}>
         <DeleteIcon /> {t('common.action.multiple.del')}
       </Button>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => !validState(state))} onClick={multipleInfer}>
-        <WajueIcon /> {t('common.action.multiple.infer')}
-      </Button>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => !validState(state))} onClick={batchMerge}>
         <WajueIcon /> {t('common.action.multiple.merge')}
       </Button>
     </>
   )
 
-  const renderGroups = (
+  const renderGroups = datasets.length ? (
     <>
       <div className="groupList">
         {datasets.map((group) => (
           <div className={styles.groupItem} key={group.id}>
             <Row className="groupTitle">
-              <Col flex={1} onClick={() => showVersions(group.id)}>
-                <span className="foldBtn">{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+              <Col flex={1} onClick={() => toggleVersions(group.id)}>
+                <span className="foldBtn">{visibles[group.id] !== false ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
                 <span className="groupName">{group.name}</span>
                 {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
               </Col>
@@ -598,10 +638,9 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
                 </Space>
               </Col>
             </Row>
-            <div className="groupTable" hidden={!visibles[group.id]}>
+            <div className="groupTable" hidden={visibles[group.id] === false}>
               <Table
-                dataSource={datasetVersions[group.id]}
-                // onChange={tableChange}
+                dataSource={typeof visibles[group.id] === 'undefined' ? (versions[group.id] || []).slice(0, DefaultShowVersionCount) : versions[group.id]}
                 rowKey={(record) => record.id}
                 rowSelection={{
                   selectedRowKeys: selectedVersions.versions[group.id],
@@ -611,6 +650,13 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
                 columns={columns(group.id)}
                 pagination={false}
               />
+              {!visibles[group.id] && (group.versions?.length || 0) > DefaultShowVersionCount ? (
+                <div style={{ textAlign: 'center' }}>
+                  <Button type="link" className="moreVersion" onClick={() => toggleVersions(group.id, true)}>
+                    <ArrowDownIcon /> {t('dataset.unfold.all')}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
         ))}
@@ -625,15 +671,17 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
         onChange={listChange}
       />
     </>
+  ) : (
+    <Empty />
   )
 
   return (
     <div className={styles.dataset}>
-      <Detail project={project} />
+      <Detail pid={pid} type="dataset" />
       <Row className="actions">
         <Col flex={1}>
           <Space>
-            <AddButton id={pid} />
+            <AddButton className={!datasetAdded ? 'wave' : ''} />
             {renderMultipleActions}
           </Space>
         </Col>
@@ -647,7 +695,7 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
             name="queryForm"
             form={form}
             labelCol={{ flex: '120px' }}
-            initialValues={{ type: query.type, time: query.time, name: name || query.name }}
+            initialValues={{ type: query.type, name: name || query.name }}
             onValuesChange={search}
             colon={false}
           >
@@ -662,10 +710,11 @@ const Datasets: FC<Props> = ({ pid, project, iterations, groups }) => {
         </div>
         {renderGroups}
       </div>
-      {editingDataset ? <EditDescBox record={editingDataset} handle={saveDescHandle} /> : null}
-      {current ? <EditNameBox record={current} max={80} handle={saveNameHandle} /> : null}
+      <EditDescBox ref={editDescBoxRef} record={editingDataset} handle={saveDescHandle} />
+      <EditNameBox ref={editNameBoxRef} record={current} max={80} handle={saveNameHandle} />
       <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
+      <AnalysisModal ids={analysisDatasets} />
     </div>
   )
 }

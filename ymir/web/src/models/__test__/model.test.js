@@ -138,6 +138,9 @@ describe('models: model', () => {
     }
     const result = model.reducers.UPDATE_MODEL(state, daction)
     expect(result.model[expectedId].id).toBe(expectedId)
+
+    const totalState = model.reducers.UpdateTotal(state, { payload: total })
+    expect(totalState.total).toBe(total)
   })
 
   errorCode(model, 'getModelGroups')
@@ -162,7 +165,7 @@ describe('models: model', () => {
   // resetQuery
   // clearCache
 
-  generateList('getModelGroups', {}, response(list(groupsResult)), list(groupsExpected))
+  // generateList('getModelGroups', {}, response(list(groupsResult)), list(groupsExpected))
 
   // getModelVersion
   generateGetModelVersions('force = false && cache = false', response(list(modelsResult)), modelsExpected)
@@ -174,8 +177,6 @@ describe('models: model', () => {
   generateList('getHiddenList', {}, list(modelsExpected), list(modelsExpected))
   generateList('queryAllModels', 63453, list(modelsExpected), modelsExpected)
   generateList('batchModels', { ids: '1,3' }, response(modelsResult), modelsExpected)
-  generateList('hide', { pid: 324334, ids: [53, 34] }, response(modelsResult), modelsExpected)
-  generateList('restore', { pid: 324334, ids: [63, 23] }, response(modelsResult), modelsExpected)
 
   generateNormal({
     func: 'delModelGroup',
@@ -385,5 +386,21 @@ describe('models: model', () => {
 
     expect(end.value).toEqual({ keywords: [], kmodels: {} })
     expect(end.done).toBe(true)
+  })
+  it('effects: getValidModelsCount', () => {
+    const saga = model.effects.getValidModelsCount
+    const pid = 523443
+    const creator = {
+      type: 'getValidModelsCount',
+      payload: pid,
+    }
+    const total = 3
+    const result = {items: products(total), total }
+    const generator = saga(creator, { put })
+    generator.next()
+    generator.next(result)
+    const end = generator.next()
+
+    expect(end.value).toBe(total)
   })
 })

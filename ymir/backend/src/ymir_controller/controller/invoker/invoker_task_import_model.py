@@ -1,4 +1,3 @@
-import os
 from typing import Dict, List, Optional, Tuple
 from common_utils.labels import UserLabels
 
@@ -10,11 +9,9 @@ from proto import backend_pb2
 
 class TaskImportModelInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
-        import_model_request = request.req_create_task.import_model
-        model_package_path = import_model_request.model_package_path
-        if not os.path.isfile(model_package_path):
+        if not request.req_create_task.import_model.model_package_path:
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               message=f"file not exists: {model_package_path}")
+                                               message="Empty model_package_path")
 
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message="")
 

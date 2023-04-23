@@ -60,6 +60,9 @@ type IndexedDatasetMetadata struct {
 	HistAssets    *map[string]*MirHist `json:"hist_assets"     bson:"hist_assets"`
 	HistAnnosGt   *map[string]*MirHist `json:"hist_annos_gt"   bson:"hist_annos_gt"`
 	HistAnnosPred *map[string]*MirHist `json:"hist_annos_pred" bson:"hist_annos_pred"`
+
+	// Diagnosis
+	DiagnosisResult *DatasetDiagnosisElement `json:"diagnosis_result"`
 }
 
 func BuildStructFromMessage(message proto.Message, structOut interface{}) interface{} {

@@ -83,7 +83,7 @@ class TestMiningCmd(unittest.TestCase):
         with open('tests/assets/mining-template.yaml', 'r') as f:
             config = yaml.safe_load(f)
         with open(self._config_file, 'w') as f:
-            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: config}, f)
+            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: config}, f, allow_unicode=True)
 
     def _prepare_mir_repo(self):
         # init repo
@@ -118,7 +118,7 @@ class TestMiningCmd(unittest.TestCase):
             config = yaml.safe_load(f.read())
         config['class_names'] = ['cat', 'person']
         with open(mock_training_config_file, 'w') as f:
-            yaml.dump(config, f)
+            yaml.dump(config, f, allow_unicode=True)
         mock_model_file = os.path.join(self._storage_root, 'xyz')
         with tarfile.open(mock_model_file, "w:gz") as dest_tar_gz:
             dest_tar_gz.add(mock_model_json, os.path.basename(mock_model_json))

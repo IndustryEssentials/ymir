@@ -7,9 +7,9 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
-import RecommendKeywords from '@/components/common/recommendKeywords'
+import RecommendKeywords from '@/components/common/RecommendKeywords'
 import Desc from '@/components/form/desc'
-import KeywordSelect from '@/components/form/keywordSelect'
+import KeywordSelect from '@/components/form/KeywordSelect'
 import Dataset from '@/components/form/option/Dataset'
 import MergeType from '@/components/form/items/MergeType'
 

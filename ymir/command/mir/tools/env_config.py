@@ -52,7 +52,7 @@ def generate_training_env_config_file(task_id: str, env_config_file_path: str) -
     env_config.input.val_index_file = '/in/val-index.tsv'
 
     with open(env_config_file_path, 'w') as f:
-        yaml.safe_dump(env_config.dict(), f)
+        yaml.safe_dump(env_config.dict(), f, allow_unicode=True)
 
 
 def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_infer: bool,
@@ -65,7 +65,7 @@ def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_in
     env_config.input.candidate_index_file = '/in/candidate-index.tsv'
 
     with open(env_config_file_path, 'w') as f:
-        yaml.safe_dump(env_config.dict(), f)
+        yaml.safe_dump(env_config.dict(), f, allow_unicode=True)
 
 
 def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 5) -> str:

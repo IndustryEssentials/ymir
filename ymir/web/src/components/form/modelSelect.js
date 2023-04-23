@@ -6,7 +6,7 @@ import { percent } from '@/utils/number'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 
-import EmptyStateModel from '@/components/empty/model'
+import EmptyStateModel from '@/components/empty/Model'
 
 const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {}, onReady = () => {}, filters, ...resProps }) => {
   const models = useSelector(({ model }) => model.allModels)
@@ -50,7 +50,6 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {},
     const list = models || []
     const mds = filters ? filters(list) : list
     const opts = mds.map((model) => {
-      const name = `${model.name} ${model.versionName}`
       const childrenNode = onlyModel
         ? {}
         : {
@@ -62,7 +61,7 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {},
             })),
           }
       return {
-        label: name,
+        label: model.name,
         model,
         value: model.id,
         disabled: model.disabled,

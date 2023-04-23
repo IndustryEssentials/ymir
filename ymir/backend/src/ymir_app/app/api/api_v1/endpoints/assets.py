@@ -6,10 +6,17 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import AssetNotFound, DatasetNotFound
+from app.api.errors.errors import (
+    AssetNotFound,
+    DatasetNotFound,
+    PredictionNotFound,
+    PrematureDatasets,
+    PrematurePredictions,
+)
 from app.config import settings
-from app.constants.state import AnnotationType
+from app.constants.state import AnnotationType, ResultState
 from app.utils.ymir_viz import VizClient
+from app.libs.labels import keywords_to_class_ids
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -38,11 +45,9 @@ def list_assets(
     pagination is supported by means of offset and limit
     """
     mir_dataset = get_mir_dataset(db, current_user.id, data_id, data_type)
-    if not mir_dataset:
-        raise DatasetNotFound()
 
     keywords = keywords_str.split(",") if keywords_str else None
-    keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0] if keywords else None
+    keyword_ids = keywords_to_class_ids(user_labels, keywords) if keywords else None
 
     viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
     assets = viz_client.get_assets(
@@ -73,8 +78,6 @@ def get_random_asset_id_of_dataset(
     Get random asset from specific dataset
     """
     mir_dataset = get_mir_dataset(db, current_user.id, data_id, data_type)
-    if not mir_dataset:
-        raise DatasetNotFound()
 
     offset = get_random_asset_offset(mir_dataset.asset_count)
     viz_client.initialize(
@@ -115,8 +118,6 @@ def get_asset_info(
     Get asset from specific dataset
     """
     mir_dataset = get_mir_dataset(db, current_user.id, data_id, data_type)
-    if not mir_dataset:
-        raise DatasetNotFound()
 
     viz_client.initialize(
         user_id=current_user.id,
@@ -137,9 +138,18 @@ def stringtolist(s: Optional[str]) -> Optional[List]:
 
 def get_mir_dataset(
     db: Session, user_id: int, data_id: int, data_type: AnnotationType
-) -> Optional[Union[models.Dataset, models.Prediction]]:
-    crud_caller = crud.dataset if data_type == AnnotationType.gt else crud.prediction
-    mir_dataset = crud_caller.get_by_user_and_id(db, user_id=user_id, id=data_id)  # type: ignore
-    if not mir_dataset:
-        return None
-    return mir_dataset
+) -> Union[models.Dataset, models.Prediction]:
+    if data_type == AnnotationType.gt:
+        dataset = crud.dataset.get_by_user_and_id(db, user_id=user_id, id=data_id)
+        if not dataset:
+            raise DatasetNotFound()
+        if dataset.result_state != ResultState.ready:
+            raise PrematureDatasets()
+        return dataset
+    else:
+        prediction = crud.prediction.get_by_user_and_id(db, user_id=user_id, id=data_id)
+        if not prediction:
+            raise PredictionNotFound()
+        if prediction.result_state != ResultState.ready:
+            raise PrematurePredictions()
+        return prediction

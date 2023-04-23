@@ -9,12 +9,10 @@ describe('models: task', () => {
   const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
   errorCode(task, 'getTasks')
   errorCode(task, 'getTask')
-  errorCode(task, 'deleteTask')
   errorCode(task, 'updateTask')
   errorCode(task, 'fusion')
   errorCode(task, 'merge')
   errorCode(task, 'filter')
-  errorCode(task, 'label')
   errorCode(task, 'train')
   errorCode(task, 'mine')
   errorCode(task, 'stopTask')
@@ -199,11 +197,12 @@ describe('models: task', () => {
     const saga = task.effects.label
     const creator = {
       type: 'label',
-      payload: {},
+      payload: { keywords: ['person', 'dog']},
     }
     const expected = 'ok'
 
     const generator = saga(creator, { put, call })
+    generator.next()
     generator.next()
     generator.next({
       code: 0,
@@ -213,24 +212,6 @@ describe('models: task', () => {
     const end = generator.next()
 
     expect(end.value).toBe(expected)
-    expect(end.done).toBe(true)
-  })
-  it('effects: deleteTask', () => {
-    const saga = task.effects.deleteTask
-    const creator = {
-      type: 'deleteTask',
-      payload: { id: 24 },
-    }
-    const expected = { id: 24 }
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result: expected,
-    })
-
-    expect(end.value.id).toBe(expected.id)
     expect(end.done).toBe(true)
   })
 

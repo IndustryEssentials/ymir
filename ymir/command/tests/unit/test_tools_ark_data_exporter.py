@@ -84,7 +84,7 @@ class TestArkDataExporter(unittest.TestCase):
         annotations_dict = {
             'prediction': {
                 'task_id': 'a',
-                'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
+                'type': mirpb.ObjectType.OT_NO_ANNOS,
                 'image_annotations': {
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
                         'boxes': [{
@@ -145,7 +145,7 @@ class TestArkDataExporter(unittest.TestCase):
                 }
             },
             'ground_truth': {
-                'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
+                'type': mirpb.ObjectType.OT_NO_ANNOS,
             }
         }
         mir_annotations = mirpb.MirAnnotations()

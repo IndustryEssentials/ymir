@@ -1,22 +1,20 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./index.less"
-import { Link, useHistory, useParams } from "umi"
-import { Form, Button, Input, Select, Table, Menu, Dropdown, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip, } from "antd"
+import { useHistory } from "umi"
+import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Row, Col, Tooltip, } from "antd"
 import {
-  PlusOutlined,
-  SearchOutlined,
   SyncOutlined,
 } from "@ant-design/icons"
 
 import t from "@/utils/t"
 import { format } from '@/utils/date'
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyState from '@/components/empty/keyword'
+import EmptyState from '@/components/empty/Keyword'
 import Actions from "@/components/table/Actions"
 import Add from './add'
 import MultiAdd from "./multiAdd"
-import { AddIcon, AddtaskIcon, EditIcon, SearchIcon, } from "@/components/common/Icons"
+import { AddIcon, EditIcon, SearchIcon, } from "@/components/common/Icons"
 
 
 const { confirm } = Modal

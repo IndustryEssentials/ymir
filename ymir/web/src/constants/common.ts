@@ -1,6 +1,14 @@
-import storage from "@/utils/storage"
+import storage from '@/utils/storage'
+import { Task } from '.'
+import { TASKSTATES } from './task'
 
-type Result = YModels.Dataset | YModels.Prediction | YModels.Model
+type ResultStateType = {
+  state: ResultStates
+  progress: number
+  taskState: TASKSTATES
+  task: Task
+  needReload?: boolean
+}
 
 export const HIDDENMODULES = {
   ITERATIONSWITCH: true,
@@ -25,15 +33,17 @@ export enum actions {
 
 export const OPENPAI_MAX_GPU_COUNT = 8
 
-export function updateResultState(result: YModels.AllResult, tasks: YModels.BackendData) {
+export const DefaultShowVersionCount = 3
+
+export function updateResultState<T extends ResultStateType>(result: T, tasks: { [key: string]: YModels.ProgressTask }) {
   const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
     return result
   }
-  return updateResultByTask(result, task)
+  return updateResultByTask<T>(result, task)
 }
 
-export function updateResultByTask<T extends YModels.AllResult>(result: T, task?: YModels.ProgressTask): T | undefined {
+export function updateResultByTask<T extends ResultStateType>(result: T, task?: YModels.ProgressTask): T | undefined {
   if (!result || !task) {
     return
   }
@@ -78,13 +88,13 @@ export const getPublicImageUrl = () => getThirdUrl('PUBLIC_IMAGE_URL')
  * @description generate tensorboard link
  * @export
  * @param {(string | string[])} [hashs=[]]
- * @return {*} 
+ * @return {*}
  */
 export function getTensorboardLink(hashs: string | string[] = []) {
   if (!Array.isArray(hashs)) {
     hashs = [hashs]
   }
-  const query = hashs.filter(hash => hash).join('|')
+  const query = hashs.filter((hash) => hash).join('|')
   return `/tensorboard/#scalars&regexInput=${query}`
 }
 
@@ -111,14 +121,11 @@ enum LabelAnnotationTypes {
 export const getLabelAnnotationTypes = (isPred?: boolean) => {
   const prefix = 'task.label.form.keep_anno.'
   const type = isPred ? 'pred' : 'gt'
-  const keepItem = { value: LabelAnnotationTypes[type], label: `${prefix}${type}`}
-  return [
-    keepItem,
-    {value: undefined, label: `${prefix}none`},
-  ]
+  const keepItem = { value: LabelAnnotationTypes[type], label: `${prefix}${type}` }
+  return [keepItem, { value: 0, label: `${prefix}none` }]
 }
 
-export const getLabelAnnotationType = (type: LabelAnnotationTypes | undefined) => {
+export const getLabelAnnotationType = (type: LabelAnnotationTypes) => {
   const types = getLabelAnnotationTypes()
   const target = types.find(({ value }) => !value || value === type)
   return target?.label

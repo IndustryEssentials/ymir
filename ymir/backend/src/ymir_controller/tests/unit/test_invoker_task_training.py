@@ -28,8 +28,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
         # └── test_user
         #     └── ymir-dvc-test
         super().__init__(methodName=methodName)
-        self._user_name = "user"
-        self._mir_repo_name = "repoid"
+        self._user_name = "aaaa"
+        self._mir_repo_name = "bbbbbb"
         self._storage_name = "media_storage_root"
         self._tensorboard_root_name = 'tensorboard_root'
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzd5'
@@ -143,6 +143,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
                                          singleton_op=training_image,
                                          in_class_ids=in_class_ids,
+                                         object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
                                          docker_image_config=json.dumps(training_config))
         print(MessageToDict(response))
 
@@ -152,11 +153,13 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         training_config["class_names"] = ["frisbee", "car"]
         training_config['gpu_id'] = '0'
+        training_config['object_type'] = mir_cmd_pb.ObjectType.OT_DET_BOX
         expected_config = {
             'executor_config': training_config,
             'task_context': {
                 'available_gpu_id': '1',
                 'server_runtime': 'runc',
+                'object_type': mir_cmd_pb.ObjectType.OT_DET_BOX,
             },
         }
         logging.info(f"xxx config: {config}")  # for test

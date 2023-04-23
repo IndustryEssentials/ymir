@@ -1,6 +1,7 @@
 {
   "name": "ymir-web",
-  "version": "2.3.0.0316",
+  "displayName": "YMIR",
+  "version": "2.4.0.0407",
   "scripts": {
     "local": "APP_ROOT=../pages/demo1 umi dev",
     "analyze": "cross-env UMI_ENV=dev ANALYZE=1 umi dev",
@@ -24,7 +25,8 @@
     },
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "./src/**/*.{js,ts,tsx}",
+      "./src/**/*.{js,ts}",
+      "!./src/**/*.d.ts",
       "!./src/assets/**",
       "!./src/components/**",
       "!./src/pages/**",
@@ -75,6 +77,7 @@
   "devDependencies": {
     "@testing-library/react-hooks": "^7.0.2",
     "@types/color": "^3.0.3",
+    "@types/crypto-js": "^4.1.1",
     "@types/human-number": "^1.0.0",
     "@types/react": "^17.0.38",
     "@types/react-dom": "^17.0.11",

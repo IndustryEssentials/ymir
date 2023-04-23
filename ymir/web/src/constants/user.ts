@@ -34,3 +34,7 @@ export const getUserState = (state: STATES) => {
 export function isSuperAdmin(role: ROLES) {
   return ROLES.SUPER === role
 }
+
+export function isAdmin(role: ROLES) {
+  return [ROLES.ADMIN, ROLES.SUPER].includes(role)
+}

@@ -60,7 +60,7 @@ class Settings(BaseSettings):
     # DOCKER IMAGE RUNTIMES
     DOCKER_IMAGES: Optional[
         str
-    ] = '[{"name": "sample_image", "hash": "6d30c27861c5", "object_type": 2, "description": "Demonstration only. This docker image trains fake model after a requested length of running time period. These models can only be used by this same docker image for re-training/mining/inference purposes. Adjust the hyper-parameters to set the length of running time, or to trigger crash, to set expected mAP, etc", "url": "industryessentials/executor-example:latest", "configs": [{"expected_map": 0.983, "idle_seconds": 60, "trigger_crash": 0, "type": 1}, {"idle_seconds": 6, "trigger_crash": 0, "type": 2}, {"idle_seconds": 3, "trigger_crash": 0, "type": 9}]}]'  # noqa: E501
+    ] = '[{"name": "sample_image", "hash": "6d30c27861c5", "object_type": 2, "description": "Demonstration only. This docker image trains fake model after a requested length of running time period. These models can only be used by this same docker image for re-training/mining/inference purposes. Adjust the hyper-parameters to set the length of running time, or to trigger crash, to set expected mAP, etc", "url": "industryessentials/executor-example:latest", "configs": [{"expected_map": 0.983, "idle_seconds": 60, "trigger_crash": 0, "object_type": 2, "type": 1}, {"idle_seconds": 6, "trigger_crash": 0, "object_type": 2, "type": 2}, {"idle_seconds": 3, "trigger_crash": 0, "object_type": 2, "type": 9}]}]'  # noqa: E501
 
     # Start up stuffs
     # Task Type To Survive Upon Start up
@@ -77,6 +77,7 @@ class Settings(BaseSettings):
     SAMPLE_PROJECT_VALIDATION_DATASET_URL: str = "http://web/val.zip"
     SAMPLE_PROJECT_MINING_DATASET_URL: str = "http://web/mining.zip"
     SAMPLE_PROJECT_MODEL_URL: str = "http://web/683f4fa14d1baa733a87d9644bb0457cbed5aba8"
+    SAMPLE_PROJECT_DOCKER_IMAGE_URL: str = "industryessentials/executor-example:latest"
 
     # OpenPAI
     OPENPAI_ENABLED: bool = False
@@ -108,6 +109,11 @@ class Settings(BaseSettings):
     CRON_CHECK_INTERVAL: int = 10000  # 10 seconds
     CRON_UPDATE_TASK_BATCH_SIZE: int = 10
     CRON_UPDATE_TASK_RETRY_INTERVAL: int = 5
+
+    # official docker image
+    OFFICIAL_DOCKER_IMAGE_NAME: str = "Detection & Segmentation"
+    OFFICIAL_DOCKER_IMAGE_URL: str = "industryessentials/ymir-executor:ymir2.4.0-detection-instance-sementic-in-one"
+    INIT_OFFICIAL_DOCKER_IMAGE: bool = True
 
 
 settings = Settings(_env_file=".env")  # type: ignore

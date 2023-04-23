@@ -22,6 +22,19 @@ from common_utils.labels import UserLabels
 router = APIRouter()
 
 
+@router.get("/batch", response_model=schemas.prediction.PredictionsOut)
+def batch_get_predictions(
+    db: Session = Depends(deps.get_db),
+    prediction_ids: str = Query(..., example="1,2,3", alias="ids", min_length=1),
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
+) -> Any:
+    ids = list({int(i) for i in prediction_ids.split(",")})
+    predictions = crud.prediction.get_multi_by_user_and_ids(db, user_id=current_user.id, ids=ids)
+    if len(ids) != len(predictions):
+        raise PredictionNotFound()
+    return {"result": predictions}
+
+
 @router.get("/", response_model=schemas.prediction.PredictionPaginationOut)
 def list_predictions(
     *,

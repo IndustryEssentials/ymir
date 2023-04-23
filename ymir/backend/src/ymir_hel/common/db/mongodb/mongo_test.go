@@ -468,6 +468,64 @@ func TestLoadAssetsDetail(t *testing.T) {
 		panic(err)
 	}
 
+	mockMirContext := protos.MirContext{}
+	err = json.Unmarshal([]byte(`{
+		"images_cnt": 20,
+		"cks_cnt":
+		{
+			"city":
+			{
+				"cnt": 1,
+				"sub_cnt":
+				{
+					"hangzhou": 1
+				}
+			}
+		},
+		"pred_stats":
+		{
+			"positive_asset_cnt": 8,
+			"negative_asset_cnt": 5,
+			"eval_class_ids": [0, 1],
+			"class_ids_cnt":
+			{
+				"1": 8
+			},
+			"tags_cnt": {
+				"city": {
+					"cnt": 1,
+					"sub_cnt":
+					{
+						"shenzhen": 1
+					}
+			}},
+			"class_ids_mask_area": {
+			}
+		},
+		"gt_stats":
+		{
+			"positive_asset_cnt": 3,
+			"negative_asset_cnt": 2,
+			"class_ids_cnt":
+			{
+				"0": 3
+			},
+			"tags_cnt": {
+				"city": {
+					"cnt": 1,
+					"sub_cnt":
+					{
+						"guangzhou": 1
+					}
+			}},
+			"class_ids_mask_area": {
+			}
+		}
+	}`), &mockMirContext)
+	if err != nil {
+		panic(err)
+	}
+
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 	defer mt.Close()
 	mt.Run("success", func(mt *mtest.T) {
@@ -496,6 +554,6 @@ func TestLoadAssetsDetail(t *testing.T) {
 			mtest.CreateSuccessResponse(),
 		)
 		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
-		mongoServer.IndexDatasetData(&mirRepo, mirMetadatas, mirAnnotations)
+		mongoServer.IndexDatasetData(&mirRepo, mirMetadatas, mirAnnotations, &mockMirContext)
 	})
 }

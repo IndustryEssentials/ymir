@@ -67,6 +67,7 @@ const common = {
   'common.cancel': { cn: '取消', en: 'Cancel' },
   'common.done': { cn: '已完成', en: 'Done' },
   'common.action.train': { cn: '训练', en: 'Train' },
+  'common.action.finetune': { cn: '模型优化', en: 'Fine-tune' },
   'common.action.mining': { cn: '挖掘', en: 'Mine' },
   'common.action.fusion': { cn: '预处理', en: 'Pretreat' },
   'common.action.merge': { cn: '添加', en: 'Add' },
@@ -110,6 +111,14 @@ const common = {
   'common.search': { en: 'Search', cn: '搜索' },
   'common.search.advanced': { en: 'Advanced Search', cn: '高级搜索' },
   'common.more': { en: 'More', cn: '更多' },
+  'message.content.model.finish': {
+    en: '{type} success! model {metricLabel}: {metric}, recommended to import real-world datasets for inference to examine performance',
+    cn: '{type}成功： 模型的{metricLabel}为{metric}，推荐导入真实应用场景的数据集推理后查看模型落地效果。',
+  },
+  'message.content.model.failure': { en: '{type} failed. Click to view more about {name}', cn: '{type}失败：请查看{name}' },
+  'message.content.common': { en: '{type}{state}. Click to view more about {name}', cn: '{type}{state}。请查看{name}' },
+  'message.list.title': { en: '{count} Unread Messages', cn: '未读消息({count})' },
+  'message.unread.label': { en: '{count} Unread', cn: '尚有{count}条未读消息' },
 }
 
 export default common

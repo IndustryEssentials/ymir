@@ -3,17 +3,20 @@ import logging
 import os
 import shutil
 import tarfile
+from urllib.parse import urlparse
 
 import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage_ops, models, revs_parser
+from mir.tools import checker, mir_repo_utils, mir_storage_ops, models, revs_parser
 from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
+from mir.tools.files import download_file
 from mir.tools.model_updater import update_model_info
+from mir.tools.phase_logger import PhaseLoggerCenter
 
 
 class CmdModelImport(base.BaseCommand):
@@ -38,20 +41,26 @@ class CmdModelImport(base.BaseCommand):
 
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
+        PhaseLoggerCenter.create_phase_loggers(top_phase='model',
+                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
+                                               task_name=dst_typ_rev_tid.tid)
 
         check_code = checker.check(mir_root,
                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if check_code != MirCode.RC_OK:
             return check_code
 
-        if not package_path or not os.path.isfile(package_path):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"model package: {package_path} is not file")
+        if urlparse(package_path).netloc:
+            local_package_path = download_file(url=package_path, output_dir=work_dir)
+        else:
+            local_package_path = package_path
+
+        PhaseLoggerCenter.update_phase(phase='model.prepare')
 
         # unpack
         try:
             extract_model_dir_path = os.path.join(work_dir, 'model')
-            with tarfile.open(package_path, 'r') as tf:
+            with tarfile.open(local_package_path, 'r') as tf:
                 tf.extractall(extract_model_dir_path)
 
             model_info_path = os.path.join(extract_model_dir_path, 'ymir-info.yaml')
@@ -87,7 +96,7 @@ class CmdModelImport(base.BaseCommand):
                                                   src_revs=src_revs,
                                                   dst_rev=dst_rev,
                                                   serialized_executor_config=yaml.safe_dump(
-                                                      model_storage.executor_config),
+                                                      model_storage.executor_config, allow_unicode=True),
                                                   executor=model_storage.task_context.get('executor', ''))
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
@@ -111,7 +120,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       dest="package_path",
                                       type=str,
                                       required=True,
-                                      help="path to model package file")
+                                      help="path or URL to model package .tar.gz file")
     importing_arg_parser.add_argument("--dst-rev",
                                       dest="dst_rev",
                                       type=str,

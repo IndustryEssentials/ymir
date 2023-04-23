@@ -36,3 +36,11 @@ export function attr2LowerCase(obj: { [key: string]: any }): { [key: string]: an
     }
   }, {})
 }
+
+export function createFd(params: {[key: string]: any}) {
+  let fd = new FormData()
+  Object.keys(params).forEach((key) => {
+    fd.append(key, params[key])
+  })
+  return fd
+}

@@ -9,6 +9,7 @@ import Uploader from '@/components/form/uploader'
 import { phoneValidate } from "@/components/form/validators"
 import s from "./common.less"
 import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon } from "@/components/common/Icons"
+import useRequest from "@/hooks/useRequest"
 
 const { useForm } = Form
 
@@ -21,6 +22,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
   const [usernameForm] = useForm()
   const [phoneForm] = useForm()
   const [passwordForm] = useForm()
+  const { run: refreshToken} = useRequest('user/refreshToken')
 
 
   useEffect(() => {
@@ -51,6 +53,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
       const username = usernameForm.getFieldValue('username').trim()
       const result = await updateUserInfo({ username })
       if (result) {
+        refreshToken()
         setUsernameModify(false)
         message.success(t('user.info.username.success'))
       }

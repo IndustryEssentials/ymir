@@ -31,7 +31,7 @@ router = APIRouter()
 def batch_get_datasets(
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
-    project_id: int = Query(...),
+    project_id: int = Query(None),
     dataset_ids: str = Query(..., example="1,2,3", alias="ids", min_length=1),
     require_ck: bool = Query(False, alias="ck"),
     require_hist: bool = Query(False, alias="hist"),
@@ -44,7 +44,7 @@ def batch_get_datasets(
         raise DatasetNotFound()
 
     datasets_info = [schemas.dataset.DatasetInDB.from_orm(dataset).dict() for dataset in datasets]
-    if require_ck or require_hist:
+    if project_id and (require_ck or require_hist):
         viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
         for dataset in datasets_info:
             if dataset["result_state"] != ResultState.ready:
@@ -94,6 +94,8 @@ def list_datasets(
     visible: bool = Query(True),
     state: ResultState = Query(None),
     object_type: ObjectType = Query(None),
+    allow_empty: bool = Query(True),
+    having_classes: bool = Query(None),
     pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
@@ -111,6 +113,8 @@ def list_datasets(
         state=state,
         object_type=object_type,
         visible=visible,
+        allow_empty=allow_empty,
+        having_classes=having_classes,
         pagination=pagination,
     )
     return {"result": {"total": total, "items": datasets}}
@@ -124,7 +128,7 @@ def get_public_datasets(
     """
     Get all the public datasets
 
-    public datasets come from User set by env (PUBLIC_DATASET_OWNER)
+    public datasets come from User 1
     """
     datasets, total = crud.dataset.get_multi_datasets(
         db,
@@ -147,7 +151,7 @@ def import_dataset(
     """
     Import dataset.
 
-    Three Import Strategy:
+    Import Strategy Options:
     - no_annotations = 1
     - ignore_unknown_annotations = 2
     - stop_upon_unknown_annotations = 3

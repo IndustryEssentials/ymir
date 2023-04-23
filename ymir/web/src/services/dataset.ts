@@ -55,6 +55,8 @@ export function queryDatasets({
   limit = 10,
   desc = true,
   orderBy,
+  empty,
+  haveClasses,
 }: YParams.DatasetsQuery) {
   return request.get('datasets/', {
     params: {
@@ -72,6 +74,8 @@ export function queryDatasets({
       visible,
       start_time: startTime,
       end_time: endTime,
+      allow_empty: empty,
+      having_classes: haveClasses,
     },
   })
 }

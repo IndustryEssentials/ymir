@@ -12,12 +12,15 @@ declare namespace YParams {
     endTime?: string | number
     visible?: boolean
     desc?: boolean
+    current?: number
   }
 
   interface DatasetsQuery extends ResultListQuery {
     orderBy?: 'id' | 'create_datetime' | 'asset_count' | 'source'
     keywords?: string[]
     excludeType?: number
+    empty?: boolean
+    haveClasses?: boolean
   }
 
   interface ModelsQuery extends ResultListQuery {
@@ -40,7 +43,7 @@ declare namespace YParams {
 
   interface AssetQueryParams extends DatasetsQuery {
     id: number | string
-    cm?: number[]
+    cm?: number
     exclude?: number[]
     annoType?: number
     type?: string

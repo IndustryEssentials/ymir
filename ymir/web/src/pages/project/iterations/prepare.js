@@ -40,7 +40,7 @@ function Prepare({ project, fresh = () => {} }) {
     project?.id && getPrepareStagesResult({ id: project?.id })
   }, [project])
 
-  useEffect(() => updatePrepareStatus(), [stages, results])
+  useEffect(() => updatePrepareStatus(), [stages, results, project])
 
   useEffect(() => {
     if (result) {
@@ -108,7 +108,7 @@ function Prepare({ project, fresh = () => {} }) {
   function updatePrepareStatus() {
     const fields = stages.filter((stage) => !stage.option).map((stage) => stage.field)
     const valid = fields.every((field) => (project[field]?.id || project[field]) && validDataset(results[field]))
-    setValidPrepare(valid)
+    setValidPrepare(valid && project?.keywords?.length)
   }
 
   function start() {

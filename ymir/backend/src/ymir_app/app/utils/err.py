@@ -5,6 +5,9 @@ from typing import Any, Callable
 
 import sentry_sdk
 
+from app.config import settings
+
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -12,7 +15,12 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 
-def retry(func: Callable, n_times: int = 3, wait: float = 0, backoff: bool = False) -> Any:
+def retry(
+    func: Callable,
+    n_times: int = 3,
+    wait: float = settings.CRON_UPDATE_TASK_RETRY_INTERVAL,
+    backoff: bool = False,
+) -> Any:
     """
     try function for at most n_times.
     if backoff is enabled, wait for wait * 1, wait * 2, ... each time

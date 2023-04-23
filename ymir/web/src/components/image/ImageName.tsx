@@ -1,6 +1,6 @@
-import useFetch from '@/hooks/useFetch'
 import React, { useEffect } from 'react'
 import { Link, useSelector } from 'umi'
+import useRequest from '@/hooks/useRequest'
 
 type Props = {
   id?: number
@@ -10,16 +10,18 @@ const ImageName: React.FC<Props> = ({ id, url = '' }) => {
   if (url) {
     return <>${url}</>
   }
-  const image: YModels.Image = useSelector(({ image }: YStates.Root) => {
-    return id && image.image[id]
+  const image = useSelector(({ image }) => {
+    return id ? image.image[id] : undefined
   })
-  const [_, getImage] = useFetch('image/getImage')
+  const { run: getImage } = useRequest<null, [{ id: number }]>('image/getImage')
 
-  useEffect(() => id && getImage({ id }), [id])
+  useEffect(() => {
+    id && getImage({ id })
+  }, [id])
 
   const label = image?.name ? `${image?.name}` : `${id}`
   return (
-    <Link to={`/home/image/${id}`} className={'imageName'} title={image?.url}>
+    <Link to={`/home/image/detail/${id}`} className={'imageName'} title={image?.url}>
       {label}
     </Link>
   )

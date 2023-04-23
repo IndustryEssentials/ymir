@@ -54,3 +54,6 @@ export function getStats({ q, limit = 8, type = 'day' }: statsQueryParams) {
 export function getSysInfo() {
   return request.get('/sys_info/')
 }
+
+export const getDetailPage = (type: 'dataset' | 'model' | 'prediction' | 'image', id: number, pid?: number) =>
+  type !== 'image' ? `/home/project/${pid}/${type}/${id}` : `/home/image/detail/${id}`

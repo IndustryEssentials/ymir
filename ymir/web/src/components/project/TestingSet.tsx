@@ -15,7 +15,7 @@ const TestingSet: FC<Props> = ({ project }) => {
   }, [project.testingSets])
 
   function renderProjectTestingSetLabel() {
-    const getDsName = (ds: YModels.Dataset) => (ds.name ? ds.name + ' ' + (ds.versionName || '') : '')
+    const getDsName = (ds: YModels.Dataset) => ds.name || ''
     const getAssetCount = (ds: YModels.Dataset) => (ds.assetCount ? ds.assetCount : '')
     const getDatasetGroup = (dsg = []) => {
       return dsg.map((ds) => {

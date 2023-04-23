@@ -1,9 +1,8 @@
 import { FC, useEffect } from 'react'
 import { Breadcrumb } from 'antd'
-import { Link, useHistory, useParams, useRouteMatch, useSelector } from 'umi'
+import { Link, useParams, useRouteMatch, useSelector } from 'umi'
 import { homeRoutes } from '@/config/routes'
 import t from '@/utils/t'
-import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
 type CrumbType = {
@@ -52,31 +51,34 @@ function loop(id = 1, crumbs: CrumbType[]): CrumbType[] {
 
 const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
   const { path } = useRouteMatch()
-  const params = useParams<{ id: string; [key: string | number]: string }>() || {}
-  const { data: project, run: getProject} = useRequest<YModels.Project>('project/getProject', {
+  const params = useParams<{ id: string; [key: string | number]: string }>()
+  const project = useSelector(({ project }) => project.projects[params.id])
+  const { run: getProject } = useRequest<YModels.Project, [{ id: string }]>('project/getProject', {
     cacheKey: 'getProject',
-    loading: false
+    loading: false,
   })
   const crumbs = getCrumbs()
   const crumbItems = getCrumbItems(path, crumbs)
+  const isProjectDetail = (crumb: CrumbType) => crumb.id === 24
+  const datasetList = crumbs.find(({ id }) => id === 32)
 
   useEffect(() => {
     setTimeout(() => {
-      if (crumbItems.some((crumb) => crumb.id === 25) && params?.id) {
-        getProject({ id: params?.id })
+      if (crumbItems.some(isProjectDetail) && params.id) {
+        getProject({ id: params.id })
       }
     }, 500)
-  }, [params?.id])
+  }, [params.id])
 
   const getLabel = (crumb: CrumbType, customTitle: string) => {
-    return (crumb.id === 25 ? project?.name : customTitle) || t(crumb.label)
+    return (project && (isProjectDetail(crumb) ? project?.name : customTitle)) || t(crumb.label)
   }
   return (
     <div className="breadcrumb">
       <Breadcrumb className="breadcrumbContent" separator="/">
         {crumbItems.map((crumb, index) => {
           const last = index === crumbItems.length - 1
-          const link = crumb.path.replace(/:([^\/]+)/g, (str, key: number) => {
+          const link = (isProjectDetail(crumb) ? datasetList?.path : crumb.path)?.replace(/:([^\/]+)/g, (str, key: number) => {
             return params[key] ? params[key] : ''
           })
           const label = getLabel(crumb, titles[index])

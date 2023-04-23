@@ -45,8 +45,8 @@ class TestCmdStatus(unittest.TestCase):
         ParseDict(dict_metadatas, mir_metadatas)
 
         mir_annotations = mirpb.MirAnnotations()
-        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
-        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOS
+        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOS
 
         mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
