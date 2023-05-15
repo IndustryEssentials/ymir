@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 import { createFd } from '@/utils/object'
 import CryptoJS from 'crypto-js'
-import { LoginParams, QueryUsersParams, ResetPwdParams, SignupParams, UpdatePermissionParams, UpdateUserParams } from './typings/user'
+import { LoginParams, QueryUsersParams, ResetPwdParams, SignupParams, UpdatePermissionParams, UpdateRoleParams, UpdateUserParams } from './typings/user'
 
 function sha1(value: string) {
   return CryptoJS.SHA1(value).toString()
@@ -38,9 +38,9 @@ export function getMeInfo() {
 
 export function updateUserInfo(info: UpdateUserParams) {
   return request({
-    method: 'PATCH',
+    method: 'patch',
     url: '/users/me',
-    data: info,
+    data: { ...info },
   })
 }
 
@@ -76,11 +76,19 @@ export function getUsers(params: QueryUsersParams) {
  * @export
  * @param {UpdatePermissionParams} { id, state, role }
  */
-export function setUserState({ id, state, role }: UpdatePermissionParams) {
+export function setUserState({ id, state }: UpdatePermissionParams) {
   return request({
     url: `/users/${id}`,
-    method: 'PATCH',
-    data: { state, role },
+    method: 'patch',
+    data: { state },
+  })
+}
+
+export function setUserRole({ id, role }: UpdateRoleParams) {
+  return request({
+    url: `/users/${id}`,
+    method: 'patch',
+    data: { role },
   })
 }
 
