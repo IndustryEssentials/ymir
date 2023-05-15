@@ -6,12 +6,13 @@ import useRequest from '@/hooks/useRequest'
 import Breadcrumbs from '@/components/common/breadcrumb'
 
 import s from '../detail.less'
+import { Iteration, Project } from '@/constants'
 
 type ListType = (m: ModuleType) => FC
 export type ModuleType = FC<{
   pid: number
-  project?: YModels.Project
-  iterations?: YModels.Iteration[]
+  project?: Project
+  iterations?: Iteration[]
   groups?: number[]
 }>
 
@@ -25,7 +26,7 @@ const ListHOC: ListType = (Module) => {
     const { run: getProject } = useRequest<null, [{ id: number; force?: boolean }]>('project/getProject', {
       loading: false,
     })
-    const { data: iterations, run: getIterations } = useRequest<YModels.Iteration[], [{ id: number }]>('iteration/getIterations', {
+    const { data: iterations, run: getIterations } = useRequest<Iteration[], [{ id: number }]>('iteration/getIterations', {
       loading: false,
     })
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, FC } from 'react'
 
-import { AnnotationType } from '@/constants/dataset'
+import { AnnotationType } from '@/constants/asset'
 import { transferAnnotations } from './asset/_helper'
 
 import Mask from './asset/Mask'
@@ -9,16 +9,17 @@ import BoundingBox from './asset/BoundingBox'
 
 import styles from './common.less'
 import { useDebounceEffect } from 'ahooks'
+import { Annotation, Asset } from '@/constants'
 
 type Props = {
-  asset: YModels.Asset
-  filter?: (annotations: YModels.Annotation[]) => YModels.Annotation[]
+  asset: Asset
+  filter?: (annotations: Annotation[]) => Annotation[]
   hideAsset?: boolean
   isFull?: boolean
 }
 
 const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
-  const [annotations, setAnnotations] = useState<YModels.Annotation[]>([])
+  const [annotations, setAnnotations] = useState<Annotation[]>([])
   const imgContainer = useRef<HTMLDivElement>(null)
   const img = useRef<HTMLImageElement>(null)
   const [width, setWidth] = useState(0)
@@ -41,7 +42,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
     const { current } = imgContainer
     const cw = current?.clientWidth || 0
     const iw = asset?.width || 0
-    const clientWidth = isFull? cw : (iw > cw ? cw : iw)
+    const clientWidth = isFull ? cw : iw > cw ? cw : iw
     setImgWidth(clientWidth)
     setWidth(cw)
     setRatio(clientWidth / iw)
@@ -49,7 +50,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
 
   window.addEventListener('resize', () => imgContainer.current && calClientWidth())
 
-  function renderAnnotation(annotation: YModels.Annotation) {
+  function renderAnnotation(annotation: Annotation) {
     switch (annotation.type) {
       case AnnotationType.BoundingBox:
         return <BoundingBox key={annotation.id} annotation={annotation} ratio={ratio} simple={true} />

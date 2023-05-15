@@ -24,11 +24,12 @@ import { ValidateErrorEntity } from 'rc-field-form/lib/interface'
 import TypeSelector from './add/TypeSelector'
 import { Types } from './add/AddTypes'
 import { List } from '@/models/typings/common'
+import { Dataset as DatasetType } from '@/constants'
 
 type DatasetOptionType = {
   value: number
   label: string | ReactElement
-  dataset: YModels.Dataset
+  dataset: DatasetType
 }
 type Props = Omit<CardProps, 'id'> & {
   id?: number
@@ -60,7 +61,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
   const [ignoredKeywords, setIgnoredKeywords] = useState<string[]>([])
   const { data: { newer } = {}, run: checkKeywords } = useRequest<{ newer: string[] }>('keyword/checkDuplication')
   const [addResult, newDataset] = useFetch('dataset/createDataset')
-  const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<List<YModels.Dataset>>('dataset/getInternalDataset')
+  const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<List<DatasetType>>('dataset/getInternalDataset')
   const { runAsync: addKeywords } = useRequest<{}, [{ keywords: string[]; dry_run?: boolean }]>('keyword/addKeywords')
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
   const [defaultName, setDefaultName] = useState('')
@@ -407,7 +408,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
                 </Button>
               </Form.Item>
               <Form.Item name="backBtn" noStyle>
-                <Button size="large" onClick={(e) => back ? back(e) : history.goBack()}>
+                <Button size="large" onClick={(e) => (back ? back(e) : history.goBack())}>
                   {t('task.btn.back')}
                 </Button>
               </Form.Item>

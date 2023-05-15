@@ -20,6 +20,7 @@ import Terminate, { RefProps } from '@/components/task/terminate'
 
 import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon, EditIcon, CopyIcon, StopIcon, CompareListIcon } from '@/components/common/Icons'
 import { DescPop } from '@/components/common/DescPop'
+import { Dataset } from '@/constants'
 
 type Props = {
   pid: number
@@ -27,7 +28,7 @@ type Props = {
   query?: YParams.ResultListQuery
 }
 type DatasetsType = {
-  items: YModels.Dataset[]
+  items: Dataset[]
   total: number
 }
 
@@ -45,7 +46,7 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
     debounceWait: 100,
   })
   const [testingSetIds, setTestingSetIds] = useState<number[]>([])
-  const [editingDataset, setEditingDataset] = useState<YModels.Dataset>()
+  const [editingDataset, setEditingDataset] = useState<Dataset>()
   const terminateRef = useRef<RefProps>(null)
 
   useEffect(
@@ -69,7 +70,7 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
     }
   }, [datasetQuery])
 
-  const tableChange: TableProps<YModels.Dataset>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
+  const tableChange: TableProps<Dataset>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
   const pageChange = (page: number, pageSize: number) => {
     const offset = (page - 1) * (datasetQuery.limit || 10)
     setQuery((query) => ({
@@ -79,7 +80,7 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
     }))
   }
 
-  const columns: TableColumnsType<YModels.Dataset> = [
+  const columns: TableColumnsType<Dataset> = [
     {
       title: showTitle('project.tab.set.title'),
       key: 'name',
@@ -127,11 +128,7 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
             })}
           </div>
         )
-        const label = (
-          <>
-            {renderLine(gt?.keywords)}
-          </>
-        )
+        const label = <>{renderLine(gt?.keywords)}</>
         return validDataset(dataset) ? (
           <Tooltip title={label} color="white" overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }} mouseEnterDelay={0.5}>
             <div>{label}</div>
@@ -166,9 +163,9 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
     },
   ]
 
-  const actionMenus = (record: YModels.Dataset) => {
+  const actionMenus = (record: Dataset) => {
     const { id, groupId, state, taskState, task, assetCount } = record
-    const invalidDataset = (ds: YModels.Dataset) => !validDataset(ds) || ds.assetCount === 0
+    const invalidDataset = (ds: Dataset) => !validDataset(ds) || ds.assetCount === 0
     const menus = [
       {
         key: 'label',
@@ -244,11 +241,11 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
     getDatasets(datasetQuery)
   }
 
-  const stop = (dataset: YModels.Dataset) => {
+  const stop = (dataset: Dataset) => {
     terminateRef?.current?.confirm(dataset)
   }
 
-  const editDesc = (dataset: YModels.Dataset) => {
+  const editDesc = (dataset: Dataset) => {
     setEditingDataset(undefined)
     setTimeout(() => setEditingDataset(dataset), 0)
   }

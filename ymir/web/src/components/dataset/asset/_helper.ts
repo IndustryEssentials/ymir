@@ -1,4 +1,5 @@
-import { AnnotationType } from '@/constants/dataset'
+import { Annotation, BoundingBox, Mask, Polygon } from '@/constants'
+import { AnnotationType } from '@/constants/asset'
 import { decode } from '@/utils/rle'
 import Color from 'color'
 
@@ -28,7 +29,7 @@ function mask2Uint8Array(mask: number[][], len: number, color?: string) {
   return dataWithColor
 }
 
-export function renderPolygon(canvas: HTMLCanvasElement, points: YModels.Point[], color?: string) {
+export function renderPolygon(canvas: HTMLCanvasElement, points: Polygon['polygon'], color?: string) {
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return
@@ -52,8 +53,8 @@ export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: n
   image && ctx.putImageData(image, 0, 0)
 }
 
-export function transferAnnotations(annotations: YModels.Annotation[] = []) {
-  const handles = (annotation: YModels.Annotation) => {
+export function transferAnnotations(annotations: Annotation[] = []) {
+  const handles = (annotation: Annotation) => {
     switch (annotation.type) {
       case AnnotationType.Polygon:
         return toPolygon(annotation)
@@ -61,20 +62,20 @@ export function transferAnnotations(annotations: YModels.Annotation[] = []) {
         return toMask(annotation)
       case AnnotationType.BoundingBox:
       default:
-        return toBoundingBox(annotation as YModels.BoundingBox)
+        return toBoundingBox(annotation as BoundingBox)
     }
   }
 
   return annotations.map(handles)
 }
 
-function toBoundingBox(annotation: YModels.BoundingBox): YModels.BoundingBox {
+function toBoundingBox(annotation: BoundingBox): BoundingBox {
   return annotation
 }
 
-function toMask(annotation: YModels.Mask): YModels.Mask {
+function toMask(annotation: Mask): Mask {
   const { mask, height } = annotation
-  if(!mask || !height) {
+  if (!mask || !height) {
     return annotation
   }
   const decodeMask = decode(mask, height)
@@ -84,6 +85,6 @@ function toMask(annotation: YModels.Mask): YModels.Mask {
   }
 }
 
-function toPolygon(annotation: YModels.Polygon): YModels.Polygon {
+function toPolygon(annotation: Polygon): Polygon {
   return annotation
 }

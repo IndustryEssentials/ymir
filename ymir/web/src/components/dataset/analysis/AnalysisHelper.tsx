@@ -6,6 +6,7 @@ import { humanize, toFixed } from '@/utils/number'
 import { ObjectType } from '@/constants/project'
 import VersionName from '@/components/result/VersionName'
 import { EChartsOption } from 'echarts'
+import { AnalysisChart, DatasetAnalysis } from '@/constants'
 
 type Keys =
   | 'assetHWRatio'
@@ -18,7 +19,7 @@ type Keys =
   | 'instanceArea'
   | 'crowdedness'
   | 'complexity'
-type Data = YModels.DatasetAnalysis
+type Data = DatasetAnalysis
 export type YDataType = {
   name: string
   count: number[]
@@ -44,7 +45,7 @@ export type ChartConfigWithoutData = {
   }
 }
 export type ChartConfigType = ChartConfigWithoutData & {
-  getData: (dataset: Data) => YModels.AnalysisChart
+  getData: (dataset: Data) => AnalysisChart
 }
 export type ColumnType = TableColumnType<Data>
 
@@ -212,9 +213,9 @@ function title(str = '') {
   return <strong>{t(str)}</strong>
 }
 
-const getTableColumns = (objectType: YModels.ObjectType) => {
+const getTableColumns = (objectType: ObjectType) => {
   const keys = (cols: string[]) => ['name', 'labeled', 'assetCount', 'keywordsCount', 'averageKeywordsCount', ...cols]
-  const maps = {
+  const maps: { [key: number]: string[] } = {
     [ObjectType.ObjectDetection]: keys(['annotationsCount', 'averageAnnotationsCount', 'cksCount']),
     [ObjectType.SemanticSegmentation]: keys(['annotationsAreaTotal', 'averageAnnotationsArea']),
     [ObjectType.InstanceSegmentation]: keys(['instanceCount', 'averageInstanceCount']),
@@ -249,10 +250,10 @@ const getCharts = (keys: Keys[]) =>
   })
 
 const getAnnotationCharts = (objectType: ObjectType) => {
-  const maps = {
-    [ObjectType.ObjectDetection]: ['complexity', 'keywordAnnotationCount', 'areaRatio'] as Keys[],
-    [ObjectType.SemanticSegmentation]: ['complexity', 'keywordCounts', 'keywordArea'] as Keys[],
-    [ObjectType.InstanceSegmentation]: ['complexity', 'keywordAnnotationCount', 'crowdedness', 'instanceArea', 'keywordArea'] as Keys[],
+  const maps: { [key: number]: Keys[] } = {
+    [ObjectType.ObjectDetection]: ['complexity', 'keywordAnnotationCount', 'areaRatio'],
+    [ObjectType.SemanticSegmentation]: ['complexity', 'keywordCounts', 'keywordArea'],
+    [ObjectType.InstanceSegmentation]: ['complexity', 'keywordAnnotationCount', 'crowdedness', 'instanceArea', 'keywordArea'],
   }
   const keys = maps[objectType]
   return getCharts(keys)

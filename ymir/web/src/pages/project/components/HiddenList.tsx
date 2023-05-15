@@ -15,10 +15,10 @@ import Stages from '@/components/table/columns/Stages'
 import InferDataset from '@/components/table/columns/InferDataset'
 import Model from '@/components/table/columns/InferModel'
 import { List } from '@/models/typings/common'
-import { Prediction } from '@/constants'
+import { Dataset, Model as ModelType, Prediction, Project } from '@/constants'
 
 export type AType = 'dataset' | 'model' | 'prediction'
-type DataType = YModels.Dataset | YModels.Model | Prediction
+type DataType = Dataset | ModelType | Prediction
 type ColumnType = TableColumnType<DataType>
 type ColumnsType = TableColumnsType<DataType>
 type Props = {
@@ -43,7 +43,7 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
   const [columns, setColumns] = useState<ColumnsType>([])
   const cacheDatasets = useSelector((state) => state.dataset.dataset)
   const cacheModels = useSelector((state) => state.model.model)
-  const { data: project, run: getProject } = useRequest<YModels.Project, [{ id: number | string }]>('project/getProject')
+  const { data: project, run: getProject } = useRequest<Project, [{ id: number | string }]>('project/getProject')
   const { data: recoverResult, run: recoverAPI } = useRequest(`${active}/restore`)
   const { data: listData, run: getList } = useRequest<List<DataType>, [{ [key: string]: any }]>(`${active}/getHiddenList`)
 
@@ -104,13 +104,13 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
   const titleCol = {
     title: <StrongTitle label="dataset.column.name" />,
     dataIndex: 'name',
-    render: (name: string, dataset: YModels.Dataset) => <VersionName result={dataset} />,
+    render: (name: string, dataset: Dataset) => <VersionName result={dataset} />,
     ellipsis: { showTitle: true },
   }
   const countCol = {
     title: <StrongTitle label="dataset.column.asset_count" />,
     dataIndex: 'assetCount',
-    render: (num: number, dataset: YModels.Dataset) => <AssetCount dataset={dataset} />,
+    render: (num: number, dataset: Dataset) => <AssetCount dataset={dataset} />,
   }
 
   const timeCol = {
@@ -127,7 +127,7 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
     align: 'center',
   }
 
-  const getColumns = (type: AType, objectType: YModels.ObjectType = ObjectType.ObjectDetection): ColumnsType => {
+  const getColumns = (type: AType, objectType: ObjectType = ObjectType.ObjectDetection): ColumnsType => {
     let columns: ColumnType[] = []
     if (type === 'dataset') {
       columns = [titleCol, countCol] as ColumnsType

@@ -9,7 +9,7 @@ import useRequest from '@/hooks/useRequest'
 import useModal from '@/hooks/useModal'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Asset from './components/Asset'
+import AssetComp from './components/Asset'
 import List from './components/AssetList'
 import AssetsTitle, { FormValues } from './components/AssetsTitle'
 
@@ -18,15 +18,15 @@ import styles from './assets.less'
 import { List as ListType } from '@/models/typings/common'
 import { ValueType } from '@/components/form/KeywordFilter'
 import { validState } from '@/constants/common'
-import { Prediction } from '@/constants'
+import { Asset, Dataset, Prediction } from '@/constants'
 
 type IndexType = {
   hash: string
   index: number
-  asset?: YModels.Asset
+  asset?: Asset
 }
 
-const Dataset: FC = () => {
+const Assets: FC = () => {
   const { id: pid, did, prid } = useParams<{ id: string; did: string; type: string; prid?: string }>()
   const isPred = !!prid
   const [id, setId] = useState(0)
@@ -43,22 +43,22 @@ const Dataset: FC = () => {
     hash: '',
     index: 0,
   })
-  const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
+  const { data: dataset, run: getDataset } = useRequest<Dataset>('dataset/getDataset', {
     loading: false,
   })
-  const { data: prediction, run: getPrediction } = useRequest<YModels.Dataset>('prediction/getPrediction', {
+  const { data: prediction, run: getPrediction } = useRequest<Dataset>('prediction/getPrediction', {
     loading: false,
   })
-  const [current, setCurrent] = useState<Prediction | YModels.Dataset>()
+  const [current, setCurrent] = useState<Prediction | Dataset>()
   const { data: { items: assets, total } = { items: [], total: 0 }, run: getAssets } = useRequest<
-    ListType<YModels.Asset>,
+    ListType<Asset>,
     [
       YParams.AssetQueryParams & {
         datasetKeywords?: string[]
       },
     ]
   >('asset/getAssets')
-  const [AssetModal, showAssetModal] = useModal<ComponentProps<typeof Asset>>(Asset, {
+  const [AssetModal, showAssetModal] = useModal<ComponentProps<typeof AssetComp>>(AssetComp, {
     width: '100%',
     className: styles.assetDetail,
     title: t('dataset.asset.title'),
@@ -119,7 +119,7 @@ const Dataset: FC = () => {
   const filter = (params: YParams.AssetQueryParams) => {
     getAssets({ ...params, datasetKeywords: dataset?.keywords })
   }
-  const goAsset = (asset: YModels.Asset, hash: string, current: number) => {
+  const goAsset = (asset: Asset, hash: string, current: number) => {
     const index = (filterParams.offset || 0) + current
     setCurrentAsset({ asset, hash, index })
     // setAssetVisible(true)
@@ -186,4 +186,4 @@ const Dataset: FC = () => {
   )
 }
 
-export default Dataset
+export default Assets

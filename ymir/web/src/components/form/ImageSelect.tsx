@@ -5,13 +5,13 @@ import { TYPES } from '@/constants/image'
 import { HIDDENMODULES, validState } from '@/constants/common'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
-import { QueryParams } from '@/services/typings/image.d'
 import { DefaultOptionType } from 'antd/lib/select'
 import { useDebounce } from 'ahooks'
-import { Image } from '@/constants'
+import { Image, Project } from '@/constants'
 import { List } from '@/models/typings/common'
 import { useSelector } from 'umi'
 import { ObjectType } from '@/constants/objectType'
+import { QueryParams } from '@/services/typings/image'
 
 interface Props extends SelectProps {
   pid: number
@@ -60,7 +60,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     manual: false,
     loadingDelay: 500,
   })
-  const { data: project, run: getProject } = useRequest<YModels.Project, [{ id: number }]>('project/getProject', {
+  const { data: project, run: getProject } = useRequest<Project, [{ id: number }]>('project/getProject', {
     cacheKey: 'getProject',
     loading: false,
   })

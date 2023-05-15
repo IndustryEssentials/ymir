@@ -1,8 +1,9 @@
 import { FC } from 'react'
 import t from '@/utils/t'
+import { DatasetSuggestions } from '@/constants'
 
 type Props = {
-  suggestions?: YModels.DatasetSuggestions
+  suggestions?: DatasetSuggestions
 }
 
 const pStyle = { marginBottom: 0, lineHeight: 1.2 }

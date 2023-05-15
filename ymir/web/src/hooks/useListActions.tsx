@@ -6,18 +6,19 @@ import t from '@/utils/t'
 import { TASKSTATES, TASKTYPES } from '@/constants/task'
 import usePublish from './usePublish'
 import { ReactElement, ReactNode } from 'react'
+import { Model } from '@/constants'
 
 type FuncParams = {
-  [key: string]: (model: YModels.Model) => void
+  [key: string]: (model: Model) => void
 }
 
-type ListActionsType = (funcs: FuncParams) => (model: YModels.Model) => YComponents.Action[]
+type ListActionsType = (funcs: FuncParams) => (model: Model) => YComponents.Action[]
 
 const useListActions: ListActionsType = ({ stop, editDesc }) => {
   const history = useHistory()
   const [publish] = usePublish()
 
-  const getActions = (record: YModels.Model) => {
+  const getActions = (record: Model) => {
     const { id, projectId: pid, name, url, state, taskState, taskType, task, isProtected, stages, recommendStage } = record
     const valid = validModel(record)
     const running = runningModel(record)

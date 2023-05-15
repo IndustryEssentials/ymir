@@ -1,8 +1,9 @@
+import { Mask as MaskType } from '@/constants'
 import { FC, useEffect, useRef, useState } from 'react'
 import { renderMask } from './_helper'
 
 type Props = {
-  annotation: YModels.Mask
+  annotation: MaskType
   ratio?: number
   simple?: boolean
 }

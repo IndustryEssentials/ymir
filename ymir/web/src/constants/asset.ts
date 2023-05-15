@@ -1,3 +1,6 @@
+import { Annotation, Asset } from './typings/asset'
+import { Backend } from './typings/common'
+
 export enum AnnotationType {
   BoundingBox = 0,
   Polygon = 1,
@@ -32,11 +35,10 @@ export const evaluationLabel = (tag: evaluationTags) => {
   return maps[tag]
 }
 
-export function transferAsset(data: YModels.BackendData, keywords?: Array<string>): YModels.Asset {
+export function transferAsset(data: Backend, keywords?: Array<string>): Asset {
   const { width, height } = data?.metadata || {}
   const colors = generateDatasetColors(keywords || data.keywords)
-  const transferAnnotations = (annotations = [], pred = false) =>
-    annotations.map((an: YModels.BackendData) => toAnnotation(an, width, height, pred, colors[an.keyword]))
+  const transferAnnotations = (annotations = [], pred = false) => annotations.map((an: Backend) => toAnnotation(an, width, height, pred, colors[an.keyword]))
 
   const annotations = [...transferAnnotations(data.gt), ...transferAnnotations(data.pred, true)]
   const evaluated = annotations.some((annotation) => evaluationTags[annotation.cm])
@@ -57,7 +59,7 @@ export function transferAsset(data: YModels.BackendData, keywords?: Array<string
   }
 }
 
-export function toAnnotation(annotation: YModels.BackendData, width: number = 0, height: number = 0, pred = false, color = ''): YModels.Annotation {
+export function toAnnotation(annotation: Backend, width: number = 0, height: number = 0, pred = false, color = ''): Annotation {
   return {
     id: `${Date.now()}${Math.random()}`,
     keyword: annotation.keyword || '',
@@ -71,8 +73,8 @@ export function toAnnotation(annotation: YModels.BackendData, width: number = 0,
   }
 }
 
-function annotationTransfer(annotation: YModels.BackendData) {
-  const type = annotation.type as YModels.AnnotationType
+function annotationTransfer(annotation: Backend) {
+  const type = annotation.type as AnnotationType
   return {
     [AnnotationType.BoundingBox]: toBoundingBoxAnnoatation,
     [AnnotationType.Polygon]: toPolygonAnnotation,
@@ -80,8 +82,8 @@ function annotationTransfer(annotation: YModels.BackendData) {
   }[type](annotation)
 }
 
-export function toBoundingBoxAnnoatation(annotation: YModels.BackendData) {
-  const type: YModels.AnnotationType.BoundingBox = annotation.type || AnnotationType.BoundingBox
+export function toBoundingBoxAnnoatation(annotation: Backend) {
+  const type: AnnotationType.BoundingBox = annotation.type || AnnotationType.BoundingBox
   return {
     ...annotation,
     box: annotation.box,
@@ -89,8 +91,8 @@ export function toBoundingBoxAnnoatation(annotation: YModels.BackendData) {
   }
 }
 
-export function toMaskAnnotation(annotation: YModels.BackendData) {
-  const type: YModels.AnnotationType.Mask = annotation.type || AnnotationType.Mask
+export function toMaskAnnotation(annotation: Backend) {
+  const type: AnnotationType.Mask = annotation.type || AnnotationType.Mask
   return {
     ...annotation,
     mask: annotation.mask,
@@ -98,8 +100,8 @@ export function toMaskAnnotation(annotation: YModels.BackendData) {
   }
 }
 
-export function toPolygonAnnotation(annotation: YModels.BackendData) {
-  const type: YModels.AnnotationType.Polygon = annotation.type || AnnotationType.Polygon
+export function toPolygonAnnotation(annotation: Backend) {
+  const type: AnnotationType.Polygon = annotation.type || AnnotationType.Polygon
   return {
     ...annotation,
     polygon: annotation.polygon,
@@ -116,7 +118,7 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
   }
 }
 
-function getType(annotation: YModels.BackendData) {
+function getType(annotation: Backend) {
   return annotation?.mask ? AnnotationType.Mask : annotation?.polygon?.length ? AnnotationType.Polygon : AnnotationType.BoundingBox
 }
 

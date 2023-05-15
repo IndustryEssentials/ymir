@@ -1,6 +1,7 @@
 import { Col, Row } from 'antd'
 import { FC } from 'react'
 import t from '@/utils/t'
+import { Project } from '@/constants'
 
 type StatType = {
   label: string
@@ -13,18 +14,22 @@ const numStyles = {
   color: 'rgba(0, 0, 0, 0.85)',
 }
 
-const Stats: FC<{ type: 'dataset' | 'model'; project: YModels.Project }> = ({ type, project }) => {
+const Stats: FC<{ type: 'dataset' | 'model'; project: Project }> = ({ type, project }) => {
   const statBlocks = (blocks: StatType[] = []) =>
-    blocks.map((block, index) => typeof block.count !== 'undefined' ? (
-      <Col key={index} span={24 / blocks.length}>
-        {statBlock(block)}
-      </Col>
-    ): null)
+    blocks.map((block, index) =>
+      typeof block.count !== 'undefined' ? (
+        <Col key={index} span={24 / blocks.length}>
+          {statBlock(block)}
+        </Col>
+      ) : null,
+    )
 
   const statBlock = ({ label, count }: StatType) => (
     <>
       <div className="contentLabel">{t(label)}</div>
-      <div className='contentCount' style={numStyles}>{count}</div>
+      <div className="contentCount" style={numStyles}>
+        {count}
+      </div>
     </>
   )
 

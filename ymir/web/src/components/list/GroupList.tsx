@@ -7,16 +7,17 @@ import DatasetItems from './DatasetItems'
 import { useSelector } from 'umi'
 import useRequest from '@/hooks/useRequest'
 import { List } from '@/models/typings/common'
+import { Project, Group as GroupType } from '@/constants'
 
-type Group = YModels.Group & {
+type Group = GroupType & {
   projectLabel?: string
 }
 type Props = {
   module: 'dataset' | 'model'
   pid: number
-  list: List<YModels.Group>
+  list: List<Group>
   initVisible?: boolean
-  project?: YModels.Project
+  project?: Project
 }
 
 const GroupList: FC<Props> = ({ module = 'dataset', pid, initVisible, children }) => {

@@ -4,6 +4,7 @@ import { getLocale, useSelector } from 'umi'
 
 import { getDeployUrl } from '@/constants/common'
 import t from '@/utils/t'
+import { Model } from '@/constants'
 
 const base = getDeployUrl()
 const id = 'publishIframe'
@@ -20,12 +21,12 @@ const createIframe = (params = {}) => {
   return iframe
 }
 
-const usePublish = (): [(model: YModels.Model) => void, any] => {
+const usePublish = (): [(model: Model) => void, any] => {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const { id: userId, username: userName } = useSelector((state: { user: any }) => state.user)
 
-  const publish = (data: YModels.Model) => {
+  const publish = (data: Model) => {
     const key = 'publish'
     if (loading) {
       return

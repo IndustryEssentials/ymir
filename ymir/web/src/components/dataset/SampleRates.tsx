@@ -4,10 +4,11 @@ import { useParams } from 'umi'
 import t from '@/utils/t'
 import KeywordRates from './KeywordRates'
 import useRequest from '@/hooks/useRequest'
+import { AnnotationsCount, Dataset } from '@/constants'
 
 type Props = {
   keywords: string[]
-  dataset?: YModels.Dataset
+  dataset?: Dataset
   label?: string
   progressWidth?: number
 }
@@ -16,10 +17,7 @@ const SampleRates: FC<Props> = ({ keywords, dataset, label, progressWidth = 0.5 
   const { id } = useParams<{ id: string }>()
   const pid = Number(id)
   const [did, setDid] = useState(0)
-  const {
-    data: stats,
-    run: getNegativeKeywords,
-  } = useRequest<YModels.AnnotationsCount, [YParams.DatasetQuery]>('dataset/getNegativeKeywords', {
+  const { data: stats, run: getNegativeKeywords } = useRequest<AnnotationsCount, [YParams.DatasetQuery]>('dataset/getNegativeKeywords', {
     loading: false,
   })
 

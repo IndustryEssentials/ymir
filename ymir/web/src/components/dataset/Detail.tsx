@@ -7,15 +7,16 @@ import { ResultStates } from '@/constants/common'
 import { getProjectTypeLabel } from '@/constants/project'
 import { SearchIcon } from '@/components/common/Icons'
 import { DescPop } from '../common/DescPop'
+import { AnnotationsCount, CKItem, Dataset } from '@/constants'
 
 const { Item } = Descriptions
 const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-end' }
 
-const DatasetDetail: FC<{ dataset: YModels.Dataset }> = ({ dataset }) => {
+const DatasetDetail: FC<{ dataset: Dataset }> = ({ dataset }) => {
   const history = useHistory()
   const { cks, tags } = dataset
 
-  const renderKeywords = (anno?: YModels.AnnotationsCount) => {
+  const renderKeywords = (anno?: AnnotationsCount) => {
     if (!anno) {
       return
     }
@@ -27,7 +28,7 @@ const DatasetDetail: FC<{ dataset: YModels.Dataset }> = ({ dataset }) => {
     ))
   }
 
-  const renderCk = (label = 'ck', keywords: YModels.CKItem[] = []) =>
+  const renderCk = (label = 'ck', keywords: CKItem[] = []) =>
     keywords.length ? (
       <Item label={label}>
         {keywords.map(({ keyword, children }) => (
@@ -50,9 +51,7 @@ const DatasetDetail: FC<{ dataset: YModels.Dataset }> = ({ dataset }) => {
       <Descriptions bordered column={2} labelStyle={labelStyle} className="infoTable">
         <Item label={t('dataset.detail.label.name')} span={2}>
           <Row>
-            <Col flex={1}>
-              {dataset.name}
-            </Col>
+            <Col flex={1}>{dataset.name}</Col>
 
             <Col hidden={dataset.state !== ResultStates.VALID}>
               <Button type="primary" icon={<SearchIcon />} onClick={() => history.push(`/home/project/${dataset.projectId}/dataset/${dataset.id}`)}>
@@ -61,9 +60,7 @@ const DatasetDetail: FC<{ dataset: YModels.Dataset }> = ({ dataset }) => {
             </Col>
           </Row>
         </Item>
-        <Item label={t('dataset.detail.label.keywords')}>
-          {renderKeywords(dataset?.gt)}
-        </Item>
+        <Item label={t('dataset.detail.label.keywords')}>{renderKeywords(dataset?.gt)}</Item>
         <Item label={t('common.object.type')}>{t(getProjectTypeLabel(dataset.type, true))}</Item>
         <Item label={t('dataset.detail.label.assets')} contentStyle={{ minWidth: 150 }}>
           {dataset.assetCount}
