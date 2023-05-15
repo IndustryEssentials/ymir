@@ -1,14 +1,14 @@
 import { ObjectType } from '@/constants/project'
 import request from '@/utils/request'
 
-type QueryParams = {
+export type QueryParams = {
   name?: string
   type?: ObjectType
   offset?: number
   limit?: number
 }
 
-type CreateParams = {
+export type CreateParams = {
   name: string
   strategy: number
   type: ObjectType
@@ -16,7 +16,7 @@ type CreateParams = {
   description?: string
 }
 
-type UpdateParams = {
+export type UpdateParams = {
   name?: string
   keywords?: string[]
   strategy?: number

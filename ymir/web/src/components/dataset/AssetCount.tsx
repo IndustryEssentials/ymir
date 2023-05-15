@@ -1,7 +1,8 @@
+import { Dataset } from '@/constants'
 import { humanize } from '@/utils/number'
 import React from 'react'
 
-type Props = { dataset: YModels.Dataset }
+type Props = { dataset: Dataset }
 
 const AssetCount: React.FC<Props> = ({ dataset }) => {
   const count = dataset?.assetCount
