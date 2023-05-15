@@ -242,8 +242,8 @@ const ImageList = ({ role, filter, getImages }) => {
 
 const props = (state) => {
   return {
-    role: state.user.role,
-    username: state.user.username,
+    role: state.user.user.role,
+    username: state.user.user.username,
   }
 }
 

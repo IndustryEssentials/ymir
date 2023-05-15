@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from "react"
-import { connect } from "dva"
-import { Card, Input, Button, Form, Row, Col, List, Modal, message } from "antd"
+import React, { useEffect, useState } from 'react'
+import { connect } from 'dva'
+import { Card, Input, Button, Form, Row, Col, List, Modal, message } from 'antd'
 
-import t from "@/utils/t"
-import { ROLES, getRolesLabel } from "@/constants/user"
-import Breadcrumbs from "@/components/common/breadcrumb"
+import t from '@/utils/t'
+import { ROLES, getRolesLabel } from '@/constants/user'
+import Breadcrumbs from '@/components/common/breadcrumb'
 import Uploader from '@/components/form/uploader'
-import { phoneValidate } from "@/components/form/validators"
-import s from "./common.less"
-import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon } from "@/components/common/Icons"
-import useRequest from "@/hooks/useRequest"
+import { phoneValidate } from '@/components/form/validators'
+import s from './common.less'
+import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon } from '@/components/common/Icons'
+import useRequest from '@/hooks/useRequest'
 
 const { useForm } = Form
 
-function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
-
+function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken }) {
   const [infoList, setInfoList] = useState([])
   const [usernameModify, setUsernameModify] = useState(false)
   const [phoneModify, setPhoneModify] = useState(false)
@@ -22,8 +21,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
   const [usernameForm] = useForm()
   const [phoneForm] = useForm()
   const [passwordForm] = useForm()
-  const { run: refreshToken} = useRequest('user/refreshToken')
-
+  const { run: refreshToken } = useRequest('user/refreshToken')
 
   useEffect(() => {
     transUserIntoList()
@@ -32,17 +30,33 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
   function transUserIntoList() {
     setInfoList([
       {
-        key: 'username', title: t('user.info.list.username'), value: user.username, icon: <UserIcon />,
-        action: () => { setUsernameModify(true) }
+        key: 'username',
+        title: t('user.info.list.username'),
+        value: user.username,
+        icon: <UserIcon />,
+        action: () => {
+          setUsernameModify(true)
+        },
       },
       { key: 'email', title: t('user.info.list.email'), value: user.email, icon: <EmailIcon />, color: 'rgb(233, 192, 28)' },
       {
-        key: 'phone', title: t('user.info.list.phone'), value: user.phone, icon: <SmartphoneIcon />,
-        color: 'rgb(44, 189, 233)', action: () => { setPhoneModify(true) }
+        key: 'phone',
+        title: t('user.info.list.phone'),
+        value: user.phone,
+        icon: <SmartphoneIcon />,
+        color: 'rgb(44, 189, 233)',
+        action: () => {
+          setPhoneModify(true)
+        },
       },
       {
-        key: 'password', title: t('user.info.list.password'), value: '********', icon: <LockIcon />,
-        action: () => { setPasswordModify(true) }
+        key: 'password',
+        title: t('user.info.list.password'),
+        value: '********',
+        icon: <LockIcon />,
+        action: () => {
+          setPasswordModify(true)
+        },
       },
     ])
   }
@@ -107,24 +121,28 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
 
   const pwdRepeat = ({ getFieldValue }) => ({
     validator(_, value) {
-      if (value && getFieldValue("password") !== value) {
-        return Promise.reject(t("signup.pwd.repeat.same.msg"))
+      if (value && getFieldValue('password') !== value) {
+        return Promise.reject(t('signup.pwd.repeat.same.msg'))
       }
       return Promise.resolve()
     },
   })
 
-  const setIcon = (icon, color = '') => <div className={s.icon} style={{ background: color }}>{icon}</div>
+  const setIcon = (icon, color = '') => (
+    <div className={s.icon} style={{ background: color }}>
+      {icon}
+    </div>
+  )
 
   const renderItem = ({ title, key, icon, color, value, action }) => {
     return (
       <List.Item key={key}>
-        <List.Item.Meta
-          avatar={setIcon(icon, color)}
-          title={title}
-          description={value}
-        />
-        {action ? <Button type='link' onClick={action}>{t('common.modify')}</Button> : null}
+        <List.Item.Meta avatar={setIcon(icon, color)} title={title} description={value} />
+        {action ? (
+          <Button type="link" onClick={action}>
+            {t('common.modify')}
+          </Button>
+        ) : null}
       </List.Item>
     )
   }
@@ -134,25 +152,14 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.user.info')}>
         <Row className={s.content}>
-          <Col flex={1} md={{ span: 20, justify: 'center' }} lg={{ offset: 6, span: 12 }} xl={{ offset: 4, span: 12, }}>
-            <Row className={s.avatarContent} justify='center'>
+          <Col flex={1} md={{ span: 20, justify: 'center' }} lg={{ offset: 6, span: 12 }} xl={{ offset: 4, span: 12 }}>
+            <Row className={s.avatarContent} justify="center">
               <Col flex={1}>
                 <div className={s.avatar}>
-                  <div className={s.avatarBox}>
-                  {user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 80 }} />}
-                  </div>
-                  {user.role > ROLES.USER ? <span className={s.admin}>
-                    {t(getRolesLabel(user.role))}
-                  </span> : null}
+                  <div className={s.avatarBox}>{user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 80 }} />}</div>
+                  {user.role > ROLES.USER ? <span className={s.admin}>{t(getRolesLabel(user.role))}</span> : null}
                 </div>
-                <Uploader
-                  onChange={onAvatarOk}
-                  format='avatar'
-                  crop={true}
-                  max={20}
-                  info={t('user.info.avatar.tip')}
-                  showUploadList={false}
-                ></Uploader>
+                <Uploader onChange={onAvatarOk} format="avatar" crop={true} max={20} info={t('user.info.avatar.tip')} showUploadList={false}></Uploader>
               </Col>
             </Row>
             <List className={s.infoList} dataSource={infoList} renderItem={renderItem}></List>
@@ -160,19 +167,13 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
         </Row>
       </Card>
       <Modal destroyOnClose title={t('user.info.list.username')} visible={usernameModify} onCancel={onUsernameCancel} onOk={onUsernameOk}>
-        <Form
-          form={usernameForm}
-          name='usernameForm'
-          labelAlign='left'
-          size='large'
-          preserve={false}
-        >
+        <Form form={usernameForm} name="usernameForm" labelAlign="left" size="large" preserve={false}>
           <Form.Item
             name="username"
             initialValue={user.username}
             rules={[
-              { required: true, whitespace: true, message: t("signup.username.required.msg"), },
-              { min: 2, max: 15, message: t("signup.username.length.msg", { max: 15 }), },
+              { required: true, whitespace: true, message: t('signup.username.required.msg') },
+              { min: 2, max: 15, message: t('signup.username.length.msg', { max: 15 }) },
             ]}
           >
             <Input allowClear placeholder={t('signup.username.placeholder')} prefix={<UserIcon />} />
@@ -180,36 +181,19 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
         </Form>
       </Modal>
       <Modal title={t('user.info.list.phone')} visible={phoneModify} onCancel={onPhoneCancel} onOk={onPhoneOk} destroyOnClose>
-        <Form
-          form={phoneForm}
-          name='phoneForm'
-          labelAlign='left'
-          size='large'
-          preserve={false}
-        >
-          <Form.Item
-            name="phone"
-            initialValue={user.phone}
-            rules={[{ validator: phoneValidate }]}
-          >
+        <Form form={phoneForm} name="phoneForm" labelAlign="left" size="large" preserve={false}>
+          <Form.Item name="phone" initialValue={user.phone} rules={[{ validator: phoneValidate }]}>
             <Input allowClear placeholder={t('signup.phone.placeholder')} prefix={<SmartphoneIcon />} />
           </Form.Item>
         </Form>
       </Modal>
       <Modal title={t('user.info.list.password')} visible={passwordModify} onCancel={onPasswordCancel} onOk={onPasswordOk} destroyOnClose>
-
-        <Form
-          form={passwordForm}
-          name='passwordForm'
-          labelAlign='left'
-          size='large'
-          preserve={false}
-        >
+        <Form form={passwordForm} name="passwordForm" labelAlign="left" size="large" preserve={false}>
           <Form.Item
             name="old_password"
             rules={[
-              { required: true, message: t("signup.pwd.required.msg"), },
-              { min: 8, max: 16, message: t("signup.pwd.length.msg", { min: 8, max: 16 }), },
+              { required: true, message: t('signup.pwd.required.msg') },
+              { min: 8, max: 16, message: t('signup.pwd.length.msg', { min: 8, max: 16 }) },
             ]}
           >
             <Input.Password visibilityToggle={false} allowClear placeholder={t('user.info.pwd.form.old')} prefix={<KeyIcon />} />
@@ -217,20 +201,13 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
           <Form.Item
             name="password"
             rules={[
-              { required: true, message: t("signup.pwd.required.msg"), },
-              { type: 'string', min: 8, max: 16, message: t("signup.pwd.length.msg", { min: 8, max: 16 }), },
+              { required: true, message: t('signup.pwd.required.msg') },
+              { type: 'string', min: 8, max: 16, message: t('signup.pwd.length.msg', { min: 8, max: 16 }) },
             ]}
           >
             <Input.Password visibilityToggle={false} allowClear placeholder={t('user.info.pwd.form.new')} prefix={<LockIcon />} />
           </Form.Item>
-          <Form.Item
-            name="repwd"
-            dependencies={["password"]}
-            rules={[
-              { required: true, message: t("signup.pwd.repeat.required.msg"), },
-              pwdRepeat,
-            ]}
-          >
+          <Form.Item name="repwd" dependencies={['password']} rules={[{ required: true, message: t('signup.pwd.repeat.required.msg') }, pwdRepeat]}>
             <Input.Password visibilityToggle={false} allowClear placeholder={t('user.info.pwd.form.renew')} prefix={<LockIcon />} />
           </Form.Item>
         </Form>
@@ -241,7 +218,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
 
 const props = (state) => {
   return {
-    user: state.user,
+    user: state.user.user,
   }
 }
 
@@ -262,15 +239,15 @@ const acts = (dispatch) => {
     getToken(username, password) {
       return dispatch({
         type: 'user/getToken',
-        payload: { username, password, }
+        payload: { username, password },
       })
     },
     validatePwd(username, password) {
       return dispatch({
         type: 'user/getToken',
-        payload: { username, password }
+        payload: { username, password },
       })
-    }
+    },
   }
 }
 

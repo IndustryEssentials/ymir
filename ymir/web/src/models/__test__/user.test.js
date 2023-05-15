@@ -1,6 +1,6 @@
-import user from "../user"
-import storage from "@/utils/storage"
-import { put, select, call } from "redux-saga/effects"
+import user from '../user'
+import storage from '@/utils/storage'
+import { put, select, call } from 'redux-saga/effects'
 
 jest.mock('@/utils/t', () => {
   return jest.fn()
@@ -9,29 +9,24 @@ jest.mock('@/utils/t', () => {
 const generateUser = (id) => ({
   username: `name_${id}`,
   email: `${id}@test.com`,
-  phone: "138${id}",
+  phone: '138${id}',
   id,
 })
 
-describe("models: user", () => {
+describe('models: user', () => {
   const Expected = generateUser(134565)
-  it("reducers: UPDATE_USERINFO, UPDATE_LOGINED", () => {
+  it('reducers: UpdateUser, UpdateLogined', () => {
     const state = {
-      username: "",
-      password: "",
-      email: "",
-      phone: "",
-      id: 0,
+      user: { username: '', password: '', email: '', phone: '', id: 0 },
       logined: false,
     }
     const expected = Expected
     const action = {
       payload: expected,
     }
-    const { username, email, phone, id } = user.reducers.UPDATE_USERINFO(
-      state,
-      action
-    )
+    const {
+      user: { username, email, phone, id },
+    } = user.reducers.UpdateUser(state, action)
     expect(username).toBe(expected.username)
     expect(email).toBe(expected.email)
     expect(phone).toBe(expected.phone)
@@ -42,7 +37,7 @@ describe("models: user", () => {
       payload: expectedLogined,
     }
 
-    const { logined } = user.reducers.UPDATE_LOGINED(state, actionLogined)
+    const { logined } = user.reducers.UpdateLogined(state, actionLogined)
     expect(logined).toBe(expectedLogined)
   })
 
@@ -97,16 +92,15 @@ describe("models: user", () => {
     expect(end.done).toBe(true)
   })
 
-  it("effects: login", () => {
+  it('effects: login', () => {
     const saga = user.effects.login
     const creator = {
-      type: "login",
+      type: 'login',
       payload: {},
     }
     const expected = { access_token: '1234adfkjasldkfj' }
 
     const generator = saga(creator, { put, call, select })
-    generator.next()
     generator.next()
     const ca = generator.next({
       code: 0,
@@ -117,12 +111,11 @@ describe("models: user", () => {
     const end = generator.next()
 
     expect(end.done).toBe(true)
-
   })
-  it("effects: getUserInfo -> get user from network", () => {
+  it('effects: getUserInfo -> get user from network', () => {
     const saga = user.effects.getUserInfo
     const creator = {
-      type: "getUserInfo",
+      type: 'getUserInfo',
     }
     const expected = Expected
 
@@ -141,10 +134,10 @@ describe("models: user", () => {
     expect(JSON.stringify(end.value)).toBe(JSON.stringify(expected))
     expect(end.done).toBe(true)
   })
-  it("effects: getUserInfo -> get cache user", () => {
+  it('effects: getUserInfo -> get cache user', () => {
     const saga = user.effects.getUserInfo
     const creator = {
-      type: "getUserInfo",
+      type: 'getUserInfo',
     }
 
     const userinfo = { id: 3434 }
@@ -157,12 +150,12 @@ describe("models: user", () => {
     expect(end.value.id).toBe(userinfo.id)
     expect(end.done).toBe(true)
   })
-  it("effects: getUserInfo -> always get info from net", () => {
+  it('effects: getUserInfo -> always get info from net', () => {
     const saga = user.effects.getUserInfo
     const expected = Expected
 
     const creator = {
-      type: "getUserInfo",
+      type: 'getUserInfo',
       payload: true, // always get info from net
     }
 
@@ -180,10 +173,10 @@ describe("models: user", () => {
     expect(JSON.stringify(end.value)).toBe(JSON.stringify(expected))
     expect(end.done).toBe(true)
   })
-  it("effects: loginout", () => {
+  it('effects: loginout', () => {
     const saga = user.effects.loginout
     const creator = {
-      type: "loginout",
+      type: 'loginout',
       payload: {},
     }
     const expected = true
@@ -197,38 +190,10 @@ describe("models: user", () => {
     expect(end.done).toBe(true)
   })
 
-  it("effects: setGuideVisible", () => {
-    const saga = user.effects.setGuideVisible
-    const creator = {
-      type: "setGuideVisible",
-      payload: true,
-    }
-
-    const generator = saga(creator, { put })
-    generator.next()
-    const end = generator.next()
-
-    expect(end.done).toBe(true)
-  })
-
-  it("effects: setNeverShow", () => {
-    const saga = user.effects.setNeverShow
-    const creator = {
-      type: "setNeverShow",
-      payload: false,
-    }
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    const end = generator.next()
-
-    expect(end.done).toBe(true)
-  })
-
-  it("effects: getToken", () => {
+  it('effects: getToken', () => {
     const saga = user.effects.getToken
     const creator = {
-      type: "getToken",
+      type: 'getToken',
       payload: { username: 'username007@test.com', password: '12345689' },
     }
     const expected = 'access_token'
@@ -239,17 +204,17 @@ describe("models: user", () => {
       code: 0,
       result: {
         access_token: expected,
-      }
+      },
     })
 
     expect(storage.get('access_token')).toBe(expected)
     expect(end.done).toBe(true)
   })
-  
-  it("effects: refreshToken", () => {
+
+  it('effects: refreshToken', () => {
     const saga = user.effects.refreshToken
     const creator = {
-      type: "refreshToken",
+      type: 'refreshToken',
     }
     const expected = 'access_token_random_string'
 
@@ -259,18 +224,18 @@ describe("models: user", () => {
       code: 0,
       result: {
         access_token: expected,
-      }
+      },
     })
 
     expect(storage.get('access_token')).toBe(expected)
     expect(end.done).toBe(true)
   })
 
-  it("effects: modifyPwd", () => {
+  it('effects: modifyPwd', () => {
     const saga = user.effects.modifyPwd
     const newUser = { id: 346, password: 'newpassw0rd' }
     const creator = {
-      type: "modifyPwd",
+      type: 'modifyPwd',
       payload: newUser.password,
     }
     const expected = { id: newUser.id }
@@ -287,12 +252,12 @@ describe("models: user", () => {
     expect(end.done).toBe(true)
   })
 
-  it("effects: updateUserInfo", () => {
+  it('effects: updateUserInfo', () => {
     const saga = user.effects.updateUserInfo
 
     const newUser = { id: 347, name: 'newusername' }
     const creator = {
-      type: "updateUserInfo",
+      type: 'updateUserInfo',
       payload: { name: newUser.name },
     }
     const expected = { id: newUser.id, name: newUser.name }
@@ -301,7 +266,7 @@ describe("models: user", () => {
     generator.next()
     generator.next({
       code: 0,
-      result: expected
+      result: expected,
     })
     const end = generator.next()
 
@@ -314,11 +279,11 @@ describe("models: user", () => {
     const saga = user.effects.getActiveUsers
 
     const creator = {
-      type: "getActiveUsers",
+      type: 'getActiveUsers',
       payload: {},
     }
 
-    const users = [1, 2, 3, 4, 5].map(id => generateUser(id))
+    const users = [1, 2, 3, 4, 5].map((id) => generateUser(id))
 
     const generator = saga(creator, { put, call, select })
     generator.next()
@@ -327,15 +292,14 @@ describe("models: user", () => {
     expect(end.done).toBe(true)
   })
   it('effects: getUsers', () => {
-
     const saga = user.effects.getUsers
 
     const creator = {
-      type: "getUsers",
+      type: 'getUsers',
       payload: {},
     }
 
-    const users = [1, 2, 3, 4, 745].map(id => generateUser(id))
+    const users = [1, 2, 3, 4, 745].map((id) => generateUser(id))
 
     const generator = saga(creator, { put, call, select })
     generator.next()
@@ -344,13 +308,12 @@ describe("models: user", () => {
     expect(end.done).toBe(true)
   })
   it('effects: setUserRole', () => {
-
     const saga = user.effects.setUserRole
 
     const id = 52342
     const role = 2
     const creator = {
-      type: "setUserRole",
+      type: 'setUserRole',
       payload: { id, role },
     }
 
@@ -368,7 +331,7 @@ describe("models: user", () => {
     const id = 52342
     const role = 1
     const creator = {
-      type: "setUserState",
+      type: 'setUserState',
       payload: { id, role },
     }
 
@@ -381,12 +344,11 @@ describe("models: user", () => {
     expect(end.done).toBe(true)
   })
   it('effects: off', () => {
-
     const saga = user.effects.off
 
     const id = 5242
     const creator = {
-      type: "off",
+      type: 'off',
       payload: { id },
     }
 
