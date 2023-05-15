@@ -25,6 +25,12 @@ class RedisStream:
         if not exists:
             logger.info("init redis stream and consumer group")
             await self._conn.xgroup_create(name=self.stream_name, groupname=self.group_name, mkstream=True)
+        else:
+            groups = await self._conn.xinfo_groups(self.stream_name)
+            if not any(group["name"] == self.group_name for group in groups):
+                logger.info("init consumer group on existing stream")
+                # set id = '0' to make sure this new consumer group will catch up existing messages in stream
+                await self._conn.xgroup_create(name=self.stream_name, groupname=self.group_name, id="0")
 
     async def connect(self) -> None:
         self._conn = await redis.from_url(self.redis_uri, decode_responses=True)
