@@ -62,7 +62,7 @@ type Models = IdMap<ModelType[]>
 
 const { useForm } = Form
 
-const Model: ModuleType = ({ pid, project, iterations, groups }) => {
+const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
   const history = useHistory()
   const location: Location = useLocation()
   const name = location.query?.name
@@ -607,4 +607,4 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   )
 }
 
-export default Model
+export default ModelList
