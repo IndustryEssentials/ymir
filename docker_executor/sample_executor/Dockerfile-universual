@@ -1,5 +1,12 @@
 # a docker file for an sample training / mining / infer executor
 
+# to build semantic segmentation docker image:
+# docker build -f Dockerfile-universual -t sample-semseg-tmi:test .
+# to build instance segmentation docker image:
+# docker build -f Dockerfile-universual --build-arg OBJECT_TYPE=4 -t sample-insseg-tmi:test .
+# to build multimodal docker image:
+# docker build -f Dockerfile-universual --build-arg OBJECT_TYPE=50 -t sample-multimodel-tmi:test .
+
 FROM python:3.8.13-alpine
 
 # Add bash
