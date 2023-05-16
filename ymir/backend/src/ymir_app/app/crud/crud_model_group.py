@@ -48,7 +48,7 @@ class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
         is_desc = pagination.is_desc
 
         query = db.query(self.model)
-        query = query.filter(self.model.user_id == user_id, self.model.visible_models, not_(self.model.is_deleted))
+        query = query.filter(self.model.user_id == user_id, self.model.models, not_(self.model.is_deleted))
 
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)

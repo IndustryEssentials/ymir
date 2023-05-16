@@ -17,14 +17,14 @@ class DatasetGroup(Base):
     project_id = Column(Integer, index=True, nullable=False)
     user_id = Column(Integer, index=True, nullable=False)
 
-    datasets = relationship(
+    all_datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.dataset_group_id)==DatasetGroup.id",
         backref="group",
         uselist=True,
         viewonly=True,
     )
-    visible_datasets = relationship(
+    datasets = relationship(
         "Dataset",
         primaryjoin="and_(foreign(Dataset.dataset_group_id)==DatasetGroup.id, foreign(Dataset.is_visible))",
         uselist=True,
@@ -42,4 +42,4 @@ class DatasetGroup(Base):
 
     @property
     def is_visible(self) -> bool:
-        return bool(self.visible_datasets)
+        return bool(self.datasets)
