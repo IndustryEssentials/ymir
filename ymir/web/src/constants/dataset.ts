@@ -143,6 +143,7 @@ export function transferDatasetAnalysis(data: Backend): DatasetAnalysis {
   const total = dataset.gt?.total
   const totalArea = data.gt?.total_mask_area || 0
   const assetCount = dataset.assetCount
+  const annoCount = gt?.annos_count || 0
   return {
     ...dataset,
     total: gt?.annos_count || 0,
@@ -154,8 +155,8 @@ export function transferDatasetAnalysis(data: Backend): DatasetAnalysis {
     assetQuality: addTotal2ChartData(quality, assetCount),
     assetHWRatio: addTotal2ChartData(hw_ratio, assetCount),
     quality: addTotal2ChartData(gtQuality, assetCount),
-    areaRatio: addTotal2ChartData(box_area_ratio, total),
-    keywordAnnotationCount: keywords2ChartData(keywords, assetCount, gt.classwise_annos_count),
+    areaRatio: addTotal2ChartData(box_area_ratio, annoCount),
+    keywordAnnotationCount: keywords2ChartData(keywords, annoCount, gt.classwise_annos_count),
     keywordArea: keywords2ChartData(keywords, totalArea, gt?.classwise_area),
     instanceArea: addTotal2ChartData(mask_area, total),
     crowdedness: addTotal2ChartData(obj_counts, assetCount),
