@@ -219,6 +219,7 @@ const getTableColumns = (objectType: ObjectType) => {
     [ObjectType.ObjectDetection]: keys(['annotationsCount', 'averageAnnotationsCount', 'cksCount']),
     [ObjectType.SemanticSegmentation]: keys(['annotationsAreaTotal', 'averageAnnotationsArea']),
     [ObjectType.InstanceSegmentation]: keys(['instanceCount', 'averageInstanceCount']),
+    [ObjectType.MultiModal]: keys(['annotationsCount', 'averageAnnotationsCount', 'cksCount']),
   }
   return getColumns(maps[objectType])
 }
@@ -254,6 +255,7 @@ const getAnnotationCharts = (objectType: ObjectType) => {
     [ObjectType.ObjectDetection]: ['complexity', 'keywordAnnotationCount', 'areaRatio'],
     [ObjectType.SemanticSegmentation]: ['complexity', 'keywordCounts', 'keywordArea'],
     [ObjectType.InstanceSegmentation]: ['complexity', 'keywordAnnotationCount', 'crowdedness', 'instanceArea', 'keywordArea'],
+    [ObjectType.MultiModal]: ['complexity', 'keywordAnnotationCount', 'areaRatio'],
   }
   const keys = maps[objectType]
   return getCharts(keys)

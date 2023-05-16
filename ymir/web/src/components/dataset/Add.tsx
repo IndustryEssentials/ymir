@@ -25,6 +25,7 @@ import TypeSelector from './add/TypeSelector'
 import { Types } from './add/AddTypes'
 import { List } from '@/models/typings/common'
 import { Dataset as DatasetType } from '@/constants'
+import { isSegmentation } from '@/constants/objectType'
 
 type DatasetOptionType = {
   value: number
@@ -83,7 +84,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
   }, [pid])
 
   useEffect(() => {
-    project.type !== ObjectType.ObjectDetection && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
+    isSegmentation(project.type) && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
   }, [project])
 
   useEffect(() => {

@@ -10,7 +10,6 @@ import { EyeOnIcon } from '@/components/common/Icons'
 import VersionName from '@/components/result/VersionName'
 import useRequest from '@/hooks/useRequest'
 import StrongTitle from '@/components/table/columns/StrongTitle'
-import { ObjectType } from '@/constants/objectType'
 import Stages from '@/components/table/columns/Stages'
 import InferDataset from '@/components/table/columns/InferDataset'
 import Model from '@/components/table/columns/InferModel'
@@ -77,7 +76,7 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
 
   useEffect(() => {
     if (project && active) {
-      const columns = getColumns(active, project.type)
+      const columns = getColumns(active)
       setColumns(columns)
     }
   }, [active, project])
@@ -127,7 +126,7 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
     align: 'center',
   }
 
-  const getColumns = (type: AType, objectType: ObjectType = ObjectType.ObjectDetection): ColumnsType => {
+  const getColumns = (type: AType): ColumnsType => {
     let columns: ColumnType[] = []
     if (type === 'dataset') {
       columns = [titleCol, countCol] as ColumnsType

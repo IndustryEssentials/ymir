@@ -115,6 +115,7 @@ function transferMetrics(metrics: { [key: string]: number } = {}, type: number):
     [ObjectType.ObjectDetection]: { primary: ap, ap, ar },
     [ObjectType.SemanticSegmentation]: { primary: iou, iou, acc },
     [ObjectType.InstanceSegmentation]: { primary: maskAP, maskAP, boxAP },
+    [ObjectType.MultiModal]: { primary: ap, ap, ar },
   }
   const target = mk[type] || {}
   return { ...target, fn, fp, tp }
