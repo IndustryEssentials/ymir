@@ -1,7 +1,7 @@
-import { Message, MessageResultModules } from "."
-import { TaskResultType } from "./TaskResultType"
+import { Message, MessageResultModules, Backend } from '.'
+import { TaskResultType } from './TaskResultType'
 
-const transferMessage = (data: YModels.BackendData): Message => {
+const transferMessage = (data: Backend): Message => {
   const type = data.result.type
   const msg = {
     id: data.id,
@@ -12,7 +12,7 @@ const transferMessage = (data: YModels.BackendData): Message => {
     taskId: data.task_id,
     taskState: data.state,
     taskType: data.task_type,
-    resultModule: resultMaps[type]
+    resultModule: resultMaps[type],
   }
   return msg
 }

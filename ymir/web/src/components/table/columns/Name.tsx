@@ -5,8 +5,9 @@ import { ColumnType } from 'antd/lib/table'
 import t from '@/utils/t'
 import { DescPop } from '@/components/common/DescPop'
 import StrongTitle from './StrongTitle'
+import { Result } from '@/constants'
 
-const Name = <T extends YModels.Result>(type = 'dataset'): ColumnType<T> => ({
+const Name = <T extends Result>(type = 'dataset'): ColumnType<T> => ({
   title: <StrongTitle label={`${type}.column.name`} />,
   dataIndex: 'versionName',
   render: (name, { id, name: groupName, projectId: pid, description }) => {

@@ -1,3 +1,4 @@
+import { Model, Project } from '@/constants'
 import useRequest from '@/hooks/useRequest'
 import { Cascader, CascaderProps } from 'antd'
 import { ValueType, DefaultOptionType } from 'rc-cascader/lib/Cascader'
@@ -17,11 +18,11 @@ type Props = CascaderProps<OptionType> & {
 const ProjectModelSelect: FC<Props> = ({ pid, type, value, onChange, ...resProps }) => {
   const [options, setOptions] = useState<OptionType[]>([])
   const projects = useSelector(({ project }) => project.list.items)
-  const { runAsync: getProjects } = useRequest<YModels.Project[], any[]>('project/getProjects', {
+  const { runAsync: getProjects } = useRequest<Project[], any[]>('project/getProjects', {
     debounceWait: 300,
     loading: false,
   })
-  const { runAsync: getModels } = useRequest<YModels.Model[], any[]>('model/queryAllModels', {
+  const { runAsync: getModels } = useRequest<Model[], any[]>('model/queryAllModels', {
     loading: false,
   })
 

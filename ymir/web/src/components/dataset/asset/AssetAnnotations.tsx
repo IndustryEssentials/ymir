@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, FC, SyntheticEvent } from 'react'
 
-import { AnnotationType } from '@/constants/dataset'
+import { AnnotationType } from '@/constants/asset'
 import { transferAnnotations } from './_helper'
 
 import Mask from './Mask'
@@ -8,13 +8,14 @@ import Polygon from './Polygon'
 import BoundingBox from './BoundingBox'
 
 import styles from '../common.less'
+import { Annotation, Asset } from '@/constants'
 
 type Props = {
-  asset: YModels.Asset
+  asset: Asset
 }
 
 const AssetAnnotation: FC<Props> = ({ asset }) => {
-  const [annotations, setAnnotations] = useState<YModels.Annotation[]>([])
+  const [annotations, setAnnotations] = useState<Annotation[]>([])
   const imgContainer = useRef<HTMLDivElement>(null)
   const img = useRef<HTMLImageElement>(null)
   const [width, setWidth] = useState(0)
@@ -47,7 +48,7 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     setRatio(clientWidth / iw)
   }
 
-  function renderAnnotation(annotation: YModels.Annotation) {
+  function renderAnnotation(annotation: Annotation) {
     switch (annotation.type) {
       case AnnotationType.BoundingBox:
         return <BoundingBox key={annotation.id} annotation={annotation} ratio={ratio} />

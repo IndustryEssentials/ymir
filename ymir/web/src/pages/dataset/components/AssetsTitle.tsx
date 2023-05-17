@@ -8,7 +8,7 @@ import ListVisualSelect from './ListVisualSelect'
 import styles from '../assets.less'
 import { isDetection } from '@/constants/objectType'
 import VisualModes from './VisualModes'
-import { Prediction } from '@/constants'
+import { Dataset, Prediction } from '@/constants'
 
 export type FormValues = {
   columns?: number
@@ -17,7 +17,7 @@ export type FormValues = {
   keywords?: ValueType
 }
 type Props = {
-  current?: YModels.Dataset | Prediction
+  current?: Dataset | Prediction
   initialValues?: FormValues
   onChange?: (value: FormValues) => void
   isPred?: boolean

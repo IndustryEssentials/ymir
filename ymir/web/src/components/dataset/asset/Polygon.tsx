@@ -1,8 +1,9 @@
 import { FC, useEffect, useRef, useState } from 'react'
 import { renderPolygon } from './_helper'
+import { Polygon as PolygonType } from '@/constants'
 type Props = {
-  annotation: YModels.Polygon,
-  ratio?: number,
+  annotation: PolygonType
+  ratio?: number
   simple?: boolean
 }
 
@@ -35,17 +36,19 @@ const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {
     })
   }, [annotation])
 
-  return <canvas
-    ref={canvasRef}
-    style={{
-      position: 'absolute',
-      left: 0,
-      transformOrigin: 'left top 0',
-      transform: `scale(${ratio})`,
-    }}
-    width={width}
-    height={height}
-  ></canvas>
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'absolute',
+        left: 0,
+        transformOrigin: 'left top 0',
+        transform: `scale(${ratio})`,
+      }}
+      width={width}
+      height={height}
+    ></canvas>
+  )
 }
 
 export default Polygon

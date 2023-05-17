@@ -30,6 +30,7 @@ import IterationIcon from '@/components/icon/Xiangmudiedai'
 import type { IconProps } from './icons/IconProps'
 import useRequest from '@/hooks/useRequest'
 import SampleProjectTip from './SampleProjectTip'
+import { Project } from '@/constants'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -49,14 +50,14 @@ const getItem = (label: ReactNode, key: string, Icon?: FC<IconProps>, children?:
 const getGroupItem = (label: string, key: string, children: MenuItem[]) => getItem(label, key, undefined, children, 'group')
 
 function LeftMenu() {
-  const { role } = useSelector((state) => state.user)
+  const { role } = useSelector((state) => state.user.user)
   const { projects } = useSelector((state) => state.project)
   const history = useHistory()
   const { pathname } = useLocation()
   const [defaultKeys, setDefaultKeys] = useState<string[]>()
   const [items, setItems] = useState<MenuItem[]>([])
   const [id, setId] = useState(0)
-  const [project, setProject] = useState<YModels.Project>()
+  const [project, setProject] = useState<Project>()
   const { trainingDatasetCount, tasks } = useSelector(({ dataset, socket }) => ({ trainingDatasetCount: dataset.trainingDatasetCount, tasks: socket.tasks }))
   const { run: getTrainingDatasetCount } = useRequest<null, [number]>('dataset/getTrainingDatasetCount', {
     loading: false,
@@ -73,7 +74,7 @@ function LeftMenu() {
   }, [pathname])
 
   useEffect(() => {
-    id && projects && setProject(projects[id] || {})
+    id && projects && setProject(projects[id])
   }, [id, projects])
 
   useEffect(() => {

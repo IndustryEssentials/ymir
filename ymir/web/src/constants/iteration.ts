@@ -1,3 +1,6 @@
+import { Backend } from './typings/common.d'
+import { Iteration, MiningStats, Step } from './typings/iteration.d'
+
 export enum Stages {
   prepareMining = 0,
   mining = 1,
@@ -64,7 +67,7 @@ export const getSteps = (): StepObj[] => {
   })
 }
 
-export function transferIteration(data: YModels.BackendData): YModels.Iteration | undefined {
+export function transferIteration(data: Backend): Iteration | undefined {
   if (!data) {
     return
   }
@@ -84,7 +87,7 @@ export function transferIteration(data: YModels.BackendData): YModels.Iteration 
   }
 }
 
-function transferStep(data: YModels.BackendData): YModels.Step | undefined {
+function transferStep(data: Backend): Step | undefined {
   if (!data) {
     return
   }
@@ -109,7 +112,7 @@ type Ratio = {
   total_assets_count: number
 }
 
-export function transferMiningStats(data: YModels.BackendData): YModels.MiningStats {
+export function transferMiningStats(data: Backend): MiningStats {
   const { total_mining_ratio, class_wise_mining_ratio, negative_ratio } = data
   const transfer = (ratios: Array<Ratio>) => {
     const getName = (ratio: Ratio) => ratio.class_name || ''

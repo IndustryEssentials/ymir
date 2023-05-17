@@ -4,9 +4,10 @@ import t from '@/utils/t'
 import EditBox, { RefProps } from './editBox'
 import useFetch from '@/hooks/useFetch'
 import { forwardRef, Ref, useEffect } from 'react'
+import { Group } from '@/constants'
 
 interface Props {
-  record?: YModels.Group
+  record?: Group
   type?: string
   max?: number
   handle?: Function
@@ -19,7 +20,7 @@ const EditNameBox = forwardRef<RefProps, Props>(({ type = 'dataset', record, max
 
   useEffect(() => handle && handle(updated), [updated])
 
-  function update(record: YModels.Group, values: any) {
+  function update(record: Group, values: any) {
     const fname = values.name.trim()
     if (name === fname) {
       return

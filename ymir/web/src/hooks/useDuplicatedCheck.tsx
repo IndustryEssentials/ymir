@@ -4,6 +4,7 @@ import { Modal, Radio } from 'antd'
 import t from '@/utils/t'
 import { MERGESTRATEGYFORTRAIN } from '@/constants/dataset'
 import useFetch from '@/hooks/useFetch'
+import { Dataset } from '@/constants'
 
 type ContentProps = {
   duplicated: number
@@ -42,7 +43,7 @@ const ContentRender: FC<ContentProps> = ({ duplicated, strategy, disabled, onCha
   )
 }
 
-const useDuplicatedCheck = (onChange: (s: MERGESTRATEGYFORTRAIN) => void = () => {}): ((t: YModels.Dataset, v: YModels.Dataset) => void) => {
+const useDuplicatedCheck = (onChange: (s: MERGESTRATEGYFORTRAIN) => void = () => {}): ((t: Dataset, v: Dataset) => void) => {
   const [_, checkDuplication] = useFetch('dataset/checkDuplication', 0)
   let strategy = MERGESTRATEGYFORTRAIN.STOP
 
@@ -50,14 +51,14 @@ const useDuplicatedCheck = (onChange: (s: MERGESTRATEGYFORTRAIN) => void = () =>
     onChange(strategy)
   }
 
-  const check = async (trainDataset: YModels.Dataset, validationDataset: YModels.Dataset) => {
+  const check = async (trainDataset: Dataset, validationDataset: Dataset) => {
     const result = await checkDuplication({ trainSet: trainDataset?.id, validationSet: validationDataset?.id })
     if (typeof result !== 'undefined') {
       checkHandle(result, trainDataset, validationDataset)
     }
   }
 
-  const checkHandle = (duplicated: number, trainDataset: YModels.Dataset, validationDataset: YModels.Dataset) => {
+  const checkHandle = (duplicated: number, trainDataset: Dataset, validationDataset: Dataset) => {
     if (!duplicated) {
       return ok()
     }

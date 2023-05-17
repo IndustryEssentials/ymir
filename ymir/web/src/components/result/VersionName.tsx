@@ -4,7 +4,7 @@ import { useSelector } from 'umi'
 
 type Result = { name: string }
 type Props = {
-  id?: YModels.DatasetId
+  id?: number
   result?: Result
   extra?: React.ReactElement | string
 }

@@ -1,19 +1,15 @@
-import React, { FC, ReactNode } from 'react'
-import { Button, Col, Row, Space } from 'antd'
-import { Link, useSelector } from 'umi'
+import { FC, ReactNode } from 'react'
+import { Col, Row, Space } from 'antd'
 
 import t from '@/utils/t'
 import { getStepLabel, STEP } from '@/constants/iteration'
-import useFetch from '@/hooks/useFetch'
-import { getProjectTypeLabel } from '@/constants/project'
 
 import ObjectTypeTag from '@/components/project/ObjectTypeTag'
 
 import s from '../detail.less'
-import { EditIcon, SearchEyeIcon, EyeOffIcon } from '@/components/common/Icons'
-import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/Icons'
+import { Project } from '@/constants'
 
-const ProjectDetail: FC<{ project: YModels.Project, extra?: ReactNode }> = ({ project, extra }) => {
+const ProjectDetail: FC<{ project: Project; extra?: ReactNode }> = ({ project, extra }) => {
   const id = project.id
 
   return (
@@ -40,9 +36,7 @@ const ProjectDetail: FC<{ project: YModels.Project, extra?: ReactNode }> = ({ pr
             ) : null}
           </Space>
         </Col>
-        <Col>
-          {extra}
-        </Col>
+        <Col>{extra}</Col>
       </Row>
     </div>
   )

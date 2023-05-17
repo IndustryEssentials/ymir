@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { getLocale, useHistory, useLocation, useParams, useRouteMatch } from 'umi'
+import { getLocale, useHistory, useLocation, useParams, useRouteMatch, useSelector } from 'umi'
 import { message } from 'antd'
-import { useSelector } from 'react-redux'
 
 import { getPublicImageUrl } from '@/constants/common'
 import usePostMessage from '@/hooks/usePostMessage'
@@ -48,7 +47,7 @@ const PublicImage = () => {
   if (!base) {
     return <div>Image Community is not READY</div>
   }
-  const { username: userName, id: userId, uuid, role } = useSelector<{ user: UserType }, UserType>(({ user }) => user)
+  const { username: userName, id: userId, uuid, role } = useSelector(({ user }) => user.user)
   const { module = defaultPage } = useParams<Params>()
   const location = useLocation<Params>()
   const iframe: { current: HTMLIFrameElement | null } = useRef(null)
@@ -58,18 +57,18 @@ const PublicImage = () => {
   const { runAsync: checkImageExist } = useRequest<{ total: number }>('image/getImages')
 
   useEffect(() => {
-    if (!location.state?.reload) {
+    if (!location.state?.reload && uuid) {
       const r = Math.random()
       setKey(r)
       const self = window.location.origin
       const lang = getLocale()
-      const query = location.search ? (location.search + '&') : '?'
+      const query = location.search ? location.search + '&' : '?'
 
       const url = `${base}${pages[module].path}${query}from=${self}&userId=${userId}&uuid=${uuid}&userName=${userName || ''}&lang=${lang}&r=${r}`
       setUrl(url)
     }
-    history.replace({ state: {} })
-  }, [module])
+    uuid && history.replace({ state: {} })
+  }, [module, uuid])
 
   useEffect(() => {
     console.log('recieved changed:', recieved)

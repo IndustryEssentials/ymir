@@ -6,10 +6,11 @@ import DefaultEmpty from '@/components/empty/Default'
 import styles from '../assets.less'
 import Item from './AssetListItem'
 import VisualModes from './VisualModes'
+import { Asset } from '@/constants'
 
 type Props = {
-  list?: YModels.Asset[]
-  goAsset?: (asset: YModels.Asset, hash: string, current: number) => void
+  list?: Asset[]
+  goAsset?: (asset: Asset, hash: string, current: number) => void
   mode?: VisualModes
   width?: number
   columns?: number
@@ -19,13 +20,13 @@ type Props = {
 const ItemSpace = 4
 
 const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pager }) => {
-  const [rows, setRows] = useState<YModels.Asset[][]>([])
+  const [rows, setRows] = useState<Asset[][]>([])
   const [width, setWidth] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let r = 0
-    let result: YModels.Asset[][] = []
+    let result: Asset[][] = []
     while (r < list.length) {
       result.push(list.slice(r, r + columns))
       r += columns
@@ -47,7 +48,8 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
             {rows.map((row, index) => {
               const len = row.length
               const h =
-                (width - ItemSpace * len) * len / columns /
+                ((width - ItemSpace * len) * len) /
+                columns /
                 row.reduce((prev, asset) => {
                   const { width = 0, height = 0 } = asset?.metadata || {}
                   return height ? prev + width / height : prev
@@ -56,13 +58,7 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
               return (
                 <Row gutter={ItemSpace} wrap={false} key={columns * (index + 1)} className={styles.dataset_container}>
                   {row.map((asset, rowIndex) => (
-                    <Item
-                      asset={asset}
-                      key={asset.hash}
-                      showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)}
-                      height={h}
-                      mode={mode}
-                    />
+                    <Item asset={asset} key={asset.hash} showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)} height={h} mode={mode} />
                   ))}
                 </Row>
               )

@@ -8,9 +8,26 @@ import { STEP } from '@/constants/iteration'
 import VersionName from '@/components/result/VersionName'
 import ModelVersionName from '@/components/result/ModelVersionName'
 import ImageName from '@/components/image/ImageName'
+import { Step } from '@/constants'
+import { FusionParams, MiningParams, LabelParams, MergeParams } from '@/services/task.d'
 
+type Params = {
+  [key: string]: any
+}
+interface PageStep extends Step {
+  label: string
+  value: string
+  current?: string
+  selected?: string
+  index?: number
+  act?: string
+  react?: string
+  next?: string
+  end?: boolean
+  unskippable?: boolean
+}
 type Props = {
-  step: YModels.PageStep
+  step: PageStep
 }
 type ListType = { label: string; content: any }[]
 
@@ -63,13 +80,19 @@ const FinishStep: React.FC<Props> = ({ step }) => {
   return selected && result ? renderDescriptions(paramsList) : null
 }
 
-function getFusionParams(params: YModels.FusionParams) {
+function getFusionParams(params: Params) {
   return [
     { label: 'task.fusion.form.dataset', content: <VersionName id={params.dataset_id} /> },
     { label: 'task.fusion.form.sampling', content: params.sampling_count },
     {
       label: 'task.fusion.form.includes.label',
-      content: params.include_datasets?.length ? params.include_datasets?.map((ds) => <Tag key={ds}><VersionName id={ds} /></Tag>) : null,
+      content: params.include_datasets?.length
+        ? params.include_datasets?.map((ds: number) => (
+            <Tag key={ds}>
+              <VersionName id={ds} />
+            </Tag>
+          ))
+        : null,
     },
     {
       label: 'task.train.form.repeatdata.label',
@@ -77,7 +100,11 @@ function getFusionParams(params: YModels.FusionParams) {
     },
     {
       label: 'task.fusion.form.excludes.label',
-      content: params.exclude_datasets?.map((ds) => <Tag key={ds}><VersionName id={ds} /></Tag>),
+      content: params.exclude_datasets?.map((ds: number) => (
+        <Tag key={ds}>
+          <VersionName id={ds} />
+        </Tag>
+      )),
     },
     {
       label: 'task.fusion.form.class.include.label',
@@ -90,7 +117,7 @@ function getFusionParams(params: YModels.FusionParams) {
   ]
 }
 
-function getMiningParams(params: YModels.MiningParams) {
+function getMiningParams(params: Params) {
   return [
     { label: 'task.mining.form.image.label', content: <ImageName id={params.docker_image_id} /> },
     { label: 'task.mining.form.dataset.label', content: <VersionName id={params.dataset_id} /> },
@@ -105,7 +132,7 @@ function getMiningParams(params: YModels.MiningParams) {
   ]
 }
 
-function getLabelParams(params: YModels.LabelParams) {
+function getLabelParams(params: Params) {
   return [
     { label: 'task.fusion.form.dataset', content: <VersionName id={params.dataset_id} /> },
     { label: 'task.label.form.keep_anno.label', content: t(getLabelAnnotationType(params.annotation_type)) },
@@ -113,21 +140,33 @@ function getLabelParams(params: YModels.LabelParams) {
   ]
 }
 
-function getMergeParams(params: YModels.MergeParams) {
+function getMergeParams(params: Params) {
   return [
     { label: 'task.fusion.form.dataset', content: <VersionName id={params.dataset_id} /> },
     {
       label: 'task.fusion.form.merge.include.label',
-      content: params.include_datasets?.length ? params.include_datasets?.map((ds) => <Tag key={ds}><VersionName id={ds} /></Tag>) : null,
+      content: params.include_datasets?.length
+        ? params.include_datasets?.map((ds: number) => (
+            <Tag key={ds}>
+              <VersionName id={ds} />
+            </Tag>
+          ))
+        : null,
     },
     {
       label: 'task.fusion.form.merge.exclude.label',
-      content: params.exclude_datasets?.length ? params.exclude_datasets?.map((ds) => <Tag key={ds}><VersionName id={ds} /></Tag>) : null,
+      content: params.exclude_datasets?.length
+        ? params.exclude_datasets?.map((ds: number) => (
+            <Tag key={ds}>
+              <VersionName id={ds} />
+            </Tag>
+          ))
+        : null,
     },
   ]
 }
 
-function getTrainingParams(params: YModels.TrainingParams) {
+function getTrainingParams(params: Params) {
   return [
     { label: 'task.train.form.image.label', content: <ImageName id={params.docker_image_id} /> },
     { label: 'task.train.form.trainsets.label', content: <VersionName id={params.dataset_id} /> },

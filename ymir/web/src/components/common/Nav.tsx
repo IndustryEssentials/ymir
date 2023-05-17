@@ -69,7 +69,7 @@ const HeaderNav: FC<{ simple?: boolean }> = ({ simple = false }) => {
   const location = useLocation()
   const history = useHistory()
   const [mainMenu, setMainMenu] = useState<MenuItem[]>([])
-  const { avatar, role, username, email } = useSelector(({ user }) => user)
+  const { avatar, role, username, email } = useSelector(({ user }) => user.user)
   const { data: logoutResult, run: loginout } = useRequest<boolean>('user/loginout')
 
   useEffect(() => {

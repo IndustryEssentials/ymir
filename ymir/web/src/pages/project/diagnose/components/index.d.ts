@@ -1,4 +1,4 @@
-import { Prediction } from '@/constants'
+import { Dataset, Model, Prediction } from '@/constants'
 import { ReactElement } from 'react'
 
 type TabIdType = 'ap' | 'iou' | 'acc' | 'maskap' | 'boxap' | 'curve' | 'rp' | 'pr'
@@ -26,8 +26,8 @@ type Task = {
 type ViewProps = {
   type: TabIdType
   predictions: Prediction[]
-  datasets: YModels.Dataset[]
-  models: YModels.Model[]
+  datasets: Dataset[]
+  models: Model[]
   data?: EvaluationResult
   p2r?: boolean
   prRate?: number[]
@@ -35,7 +35,7 @@ type ViewProps = {
   kw: { ck?: boolean; keywords: string[] }
   averageIou?: boolean
 }
-type MetricType  = { [key: string]: any } & {
+type MetricType = { [key: string]: any } & {
   ap?: number
   pr_curve?: Point[]
   iou?: number
@@ -92,7 +92,6 @@ type LineType = {
 type DataTypeForTable = {
   [key: string | number]: MetricsType
 }
-
 
 type ListType<RowDataType = TableDataType> = {
   id: string | number

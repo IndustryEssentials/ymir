@@ -4,8 +4,9 @@ import { Col, Popover, Row, Tag } from 'antd'
 import SampleRates from '@/components/dataset/SampleRates'
 import t from '@/utils/t'
 import s from './testingset.less'
+import { Dataset, Project } from '@/constants'
 type Props = {
-  project: YModels.Project
+  project: Project
 }
 const TestingSet: FC<Props> = ({ project }) => {
   const [datasets, fetchDatasets] = useFetch('dataset/batchDatasets', [])
@@ -15,8 +16,8 @@ const TestingSet: FC<Props> = ({ project }) => {
   }, [project.testingSets])
 
   function renderProjectTestingSetLabel() {
-    const getDsName = (ds: YModels.Dataset) => ds.name || ''
-    const getAssetCount = (ds: YModels.Dataset) => (ds.assetCount ? ds.assetCount : '')
+    const getDsName = (ds: Dataset) => ds.name || ''
+    const getAssetCount = (ds: Dataset) => (ds.assetCount ? ds.assetCount : '')
     const getDatasetGroup = (dsg = []) => {
       return dsg.map((ds) => {
         return {
@@ -57,7 +58,7 @@ const TestingSet: FC<Props> = ({ project }) => {
     })
   }
 
-  function renderPop(label: string | ReactElement, dataset: YModels.Dataset) {
+  function renderPop(label: string | ReactElement, dataset: Dataset) {
     dataset.project = project
     const content = <SampleRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4} />
     return (

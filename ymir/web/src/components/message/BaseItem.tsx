@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react'
 
-import { Message } from '@/constants'
+import { Message, Model } from '@/constants'
 import useRequest from '@/hooks/useRequest'
 import { ResultStates, validState } from '@/constants/common'
 import { getTaskTypeLabel, TASKTYPES } from '@/constants/task'
@@ -61,7 +61,7 @@ const BaseItem = (Template: FC<Props>) => {
       switch (taskType) {
         case TASKTYPES.TRAINING:
         case TASKTYPES.MODELIMPORT:
-          const model = result as YModels.Model
+          const model = result as Model
           if (model) {
             const stage = getRecommendStage(model)
             renderObject['metricLabel'] = stage?.primaryMetricLabel || ''

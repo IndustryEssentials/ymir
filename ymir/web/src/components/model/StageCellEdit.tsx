@@ -4,13 +4,14 @@ import { percent } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 import { BaseSelectRef } from 'rc-select'
 import { BaseOptionType } from 'antd/lib/select'
+import { Model, Stage } from '@/constants'
 const { useForm } = Form
 type Props = {
-  record: YModels.Model
-  saveHandle?: (result: YModels.Model, updated: YModels.Model) => void
+  record: Model
+  saveHandle?: (result: Model, updated: Model) => void
 }
 type OptionType = BaseOptionType & {
-  stage: YModels.Stage
+  stage: Stage
 }
 const EditStageCell: FC<Props> = ({ record, saveHandle = () => {} }) => {
   const [options, setOptions] = useState<OptionType[]>([])
@@ -47,7 +48,7 @@ const EditStageCell: FC<Props> = ({ record, saveHandle = () => {} }) => {
     setEditing(false)
   }
 
-  const tagRender = ({ stage, color = 'rgba(0, 0, 0, 0.65)' }: { stage: YModels.Stage; color?: string }) => (
+  const tagRender = ({ stage, color = 'rgba(0, 0, 0, 0.65)' }: { stage: Stage; color?: string }) => (
     <Row wrap={false}>
       <Col flex={1}>{stage.name}</Col>
       <Col style={{ color }}>

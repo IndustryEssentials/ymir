@@ -4,8 +4,9 @@ import { Tooltip } from 'antd'
 import StrongTitle from './StrongTitle'
 import t from '@/utils/t'
 import { validState } from '@/constants/common'
+import { Dataset } from '@/constants'
 
-function Keywords<T extends YModels.Dataset>(): ColumnType<T> {
+function Keywords<T extends Dataset>(): ColumnType<T> {
   return {
     title: <StrongTitle label="dataset.column.keyword" />,
     dataIndex: 'keywords',

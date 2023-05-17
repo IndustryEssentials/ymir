@@ -3,7 +3,8 @@ import { transferAsset } from '@/constants/asset'
 import { getAsset, getAssets } from '@/services/asset'
 import { createEffect, createReducersByState } from './_utils'
 import { AssetStore } from '.'
-import { List } from './typings/common'
+import { List } from './typings/common.d'
+import { Asset } from '@/constants'
 type AssetsPayload = Omit<YParams.AssetQueryParams, 'cm'> & { datasetKeywords?: string[]; cm: evaluationTags }
 type AssetPayload = { pid: number; id: number; type?: number; hash: string }
 
@@ -26,9 +27,9 @@ const AssetModel: AssetStore = {
       }
       const { code, result } = yield call(getAssets, { cm: paramCm, ...params })
       if (code === 0) {
-        const { items, total } = result as List<YModels.Asset>
+        const { items, total } = result as List<Asset>
         const keywords = [...new Set(items.map((item: { keywords: string[] }) => item.keywords).flat())]
-        const assets = { items: items.map((asset: YModels.Asset) => transferAsset(asset, datasetKeywords || keywords)), total }
+        const assets = { items: items.map((asset: Asset) => transferAsset(asset, datasetKeywords || keywords)), total }
 
         yield put({
           type: 'UpdateAssets',

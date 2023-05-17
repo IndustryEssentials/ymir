@@ -3,21 +3,18 @@ import t from '@/utils/t'
 import { TASKTYPES } from '@/constants/task'
 import { RefreshIcon } from '@/components/common/Icons'
 import { Button } from 'antd'
-import { ReactNode } from 'react'
+import { Result } from '@/constants'
 
 type ModeType = 'menu' | 'btn'
-type Result<T extends ModeType> = {
-    'menu': YComponents.Action
-    'btn': ReactNode
-  }[T]
+
 export default function useRerunAction(mode: ModeType = 'menu') {
   const history = useHistory()
 
-  const rerun = (pid: number, type: string, record: YModels.Result) => {
+  const rerun = (pid: number, type: string, record: Result) => {
     history.push({ pathname: `/home/project/${pid}/${type}`, state: { record } })
   }
 
-  const generateRerunAction = (record: YModels.Result) => {
+  const generateRerunAction = (record: Result) => {
     const maps: { [key: number]: string } = {
       [TASKTYPES.TRAINING]: 'train',
       [TASKTYPES.MINING]: 'mining',

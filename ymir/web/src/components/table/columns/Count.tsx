@@ -2,8 +2,9 @@ import { ColumnType } from 'antd/lib/table'
 
 import { humanize } from '@/utils/number'
 import StrongTitle from './StrongTitle'
+import { Dataset } from '@/constants'
 
-function Count<T extends YModels.Dataset>(): ColumnType<T> {
+function Count<T extends Dataset>(): ColumnType<T> {
   return {
     title: <StrongTitle label="dataset.column.asset_count" />,
     dataIndex: 'assetCount',

@@ -7,10 +7,11 @@ import { useHistory, useSelector } from 'umi'
 import ObjectTypeTag from './ObjectTypeTag'
 import Stats from './Stats'
 import useRequest from '@/hooks/useRequest'
+import { Project } from '@/constants'
 
 type Props = {
   pid: number
-  project?: YModels.Project
+  project?: Project
   type?: 'dataset' | 'model'
   back?: boolean
 }
@@ -26,7 +27,7 @@ const Detail: FC<Props> = ({ pid, type, back }) => {
   }, [pid])
 
   useEffect(() => {
-    const needUpdate = tasks.some(task => task.reload)
+    const needUpdate = tasks.some((task) => task.reload)
     if (needUpdate) {
       getProject({ id: pid, force: true })
     }

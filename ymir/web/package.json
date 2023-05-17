@@ -6,18 +6,18 @@
     "local": "APP_ROOT=../pages/demo1 umi dev",
     "analyze": "cross-env UMI_ENV=dev ANALYZE=1 umi dev",
     "start": "cross-env MOCK=none UMI_ENV=dev umi dev",
-    "start:local": "cross-env MOCK=none UMI_ENV=local umi dev",
-    "start:mock": "cross-env UMI_ENV=local umi dev",
-    "build": "cross-env UMI_ENV=dev umi build",
-    "build:dev": "cross-env UMI_ENV=dev umi build",
-    "build:prod": "cross-env UMI_ENV=prod umi build",
+    "start:local": "cross-env MOCK=none UMI_ENV=local NODE_OPTIONS=--openssl-legacy-provider umi dev",
+    "start:mock": "cross-env UMI_ENV=local NODE_OPTIONS=--openssl-legacy-provider umi dev",
+    "build": "cross-env UMI_ENV=dev NODE_OPTIONS=--openssl-legacy-provider umi build",
+    "build:dev": "cross-env UMI_ENV=dev NODE_OPTIONS=--openssl-legacy-provider umi build",
+    "build:prod": "cross-env UMI_ENV=prod NODE_OPTIONS=--openssl-legacy-provider umi build",
     "postinstall": "umi generate tmp",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
     "test": "umi-test",
     "test:coverage": "umi-test --coverage",
     "lint-staged": "lint-staged",
     "eslint": "eslint src/**/*",
-    "prepare": "cd ../.. && npx husky install && npx husky add .husky/pre-commit \"cd ymir/web && npx lint-staged\""
+    "husky": "cd ../.. && npx husky install && npx husky add .husky/pre-commit \"cd ymir/web && npx lint-staged\""
   },
   "jest": {
     "moduleNameMapper": {
