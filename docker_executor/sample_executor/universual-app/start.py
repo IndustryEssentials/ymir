@@ -172,7 +172,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
             'height': 300,  # width and height should get from real image
         })
         for category_index, cname in enumerate(class_names):
-            annotation = {
+            annotations_list.append({
                 'id': len(annotations_list) + 1,
                 'category_id': category_index + 1,
                 'image_id': image_index + 1,
@@ -180,8 +180,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
                 'segmentation': [[50, 100, 100, 50, 150, 100, 100, 150]],
                 "area": 0,  # mask area
                 'confidence': 1  # confidence of this segmentation, 0 <= conf <= 1
-            }
-            annotations_list.append(annotation)
+            })
 
     coco_dict = {
         'images': images_list,
