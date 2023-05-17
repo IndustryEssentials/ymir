@@ -3,11 +3,11 @@ import { FC } from 'react'
 import t from '@/utils/t'
 import { Types } from './AddTypes'
 const types = [
-  { id: Types.INTERNAL, label: 'internal' },
-  { id: Types.COPY, label: 'copy' },
-  { id: Types.NET, label: 'net' },
   { id: Types.LOCAL, label: 'local' },
+  { id: Types.NET, label: 'net' },
   { id: Types.PATH, label: 'path' },
+  { id: Types.COPY, label: 'copy' },
+  { id: Types.INTERNAL, label: 'internal' },
 ]
 const TypeSelector: FC<Omit<SelectProps, 'options'>> = (props) => {
   const options = types.map((type) => ({
