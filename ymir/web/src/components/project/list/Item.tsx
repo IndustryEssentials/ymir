@@ -10,10 +10,11 @@ import KeywordsItem from '../KeywordsItem'
 
 import s from './item.less'
 import ObjectTypeTag from '../ObjectTypeTag'
+import { Project } from '@/constants'
 
 type Props = {
-  project: YModels.Project,
-  more?: ReactNode,
+  project: Project
+  more?: ReactNode
 }
 const Item: FC<Props> = ({ project, more }) => {
   const history = useHistory()

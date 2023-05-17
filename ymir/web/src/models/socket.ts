@@ -4,7 +4,8 @@ import { createEffect } from './_utils'
 import { history } from 'umi'
 import { Socket as SocketType } from 'socket.io-client'
 import { SocketStore } from '.'
-import { IdMap } from './typings/common'
+import { IdMap } from './typings/common.d'
+import { Backend, ProgressTask, User } from '@/constants'
 history
 const pageMaps = [
   { path: '/home/project/\\d+/dataset', method: 'dataset/updateDatasets' },
@@ -31,7 +32,7 @@ const Socket: SocketStore = {
       if (socket) {
         return socket
       }
-      const { hash } = yield put.resolve<null, YModels.User>({
+      const { hash } = yield put.resolve<null, User>({
         type: 'user/getUserInfo',
       })
       socket = getSocket(hash)
@@ -41,7 +42,7 @@ const Socket: SocketStore = {
       })
       return socket
     }),
-    saveUpdatedTasks: createEffect<IdMap<YModels.ProgressTask>>(function* ({ payload = {} }, { put }) {
+    saveUpdatedTasks: createEffect<IdMap<ProgressTask>>(function* ({ payload = {} }, { put }) {
       const tasks = Object.keys(payload).map((hash) => ({
         ...payload[hash],
         hash,
@@ -49,7 +50,7 @@ const Socket: SocketStore = {
       }))
       yield put({ type: 'saveTasks', payload: tasks })
     }),
-    asyncMessages: createEffect<YModels.BackendData[]>(function* ({ payload }, { put }) {
+    asyncMessages: createEffect<Backend[]>(function* ({ payload }, { put }) {
       yield put({
         type: 'message/asyncMessages',
         payload,

@@ -1,7 +1,6 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, FC } from 'react'
 import { Button, Card, Form, Input, message, Space, Radio } from 'antd'
-import { connect } from 'dva'
-import { useParams, useHistory, useLocation } from 'umi'
+import { useParams, useHistory } from 'umi'
 
 import s from './add.less'
 import t from '@/utils/t'
@@ -9,29 +8,44 @@ import { HIDDENMODULES } from '@/constants/common'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Panel from '@/components/form/panel'
-import useFetch from '@/hooks/useFetch'
 import ProjectTypes from '@/components/project/ProjectTypes'
+import useRequest from '@/hooks/useRequest'
+import { Dataset, Project } from '@/constants'
+import { CreateParams, UpdateParams } from '@/services/project'
 
 const { useForm } = Form
 
-const Add = (func) => {
-  const { id } = useParams()
+const Add: FC = () => {
+  const { id } = useParams<{ id: string }>()
+  const pid = Number(id)
   const history = useHistory()
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
-  const [project, getProject] = useFetch('project/getProject', {})
+  const { data: project, run: getProject } = useRequest<Project, [{ id: number }]>('project/getProject', {
+    loading: false,
+  })
+  const { data: created, run: createProject } = useRequest<Project, [CreateParams]>('project/createProject')
+  const { data: updated, run: updateProject } = useRequest<Project, [UpdateParams]>('project/updateProject')
 
   useEffect(() => {
-    setEdit(!!id)
+    setEdit(!!pid)
 
-    id && getProject({ id })
-  }, [id])
+    pid && getProject({ id: pid })
+  }, [pid])
 
   useEffect(() => {
-    initForm(project)
+    project && initForm(project)
   }, [project])
 
-  function initForm(project = {}) {
+  useEffect(() => {
+    if (created || updated) {
+      const pid = created?.id || id
+      message.success(t(`project.${isEdit ? 'update' : 'create'}.success`))
+      history.push(`/home/project/${pid}/dataset`)
+    }
+  }, [created, updated])
+
+  function initForm(project: Project) {
     const { name, type, description, enableIteration, testingSets } = project
     if (name) {
       form.setFieldsValue({
@@ -39,14 +53,13 @@ const Add = (func) => {
         type,
         description,
         enableIteration,
-        testingSets: testingSets.length ? testingSets : undefined,
+        testingSets: testingSets?.length ? testingSets : undefined,
       })
     }
   }
 
-  const submit = async ({ name = '', description = '', ...values }) => {
-    const action = isEdit ? 'update' : 'create'
-    var params = {
+  const submit = ({ name = '', description = '', ...values }) => {
+    const params = {
       ...values,
     }
     if (isEdit) {
@@ -55,19 +68,17 @@ const Add = (func) => {
     params.name = (name || '').trim()
     params.description = (description || '').trim()
 
-    if (isEdit && params.name === project.name) {
+    if (isEdit && params.name === project?.name) {
       delete params.name
     }
 
-    const result = await func[`${action}Project`](params)
-    if (result) {
-      const pid = result.id || id
-      message.success(t(`project.${action}.success`))
-      history.push(`/home/project/${pid}/dataset`)
-    }
+    isEdit ? updateProject(params) : createProject(params as CreateParams)
   }
 
-  const testingFilter = useCallback((datasets) => datasets.filter((ds) => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id), [project?.trainSet?.id])
+  const testingFilter = useCallback(
+    (datasets: Dataset[]) => datasets.filter((ds) => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id),
+    [project?.trainSet?.id],
+  )
 
   const renderTitle = t(`breadcrumbs.project.${isEdit ? 'edit' : 'add'}`)
 
@@ -107,7 +118,7 @@ const Add = (func) => {
               </Form.Item>
               {isEdit ? (
                 <Form.Item label={t('project.add.form.testing.set')} name="testingSets" tooltip={t('project.add.form.testingset.tip')}>
-                  <DatasetSelect pid={id} mode="multiple" filters={testingFilter} allowClear />
+                  <DatasetSelect pid={pid} mode="multiple" filters={testingFilter} allowClear />
                 </Form.Item>
               ) : null}
               <Form.Item label={t('project.add.form.desc')} name="description" rules={[{ max: 500 }]}>
@@ -135,21 +146,4 @@ const Add = (func) => {
   )
 }
 
-const actions = (dispatch) => {
-  return {
-    createProject: (payload) => {
-      return dispatch({
-        type: 'project/createProject',
-        payload,
-      })
-    },
-    updateProject: (payload) => {
-      return dispatch({
-        type: 'project/updateProject',
-        payload,
-      })
-    }
-  }
-}
-
-export default connect(null, actions)(Add)
+export default Add

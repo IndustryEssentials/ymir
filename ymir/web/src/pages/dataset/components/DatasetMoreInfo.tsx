@@ -16,7 +16,7 @@ import ImageName from '@/components/image/ImageName'
 
 const { Item } = Descriptions
 
-const DatasetMoreInfo: FC<{ task: YModels.Task }> = ({ task }) => {
+const DatasetMoreInfo: FC<{ task: Task }> = ({ task }) => {
   const { id: pid } = useParams<{ id: string }>()
   const [dids, setDatasetIds] = useState<number[]>([])
   const datasets = useSelector(({ dataset }) => dataset.dataset)

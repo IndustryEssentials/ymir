@@ -50,6 +50,7 @@ const getTabs = (type = ObjectType.ObjectDetection) => {
     [ObjectType.ObjectDetection]: ['ap', 'curve', 'rp', 'pr'],
     [ObjectType.SemanticSegmentation]: ['iou', 'acc'],
     [ObjectType.InstanceSegmentation]: ['maskap', 'boxap'],
+    [ObjectType.MultiModal]: ['ap', 'curve', 'rp', 'pr'],
   }
   return metricsTabs.filter(({ value }) => types[type].includes(value))
 }

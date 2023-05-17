@@ -9,21 +9,22 @@ import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 import EmptyState from '@/components/empty/Dataset'
 import Dataset from '@/components/form/option/Dataset'
+import { Dataset as DatasetType } from '@/constants'
 
 interface Props extends SelectProps {
   pid: number
   filter?: number[]
   allowEmpty?: boolean
-  filters?: (ds: YModels.Dataset[]) => YModels.Dataset[]
-  renderLabel?: (d: YModels.Dataset) => ReactNode
+  filters?: (ds: DatasetType[]) => DatasetType[]
+  renderLabel?: (d: DatasetType) => ReactNode
   onReady?: Function
   extra?: ReactNode
   changeByUser?: boolean
 }
-interface DatasetOption extends YModels.Dataset {
+interface DatasetOption extends DatasetType {
   disabled?: boolean
 }
-const defaultLabelRender = (dataset: YModels.Dataset) => <Dataset dataset={dataset} />
+const defaultLabelRender = (dataset: DatasetType) => <Dataset dataset={dataset} />
 
 const DatasetSelect: FC<Props> = ({
   pid,
@@ -106,7 +107,7 @@ const DatasetSelect: FC<Props> = ({
     getDatasets({ pid, force: true })
   }
 
-  function filterEmptyAsset(datasets: YModels.Dataset[]) {
+  function filterEmptyAsset(datasets: DatasetType[]) {
     return datasets.filter((ds) => ds.assetCount)
   }
 

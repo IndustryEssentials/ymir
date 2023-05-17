@@ -1,5 +1,5 @@
 import { format } from '@/utils/date'
-import { DockerImageConfig, Image } from '.'
+import { DockerImageConfig, Image, Backend } from '.'
 import { ResultStates as STATES } from './common'
 import { ObjectType } from './objectType'
 
@@ -44,7 +44,7 @@ export const getImageStateLabel = (state?: STATES) => {
   return labels[state]
 }
 
-export function transferImage(data: YModels.BackendData): Image {
+export function transferImage(data: Backend): Image {
   const configs: DockerImageConfig[] = data.configs || []
   const getConfigAttr = <K extends keyof DockerImageConfig>(attr: K): DockerImageConfig[K][] => [...new Set(configs.map((config) => config[attr]))]
   const objectTypes = getConfigAttr('object_type').filter((t): t is ObjectType => !!t) || []

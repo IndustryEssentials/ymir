@@ -11,6 +11,7 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import DatasetSelect from '../../components/form/datasetSelect'
 import AssetCount from '@/components/dataset/AssetCount'
 import useRequest from '@/hooks/useRequest'
+import { Dataset, Project } from '@/constants'
 
 const { useForm } = Form
 const { confirm } = Modal
@@ -27,7 +28,7 @@ const Add: FC = () => {
   const id = Number(params.id)
   const history = useHistory()
   const [form] = useForm()
-  const { data: project, run: getProject } = useRequest<YModels.Project, [{ id: number }]>('project/getProject')
+  const { data: project, run: getProject } = useRequest<Project, [{ id: number }]>('project/getProject')
   const [result, updateIteration] = useFetch('project/updateProject')
 
   const [testSet, setTestSet] = useState(0)
@@ -49,7 +50,7 @@ const Add: FC = () => {
     }
   }, [result])
 
-  function initForm(project?: YModels.Project) {
+  function initForm(project?: Project) {
     if (!project) {
       return
     }
@@ -76,10 +77,10 @@ const Add: FC = () => {
     updateIteration(params)
   }
 
-  const excludeForGroup = (ds: YModels.Dataset, excludeGroup: (number | undefined)[]) => !excludeGroup.includes(ds.groupId)
-  const excludeForId = (ds: YModels.Dataset, excludeIds: (number | undefined)[]) => !excludeIds.includes(ds.id)
+  const excludeForGroup = (ds: Dataset, excludeGroup: (number | undefined)[]) => !excludeGroup.includes(ds.groupId)
+  const excludeForId = (ds: Dataset, excludeIds: (number | undefined)[]) => !excludeIds.includes(ds.id)
   const datasetsFilter = useCallback(
-    (isTestDataset?: boolean) => (datasets: YModels.Dataset[]) => {
+    (isTestDataset?: boolean) => (datasets: Dataset[]) => {
       if (!project) {
         return datasets
       }

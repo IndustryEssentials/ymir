@@ -13,14 +13,15 @@ import Suggestion from '@/components/dataset/Suggestion'
 import style from './analysis/analysis.less'
 import SampleRates from './SampleRates'
 import Panel from '../form/panel'
+import { DatasetAnalysis } from '@/constants'
 
-const getVersionName = ({ name }: YModels.DatasetAnalysis) => `${name}`
+const getVersionName = ({ name }: DatasetAnalysis) => `${name}`
 
-const Analysis: FC<{ ids: number[], classes?: string[] }> = ({ ids, classes = [] }) => {
+const Analysis: FC<{ ids: number[]; classes?: string[] }> = ({ ids, classes = [] }) => {
   const { id } = useParams<{ id: string }>()
   const pid = Number(id)
-  const { data: remoteSource, run: fetchSource } = useRequest<YModels.DatasetAnalysis[], [{ pid: number; datasets: number[] }]>('dataset/analysis')
-  const [source, setSource] = useState<YModels.DatasetAnalysis[]>([])
+  const { data: remoteSource, run: fetchSource } = useRequest<DatasetAnalysis[], [{ pid: number; datasets: number[] }]>('dataset/analysis')
+  const [source, setSource] = useState<DatasetAnalysis[]>([])
   const [assetCharts, setAssetCharts] = useState<ChartType[]>([])
   const [annotationCharts, setAnnotationCharts] = useState<ChartType[]>([])
   const [tableColumns, setTableColumns] = useState<ColumnType[]>([])
@@ -54,7 +55,7 @@ const Analysis: FC<{ ids: number[], classes?: string[] }> = ({ ids, classes = []
     setSource(remoteSource || [])
   }, [remoteSource])
 
-  function generateCharts(configs: ChartConfigType[] = [], datasets: YModels.DatasetAnalysis[] = []): ChartType[] {
+  function generateCharts(configs: ChartConfigType[] = [], datasets: DatasetAnalysis[] = []): ChartType[] {
     return datasets.length
       ? configs.map((config) => {
           const xData = getXData(config, datasets)
@@ -73,7 +74,7 @@ const Analysis: FC<{ ids: number[], classes?: string[] }> = ({ ids, classes = []
       : []
   }
 
-  function getXData({ getData }: ChartConfigType, datasets: YModels.DatasetAnalysis[] = []) {
+  function getXData({ getData }: ChartConfigType, datasets: DatasetAnalysis[] = []) {
     const xs = datasets
       .map((dataset) => {
         const { data } = getData(dataset)
@@ -83,7 +84,7 @@ const Analysis: FC<{ ids: number[], classes?: string[] }> = ({ ids, classes = []
     return [...new Set(xs)]
   }
 
-  function getYData({ getData }: ChartConfigType, datasets: YModels.DatasetAnalysis[]) {
+  function getYData({ getData }: ChartConfigType, datasets: DatasetAnalysis[]) {
     const yData =
       datasets &&
       datasets.map((dataset) => {

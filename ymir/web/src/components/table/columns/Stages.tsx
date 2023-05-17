@@ -4,8 +4,9 @@ import { Col, Row } from 'antd'
 import { getRecommendStage, validModel } from '@/constants/model'
 import { percent } from '@/utils/number'
 import StrongTitle from './StrongTitle'
+import { Model } from '@/constants'
 
-const Stages = <T extends YModels.Model>(): ColumnType<T> => ({
+const Stages = <T extends Model>(): ColumnType<T> => ({
   title: <StrongTitle label="model.column.stage" />,
   dataIndex: 'recommendStage',
   render: (_, record) => {
@@ -13,7 +14,9 @@ const Stages = <T extends YModels.Model>(): ColumnType<T> => ({
     return validModel(record) ? (
       <Row wrap={false}>
         <Col flex={1}>{stage?.name}</Col>
-        <Col style={{ color: 'orange' }}>{stage?.primaryMetricLabel}: {percent(stage?.primaryMetric || 0)}</Col>
+        <Col style={{ color: 'orange' }}>
+          {stage?.primaryMetricLabel}: {percent(stage?.primaryMetric || 0)}
+        </Col>
       </Row>
     ) : null
   },

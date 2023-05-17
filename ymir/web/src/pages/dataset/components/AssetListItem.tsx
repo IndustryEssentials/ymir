@@ -8,15 +8,11 @@ import ListAnnotation from '@/components/dataset/ListAnnotation'
 
 import styles from '../assets.less'
 import VisualModes from './VisualModes'
+import { Annotation, Asset } from '@/constants'
 
 const KeywordTagsCount = 4
 
-const Item: FC<{ asset: YModels.Asset; showDetail: () => void; height?: number; mode?: VisualModes }> = ({
-  asset,
-  showDetail = () => {},
-  height = 100,
-  mode = 0,
-}) => {
+const Item: FC<{ asset: Asset; showDetail: () => void; height?: number; mode?: VisualModes }> = ({ asset, showDetail = () => {}, height = 100, mode = 0 }) => {
   const [visibles, setVisibles] = useState<{ [key: string]: boolean }>({
     asset: true,
     gt: true,
@@ -54,7 +50,7 @@ const Item: FC<{ asset: YModels.Asset; showDetail: () => void; height?: number; 
   }, [mode])
 
   const filterAnnotations = useCallback(
-    (annotations: YModels.Annotation[]) => annotations.filter((annotation) => (visibles['gt'] && annotation.gt) || (visibles['pred'] && !annotation.gt)),
+    (annotations: Annotation[]) => annotations.filter((annotation) => (visibles['gt'] && annotation.gt) || (visibles['pred'] && !annotation.gt)),
     [visibles],
   )
 

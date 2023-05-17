@@ -4,7 +4,7 @@ import { DefaultOptionType } from 'antd/lib/select'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 
 type KeywordType = {
   name: string

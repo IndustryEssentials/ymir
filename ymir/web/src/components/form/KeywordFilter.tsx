@@ -1,7 +1,7 @@
 import { Cascader, Col, Row, Select } from 'antd'
 import t from '@/utils/t'
 import { FC, useEffect, useState } from 'react'
-import { Prediction } from '@/constants';
+import { CKItem, Dataset, Prediction } from '@/constants'
 
 enum Type {
   keywords = 'keywords',
@@ -12,7 +12,7 @@ export type ValueType = { type: Type; selected?: string[] }
 type Props = {
   value?: ValueType
   onChange?: (value: ValueType) => void
-  dataset?: YModels.Dataset | Prediction
+  dataset?: Dataset | Prediction
 }
 type KeywordOptionsType = {
   [key in Type]: KeywordOption[]
@@ -69,7 +69,7 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
     if (!dataset?.id) {
       return
     }
-    const ck2opts = (kws: YModels.CKItem[] = []): KeywordOption[] =>
+    const ck2opts = (kws: CKItem[] = []): KeywordOption[] =>
       kws.map(({ keyword, children }) => ({ value: keyword, label: keyword, children: ck2opts(children) }))
     setKwOptions({
       [Type.keywords]: dataset.keywords.map((keyword) => ({ value: keyword, label: keyword })),
@@ -83,7 +83,7 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
   }, [selected])
 
   useEffect(() => {
-    const selected = ckSelected.map(item => item.join(':'))
+    const selected = ckSelected.map((item) => item.join(':'))
     onChange && onChange({ type: currentType, selected })
   }, [ckSelected])
 

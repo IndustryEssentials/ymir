@@ -52,4 +52,9 @@ type StoreType<name extends string, S extends { [key: string]: any }> = {
 type List<T> = { items: T[]; total: number }
 type IdMap<T> = { [key: string | number]: T }
 
-export { StoreType, List, IdMap, Reducer, ReducersType, Effect, EffectsType, State }
+type Response<R extends any = null> = {
+  code: number
+  result: R
+}
+
+export { StoreType, List, IdMap, Reducer, ReducersType, Effect, EffectsType, State, Response }

@@ -1,10 +1,11 @@
-import type { FC } from "react"
-import CustomLabels from "@/components/dataset/asset/CustomLabels"
-import { Popover } from "antd"
+import type { FC } from 'react'
+import CustomLabels from '@/components/dataset/asset/CustomLabels'
+import { Popover } from 'antd'
 import t from '@/utils/t'
+import { Asset } from '@/constants'
 
 type Props = {
-  asset?: YModels.Asset
+  asset?: Asset
 }
 
 const CkPopup: FC<Props> = ({ asset, children }) => {

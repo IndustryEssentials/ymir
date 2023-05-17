@@ -28,7 +28,7 @@ function ImageDetail() {
   const delRef = useRef(null)
   const image = useSelector(({ image }) => image.image[id] || {})
   const [_, getImage] = useFetch('image/getImage', { id })
-  const role = useSelector(({ user }) => user.role)
+  const role = useSelector(({ user }) => user.user.role)
 
   useEffect(() => id && getImage({ id }), [id])
   function relateImage() {

@@ -1,9 +1,9 @@
 import { FC } from 'react'
 import t from '@/utils/t'
-import { getProjectTypeLabel } from '@/constants/objectType'
+import { getProjectTypeLabel, ObjectType } from '@/constants/objectType'
 
 type Props = {
-  type: YModels.ObjectType
+  type: ObjectType
 }
 
 const ObjectTypeTag: FC<Props> = ({ type }) => {

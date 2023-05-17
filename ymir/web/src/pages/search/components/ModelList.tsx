@@ -10,7 +10,8 @@ import Terminate, { RefProps } from '@/components/task/terminate'
 import { getModelColumns } from '@/components/table/Columns'
 import useListActions from '@/hooks/useListActions'
 import Actions from '@/components/table/columns/Actions'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
+import { Model } from '@/constants'
 
 type Props = {
   pid: number
@@ -18,15 +19,15 @@ type Props = {
   query?: YParams.ResultListQuery
 }
 const ModelList: FC<Props> = ({ pid, name, query }) => {
-  const [models, setModels] = useState<List<YModels.Model>>()
-  const { data: remoteModels, run: getModels } = useRequest<List<YModels.Model>, [YParams.ModelsQuery]>('model/queryModels', {
+  const [models, setModels] = useState<List<Model>>()
+  const { data: remoteModels, run: getModels } = useRequest<List<Model>, [YParams.ModelsQuery]>('model/queryModels', {
     debounceWait: 100,
   })
   const [modelQuery, setQuery] = useState<YParams.ModelsQuery>({
     pid,
     ...(query || {}),
   })
-  const [editingModel, setEditingModel] = useState<YModels.Model>()
+  const [editingModel, setEditingModel] = useState<Model>()
   const terminateRef = useRef<RefProps>(null)
 
   useEffect(
@@ -51,7 +52,7 @@ const ModelList: FC<Props> = ({ pid, name, query }) => {
     }
   }, [modelQuery])
 
-  const tableChange: TableProps<YModels.Model>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
+  const tableChange: TableProps<Model>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
 
   const pageChange = (page: number, pageSize: number) => {
     const offset = (page - 1) * (modelQuery.limit || 10)
@@ -66,11 +67,11 @@ const ModelList: FC<Props> = ({ pid, name, query }) => {
     getModels(modelQuery)
   }
 
-  const stop = (model: YModels.Model) => {
+  const stop = (model: Model) => {
     terminateRef?.current?.confirm(model)
   }
 
-  const editDesc = (model: YModels.Model) => {
+  const editDesc = (model: Model) => {
     setEditingModel(undefined)
     setTimeout(() => setEditingModel(model), 0)
   }

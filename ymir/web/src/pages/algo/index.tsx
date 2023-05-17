@@ -18,7 +18,7 @@ const Algo = () => {
   if (!base) {
     return <div>Algorithm Store is not READY</div>
   }
-  const { username: userName, id: userId } = useSelector((state: Params) => state.user)
+  const { username: userName, id: userId } = useSelector((state: Params) => state.user.user)
   const { module = 'public' } = useParams<Params>()
   const location: Params = useLocation()
   const iframe: { current: HTMLIFrameElement | null } = useRef(null)
@@ -27,7 +27,7 @@ const Algo = () => {
   const [key, setKey] = useState(Math.random())
 
   useEffect(() => {
-    if (!location.state?.reload) {
+    if (!location.state?.reload && userId) {
       const r = Math.random()
       setKey(r)
       const self = window.location.origin
@@ -35,8 +35,8 @@ const Algo = () => {
       const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&userName=${userName || ''}&lang=${lang}&r=${r}`
       setUrl(url)
     }
-    history.replace({ state: {} })
-  }, [module])
+    userId && history.replace({ state: {} })
+  }, [module, userId])
 
   useEffect(() => {
     if (!recieved) {
@@ -45,7 +45,7 @@ const Algo = () => {
     if (recieved.type === 'loaded') {
       // send()
     } else if (recieved.type === 'pageChanged') {
-      const page = Object.keys(pages).find(key => (recieved.data?.path || '').includes(pages[key].path))
+      const page = Object.keys(pages).find((key) => (recieved.data?.path || '').includes(pages[key].path))
       if (page !== module) {
         const mod = page === 'public' ? '' : `/${page}`
         history.push(`/home/algo${mod}`, { reload: true })
@@ -75,9 +75,11 @@ const Algo = () => {
     width: '100%',
     height: 'calc(100vh - 120px)',
   }
-  return <div style={{ margin: '0 -20px' }}>
-    <iframe key={key} ref={iframe} src={url} style={iframeStyles}></iframe>
-  </div>
+  return (
+    <div style={{ margin: '0 -20px' }}>
+      <iframe key={key} ref={iframe} src={url} style={iframeStyles}></iframe>
+    </div>
+  )
 }
 
 export default Algo

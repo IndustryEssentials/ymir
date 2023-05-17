@@ -1,3 +1,5 @@
+import { Suggestion } from './typings/dataset.d'
+
 enum ClassBias {
   perfect = 1,
   good = 2,
@@ -22,7 +24,7 @@ const transferSuggestion = (sug?: { [bounding: string]: string[] }, type?: strin
   }
   const bounding = Object.keys(sug)[0]
   const values = sug[bounding]
-  const suggest: YModels.Suggestion = {
+  const suggest: Suggestion = {
     bounding: Number(bounding),
     values,
     type,

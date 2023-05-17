@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Card, ConfigProvider, Pagination, Table, TableColumnsType } from 'antd'
 import { useHistory, useParams, useSelector } from 'umi'
-import {  } from 'react-redux'
+import {} from 'react-redux'
 
 import t from '@/utils/t'
 import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask, validState } from '@/constants/common'
@@ -15,7 +15,7 @@ import Empty from '@/components/empty/Pred'
 
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 import { Prediction } from '@/constants'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }

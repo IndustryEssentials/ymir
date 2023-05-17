@@ -17,13 +17,13 @@ import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import GtSelector from '@/components/form/GtSelector'
 import { evaluationTags } from '@/constants/dataset'
-import { List } from '@/models/typings/common'
-import { Prediction } from '@/constants'
+import { List } from '@/models/typings/common.d'
+import { Annotation, Asset, Dataset, Prediction } from '@/constants'
 
 type Props = {
   id: number
-  asset?: YModels.Asset
-  dataset?: YModels.Dataset | Prediction
+  asset?: Asset
+  dataset?: Dataset | Prediction
   pred?: boolean
   datasetKeywords?: KeywordsType
   filterKeyword?: KeywordsType
@@ -37,17 +37,17 @@ type KeywordsType = string[]
 const { CheckableTag } = Tag
 const { Item } = Descriptions
 
-const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
-  const [asset, setAsset] = useState<YModels.Asset>()
+const AssetComponent: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
+  const [asset, setAsset] = useState<Asset>()
   const [current, setCurrent] = useState('')
-  const [showAnnotations, setShowAnnotations] = useState<YModels.Annotation[]>([])
+  const [showAnnotations, setShowAnnotations] = useState<Annotation[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<KeywordsType>([])
   const [currentIndex, setCurrentIndex] = useState<IndexType>()
   const [assetHistory, setAssetHistory] = useState<IndexType[]>([])
   const [gtSelected, setGtSelected] = useState<string[]>([])
   const [evaluation, setEvaluation] = useState(0)
   const [colors, setColors] = useState<{ [key: string]: string }>({})
-  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<List<YModels.Asset>>('asset/getAssets')
+  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<List<Asset>>('asset/getAssets')
 
   useEffect(() => {
     setAsset(undefined)
@@ -83,7 +83,7 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
   }, [assets])
 
   useEffect(() => {
-    type FilterType = (annotation: YModels.Annotation) => boolean
+    type FilterType = (annotation: Annotation) => boolean
     const wrong = [evaluationTags.fn, evaluationTags.fp]
     const typeFilter: FilterType = (anno) => pred || !!anno.gt
     const gtFilter: FilterType = (anno) => !pred || (gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt)
@@ -108,7 +108,7 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
   }
 
   function random() {
-    setCurrentIndex((cu) => ({ ...cu, index: randomBetween(0, total - 1, (cu?.index || 0)) }))
+    setCurrentIndex((cu) => ({ ...cu, index: randomBetween(0, total - 1, cu?.index || 0) }))
   }
 
   function back() {
@@ -234,4 +234,4 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
   )
 }
 
-export default Asset
+export default AssetComponent

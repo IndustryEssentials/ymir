@@ -10,9 +10,9 @@ import StateTag from '@/components/task/StateTag'
 import useModal from '@/hooks/useModal'
 import DatasetMoreInfo from './DatasetMoreInfo'
 import { MoreIcon } from '@/components/common/Icons'
-import { Prediction } from '@/constants'
+import { Dataset, Prediction } from '@/constants'
 
-const DatasetInfo: FC<{ dataset?: Prediction | YModels.Dataset }> = ({ dataset }) => {
+const DatasetInfo: FC<{ dataset?: Prediction | Dataset }> = ({ dataset }) => {
   if (!dataset) {
     return null
   }

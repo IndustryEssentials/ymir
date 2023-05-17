@@ -3,12 +3,8 @@ import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from './common'
 import { ObjectType } from './project'
 import { transferSuggestion } from './datasetAnalysis'
-
-export enum AnnotationType {
-  BoundingBox = 0,
-  Polygon = 1,
-  Mask = 2,
-}
+import { Backend, Dataset, DatasetGroup, DatasetSuggestions, Project } from '.'
+import { AnalysisChartData, CKCounts, DatasetAnalysis, KeywordCountsType } from './typings/dataset.d'
 
 export enum MergeType {
   New = 0,
@@ -66,8 +62,8 @@ export enum MERGESTRATEGYFORTRAIN {
   ASVALIDATION = 2,
 }
 
-export function transferDatasetGroup(data: YModels.BackendData) {
-  const group: YModels.DatasetGroup = {
+export function transferDatasetGroup(data: Backend) {
+  const group: DatasetGroup = {
     id: data.id,
     projectId: data.project_id,
     name: data.name,
@@ -77,7 +73,7 @@ export function transferDatasetGroup(data: YModels.BackendData) {
   return group
 }
 
-export function transferDataset(data: YModels.BackendData): YModels.Dataset {
+export function transferDataset(data: Backend): Dataset {
   const { gt = {} } = data.keywords
   const assetCount = data.asset_count || 0
   const keywords = Object.keys(gt)
@@ -86,7 +82,7 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     { source: 'class_proportion', key: 'classBias', type: 'keyword' },
     { source: 'class_obj_count', key: 'annotationCount', type: 'keyword' },
     { source: 'density_proportion', key: 'annotationDensity' },
-  ].reduce<YModels.DatasetSuggestions>((prev, { key, source, type }) => {
+  ].reduce<DatasetSuggestions>((prev, { key, source, type }) => {
     const suggest = transferSuggestion(analysis[source], type)
     return suggest ? { ...prev, [key]: suggest } : prev
   }, {})
@@ -124,20 +120,20 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
   }
 }
 
-export function validDataset(dataset: YModels.Dataset | undefined) {
+export function validDataset(dataset?: Dataset) {
   return dataset && dataset.state === states.VALID
 }
 
-export function runningDataset(dataset: YModels.Dataset | undefined) {
+export function runningDataset(dataset?: Dataset) {
   return dataset && dataset.state === states.READY
 }
 
-export function canHide(dataset: YModels.Dataset, project: YModels.Project | undefined) {
+export function canHide(dataset: Dataset, project: Project | undefined) {
   const p = project || dataset.project
   return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
 }
 
-export function transferDatasetAnalysis(data: YModels.BackendData): YModels.DatasetAnalysis {
+export function transferDatasetAnalysis(data: Backend): DatasetAnalysis {
   const { bytes, area, quality, hw_ratio } = data.hist
   const gt = data.gt
   const { quality: gtQuality = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts = [] } = gt.hist
@@ -147,6 +143,7 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
   const total = dataset.gt?.total
   const totalArea = data.gt?.total_mask_area || 0
   const assetCount = dataset.assetCount
+  const annoCount = gt?.annos_count || 0
   return {
     ...dataset,
     total: gt?.annos_count || 0,
@@ -158,8 +155,8 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
     assetQuality: addTotal2ChartData(quality, assetCount),
     assetHWRatio: addTotal2ChartData(hw_ratio, assetCount),
     quality: addTotal2ChartData(gtQuality, assetCount),
-    areaRatio: addTotal2ChartData(box_area_ratio, total),
-    keywordAnnotationCount: keywords2ChartData(keywords, assetCount, gt.classwise_annos_count),
+    areaRatio: addTotal2ChartData(box_area_ratio, annoCount),
+    keywordAnnotationCount: keywords2ChartData(keywords, annoCount, gt.classwise_annos_count),
     keywordArea: keywords2ChartData(keywords, totalArea, gt?.classwise_area),
     instanceArea: addTotal2ChartData(mask_area, total),
     crowdedness: addTotal2ChartData(obj_counts, assetCount),
@@ -167,7 +164,7 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
   }
 }
 
-const keywords2ChartData = (list: string[] = [], total?: number, counts: YModels.KeywordCountsType = {}) => ({
+const keywords2ChartData = (list: string[] = [], total?: number, counts: KeywordCountsType = {}) => ({
   data: list.map((item) => ({
     x: item,
     y: counts[item] || 0,
@@ -175,9 +172,9 @@ const keywords2ChartData = (list: string[] = [], total?: number, counts: YModels
   total,
 })
 
-const addTotal2ChartData = (list: YModels.AnalysisChartData[] = [], total?: number) => ({ data: list, total })
+const addTotal2ChartData = (list: AnalysisChartData[] = [], total?: number) => ({ data: list, total })
 
-export function transferAnnotationsCount(count: YModels.KeywordCountsType = {}, negative = 0, total = 1) {
+export function transferAnnotationsCount(count: KeywordCountsType = {}, negative = 0, total = 1) {
   return {
     keywords: Object.keys(count),
     count,
@@ -186,7 +183,7 @@ export function transferAnnotationsCount(count: YModels.KeywordCountsType = {}, 
   }
 }
 
-const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}): YModels.CKCounts => {
+const transferCK = (counts: Backend = {}, total: Backend = {}): CKCounts => {
   let subKeywordsTotal = 0
   const keywords = Object.keys(counts).map((keyword: string) => {
     const children: { [key: string]: number } = counts[keyword]

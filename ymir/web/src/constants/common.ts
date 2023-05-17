@@ -1,5 +1,5 @@
 import storage from '@/utils/storage'
-import { Task } from '.'
+import { Task, ProgressTask } from '.'
 import { TASKSTATES } from './task'
 
 type ResultStateType = {
@@ -35,7 +35,7 @@ export const OPENPAI_MAX_GPU_COUNT = 8
 
 export const DefaultShowVersionCount = 3
 
-export function updateResultState<T extends ResultStateType>(result: T, tasks: { [key: string]: YModels.ProgressTask }) {
+export function updateResultState<T extends ResultStateType>(result: T, tasks: { [key: string]: ProgressTask }) {
   const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
     return result
@@ -43,7 +43,7 @@ export function updateResultState<T extends ResultStateType>(result: T, tasks: {
   return updateResultByTask<T>(result, task)
 }
 
-export function updateResultByTask<T extends ResultStateType>(result: T, task?: YModels.ProgressTask): T | undefined {
+export function updateResultByTask<T extends ResultStateType>(result: T, task?: ProgressTask): T | undefined {
   if (!result || !task) {
     return
   }
