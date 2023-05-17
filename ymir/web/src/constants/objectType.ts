@@ -10,6 +10,7 @@ const projectTypes = [
   { label: 'det', value: ObjectType.ObjectDetection },
   { label: 'seg', value: ObjectType.SemanticSegmentation },
   { label: 'ins', value: ObjectType.InstanceSegmentation },
+  { label: 'mul', value: ObjectType.MultiModal },
 ]
 
 const getProjectTypes = () => projectTypes.map(({ label, value }) => ({ label: typesPrefix + label, value }))

@@ -1,22 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { connect } from 'dva'
-import { useHistory } from 'umi'
+import React, { FC, useEffect, useRef, useState } from 'react'
+import { useHistory, useSelector } from 'umi'
 import { List, Skeleton, Space, Button, Pagination, Col, Row, Alert } from 'antd'
 
 import t from '@/utils/t'
-import { HIDDENMODULES } from '@/constants/common'
-import { ROLES } from '@/constants/user'
+import { HIDDENMODULES, validState } from '@/constants/common'
+import { isAdmin } from '@/constants/user'
 import { TYPES, STATES, getImageTypeLabel, isSampleImage } from '@/constants/image'
-import { getProjectTypeLabel } from '@/constants/project'
+import { getProjectTypeLabel, ObjectType } from '@/constants/project'
+import useRequest from '@/hooks/useRequest'
 
-import RelateModal from './relate'
-import Del from './del'
-import ImagesLink from './imagesLink'
+import RelateModal, { RefProps } from './Relate'
+import Del, { RefProps as DelRefProps } from '@/components/image/Del'
+import ImagesLink from './ImagesLink'
 import StateTag from '@/components/image/StateTag'
 import OfficialTag from '@/components/image/OfficialTag'
 
 import s from './list.less'
 import { EditIcon, DeleteIcon, AddIcon, MoreIcon, PublishIcon, LinkIcon } from '@/components/common/Icons'
+import { Image } from '@/constants'
+import { QueryParams } from '@/services/typings/image.d'
+import { List as ListType } from '@/models/typings/common.d'
 
 const initQuery = {
   name: undefined,
@@ -25,14 +28,16 @@ const initQuery = {
   limit: 20,
 }
 
-const ImageList = ({ role, filter, getImages }) => {
+const ImageList: FC<{ filter: () => void }> = ({ filter }) => {
   const history = useHistory()
-  const [images, setImages] = useState([])
+  const [images, setImages] = useState<Image[]>([])
   const [total, setTotal] = useState(1)
   const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState(1)
-  const linkModalRef = useRef(null)
-  const delRef = useRef(null)
+  const linkModalRef = useRef<RefProps>(null)
+  const delRef = useRef<DelRefProps>(null)
+  const role = useSelector(({ user }) => user.user.role)
+  const { data: remoteImages, run: getImages } = useRequest<ListType<Image>, [QueryParams]>('image/getImages')
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -40,47 +45,42 @@ const ImageList = ({ role, filter, getImages }) => {
   }, [query])
 
   useEffect(() => {
-    console.log('filter:', filter)
+    if (remoteImages) {
+      const { items, total } = remoteImages
+      setImages(items)
+      setTotal(total)
+    }
+  }, [remoteImages])
+
+  useEffect(() => {
     JSON.stringify(filter) !== JSON.stringify(query) && setQuery({ ...query, ...filter })
   }, [filter])
 
-  const pageChange = (current, pageSize) => {
+  const pageChange = (current: number, pageSize: number) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
     setCurrent(current)
     setQuery((old) => ({ ...old, limit, offset }))
   }
 
-  async function getData() {
-    let params = {
-      ...query,
-    }
+  const getData = () => getImages(query)
 
-    console.log('params:', params)
-    const result = await getImages(params)
-    if (result) {
-      const { items, total } = result
-      setImages(() => items)
-      setTotal(total)
-    }
-  }
-
-  const moreList = (record) => {
+  const moreList = (record: Image): YComponents.Action[] => {
     const { id, name, state, functions, url, related, description } = record
 
     const menus = [
       {
         key: 'link',
         label: t('image.action.link'),
-        onclick: () => link(id, name, related),
-        hidden: () => !isTrain(functions) || !isDone(state),
+        onclick: () => link(record),
+        hidden: () => !isTrain(functions) || !validState(state),
         icon: <LinkIcon />,
       },
       {
         key: 'publish',
         label: t('image.action.publish'),
         onclick: () => history.push(`/home/public_image/publish?name=${name}&image_addr=${url}&description=${description}`),
-        hidden: () => !isAdmin() || !isDone(state),
+        hidden: () => !isAdmin(role) || !validState(state),
         icon: <PublishIcon />,
       },
       {
@@ -92,8 +92,8 @@ const ImageList = ({ role, filter, getImages }) => {
       {
         key: 'del',
         label: t('image.action.del'),
-        hidden: () => !isAdmin() || isSampleImage(record),
-        onclick: () => del(id, name),
+        hidden: () => !isAdmin(role) || isSampleImage(record),
+        onclick: () => del(record),
         icon: <DeleteIcon />,
       },
     ]
@@ -104,14 +104,14 @@ const ImageList = ({ role, filter, getImages }) => {
       onclick: () => history.push(`/home/image/detail/${id}`),
       icon: <MoreIcon />,
     }
-    return isAdmin() ? [...menus, detail] : [detail]
+    return isAdmin(role) ? [...menus, detail] : [detail]
   }
 
-  const del = (id, name) => {
-    delRef.current.del(id, name)
+  const del = ({ id, name }: Image) => {
+    delRef.current?.del(id, name)
   }
 
-  const delOk = (id) => {
+  const delOk = (id: number) => {
     setImages(images.filter((image) => image.id !== id))
     setTotal((old) => old - 1)
     getData()
@@ -119,23 +119,19 @@ const ImageList = ({ role, filter, getImages }) => {
 
   const relateOk = () => getData()
 
-  const link = (id, name, related) => {
-    linkModalRef.current.show({ id, name, related })
+  const link = ({ id, name, related }: Image) => {
+    linkModalRef.current?.show({ id, name, related })
   }
 
-  const isAdmin = () => role > ROLES.USER
+  const isTrain = (functions: number[] = []) => functions.indexOf(TYPES.TRAINING) >= 0
 
-  const isTrain = (functions = []) => functions.indexOf(TYPES.TRAINING) >= 0
-
-  const isDone = (state) => state === STATES.VALID
-
-  const more = (item) => {
+  const more = (item: Image) => {
     return (
       <Space>
         {moreList(item)
           .filter((menu) => !(menu.hidden && menu.hidden()))
           .map((action) => (
-            <a type="link" className={action.className} key={action.key} onClick={action.onclick} title={action.label}>
+            <a type="link" key={action.key} onClick={() => action.onclick && action.onclick()} title={action.label}>
               {action.icon}
             </a>
           ))}
@@ -143,7 +139,7 @@ const ImageList = ({ role, filter, getImages }) => {
     )
   }
 
-  const objectTypeLabel = (types) =>
+  const objectTypeLabel = (types: ObjectType[]) =>
     types.map((type) => {
       const cls = getProjectTypeLabel(type)
       const label = getProjectTypeLabel(type, true)
@@ -154,7 +150,7 @@ const ImageList = ({ role, filter, getImages }) => {
       ) : null
     })
 
-  const liveCodeState = (live) => {
+  const liveCodeState = (live?: boolean) => {
     return <span className={live ? s.remote : s.local}>{t(live ? 'image.livecode.label.remote' : 'image.livecode.label.local')}</span>
   }
 
@@ -165,7 +161,7 @@ const ImageList = ({ role, filter, getImages }) => {
     </div>
   )
 
-  const renderItem = (item) => {
+  const renderItem = (item: Image) => {
     const title = (
       <Row wrap={false}>
         <Col flex={1}>
@@ -174,7 +170,7 @@ const ImageList = ({ role, filter, getImages }) => {
             <OfficialTag official={item.official} />
             {objectTypeLabel(item.objectTypes)}
             <StateTag state={item.state} code={item.errorCode} />
-            {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
+            {validState(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
           </Space>
         </Col>
         <Col onClick={(e) => e.stopPropagation()}>{more(item)}</Col>
@@ -212,16 +208,14 @@ const ImageList = ({ role, filter, getImages }) => {
 
     return (
       <List.Item className={item.state ? 'success' : 'failure'} onClick={() => history.push(`/home/image/detail/${item.id}`)}>
-        <Skeleton active loading={item.loading}>
-          <List.Item.Meta title={title} description={desc}></List.Item.Meta>
-        </Skeleton>
+        <List.Item.Meta title={title} description={desc}></List.Item.Meta>
       </List.Item>
     )
   }
 
   return (
     <div className={s.imageContent}>
-      {isAdmin() ? addBtn : <Alert message={t('image.add.image.tip.admin')} type="warning" showIcon />}
+      {isAdmin(role) ? addBtn : <Alert message={t('image.add.image.tip.admin')} type="warning" showIcon />}
       <List className="list" dataSource={images} renderItem={renderItem} />
       <Pagination
         className="pager"
@@ -240,34 +234,4 @@ const ImageList = ({ role, filter, getImages }) => {
   )
 }
 
-const props = (state) => {
-  return {
-    role: state.user.user.role,
-    username: state.user.user.username,
-  }
-}
-
-const actions = (dispatch) => {
-  return {
-    getImages: (payload) => {
-      return dispatch({
-        type: 'image/getImages',
-        payload,
-      })
-    },
-    delImage: (payload) => {
-      return dispatch({
-        type: 'image/delImage',
-        payload,
-      })
-    },
-    updateImage: (id, name) => {
-      return dispatch({
-        type: 'image/updateImage',
-        payload: { id, name },
-      })
-    },
-  }
-}
-
-export default connect(props, actions)(ImageList)
+export default ImageList

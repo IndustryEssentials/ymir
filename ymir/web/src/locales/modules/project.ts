@@ -321,6 +321,7 @@ const project = {
   'project.types.det': { en: 'Object Detection', cn: '目标检测' },
   'project.types.seg': { en: 'Semantic Segmentation', cn: '语义分割' },
   'project.types.ins': { en: 'Instance Segmentation', cn: '实例分割' },
+  'project.types.mul': { en: 'Large MultiModal Model', cn: '多模态大模型' },
   'project.types.label': { en: 'Project Type', cn: '项目类型' },
   'project.search.title': { en: 'Search Page', cn: '搜索' },
   'project.stats.datasets.total': { en: 'Project Type', cn: '可用数据集' },
