@@ -18,8 +18,8 @@ import OfficialTag from '@/components/image/OfficialTag'
 import s from './list.less'
 import { EditIcon, DeleteIcon, AddIcon, MoreIcon, PublishIcon, LinkIcon } from '@/components/common/Icons'
 import { Image } from '@/constants'
-import { QueryParams } from '@/services/typings/image'
-import { List as ListType } from '@/models/typings/common'
+import { QueryParams } from '@/services/typings/image.d'
+import { List as ListType } from '@/models/typings/common.d'
 
 const initQuery = {
   name: undefined,
@@ -208,9 +208,7 @@ const ImageList: FC<{ filter: () => void }> = ({ filter }) => {
 
     return (
       <List.Item className={item.state ? 'success' : 'failure'} onClick={() => history.push(`/home/image/detail/${item.id}`)}>
-        <Skeleton active>
-          <List.Item.Meta title={title} description={desc}></List.Item.Meta>
-        </Skeleton>
+        <List.Item.Meta title={title} description={desc}></List.Item.Meta>
       </List.Item>
     )
   }
