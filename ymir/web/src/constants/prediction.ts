@@ -3,7 +3,6 @@ import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from './common'
 import { ObjectType } from './project'
 import { transferAnnotationsCount } from './dataset'
-import { Prediction } from '.'
 
 export enum evaluationTags {
   tp = 1,
@@ -22,7 +21,7 @@ export const evaluationLabel = (tag: evaluationTags) => {
   return maps[tag]
 }
 
-export function transferPrediction(data: YModels.BackendData): Prediction {
+export function transferPrediction(data: YModels.BackendData): YModels.Prediction {
   const task = data.related_task
   const params = task?.parameters
   const config = task?.config || {}
@@ -30,15 +29,13 @@ export function transferPrediction(data: YModels.BackendData): Prediction {
   const assetCount = data.asset_count || 0
   const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
   const evaluated = data.evaluation_state === 1
-  // const versionName = getVersionLabel(data.version_num)
   return {
     id: data.id,
     projectId: data.project_id,
-    groupId: params?.model_id || 0,
     type: data.object_type || ObjectType.ObjectDetection,
-    name: ``,
+    name: data.group_name,
     version: data.version_num || 0,
-    versionName: '',
+    versionName: getVersionLabel(data.version_num),
     assetCount,
     keywords,
     keywordCount: keywords.length,

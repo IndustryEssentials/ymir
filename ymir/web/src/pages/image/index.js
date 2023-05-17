@@ -8,6 +8,7 @@ import { getImageTypes } from '@/constants/query'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import ImageList from './components/list'
 import { SearchIcon } from '@/components/common/Icons'
+import ShareImageList from './components/shareImageList'
 import ObjectType from '@/components/search/ObjectType'
 
 const { useForm } = Form
@@ -73,6 +74,7 @@ function Image() {
 
   const contents = {
     my: <ImageList filter={query} />,
+    public: <ShareImageList />,
   }
 
   const searchPanel = (

@@ -1,8 +1,9 @@
 import { Button, Row, Col, RowProps } from 'antd'
+import useFetch from '@/hooks/useFetch'
 import { FC, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 
 import t from '@/utils/t'
-import useRequest from '@/hooks/useRequest'
 import s from './common.less'
 import { FailIcon, SuccessIcon } from './Icons'
 type Props = RowProps & {
@@ -12,15 +13,16 @@ type Props = RowProps & {
 }
 const CheckProjectDirty: FC<Props> = ({ pid, initialCheck, callback = () => {}, ...props }) => {
   const effect = 'project/checkStatus'
-  const { data: { is_dirty: isDirty } = { is_dirty: false }, run: check, loading } = useRequest<{ is_dirty?: boolean }, [number]>(effect, { loading: false })
+  const [{ is_dirty: isDirty }, check] = useFetch(effect, {}, true)
   const [checked, setChecked] = useState(false)
+  const loading = useSelector<YStates.Root, boolean>(({ loading }) => loading.effects[effect])
 
   useEffect(() => {
     initialCheck && checkStatus()
   }, [])
 
   useEffect(() => {
-    checked && callback(!!isDirty)
+    checked && callback(isDirty)
   }, [checked])
 
   function checkStatus() {

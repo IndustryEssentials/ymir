@@ -2,7 +2,6 @@ import { getLocale } from 'umi'
 import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from './common'
 import { ObjectType } from './project'
-import { transferSuggestion } from './datasetAnalysis'
 
 export enum AnnotationType {
   BoundingBox = 0,
@@ -72,7 +71,7 @@ export function transferDatasetGroup(data: YModels.BackendData) {
     projectId: data.project_id,
     name: data.name,
     createTime: format(data.create_datetime),
-    versions: data.datasets ? data.datasets.reverse().map(transferDataset) : [],
+    versions: data.datasets ? data.datasets.map((ds: YModels.BackendData) => transferDataset(ds)) : [],
   }
   return group
 }
@@ -81,24 +80,14 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
   const { gt = {} } = data.keywords
   const assetCount = data.asset_count || 0
   const keywords = Object.keys(gt)
-  const analysis = data?.analysis || {}
-  const suggestions = [
-    { source: 'class_proportion', key: 'classBias', type: 'keyword' },
-    { source: 'class_obj_count', key: 'annotationCount', type: 'keyword' },
-    { source: 'density_proportion', key: 'annotationDensity' },
-  ].reduce<YModels.DatasetSuggestions>((prev, { key, source, type }) => {
-    const suggest = transferSuggestion(analysis[source], type)
-    return suggest ? { ...prev, [key]: suggest } : prev
-  }, {})
-  const versionName = getVersionLabel(data.version_num)
   return {
     id: data.id,
     groupId: data.dataset_group_id,
     projectId: data.project_id,
     type: data.object_type || ObjectType.ObjectDetection,
-    name: `${data.group_name} ${versionName}`,
+    name: data.group_name,
     version: data.version_num || 0,
-    versionName,
+    versionName: getVersionLabel(data.version_num),
     assetCount,
     keywords,
     keywordCount: keywords.length,
@@ -119,8 +108,9 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     hidden: !data.is_visible,
     description: data.description || '',
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
-    tags: data.gt ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total) : undefined,
-    suggestions,
+    tags: data.gt
+      ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total)
+      : undefined,
   }
 }
 
@@ -139,45 +129,23 @@ export function canHide(dataset: YModels.Dataset, project: YModels.Project | und
 
 export function transferDatasetAnalysis(data: YModels.BackendData): YModels.DatasetAnalysis {
   const { bytes, area, quality, hw_ratio } = data.hist
-  const gt = data.gt
-  const { quality: gtQuality = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts = [] } = gt.hist
 
+  const gt = generateAnno(data.gt)
+  const pred = generateAnno(data.pred)
   const dataset = transferDataset(data)
-  const keywords = dataset.keywords
-  const total = dataset.gt?.total
-  const totalArea = data.gt?.total_mask_area || 0
-  const assetCount = dataset.assetCount
   return {
     ...dataset,
-    total: gt?.annos_count || 0,
-    negative: gt.negative_assets_count || 0,
-    average: data.gt?.ave_annos_count || 0,
-    totalArea,
-    keywordCounts: keywords2ChartData(dataset.keywords, dataset.assetCount, dataset.gt?.count),
-    assetArea: addTotal2ChartData(area, assetCount),
-    assetQuality: addTotal2ChartData(quality, assetCount),
-    assetHWRatio: addTotal2ChartData(hw_ratio, assetCount),
-    quality: addTotal2ChartData(gtQuality, assetCount),
-    areaRatio: addTotal2ChartData(box_area_ratio, total),
-    keywordAnnotationCount: keywords2ChartData(keywords, assetCount, gt.classwise_annos_count),
-    keywordArea: keywords2ChartData(keywords, totalArea, gt?.classwise_area),
-    instanceArea: addTotal2ChartData(mask_area, total),
-    crowdedness: addTotal2ChartData(obj_counts, assetCount),
-    complexity: addTotal2ChartData(class_counts, assetCount),
+    assetArea: area,
+    assetQuality: quality,
+    assetHWRatio: hw_ratio,
+    gt,
+    pred,
+    cks: transferCK(data.cks_count, data.cks_count_total),
+    tags: transferCK(data.gt.tags_count, data.gt?.tags_count_total),
   }
 }
 
-const keywords2ChartData = (list: string[] = [], total?: number, counts: YModels.KeywordCountsType = {}) => ({
-  data: list.map((item) => ({
-    x: item,
-    y: counts[item] || 0,
-  })),
-  total,
-})
-
-const addTotal2ChartData = (list: YModels.AnalysisChartData[] = [], total?: number) => ({ data: list, total })
-
-export function transferAnnotationsCount(count: YModels.KeywordCountsType = {}, negative = 0, total = 1) {
+export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
   return {
     keywords: Object.keys(count),
     count,
@@ -207,5 +175,23 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
     counts,
     subKeywordsTotal,
     total,
+  }
+}
+
+const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
+  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts = [] } = data.hist
+  return {
+    keywords: data.keywords,
+    total: data.annos_count || 0,
+    average: data.ave_annos_count || 0,
+    negative: data.negative_assets_count || 0,
+    quality: quality || [],
+    areaRatio: box_area_ratio || [],
+    keywordAnnotaitionCount: data.classwise_annos_count || {},
+    totalArea: data.total_mask_area || 0,
+    keywordArea: data.classwise_area || {},
+    instanceArea: mask_area,
+    crowdedness: obj_counts,
+    complexity: class_counts,
   }
 }

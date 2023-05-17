@@ -121,7 +121,7 @@ class BaseMirControllerInvoker(ABC):
                 backend_pb2.RequestType.CMD_GPU_INFO_GET,
                 backend_pb2.RequestType.CMD_LABEL_ADD,
                 backend_pb2.RequestType.CMD_LABEL_GET,
-                backend_pb2.RequestType.CMD_INSPECT_IMAGE,
+                backend_pb2.RequestType.CMD_PULL_IMAGE,
                 backend_pb2.RequestType.CMD_REPO_CHECK,
                 backend_pb2.RequestType.CMD_REPO_CLEAR,
                 backend_pb2.RequestType.CMD_TERMINATE,

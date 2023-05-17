@@ -1,3 +1,4 @@
+from enum import IntEnum
 import logging
 import os
 from pydantic import BaseModel, Field, root_validator
@@ -14,6 +15,13 @@ from mir.tools.mir_storage import sha1sum_for_file
 from mir.tools.model_updater import update_model_info
 from mir.protos import mir_command_pb2 as mirpb
 from mir.version import check_model_version_or_crash
+
+
+class ModelObjectType(IntEnum):
+    MOT_UNKNOWN = mirpb.ObjectType.OT_UNKNOWN
+    MOT_DET_BOX = mirpb.ObjectType.OT_DET_BOX,
+    MOT_SEM_SEG = mirpb.ObjectType.OT_SEG,
+    MOT_INS_SEG = 4
 
 
 class ModelStageStorage(BaseModel):
@@ -48,17 +56,15 @@ class ModelStorage(BaseModel):
     stage_name: str = ''
     attachments: Dict[str, List[str]] = {}
     evaluate_config: Dict[str, float] = {}
-    object_type: int = mirpb.ObjectType.OT_UNKNOWN
+    object_type: int = ModelObjectType.MOT_UNKNOWN.value
     package_version: str = Field(..., min_length=1)
 
     @root_validator
     def validate_model_storage(cls, values: dict) -> dict:
         check_model_version_or_crash(values['package_version'])
-        if values.get('object_type', mirpb.ObjectType.OT_UNKNOWN) == mirpb.ObjectType.OT_UNKNOWN:
+        if values.get('object_type', ModelObjectType.MOT_UNKNOWN) == ModelObjectType.MOT_UNKNOWN:
             logging.warning("Unknown model object type, treat as detection models")
-            values['object_type'] = mirpb.ObjectType.OT_DET_BOX
-        if not values.get("stages"):
-            raise ValueError("Need model stages")
+            values['object_type'] = ModelObjectType.MOT_DET_BOX.value
 
         return values
 
@@ -193,7 +199,7 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     ymir_info_file_name = 'ymir-info.yaml'
     ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
     with open(ymir_info_file_path, 'w') as f:
-        yaml.safe_dump(model_storage.dict(), f, allow_unicode=True)
+        yaml.safe_dump(model_storage.dict(), f)
 
     tar_file_path = os.path.join(model_dir_path, 'model.tar.gz')
     with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:

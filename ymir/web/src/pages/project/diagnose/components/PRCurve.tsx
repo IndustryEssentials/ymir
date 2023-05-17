@@ -2,7 +2,7 @@ import LineChart from '@/components/chart/line'
 import { useEffect, useState } from 'react'
 import { Card } from 'antd'
 
-import Empty from '@/components/empty/Default'
+import Empty from '@/components/empty/default'
 import { FC } from 'react'
 import { LineType, Point } from '.'
 type Props = {
@@ -47,12 +47,12 @@ const PrCurve: FC<Props> = ({ title = '', lines = [] }) => {
         data: line?.map(({ x, y }) => [x, y]),
         markLine: {
           symbol: 'circle',
-
+          
           lineStyle: {
             type: 'solid',
             width: 2,
           },
-          data: line?.reduce<{ coord: [number, number] }[][]>((prev, { x, y }, index) => {
+          data: line?.reduce<{coord: [number, number]}[][]>((prev, { x, y }, index) => {
             const next = line[index + 1]
             return next ? [...prev, [{ coord: [x, y] }, { coord: [next.x, next.y] }]] : prev
           }, []),

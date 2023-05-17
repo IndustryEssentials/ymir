@@ -1,12 +1,12 @@
 {
     "import": [
         {
-            "name": "prepare",
-            "delta": 0.3
+            "name": "init",
+            "delta": 0.05
         },
         {
             "name": "hash",
-            "delta": 0.3
+            "delta": 0.35
         },
         {
             "name": "metadatas",
@@ -14,7 +14,7 @@
         },
         {
             "name": "others",
-            "delta": 0.1
+            "delta": 0.3
         }
     ],
     "copy": [
@@ -71,16 +71,6 @@
         {
             "name": "sample",
             "delta": 0.3
-        }
-    ],
-    "model": [
-        {
-            "name": "prepare",
-            "delta": 0.6
-        },
-        {
-            "name": "import",
-            "delta": 0.4
         }
     ]
 }

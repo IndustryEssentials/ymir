@@ -13,7 +13,6 @@ from app.api.errors.errors import (
     InvalidInferenceConfig,
     InvalidInferenceResultFormat,
     ModelStageNotFound,
-    ProjectNotFound,
 )
 from app.config import settings
 from app.utils.files import FailedToDownload, save_files
@@ -43,10 +42,6 @@ def call_inference(
         logger.error("Failed to find inference model")
         raise InvalidInferenceConfig()
 
-    project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=inference_in.project_id)
-    if not project:
-        raise ProjectNotFound()
-
     try:
         asset_dir, filename_mapping = save_files(inference_in.image_urls, settings.SHARED_DATA_DIR, keep=True)
     except (FailedToDownload, FileNotFoundError):
@@ -56,8 +51,7 @@ def call_inference(
     try:
         resp = controller_client.call_inference(
             current_user.id,
-            project.id,
-            project.object_type,
+            inference_in.project_id,
             model_stage.model.hash,  # type: ignore
             model_stage.name,
             asset_dir,

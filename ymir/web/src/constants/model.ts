@@ -9,25 +9,27 @@ export function transferModelGroup(data: YModels.BackendData) {
     name: data.name,
     projectId: data.project_id,
     createTime: format(data.create_datetime),
-    versions: data.models ? data.models.reverse().map(transferModel) : [],
   }
   return group
 }
 
 export function transferModel(data: YModels.BackendData): YModels.Model {
   const durationLabel = calDuration(data.related_task.duration, getLocale())
-  const type = data.object_type || ObjectType.ObjectDetection
-  const versionName = getVersionLabel(data.version_num)
+  const otype = data.object_type || ObjectType.ObjectDetection
+  const stages = (data.related_stages || []).map((stage: YModels.BackendData) => {
+    const st = transferStage(stage, otype)
+    return { ...st, primaryMetricLabel: getPrimaryMetricsLabel(otype, true) }
+  })
 
-  const model: YModels.Model =  {
+  return {
     id: data.id,
-    name: `${data.group_name} ${versionName}`,
+    name: data.group_name,
     groupId: data.model_group_id,
     projectId: data.project_id,
-    type,
+    type: data.object_type || ObjectType.ObjectDetection,
     hash: data.hash,
     version: data.version_num || 0,
-    versionName,
+    versionName: getVersionLabel(data.version_num),
     state: data.result_state,
     keywords: data?.keywords || [],
     map: data.map || 0,
@@ -43,20 +45,10 @@ export function transferModel(data: YModels.BackendData): YModels.Model {
     durationLabel: calDuration(data.related_task.duration, getLocale()),
     task: { ...data.related_task, durationLabel },
     hidden: !data.is_visible,
-    stages: [],
+    stages,
     recommendStage: data.recommended_stage || 0,
     description: data.description || '',
   }
-
-  
-  const stages = (data.related_stages || []).map((stage: YModels.BackendData) => {
-    const st = transferStage(stage, model)
-    return { ...st, primaryMetricLabel: getPrimaryMetricsLabel(type, true) }
-  })
-
-  stages && (model.stages = stages)
-
-  return model
 }
 
 /**
@@ -95,14 +87,14 @@ export function getModelName(data: YModels.BackendData) {
  * @param {YModels.BackendData} data
  * @returns {YModels.Stage}
  */
-export function transferStage(data: YModels.BackendData, model: YModels.Model): YModels.Stage {
-  const metrics = transferMetrics(data.metrics, model.type)
+export function transferStage(data: YModels.BackendData, type: ObjectType): YModels.Stage {
+  const metrics = transferMetrics(data.metrics, type)
   return {
     id: data.id,
     name: data.name,
     primaryMetric: metrics.primary,
-    modelId: model.id,
-    modelName: model.name,
+    modelId: data.model?.id,
+    modelName: getModelName(data),
     metrics,
   }
 }

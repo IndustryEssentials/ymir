@@ -50,9 +50,8 @@ func (m *MockMongoServer) IndexDatasetData(
 	mirRepo *constants.MirRepo,
 	mirMetadatas *protos.MirMetadatas,
 	mirAnnotations *protos.MirAnnotations,
-	mirContext *protos.MirContext,
 ) {
-	m.Called(mirRepo, mirMetadatas, mirAnnotations, mirContext)
+	m.Called(mirRepo, mirMetadatas, mirAnnotations)
 }
 
 func (m *MockMongoServer) QueryDatasetAssets(
@@ -224,11 +223,6 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 		"query_context": {
 			"repo_index_exist": true,
 			"repo_index_ready": true
-		},
-		"diagnosis_result": {
-			"density_proportion": {},
-			"class_proportion": {},
-			"class_obj_count": {}
 		}
 	}`), &expectedResult)
 	if err != nil {

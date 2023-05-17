@@ -10,6 +10,7 @@ const detailResult = mockjs.mock({ code: 0, result: {
   'id': 1002, name: '@title(2,4)', 'type|1': [1,2,9], url: '@string(4,20)', 
   'configs|2-3': [{ 'type|1': [1,2,9], config: { a: '@name'}, }],
   description: '@title(2,20)',
+  is_shared: '@boolean',
   'state|1': [1,3,4],
 }
 })
@@ -20,6 +21,7 @@ const listResult = mockjs.mock({
       'id|+1': 1002, name: '@title(2,4)', 'type|1': [1,2,9], url: '@string(4,20)', 
       'configs|1-3': [{ 'type|1': [1,2,9], config: { a: '@name'}, }],
       description: '@title(2,20)',
+      is_shared: '@boolean',
       'state|1': [1,3,4],
     }],
     total: 14,

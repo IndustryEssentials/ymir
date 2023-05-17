@@ -1,9 +1,8 @@
-import { Prediction } from "@/constants"
 import { Modal, ModalProps } from "antd"
 import { FC } from "react"
 import Metrics from './Metrics'
 type Props = ModalProps & {
-  prediction?: Prediction
+  prediction?: YModels.Prediction
 }
 
 const MetricsModal: FC<Props> = ({ prediction, ...props }) => {

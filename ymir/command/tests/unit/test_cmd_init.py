@@ -32,5 +32,5 @@ class TestCmdInit(unittest.TestCase):
 
         mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=test_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)
-        assert(mir_annotations.prediction.type == mirpb.ObjectType.OT_NO_ANNOS)
-        assert(mir_annotations.ground_truth.type == mirpb.ObjectType.OT_NO_ANNOS)
+        assert(mir_annotations.prediction.type == mirpb.ObjectType.OT_NO_ANNOTATIONS)
+        assert(mir_annotations.ground_truth.type == mirpb.ObjectType.OT_NO_ANNOTATIONS)

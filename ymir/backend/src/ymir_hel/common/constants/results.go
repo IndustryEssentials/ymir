@@ -35,9 +35,6 @@ type QueryDatasetStatsResult struct {
 	NewTypesAdded   bool                     `json:"new_types_added"`
 	EvaluationState int                      `json:"evaluation_state"`
 	QueryContext    QueryDatasetStatsContext `json:"query_context"`
-
-	// Diagnosis
-	DiagnosisResult *DatasetDiagnosisElement `json:"diagnosis_result"`
 }
 
 func NewQueryDatasetStatsResult() *QueryDatasetStatsResult {
@@ -55,11 +52,6 @@ func NewQueryDatasetStatsResult() *QueryDatasetStatsResult {
 			TagsCount:        map[string]map[string]int64{},
 			TagsCountTotal:   map[string]int64{},
 			ClassIDsMaskArea: map[int]int64{},
-		},
-		DiagnosisResult: &DatasetDiagnosisElement{
-			DensityProportion: map[string][]string{},
-			ClassProportion:   map[string][]int32{},
-			ClassObjCount:     map[string][]int32{},
 		},
 
 		CksCount:      map[string]map[string]int64{},

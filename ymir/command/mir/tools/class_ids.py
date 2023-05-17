@@ -98,7 +98,7 @@ class UserLabels(LabelStorage):
             raise RuntimeError("empty storage_file.")
 
         with open(self.storage_file, 'w') as f:
-            yaml.safe_dump(self.dict(), f, allow_unicode=True)
+            yaml.safe_dump(self.dict(), f)
 
     def _add_new_cname(self, name: str, exist_ok: bool = True) -> Tuple[int, str]:
         name = _normalize_and_check_name(name)
@@ -299,7 +299,7 @@ def load_or_create_userlabels(label_storage_file: str,
     os.makedirs(os.path.dirname(label_storage_file), exist_ok=True)
     user_labels = UserLabels()
     with open(label_storage_file, 'w') as f:
-        yaml.safe_dump(user_labels.dict(), f, allow_unicode=True)
+        yaml.safe_dump(user_labels.dict(), f)
     return user_labels
 
 

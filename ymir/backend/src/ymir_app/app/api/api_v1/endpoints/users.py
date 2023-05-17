@@ -7,8 +7,7 @@ from app.api import deps
 from app.api.errors.errors import (
     FailedToCreateUser,
 )
-from app.utils.ymir_controller import ControllerClient
-from id_definition.task_id import gen_user_hash
+from app.utils.ymir_controller import ControllerClient, gen_user_hash
 
 router = APIRouter()
 

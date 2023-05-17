@@ -1,7 +1,7 @@
 import { FC, ReactNode, useEffect, useRef, useState } from 'react'
 import { Row, Space } from 'antd'
 
-import DefaultEmpty from '@/components/empty/Default'
+import DefaultEmpty from '@/components/empty/default'
 
 import styles from '../assets.less'
 import Item from './AssetListItem'
@@ -47,7 +47,7 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
             {rows.map((row, index) => {
               const len = row.length
               const h =
-                (width - ItemSpace * len) * len / columns /
+                (width - ItemSpace * len) /
                 row.reduce((prev, asset) => {
                   const { width = 0, height = 0 } = asset?.metadata || {}
                   return height ? prev + width / height : prev
@@ -58,7 +58,7 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
                   {row.map((asset, rowIndex) => (
                     <Item
                       asset={asset}
-                      key={asset.hash}
+                      key={index * columns + rowIndex}
                       showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)}
                       height={h}
                       mode={mode}

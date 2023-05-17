@@ -1,18 +1,16 @@
 import { isPlainObject } from '@/utils/object'
-import { capitalize } from '@/utils/string'
-import Root from '.'
-import { Effect, List } from './typings/common.d'
-export type ReducerType<S> = {
+type PropType<TObj, TProp extends keyof TObj> = TObj[TProp]
+export type ReducerType = {
   name: string
-  field: keyof S
+  field: string
 }
-type Reducer<S, K extends keyof S> = (state: S, { payload }: { payload?: S[K] }) => S
-type ReducerProducer = <S, K extends keyof S>(field: K) => Reducer<S, K>
 
-const NormalReducer: ReducerProducer = (field) => {
-  return (state, { payload }) => {
+const NormalReducer = <S extends YStates.State, K extends keyof S>(field: K) => {
+  type FieldType = PropType<S, K>
+
+  return (state: S, { payload }: { payload: FieldType }): S => {
     const current = state[field]
-    const update = payload && isPlainObject(current) ? { ...current, ...payload } : payload
+    const update = isPlainObject(current) ? { ...current, ...payload } : payload
     return {
       ...state,
       [field]: update,
@@ -20,21 +18,14 @@ const NormalReducer: ReducerProducer = (field) => {
   }
 }
 
-const createReducers = <S>(list: ReducerType<S>[]) => list.reduce((prev, { name, field }) => ({ ...prev, [name]: NormalReducer<S, typeof field>(field) }), {})
+const createReducers = <S extends YStates.State>(list: ReducerType[]) =>
+  list.reduce((prev, { name, field }) => ({ ...prev, [name]: NormalReducer<S, typeof field>(field) }), {})
 
-const createReducersByState = <S extends Root[keyof Root]>(state: S) => {
-  const fields = Object.keys(state) as (keyof S)[]
-  return fields.reduce<{ [key: string]: Reducer<S, keyof S> }>((prev, field) => {
-    const name = `Update${capitalize(field as string)}`
-    return { ...prev, [name]: NormalReducer<S, keyof S>(field) }
-  }, {})
-}
-
-const transferList = <R extends any = any>(listResponse: YModels.ResponseResultList, func: (data: YModels.BackendData) => R) => {
+const transferList = <R>(listResponse: YModels.ResponseResultList, func: (data: YModels.BackendData) => R): YStates.List<R> => {
   const { items, total } = listResponse
   return { items: items.map((item) => func(item)), total }
 }
 
-const createEffect = <PT = any, R = unknown>(func: Effect<PT, R>) => func
+const createEffect = <PT, R = unknown>(func: YStates.EffectType<PT, R>) => func
 
-export { NormalReducer, createReducers, createReducersByState, transferList, createEffect }
+export { NormalReducer, createReducers, transferList, createEffect }

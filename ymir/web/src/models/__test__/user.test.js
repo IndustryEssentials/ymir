@@ -242,26 +242,7 @@ describe("models: user", () => {
       }
     })
 
-    expect(storage.get('access_token')).toBe(expected)
-    expect(end.done).toBe(true)
-  })
-  
-  it("effects: refreshToken", () => {
-    const saga = user.effects.refreshToken
-    const creator = {
-      type: "refreshToken",
-    }
-    const expected = 'access_token_random_string'
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result: {
-        access_token: expected,
-      }
-    })
-
+    expect(end.value.access_token).toBe(expected)
     expect(storage.get('access_token')).toBe(expected)
     expect(end.done).toBe(true)
   })

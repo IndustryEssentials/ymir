@@ -1,8 +1,6 @@
 import keyword from "../keyword"
-import { put, call, select, putResolve } from "redux-saga/effects"
+import { put, call, select } from "redux-saga/effects"
 import { errorCode } from './func'
-
-put.resolve = putResolve
 
 describe("models: keyword", () => {
   const product = (id) => ({ id })
@@ -22,7 +20,8 @@ describe("models: keyword", () => {
 
     const generator = saga(creator, { put, call, select })
     const start = generator.next()
-     const end = generator.next(expected)
+    const response = generator.next(expected)
+    const end = generator.next()
 
     expect(expected.result).toEqual(end.value)
     expect(end.done).toBe(true)
@@ -38,9 +37,8 @@ describe("models: keyword", () => {
     const response = { code: 0, result: keywords }
 
     const generator = saga(creator, { put, call })
-    generator.next()
-    generator.next(response)
-    const end = generator.next()
+    const start = generator.next()
+    const end = generator.next(response)
 
     expect(end.value).toEqual(response.result)
     expect(end.done).toBe(true)
@@ -55,9 +53,8 @@ describe("models: keyword", () => {
     const response = { code: 0, result: kw }
 
     const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next(response)
-    const end = generator.next()
+    const start = generator.next()
+    const end = generator.next(response)
 
     expect(response.result).toEqual(end.value)
     expect(end.done).toBe(true)
@@ -81,21 +78,27 @@ describe("models: keyword", () => {
   })
   it('test reducers: UPDATE_KEYWORDS, UPDATE_KEYWORD', () => {
     const state = {
-      allKeywords: [],
-      reload: true,
+      keywords: {
+        items: [],
+        total: 0,
+      },
+      keyword: {},
     }
 
-    const expected = ['person', 'cat', 'dog'].map(item => ({ name: item, aliases: [] }))
+    const expected = products(10)
     const action = {
-      payload: expected,
+      payload: { items: expected, total: expected.length },
     }
-    const { allKeywords } = keyword.reducers.UpdateAllKeywords(state, action)
-    expect(allKeywords).toEqual(expected)
+    const { keywords } = keyword.reducers.UPDATE_KEYWORDS(state, action)
+    const { items, total } = keywords
+    expect(items.join(',')).toBe(expected.join(','))
+    expect(total).toBe(expected.length)
 
+    const expected2 = 'keywordname677'
     const daction = {
-      payload: false
+      payload: { name: expected2 }
     }
-    const { reload } = keyword.reducers.UpdateReload(state, daction)
-    expect(reload).toBe(false)
+    const result = keyword.reducers.UPDATE_KEYWORD(state, daction)
+    expect(result.keyword.name).toBe(expected2)
   })
 })

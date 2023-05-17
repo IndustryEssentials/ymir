@@ -1,7 +1,8 @@
 import { ViewProps, EvaluationResult, TabIdType } from '.'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Space, Tag, RadioChangeEvent } from 'antd'
-import { useLocation, useSelector } from 'umi'
+import { useLocation } from 'umi'
+import { useSelector } from 'react-redux'
 
 import t from '@/utils/t'
 import { ObjectType, isDetection, isSemantic } from '@/constants/objectType'
@@ -24,9 +25,8 @@ import VersionName from '@/components/result/VersionName'
 import ReactJson from 'react-json-view'
 import IouSlider from './IouSlider'
 import { getInferClassesFromResult } from './common'
-import { Prediction } from '@/constants'
 type Props = {
-  prediction: Prediction
+  prediction: YModels.Prediction
 }
 type TabType = {
   value: TabIdType
@@ -87,8 +87,8 @@ const Matrics: FC<Props> = ({ prediction }) => {
   const { data: remoteData, run: fetchDiagnosis } = useRequest<EvaluationResult, [YParams.EvaluationParams]>('prediction/evaluate')
 
   const selectedCK = Form.useWatch('ck', form)
-  const model = useSelector(({ model }) => model.model[prediction.inferModelId[0].toString()])
-  const dataset = useSelector(({ dataset }) => dataset.dataset[prediction.inferDatasetId.toString()])
+  const model = useSelector<YStates.Root, YModels.Model>(({ model }) => model.model[prediction.inferModelId[0].toString()])
+  const dataset = useSelector<YStates.Root, YModels.Dataset>(({ dataset }) => dataset.dataset[prediction.inferDatasetId.toString()])
 
   useEffect(() => {
     if (prediction?.type) {

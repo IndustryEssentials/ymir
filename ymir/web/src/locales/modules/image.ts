@@ -69,12 +69,6 @@ const image = {
   'image.livecode.label.local': { en: 'Local', cn: '本地' },
   'image.add.image.tip.admin': { en: 'Only Administrators be allowed to add image', cn: '只有管理员才能添加镜像' },
   'image.leftmenu.label': { en: 'Image', cn: '镜像管理' },
-  'image.official.label': { en: 'Official', cn: '官方' },
-  'image.official.tip.title': { en: 'Official Image', cn: '官方镜像' },
-  'image.official.tip': {
-    en: 'Official image is being pulled, you can import dataset or use the example image to familiarize yourself with the process.',
-    cn: '官方默认镜像正在拉取中，您可以先导入数据或者使用示例镜像熟悉流程',
-  },
 }
 
 export default image

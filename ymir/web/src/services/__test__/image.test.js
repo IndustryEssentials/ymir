@@ -4,7 +4,9 @@ import {
   delImage,
   createImage,
   updateImage,
+  shareImage,
   relateImage,
+  getShareImages,
 } from "../image"
 import { product, products, requestExample } from './func'
 
@@ -41,10 +43,20 @@ describe("service: images", () => {
     const expected = "ok"
     requestExample(createImage, params, expected, 'post')
   })
+  it("shareImage -> success", () => {
+    const id = 856
+    const info = { username: 'user', email: 'user@test.com', phone: '15833444444', org: 'company or orgnization name' }
+    const expected = "ok"
+    requestExample(shareImage, [id, info], expected, 'post')
+  })
   it("relateImage -> success", () => {
     const id = 857
     const relations = [34, 53, 6]
     const expected = "ok"
     requestExample(relateImage, [id, relations], expected)
+  })
+  it("getShareImages -> success", () => {
+    const expected = [34, 53, 6]
+    requestExample(getShareImages, {}, expected, 'get')
   })
 })

@@ -1,22 +1,21 @@
 import { useState, useEffect, FC, ReactChild } from 'react'
 import { Menu, Dropdown, Row, Col, Space } from 'antd'
-import { Link, useHistory, useLocation, useSelector } from 'umi'
+import { useSelector } from 'react-redux'
+import { Link, useHistory, useLocation } from 'umi'
 import { MenuItemType } from 'rc-menu/lib/interface'
 
 import t from '@/utils/t'
 import { ROLES, getRolesLabel } from '@/constants/user'
 import { getDeployUrl } from '@/constants/common'
-import config from '@/../package.json'
-import useRequest from '@/hooks/useRequest'
 
 import LangBtn from '../common/LangBtn'
-import MessageCount from '../message/MessageCount'
 
 import styles from './nav.less'
 import './menu.less'
 import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, ArrowDownIcon, GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon } from '@/components/common/Icons'
 import { LogoutOutlined } from '@ant-design/icons'
+import useRequest from '@/hooks/useRequest'
 
 type MenuItem = MenuItemType & {
   label?: string
@@ -69,7 +68,7 @@ const HeaderNav: FC<{ simple?: boolean }> = ({ simple = false }) => {
   const location = useLocation()
   const history = useHistory()
   const [mainMenu, setMainMenu] = useState<MenuItem[]>([])
-  const { avatar, role, username, email } = useSelector(({ user }) => user)
+  const { avatar, role, username, email } = useSelector<YStates.Root, YStates.UserState>(({ user }) => user)
   const { data: logoutResult, run: loginout } = useRequest<boolean>('user/loginout')
 
   useEffect(() => {
@@ -143,7 +142,7 @@ const HeaderNav: FC<{ simple?: boolean }> = ({ simple = false }) => {
   return (
     <Row className={styles.nav} gutter={24} align="middle">
       <div className={styles.logo} style={{ overflow: simple ? 'initial' : 'hidden' }}>
-        <Link to="/" title={config.displayName}>
+        <Link to="/" title={'YMIR'}>
           <img src={logo} />
         </Link>
       </div>
@@ -161,7 +160,6 @@ const HeaderNav: FC<{ simple?: boolean }> = ({ simple = false }) => {
                   <ArrowDownIcon />
                 </div>
               </Dropdown>
-              <MessageCount />
               <LangBtn />
             </Space>
           </Col>

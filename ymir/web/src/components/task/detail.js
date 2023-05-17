@@ -87,6 +87,21 @@ function TaskDetail({ task = {} }) {
     return t(`task.label.form.keep_anno.${label}`)
   }
 
+  function renderPreProcess(preprocess) {
+    return preprocess ? (
+      <Item label={t('task.train.preprocess.title')} span={2}>
+        {Object.keys(preprocess).map((key) => (
+          <Row key={key} wrap={false}>
+            <Col flex={'200px'} style={{ fontWeight: 'bold' }}>
+              {key}:
+            </Col>
+            <Col flex={1}>{JSON.stringify(preprocess[key])}</Col>
+          </Row>
+        ))}
+      </Item>
+    ) : null
+  }
+
   function renderConfig(config = '') {
     const conf = config ? JSON.parse(config) : {}
     return (
@@ -165,6 +180,7 @@ function TaskDetail({ task = {} }) {
           {t('task.detail.tensorboard.link.label')}
         </Link>
       </Item>
+      {renderPreProcess(task.parameters?.preprocess)}
       {renderConfig(task.parameters?.docker_image_config)}
     </>
   )
@@ -222,6 +238,7 @@ function TaskDetail({ task = {} }) {
       {renderModel(task.parameters.model_id, task.project_id, 'task.detail.label.premodel')}
       {renderLiveCodeItem(task.config)}
       {renderImageById(task?.parameters?.docker_image_id, 2)}
+      {renderPreProcess(task.parameters?.preprocess)}
       {renderConfig(task.parameters?.docker_image_config)}
     </>
   )

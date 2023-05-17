@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from 'react'
-import { Button, Card, Form, Input, message, Space, Radio } from 'antd'
+import { Button, Card, Form, Input, message, Modal, Select, Space, Radio, Row, Col } from 'antd'
 import { connect } from 'dva'
 import { useParams, useHistory, useLocation } from 'umi'
 
@@ -13,13 +13,16 @@ import useFetch from '@/hooks/useFetch'
 import ProjectTypes from '@/components/project/ProjectTypes'
 
 const { useForm } = Form
+const { confirm } = Modal
 
-const Add = (func) => {
+const Add = ({ keywords, datasets, getKeywords, ...func }) => {
   const { id } = useParams()
   const history = useHistory()
+  const location = useLocation()
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
   const [project, getProject] = useFetch('project/getProject', {})
+  const [_, checkDuplication] = useFetch('keyword/checkDuplication')
 
   useEffect(() => {
     setEdit(!!id)
@@ -28,16 +31,22 @@ const Add = (func) => {
   }, [id])
 
   useEffect(() => {
+    getKeywords({ limit: 100000 })
+  }, [])
+
+  useEffect(() => {
     initForm(project)
   }, [project])
 
   function initForm(project = {}) {
-    const { name, type, description, enableIteration, testingSets } = project
+    const { name, keywords: kws, type, trainSetVersion, description, enableIteration, testingSets } = project
     if (name) {
       form.setFieldsValue({
         name,
+        keywords: kws,
         type,
         description,
+        trainSetVersion,
         enableIteration,
         testingSets: testingSets.length ? testingSets : undefined,
       })
@@ -59,15 +68,62 @@ const Add = (func) => {
       delete params.name
     }
 
-    const result = await func[`${action}Project`](params)
+    const send = async () => {
+      const result = await func[`${action}Project`](params)
+      if (result) {
+        const pid = result.id || id
+        message.success(t(`project.${action}.success`))
+        history.push(`/home/project/${pid}/detail`)
+      }
+    }
+    // edit project
+    if (isEdit) {
+      return send()
+    }
+    // create project
+    const kws = params.keywords.map((kw) => (kw || '').trim()).filter((kw) => kw)
+    const { newer } = await checkDuplication(kws)
+
+    if (newer?.length) {
+      // confirm
+      confirm({
+        title: t('project.add.confirm.title'),
+        content: (
+          <ol>
+            {newer.map((keyword) => (
+              <li key={keyword}>{keyword}</li>
+            ))}
+          </ol>
+        ),
+        onOk: () => {
+          addNewKeywords(newer, send)
+        },
+        okText: t('project.add.confirm.ok'),
+        cancelText: t('project.add.confirm.cancel'),
+      })
+    } else {
+      send()
+    }
+  }
+
+  const addNewKeywords = async (keywords, callback = () => {}) => {
+    const result = func.addKeywords(keywords)
     if (result) {
-      const pid = result.id || id
-      message.success(t(`project.${action}.success`))
-      history.push(`/home/project/${pid}/dataset`)
+      setTimeout(() => callback(), 500)
     }
   }
 
   const testingFilter = useCallback((datasets) => datasets.filter((ds) => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id), [project?.trainSet?.id])
+
+  function validateKeywords(_, kws) {
+    if (kws?.length) {
+      const valid = kws.every((kw) => (kw || '').trim())
+      if (!valid) {
+        return Promise.reject(t('project.keywords.invalid'))
+      }
+    }
+    return Promise.resolve()
+  }
 
   const renderTitle = t(`breadcrumbs.project.${isEdit ? 'edit' : 'add'}`)
 
@@ -89,6 +145,29 @@ const Add = (func) => {
                 <Input placeholder={t('project.add.form.name.placeholder')} autoComplete="off" allowClear />
               </Form.Item>
               <ProjectTypes disabled={isEdit} />
+              <Form.Item
+                label={t('project.train_classes')}
+                name="keywords"
+                rules={[{ required: true, message: t('project.add.form.keyword.required') }, { validator: validateKeywords }]}
+                tooltip={t('project.add.form.keyword.tip')}
+              >
+                <Select
+                  mode="tags"
+                  showArrow
+                  tokenSeparators={[',']}
+                  placeholder={t('project.add.form.keyword.placeholder')}
+                  disabled={isEdit && project?.currentIteration?.id}
+                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some((key) => key.indexOf(value) >= 0)}
+                >
+                  {keywords.map((keyword) => (
+                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                      <Row>
+                        <Col flex={1}>{keyword.name}</Col>
+                      </Row>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
               <Form.Item
                 label={t('project.add.form.enableIteration')}
                 name="enableIteration"
@@ -135,7 +214,25 @@ const Add = (func) => {
   )
 }
 
+const props = (state) => {
+  return {
+    keywords: state.keyword.keywords.items,
+    datasets: state.project.datasets,
+  }
+}
+
 const actions = (dispatch) => {
+  const updateKeywords = (dry_run = false) => {
+    return (keywords) => {
+      return dispatch({
+        type: 'keyword/updateKeywords',
+        payload: {
+          keywords: keywords.map((keyword) => ({ name: keyword, aliases: [] })),
+          dry_run,
+        },
+      })
+    }
+  }
   return {
     createProject: (payload) => {
       return dispatch({
@@ -148,8 +245,16 @@ const actions = (dispatch) => {
         type: 'project/updateProject',
         payload,
       })
-    }
+    },
+    getKeywords(payload) {
+      return dispatch({
+        type: 'keyword/getKeywords',
+        payload,
+      })
+    },
+    checkKeywords: updateKeywords(true),
+    addKeywords: updateKeywords(),
   }
 }
 
-export default connect(null, actions)(Add)
+export default connect(props, actions)(Add)

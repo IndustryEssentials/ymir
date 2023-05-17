@@ -66,7 +66,7 @@ def prepare_labels(mir_root: str, names: List[str]):
     label_storage = class_ids.LabelStorage(labels=labels)
 
     with open(class_ids.ids_file_path(mir_root=mir_root), 'w') as f:
-        yaml.safe_dump(label_storage.dict(), f, allow_unicode=True)
+        yaml.safe_dump(label_storage.dict(), f)
 
 
 def diff_dicts(a_dict: dict, b_dict: dict, stack: list) -> None:

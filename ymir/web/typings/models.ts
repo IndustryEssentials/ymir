@@ -27,17 +27,6 @@ declare namespace YModels {
     result?: M
   }
 
-  export type User = {
-    id: number
-    hash: string
-    uuid: string
-    email: string
-    role: number
-    username?: string
-    phone?: string
-    avatar?: string
-  }
-
   export interface Group {
     id: number
     name: string
@@ -45,9 +34,9 @@ declare namespace YModels {
     createTime: string
   }
 
-  export interface Result<P = TaskParams> {
+  export interface Result {
     id: number
-    groupId: number
+    groupId?: number
     projectId: number
     type: ObjectType
     name: string
@@ -59,7 +48,6 @@ declare namespace YModels {
     createTime: string
     updateTime: string
     hash: string
-    task: Task<P>
     taskId: number
     progress: number
     taskState: number
@@ -79,23 +67,19 @@ declare namespace YModels {
     InstanceSegmentation = 4,
   }
 
-  type Keyword = {
-    name: string
-    aliases: string[]
-  }
   type Keywords = {
     [key: string]: number
   }
   type CK = {
     [key: string]: string | number
   }
-  type KeywordCountsType = { [key: string]: number }
+  type CKCount = { [key: string]: number }
   type CKItem = { keyword: string; count: number; children?: CKItem[] }
   type CKCounts = {
     keywords: CKItem[]
-    counts: KeywordCountsType
+    counts: CKCount
     subKeywordsTotal: number
-    total: KeywordCountsType
+    total: CKCount
   }
   type AnnotationsCount = {
     count: Keywords
@@ -103,54 +87,57 @@ declare namespace YModels {
     negative: number
     total: number
   }
-  type AnalysisChartData = {
-    x: number | string
-    y: number
-  }
-  type AnalysisChart = {
-    data: AnalysisChartData[]
-    total?: number
+  type AnylysisAnnotation = {
+    keywords: Keywords
+    total: number
+    average: number
+    negative: number
+    totalArea: number
+    quality: Array<BackendData>
+    areaRatio: Array<BackendData>
+    keywordAnnotaitionCount: Array<BackendData>
+    keywordArea: Array<BackendData>
+    instanceArea: Array<BackendData>
+    crowdedness: Array<BackendData>
+    complexity: Array<BackendData>
   }
   export interface DatasetGroup extends Group {
     versions?: Array<Dataset>
   }
 
-  export interface Dataset<P = TaskParams> extends Result<P> {
+  export interface Dataset<P = TaskParams> extends Result {
     groupId: number
     keywordCount: number
     isProtected: Boolean
     assetCount: number
+    task: Task<P>
     gt?: AnnotationsCount
     cks?: CKCounts
     tags?: CKCounts
     evaluated?: boolean
-    suggestions: DatasetSuggestions
-  }
-  type Suggestion = {
-    bounding: number
-    values: string[]
-    type?: string
-  }
-  type DatasetSuggestions = {
-    [key: string]: Suggestion
   }
 
-  export interface DatasetAnalysis extends Dataset {
-    keywordCounts: AnalysisChart
-    assetHWRatio: AnalysisChart
-    assetArea: AnalysisChart
-    assetQuality: AnalysisChart
-    total: number
-    negative: number
-    average: number
-    totalArea: number
-    quality: AnalysisChart
-    areaRatio: AnalysisChart
-    keywordAnnotationCount: AnalysisChart
-    keywordArea: AnalysisChart
-    instanceArea: AnalysisChart
-    crowdedness: AnalysisChart
-    complexity: AnalysisChart
+  export interface Prediction extends Omit<Dataset<InferenceParams>, 'groupId'> {
+    inferModelId: number[]
+    inferModel?: Model
+    inferDatasetId: number
+    inferDataset?: Dataset
+    inferConfig: ImageConfig
+    rowSpan?: number
+    evaluated: boolean
+    pred: AnnotationsCount
+    inferClass?: Array<string>
+    odd?: boolean
+  }
+
+  type AllResult = Prediction | Dataset | Model
+
+  export interface DatasetAnalysis extends Omit<Dataset, 'gt' | 'pred'> {
+    assetHWRatio: Array<BackendData>
+    assetArea: Array<BackendData>
+    assetQuality: Array<BackendData>
+    gt: AnylysisAnnotation
+    pred: AnylysisAnnotation
   }
 
   export interface Asset {
@@ -242,12 +229,11 @@ declare namespace YModels {
     modelName?: string
     metrics?: StageMetrics
   }
-  export interface ModelGroup extends Group {
-    versions?: Model[]
-  }
-  export interface Model<P = TaskParams> extends Result<P> {
+  export interface ModelGroup extends Group {}
+  export interface Model<P = TaskParams> extends Result {
     map: number
     url: string
+    task: Task<P>
     stages?: Array<Stage>
     recommendStage: number
   }
@@ -306,10 +292,32 @@ declare namespace YModels {
     modelCount: number
     modelProcessingCount: number
     modelErrorCount: number
-    recommendImage: number
   }
 
   export type ImageConfig = { [key: string]: number | string }
+  export type DockerImageConfig = {
+    type: number
+    config: ImageConfig
+  }
+  export interface Image {
+    id: number
+    name: string
+    state: number
+    functions: Array<number>
+    configs: Array<DockerImageConfig>
+    url: string
+    description: string
+    createTime: string
+    objectType: ObjectType
+    related?: Array<Image>
+    liveCode?: boolean
+    errorCode?: string
+  }
+
+  export interface ImageList {
+    items: Image[]
+    total: number
+  }
 
   type ResultType = 'dataset' | 'model'
   export interface Iteration {
@@ -352,11 +360,19 @@ declare namespace YModels {
     unskippable?: boolean
   }
 
+  interface ShareImage {
+    docker_name: string
+    functions?: string
+    contributor?: string
+    organization?: string
+    description?: string
+  }
+
   type PlainObject = {
     [key: string]: any
   }
 
-  export interface Task<P = Params> {
+  export interface Task<P = TaskParams> {
     name: string
     type: number
     project_id: number
@@ -387,8 +403,6 @@ declare namespace YModels {
     percent: number
     state: number
     reload?: boolean
-    result_dataset?: { id: number }
-    result_model?: { id: number }
   }
 
   type TaskParams = FusionParams | FilterParams | MergeParams | TrainingParams | LabelParams | MiningParams | InferenceParams
@@ -437,12 +451,13 @@ declare namespace YModels {
   interface LabelParams extends Params {
     labels: Labels
     extra_url?: string
-    annotation_type: 1 | 2
+    annotation_type: 0 | 1 | 2
   }
 
   interface TrainingParams extends DockerParams {
     validation_dataset_id: DatasetId
     strategy: number
+    preprocess: Preprocess
   }
 
   interface MiningParams extends DockerParams {

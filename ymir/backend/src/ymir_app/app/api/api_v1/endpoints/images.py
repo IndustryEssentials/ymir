@@ -1,6 +1,6 @@
 from typing import Any, Dict, Iterator
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -11,9 +11,10 @@ from app.api.errors.errors import (
     DockerImageNotFound,
     DuplicateDockerImageError,
 )
-from app.constants.state import DockerImageType, ObjectType, ResultState
+from app.constants.state import DockerImageState, DockerImageType, ObjectType
+from app.models.image import DockerImage
 from app.schemas.image import DockerImageCreate
-from app.libs.tasks import create_pull_docker_image_task
+from app.utils.ymir_controller import ControllerClient
 
 router = APIRouter()
 
@@ -24,10 +25,9 @@ def list_docker_images(
     current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
     name: str = Query(None),
     url: str = Query(None),
-    state: ResultState = Query(None),
+    state: DockerImageState = Query(None),
     type_: DockerImageType = Query(None, alias="type"),
     object_type: ObjectType = Query(None),
-    is_official: bool = Query(None),
 ) -> Any:
     """
     Get docker images and configuration templates
@@ -44,29 +44,77 @@ def list_docker_images(
         state=state,
         type=type_,
         object_type=object_type,
-        is_official=is_official,
     )
     return {"result": {"total": total, "items": docker_images}}
 
 
-@router.post("/", response_model=schemas.TaskOut)
+@router.post("/", response_model=schemas.DockerImageOut)
 def create_docker_image(
     *,
     db: Session = Depends(deps.get_db),
     current_user: schemas.user.UserInfo = Depends(deps.get_current_active_admin),
     docker_image_in: DockerImageCreate,
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Create docker image
     This endpint will create an image record immediately,
     but the pulling process will run in background
     """
-    logger.info("[create image] received request to pull docker image: %s", docker_image_in.json())
     if crud.docker_image.get_by_url(db, docker_image_in.url) or crud.docker_image.get_by_name(db, docker_image_in.name):
         raise DuplicateDockerImageError()
+    docker_image = crud.docker_image.create(db, obj_in=docker_image_in)
+    logger.info("[create image] docker image record created: %s", docker_image)
 
-    task_in_db = create_pull_docker_image_task(db, current_user.id, docker_image_in)
-    return {"result": task_in_db}
+    background_tasks.add_task(import_docker_image, db, controller_client, docker_image, current_user.id)
+    return {"result": docker_image}
+
+
+def import_docker_image(
+    db: Session,
+    controller_client: ControllerClient,
+    docker_image: DockerImage,
+    user_id: int,
+) -> None:
+    if not docker_image.url:
+        logger.error("docker url not provided, skip")
+        return
+
+    try:
+        resp = controller_client.pull_docker_image(docker_image.url, user_id)
+    except ValueError:
+        logger.exception("[create image] failed to import docker image via controller")
+        crud.docker_image.update_state(db, docker_image=docker_image, state=DockerImageState.error)
+        return
+
+    # add new config in docker_image_config tbl
+    hash_ = resp["hash_id"]
+    image_configs = list(parse_docker_image_config(resp["docker_image_config"]))
+    for image_config in image_configs:
+        image_config_in = schemas.ImageConfigCreate(
+            image_id=docker_image.id,
+            **image_config,
+        )
+        crud.image_config.create(db, obj_in=image_config_in)
+
+    enable_livecode = bool(resp.get("enable_livecode", False))
+    object_type = int(resp.get("object_type", ObjectType.object_detect))
+    crud.docker_image.update_from_dict(
+        db,
+        docker_image_id=docker_image.id,
+        updates={
+            "hash": hash_,
+            "state": int(DockerImageState.done),
+            "enable_livecode": enable_livecode,
+            "object_type": object_type,
+        },
+    )
+    logger.info(
+        "[create image] docker image imported via controller: %s, added %d configs",
+        resp,
+        len(image_configs),
+    )
 
 
 def parse_docker_image_config(configs: Dict) -> Iterator[Dict]:

@@ -46,14 +46,14 @@ request.interceptors.response.use(
     let authrized = [401, 403]
     let serviceErrorCode = [500, 504, 502]
     if (authrized.includes(err.request.status)) {
-      logout()
+      return logout()
     } else if (serviceErrorCode.includes(err.request.status)) {
       errorMsg(err.request.status, false)
     } else {
       const res = err.response
       if (res?.data?.code) {
         if (res.data.code === 110104) {
-          logout()
+          return logout()
         }
         errorMsg(res.data.code)
         return res.data

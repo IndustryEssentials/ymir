@@ -178,11 +178,6 @@ class AssetNotFound(NotFound):
     message = "Asset Not Found"
 
 
-class ClassNameNotFound(NotFound):
-    code = error_codes.CLASS_NAME_NOT_FOUND
-    message = "Class Name Not Found"
-
-
 class ModelNotFound(NotFound):
     code = error_codes.MODEL_NOT_FOUND
     message = "Model Not Found"
@@ -206,6 +201,11 @@ class DatasetEvaluationMissingAnnotation(NotFound):
 class DatasetIndexNotReady(APIError):
     code = error_codes.DATASET_INDEX_NOT_READY
     message = "Dataset Index In MongoDB Not Ready"
+
+
+class ModelNotReady(APIError):
+    code = error_codes.MODEL_NOT_READY
+    message = "Model Not Ready"
 
 
 class DockerImageNotFound(NotFound):
@@ -426,6 +426,11 @@ class MissingOperations(APIError):
     message = "Missing Operations"
 
 
+class DatasetsNotInSameGroup(APIError):
+    code = error_codes.DATASETS_NOT_IN_SAME_GROUP
+    message = "Datasets Not in the Same Group"
+
+
 class InvalidModelStageName(APIError):
     code = error_codes.INVALID_MODEL_STAGE_NAME
     message = "Invalid Model Stage Name"
@@ -444,8 +449,3 @@ class FailedToParseVizResponse(VizError):
 class VizTimeOut(VizError):
     code = error_codes.VIZ_TIMEOUT
     message = "Internal Viz Service Timeout"
-
-
-class MessageNotFound(NotFound):
-    code = error_codes.MESSAGE_NOT_FOUND
-    message = "Message Not Found"

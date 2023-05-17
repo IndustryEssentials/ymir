@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, SmallInteger, Text, JSON
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, SmallInteger, Text
 from sqlalchemy.orm import relationship
 
 from app.config import settings
@@ -28,7 +28,6 @@ class Dataset(Base):
     negative_info = Column(String(settings.STRING_LEN_LIMIT))
     asset_count = Column(Integer)
     keyword_count = Column(Integer)
-    analysis = Column(JSON, default={})
 
     related_task = relationship(
         "Task",

@@ -1,7 +1,5 @@
 import asyncio
-from datetime import datetime
-import json
-from typing import Any, Union, Optional
+from typing import Any, Union
 from functools import partial
 import time
 
@@ -16,6 +14,7 @@ from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
     FailedToUpdateTaskStatusTemporally,
+    ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
@@ -23,12 +22,11 @@ from app.api.errors.errors import (
 )
 from app.constants.state import FinalStates, TaskState, TaskType
 from app.config import settings
-from app.utils.ymir_controller import ControllerClient
+from app.utils.timeutil import convert_datetime_to_timestamp
+from app.utils.ymir_controller import ControllerClient, gen_user_hash
 from app.libs.redis_stream import RedisStream
 from app.libs.tasks import TaskResult, create_single_task
-from app.libs.messages import message_filter
 from common_utils.labels import UserLabels
-from id_definition.task_id import gen_user_hash
 
 router = APIRouter()
 
@@ -226,65 +224,61 @@ def update_task_status(
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
-    Update task status
+    Update status of a task
     """
     # 1. Verification
-    logger.info("[update task status] task %s, result: %s", task_update.hash, jsonable_encoder(task_update))
+    logger.info(
+        "[update status] task %s, result: %s",
+        task_update.hash,
+        jsonable_encoder(task_update),
+    )
     task_in_db = crud.task.get_by_hash(db, hash_=task_update.hash)
     if not task_in_db:
         raise TaskNotFound()
 
     # 2. Remove obsolete msg
-    if is_obsolete_message(task_in_db.last_message_timestamp, task_update.timestamp):
-        logger.info("[update task status] ignore obsolete message")
+    if is_obsolete_message(
+        convert_datetime_to_timestamp(task_in_db.last_message_datetime),
+        task_update.timestamp,
+    ):
+        logger.info("[update status] ignore obsolete message")
         raise ObsoleteTaskStatus()
 
     task = schemas.TaskInternal.from_orm(task_in_db)
     if task.state in FinalStates:
-        logger.warning("[update task status] Attempt to update finished task, skip")
+        logger.warning("Attempt to update finished task, skip")
         raise ObsoleteTaskStatus()
 
     # 3. Update task and task_result(could be dataset or model)
     task_result = TaskResult(db=db, task_in_db=task_in_db)
     try:
-        task_in_db = task_result.update(task_result=task_update)
+        updated_task = task_result.update(task_result=task_update)
     except (ConnectionError, HTTPError, Timeout):
-        logger.exception("[update task status] Failed to update task status. Try again later")
+        logger.exception("Failed to update task status. Try again later")
         raise FailedToUpdateTaskStatusTemporally()
+    except ModelNotReady:
+        logger.warning("Model Not Ready")
     else:
-        task_info = schemas.Task.from_orm(task_in_db)
-        crud.task.update_last_message_datetime(
-            db, id=task_info.id, dt=datetime.utcfromtimestamp(task_update.timestamp)
-        )
         namespace = f"/{gen_user_hash(task.user_id)}"
         task_update_msg = schemas.TaskResultUpdateMessage(
-            task_id=task_info.hash,
+            task_id=updated_task.hash,
             timestamp=time.time(),
-            percent=task_info.percent,
-            state=task_info.state,
-            result_model=task_info.result_model,
-            result_dataset=task_info.result_dataset,
-            result_prediction=task_info.result_prediction,
-            result_docker_image=task_info.result_docker_image,
+            percent=updated_task.percent,
+            state=updated_task.state,
+            result_model=updated_task.result_model,  # type: ignore
+            result_dataset=updated_task.result_dataset,  # type: ignore
+            result_prediction=updated_task.result_prediction,  # type: ignore
         )
-        payload = {task_info.hash: task_update_msg.dict()}
+        # todo compatible with current frontend data structure
+        #  reformatting is needed
+        payload = {updated_task.hash: task_update_msg.dict()}
         asyncio.run(request.app.sio.emit(event="update_taskstate", data=payload, namespace=namespace))
         logger.info("notify task update (%s) to frontend (%s)", payload, namespace)
-        if message_filter(task_info.state, task_info.type):
-            msg = crud.message.create_message_from_task(db, task_info=task_info.dict())
-            asyncio.run(
-                request.app.sio.emit(
-                    event="update_message", data=json.loads(schemas.Message.from_orm(msg).json()), namespace=namespace
-                )
-            )
 
     return {"result": task_in_db}
 
 
-def is_obsolete_message(last_update_time: Optional[float], msg_time: Union[float, int]) -> bool:
-    if last_update_time is None:
-        # which means this is the first message for this task
-        return False
+def is_obsolete_message(last_update_time: Union[float, int], msg_time: Union[float, int]) -> bool:
     return last_update_time > msg_time
 
 

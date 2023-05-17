@@ -41,28 +41,36 @@ def _get_model_storage(model_root: str, executor_config: dict, task_context: dic
     attachments: Dict[str, Any] = {}
 
     result_yaml_path = os.path.join(model_root, "result.yaml")
-    with open(result_yaml_path, "r") as f:
-        yaml_obj = yaml.safe_load(f.read())
-    if 'model' in yaml_obj:
-        # old trainig result file: read models from `model` field
-        model_names = yaml_obj["model"]
-        model_mAP = float(yaml_obj["map"])
+    try:
+        with open(result_yaml_path, "r") as f:
+            yaml_obj = yaml.safe_load(f.read())
+        if 'model' in yaml_obj:
+            # old trainig result file: read models from `model` field
+            model_names = yaml_obj["model"]
+            model_mAP = float(yaml_obj["map"])
 
-        best_stage_name = 'default_best_stage'
-        model_stages = {
-            best_stage_name:
-            models.ModelStageStorage(stage_name=best_stage_name,
-                                     files=model_names,
-                                     mAP=model_mAP,
-                                     timestamp=int(time.time()))
-        }
-    elif 'model_stages' in yaml_obj:
-        # new training result file: read from model stages
-        model_stages = {k: models.ModelStageStorage.parse_obj(v) for k, v in yaml_obj['model_stages'].items()}
+            best_stage_name = 'default_best_stage'
+            model_stages = {
+                best_stage_name:
+                models.ModelStageStorage(stage_name=best_stage_name,
+                                         files=model_names,
+                                         mAP=model_mAP,
+                                         timestamp=int(time.time()))
+            }
+        elif 'model_stages' in yaml_obj:
+            # new training result file: read from model stages
+            model_stages = {k: models.ModelStageStorage.parse_obj(v) for k, v in yaml_obj['model_stages'].items()}
 
-        best_stage_name = yaml_obj['best_stage_name']
-    if 'attachments' in yaml_obj:
-        attachments = yaml_obj['attachments']
+            best_stage_name = yaml_obj['best_stage_name']
+        if 'attachments' in yaml_obj:
+            attachments = yaml_obj['attachments']
+    except FileNotFoundError:
+        error_message = f"can not find file: {result_yaml_path}, executor may have errors, see ymir-executor-out.log"
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE, error_message=error_message)
+
+    if not model_stages:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='can not find model stages in result.yaml')
 
     return models.ModelStorage(executor_config=executor_config,
                                task_context=dict(**task_context,
@@ -70,7 +78,7 @@ def _get_model_storage(model_root: str, executor_config: dict, task_context: dic
                                                  type=mirpb.TaskType.TaskTypeTraining),
                                stages=model_stages,
                                best_stage_name=best_stage_name,
-                               object_type=int(task_context['object_type']),
+                               object_type=int(yaml_obj.get('object_type', models.ModelObjectType.MOT_DET_BOX.value)),
                                attachments=attachments,
                                evaluate_config=yaml_obj.get('evaluate_config', {}),
                                package_version=YMIR_MODEL_VERSION)
@@ -88,7 +96,7 @@ def _generate_config(executor_config: Any, out_config_path: str, task_id: str,
     logging.info("container config: {}".format(executor_config))
 
     with open(out_config_path, "w") as f:
-        yaml.dump(executor_config, f, allow_unicode=True)
+        yaml.dump(executor_config, f)
 
     return executor_config
 
@@ -330,7 +338,7 @@ class CmdTrain(base.BaseCommand):
                                         model_location=model_upload_location)
             model_meta = model_storage.get_model_meta()
         except Exception as e:
-            task_code = task_code or MirCode.RC_CMD_NO_RESULT
+            task_code = task_code or MirCode.RC_CMD_INVALID_FILE
             return_msg = return_msg or str(e)
 
         # commit task
@@ -340,8 +348,7 @@ class CmdTrain(base.BaseCommand):
                                                   model_meta=model_meta,
                                                   return_code=task_code,
                                                   return_msg=return_msg,
-                                                  serialized_executor_config=yaml.safe_dump(executor_config,
-                                                                                            allow_unicode=True),
+                                                  serialized_executor_config=yaml.safe_dump(executor_config),
                                                   executor=executor,
                                                   src_revs=src_revs,
                                                   dst_rev=dst_rev)

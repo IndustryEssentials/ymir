@@ -16,15 +16,11 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         return True
 
     @classmethod
-    def gen_inference_config(cls, req_inference_config: str, task_context: dict,
-                             object_type: "mir_cmd_pb.ObjectType.V", work_dir: str) -> str:
-        executor_config = yaml.safe_load(req_inference_config)
-        executor_config["object_type"] = object_type
-        task_context["object_type"] = object_type
-
+    def gen_inference_config(cls, req_inference_config: str, task_context: dict, work_dir: str) -> str:
+        inference_config = yaml.safe_load(req_inference_config)
         inference_config_file = os.path.join(work_dir, "inference_config.yaml")
         with open(inference_config_file, "w") as f:
-            yaml.dump({'executor_config': executor_config, 'task_context': task_context}, f, allow_unicode=True)
+            yaml.dump({'executor_config': inference_config, 'task_context': task_context}, f)
 
         return inference_config_file
 
@@ -61,7 +57,6 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         index_file = self.prepare_inference_assets(asset_dir=self._request.asset_dir, dst_dir=self._work_dir)
         config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
                                                 task_context={'server_runtime': self._assets_config['server_runtime']},
-                                                object_type=self._request.object_type,
                                                 work_dir=self._work_dir)
 
         self.inference_cmd(
@@ -78,7 +73,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         prediction_pb_path = os.path.join(self._work_dir, "out", "prediction.mir")
         if not os.path.isfile(prediction_pb_path):
-            return utils.make_general_response(CTLResponseCode.RUN_COMMAND_ERROR,
+            return utils.make_general_response(CTLResponseCode.DOCKER_IMAGE_ERROR,
                                                f"Inference result not found: {prediction_pb_path}")
         prediction = mir_cmd_pb.SingleTaskAnnotations()
         with open(prediction_pb_path, 'rb') as f:

@@ -1,20 +1,20 @@
 import { Form, Input } from 'antd'
 import t from '@/utils/t'
 
-import EditBox, { RefProps } from './editBox'
+import EditBox from './editBox'
 import useFetch from '@/hooks/useFetch'
-import { forwardRef, useEffect } from 'react'
+import { useEffect } from 'react'
 
 interface Props {
-  record?: YModels.Result
+  record: YModels.Result
   type?: string
   max?: number
   handle?: Function
 }
 
-const EditDescBox = forwardRef<RefProps, Props>(({ type = 'dataset', record, max = 500, handle, children }, ref) => {
+const EditDescBox: React.FC<Props> = ({ type = 'dataset', record, max = 500, handle, children }) => {
   const [updated, updateResult] = useFetch(`${type}/updateVersion`)
-  const description = record?.description || ''
+  const { description } = record
 
   useEffect(() => handle && handle(updated), [updated])
 
@@ -27,13 +27,13 @@ const EditDescBox = forwardRef<RefProps, Props>(({ type = 'dataset', record, max
   }
 
   return (
-    <EditBox ref={ref} record={record} update={update}>
+    <EditBox record={record} update={update}>
       <Form.Item label={t('common.editbox.desc')} name="description" initialValue={description} rules={[{ type: 'string', min: 2, max }]}>
         <Input placeholder={t('common.editbox.form.desc.placeholder')} autoComplete={'off'} allowClear />
       </Form.Item>
       {children}
     </EditBox>
   )
-})
+}
 
 export default EditDescBox

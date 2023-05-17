@@ -38,7 +38,7 @@ def create_model(
 
     task = crud.task.create_placeholder(db, type_=TaskType.training, user_id=user_id, project_id=project_id)
     model_in = schemas.ModelCreate(
-        hash=task.hash,
+        hash=random_lower_string(10),
         name=random_lower_string(6),
         user_id=user_id,
         task_id=task.id,

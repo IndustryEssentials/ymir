@@ -5,7 +5,7 @@ import { BarChart, LineChart } from 'echarts/charts'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsOption } from 'echarts'
 
-export type Props = {
+type Props = {
   option?: EChartsOption
   height?: number
 }

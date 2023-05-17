@@ -1,7 +1,4 @@
-import { format } from '@/utils/date'
-import { DockerImageConfig, Image } from '.'
-import { ResultStates as STATES } from './common'
-import { ObjectType } from './objectType'
+import { format } from "@/utils/date"
 
 export enum TYPES {
   UNKOWN = 0,
@@ -10,10 +7,14 @@ export enum TYPES {
   INFERENCE = 9,
 }
 
-export { STATES }
+export enum STATES {
+  PENDING = 1,
+  DONE =3,
+  ERROR = 4,
+}
 
 export function imageIsPending(state: number) {
-  return state === STATES.READY
+  return state === STATES.PENDING
 }
 
 export const getImageTypeLabel = (functions: TYPES[] = []) => {
@@ -24,50 +25,40 @@ export const getImageTypeLabel = (functions: TYPES[] = []) => {
     [TYPES.INFERENCE]: 'image.type.inference',
   }
 
-  return functions.map((func) => labels[func])
+  return functions.map(func => labels[func])
 }
 
 /**
  * get image state label, default: ''
  * @param {number} state image state
- * @returns
+ * @returns 
  */
-export const getImageStateLabel = (state?: STATES) => {
-  if (typeof state === 'undefined') {
+export const getImageStateLabel = (state: STATES | undefined) => {
+  if (!state) {
     return ''
   }
   const labels = {
-    [STATES.READY]: 'image.state.pending',
-    [STATES.VALID]: 'image.state.done',
-    [STATES.INVALID]: 'image.state.error',
+    [STATES.PENDING]: 'image.state.pending',
+    [STATES.DONE]: 'image.state.done',
+    [STATES.ERROR]: 'image.state.error',
   }
   return labels[state]
 }
 
-export function transferImage(data: YModels.BackendData): Image {
-  const configs: DockerImageConfig[] = data.configs || []
-  const getConfigAttr = <K extends keyof DockerImageConfig>(attr: K): DockerImageConfig[K][] => [...new Set(configs.map((config) => config[attr]))]
-  const objectTypes = getConfigAttr('object_type').filter((t): t is ObjectType => !!t) || []
-  const functions = getConfigAttr('type')
+export function transferImage(data: YModels.BackendData): YModels.Image {
+  const configs: YModels.DockerImageConfig[] = data.configs || []
   return {
     id: data.id,
     name: data.name,
-    state: data.result_state,
-    errorCode: data.related_task?.error_code,
-    objectTypes,
-    functions,
+    state: data.state,
+    errorCode: data.error_code,
+    objectType: data.object_type,
+    functions: configs.map(config => config.type),
     configs,
     url: data.url,
-    official: data.is_official,
     liveCode: data.enable_livecode,
     related: data.related,
     description: data.description,
     createTime: format(data.create_datetime),
-    isSample: data.id === 1,
   }
 }
-
-export const getConfig = (image: Image, type: TYPES, objectType: ObjectType) =>
-  image.configs.find((config) => config.type === type && config.object_type === objectType)
-
-export const isSampleImage = (image?: Image) => image?.isSample

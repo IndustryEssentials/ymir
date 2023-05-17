@@ -84,11 +84,6 @@ var ConstGtMirHist map[string]MirHist = map[string]MirHist{
 		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 100},
 		SkipUnwind: true,
 	},
-	"class_counts_rank": {
-		Ops: bson.M{"$size": "$gt"}, DecDigits: 0,
-		LowerBNDs:  []float64{1, 4, 10},
-		SkipUnwind: true,
-	},
 }
 
 var ConstPredMirHist map[string]MirHist = map[string]MirHist{

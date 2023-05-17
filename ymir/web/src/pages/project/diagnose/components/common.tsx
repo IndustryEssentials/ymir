@@ -1,11 +1,10 @@
-import { Prediction } from '@/constants'
 import { percent, toFixed } from '@/utils/number'
 import { attr2LowerCase } from '@/utils/object'
 import { Popover } from 'antd'
 import ReactJson from 'react-json-view'
 import { DataType, EvaluationResult, MetricsType, MetricType } from '.'
 
-export function getModelCell(prediction: Prediction, models: YModels.Model[], text?: string) {
+export function getModelCell(prediction: YModels.Prediction, models: YModels.Model[], text?: string) {
   const [mid, sid] = prediction?.inferModelId || []
   const model = models.find(({ id }) => mid === id)
   const stage = model?.stages?.find(({ id }) => sid === id)
@@ -13,7 +12,7 @@ export function getModelCell(prediction: Prediction, models: YModels.Model[], te
     return
   }
   const content = <ReactJson src={prediction.task?.config} name={false} />
-  const label = `${model.name} ${stage.name}`
+  const label = `${model.name} ${model.versionName} ${stage.name}`
   return text ? (
     label
   ) : (
@@ -34,7 +33,7 @@ export function getCK(data: { iou_averaged_evaluation: { ck_evaluations: { [key:
   return uniqueCKs.map((k) => ({ value: k, label: k, parent: keyword }))
 }
 
-export const opt = (d: YModels.Result) => ({ value: d.id, label: d.name })
+export const opt = (d: YModels.Result) => ({ value: d.id, label: `${d.name} ${d.versionName}` })
 
 export const average = (nums: number[] = []) => nums.reduce((prev, num) => (!Number.isNaN(num) ? prev + num : prev), 0) / nums.length
 

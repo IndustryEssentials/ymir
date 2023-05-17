@@ -157,15 +157,6 @@ class PredictionResult(BaseModel):
         orm_mode = True
 
 
-class DockerImageResult(BaseModel):
-    id: int
-    result_state: ResultState
-    result_type: ResultType = ResultType.docker_image
-
-    class Config:
-        orm_mode = True
-
-
 # Common Query Parameters
 
 

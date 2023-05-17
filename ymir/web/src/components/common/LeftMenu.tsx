@@ -1,6 +1,7 @@
 import { FC, ReactNode, useEffect, useState } from 'react'
 import { Menu, Layout, MenuProps, MenuItemProps } from 'antd'
-import { useHistory, useLocation, withRouter, useSelector, useParams } from 'umi'
+import { useHistory, useLocation, withRouter } from 'umi'
+import { useSelector } from 'react-redux'
 import t from '@/utils/t'
 import { getDeployUrl, getPublicImageUrl } from '@/constants/common'
 import { isSuperAdmin } from '@/constants/user'
@@ -28,8 +29,6 @@ import {
 } from '@/components/common/Icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
 import type { IconProps } from './icons/IconProps'
-import useRequest from '@/hooks/useRequest'
-import SampleProjectTip from './SampleProjectTip'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -37,34 +36,25 @@ const { Sider } = Layout
 
 const projectModule = /^.*\/project\/(\d+).*$/
 
-const getItem = (label: ReactNode, key: string, Icon?: FC<IconProps>, children?: MenuItem[], type?: 'group', disabled?: boolean): MenuItem => ({
+const getItem = (label: ReactNode, key: string, Icon?: FC<IconProps>, children?: MenuItem[], type?: 'group'): MenuItem => ({
   key,
   icon: Icon ? <Icon size="20" fill="rgba(0, 0, 0, 0.6)" /> : null,
   label,
   children,
   type,
-  disabled,
 })
 
 const getGroupItem = (label: string, key: string, children: MenuItem[]) => getItem(label, key, undefined, children, 'group')
 
 function LeftMenu() {
-  const { role } = useSelector((state) => state.user)
-  const { projects } = useSelector((state) => state.project)
+  const { role } = useSelector<YStates.Root, YStates.UserState>((state) => state.user)
+  const { projects } = useSelector<YStates.Root, YStates.ProjectState>((state) => state.project)
   const history = useHistory()
   const { pathname } = useLocation()
   const [defaultKeys, setDefaultKeys] = useState<string[]>()
   const [items, setItems] = useState<MenuItem[]>([])
   const [id, setId] = useState(0)
   const [project, setProject] = useState<YModels.Project>()
-  const { trainingDatasetCount, tasks } = useSelector(({ dataset, socket }) => ({ trainingDatasetCount: dataset.trainingDatasetCount, tasks: socket.tasks }))
-  const { run: getTrainingDatasetCount } = useRequest<null, [number]>('dataset/getTrainingDatasetCount', {
-    loading: false,
-  })
-
-  useEffect(() => {
-    project?.id && getTrainingDatasetCount(project.id)
-  }, [project?.id, tasks])
 
   useEffect(() => {
     setDefaultKeys([pathname])
@@ -77,17 +67,19 @@ function LeftMenu() {
   }, [id, projects])
 
   useEffect(() => {
-    const showProjectList = projectModule.test(pathname)
+    const showProjectList= projectModule.test(pathname)
     setItems([
       getGroupItem(t('breadcrumbs.projects'), 'project', [
         getItem(t('projects.title'), `/home/project`, ProjectIcon),
         showProjectList
           ? getItem(project?.name, `project.summary`, VectorIcon, [
+              getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon),
               project?.enableIteration ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon) : null,
               getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon),
+              getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
-              getItem(t('model.diagnose'), `/home/project/${id}/prediction`, DiagnosisIcon),
-              getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon, undefined, undefined, !trainingDatasetCount),
+              getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon),
+              getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
               getItem(t('common.trash.list'), `/home/project/${id}/trash`, DeleteIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),
             ])
@@ -124,7 +116,7 @@ function LeftMenu() {
         'outer/github',
       ),
     ])
-  }, [id, project, role, trainingDatasetCount])
+  }, [id, project, role])
 
   const clickHandle: Handler = ({ key }) => {
     const outer = /^outer\//.test(key)
@@ -137,7 +129,6 @@ function LeftMenu() {
   return items.length ? (
     <Sider className="sidebar scrollbar">
       <Menu items={items} mode="inline" defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys} />
-      <SampleProjectTip id={id} />
     </Sider>
   ) : null
 }

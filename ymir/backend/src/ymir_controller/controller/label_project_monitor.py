@@ -28,7 +28,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
         repo_root=repo_root,
         label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
         task_id=task_id,
-        asset_path=index_file,
+        index_file=index_file,
         pred_dir='',
         gt_dir=des_annotation_path,
         media_location=media_location,

@@ -1,5 +1,6 @@
 import { FC, useEffect } from 'react'
-import { useHistory, useSelector } from 'umi'
+import { useSelector } from 'react-redux'
+import { useHistory } from 'umi'
 import { Layout } from 'antd'
 
 import Loading from '@/components/common/Loading'
@@ -10,7 +11,7 @@ const { Content } = Layout
 
 const UnAuthLayout: FC = ({ children }) => {
   const history = useHistory()
-  const logined = useSelector(({ user }) => user.logined)
+  const logined = useSelector<YStates.Root, boolean>(({ user }) => user.logined)
 
   useEffect(() => {
     if (logined) {

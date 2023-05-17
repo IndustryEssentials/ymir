@@ -114,12 +114,6 @@ func NewMirObjectAnnotation() MirObjectAnnotation {
 	return MirObjectAnnotation{Box: &MirRect{}, Tags: map[string]string{}, Polygon: []*MirIntPoint{}}
 }
 
-type DatasetDiagnosisElement struct {
-	DensityProportion map[string][]string `json:"density_proportion"`
-	ClassProportion   map[string][]int32  `json:"class_proportion"`
-	ClassObjCount     map[string][]int32  `json:"class_obj_count"`
-}
-
 type DatasetStatsElement struct {
 	// Assets count
 	ClassIDsCount       map[int]int64 `json:"class_ids_count"`

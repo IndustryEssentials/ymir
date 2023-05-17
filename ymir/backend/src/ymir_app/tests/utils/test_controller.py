@@ -27,7 +27,6 @@ class TestControllerRequest:
             project_id,
             args={
                 "typed_labels": [],
-                "object_type": 2,
                 "typed_datasets": [],
                 "typed_models": [],
                 "merge_strategy": MergeStrategy.prefer_newest,
@@ -47,7 +46,6 @@ class TestControllerRequest:
             user_id,
             project_id,
             args={
-                "object_type": 2,
                 "typed_labels": [],
                 "typed_datasets": [],
                 "typed_models": [{"hash": random_lower_string(), "stage_name": random_lower_string()}],
@@ -75,7 +73,6 @@ class TestControllerRequest:
                 "labellers": [],
                 "extra_url": random_url(),
                 "annotation_type": 2,
-                "username": random_lower_string(),
                 "object_type": 3,
             },
         )
@@ -95,7 +92,6 @@ class TestControllerRequest:
                 "src_user_id": f"{random.randint(1000, 2000):0>4}",
                 "src_repo_id": random_lower_string(),
                 "src_resource_id": random_lower_string(),
-                "object_type": 3,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
@@ -153,7 +149,6 @@ class TestControllerClient:
     def test_inference(self, mocker):
         user_id = random.randint(1000, 9000)
         project_id = random.randint(1000, 9000)
-        object_type = 2
         model_hash = random_lower_string()
         model_stage = random_lower_string()
         asset_dir = random_lower_string()
@@ -162,9 +157,7 @@ class TestControllerClient:
         docker_config = random_lower_string()
         cc = m.ControllerClient(channel_str)
         cc.send = mock_send = mocker.Mock()
-        cc.call_inference(
-            user_id, project_id, object_type, model_hash, model_stage, asset_dir, docker_image, docker_config
-        )
+        cc.call_inference(user_id, project_id, model_hash, model_stage, asset_dir, docker_image, docker_config)
         mock_send.assert_called()
         generated_req = mock_send.call_args[0][0].req
         assert generated_req.user_id == str(user_id)

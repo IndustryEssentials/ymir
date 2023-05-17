@@ -18,8 +18,6 @@ class ExecutorReturnCode(IntEnum):
     RC_EXEC_UNKNOWN_IMAGE_FORMAT = 300003
     # Can not find model file
     RC_EXEC_MODEL_ERROR = 300004
-    # object_type in config file not provided or not supported
-    RC_EXEC_OBJECT_TYPE_ERROR = 300005
 
     # cuda, gpu and memory errors
     # CUDA and GPU mismatch

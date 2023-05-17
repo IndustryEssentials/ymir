@@ -18,8 +18,8 @@ import tests.utils as test_utils
 class TestInvokerCMDInference(unittest.TestCase):
     def __init__(self, methodName: str) -> None:
         super().__init__(methodName=methodName)
-        self._user_name = "aaaa"
-        self._mir_repo_name = "bbbbbb"
+        self._user_name = "user"
+        self._mir_repo_name = "repoid"
         self._storage_name = "media_storage_root"
         self._tensorboard_root_name = "tensorboard_root"
         self._task_id = "t000aaaabbbbbbzzzzzzzzzzzzzzd5"
@@ -110,7 +110,7 @@ class TestInvokerCMDInference(unittest.TestCase):
 
         # store user labels.
         with open(os.path.join(self._user_root, 'labels.yaml'), 'w') as f:
-            yaml.safe_dump({"labels": [{"id": 0, "name": "no_helmet_head"}]}, f, allow_unicode=True)
+            yaml.safe_dump({"labels": [{"id": 0, "name": "no_helmet_head"}]}, f)
 
         make_invoker_cmd_call(
             invoker=RequestTypeToInvoker[backend_pb2.CMD_INFERENCE],
@@ -125,7 +125,6 @@ class TestInvokerCMDInference(unittest.TestCase):
             model_hash=model_hash,
             model_stage=model_stage,
             work_dir=working_dir,
-            object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
         )
 
         label_storage_file = test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)

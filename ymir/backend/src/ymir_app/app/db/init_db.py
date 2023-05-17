@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.config import settings
-from app.constants.state import ResultState
 from app.db import base  # noqa: F401
 
 
@@ -25,14 +24,13 @@ def init_db(db: Session) -> None:
         runtimes = json.loads(settings.DOCKER_IMAGES)
         for runtime in runtimes:
             docker_image = crud.docker_image.create(db, obj_in=schemas.DockerImageCreate(**runtime))  # noqa: F841
-            crud.docker_image.update_state(db, docker_image=docker_image, state=ResultState.ready)
+            crud.docker_image.update_state(db, docker_image=docker_image, state=schemas.DockerImageState.done)
 
             for config in runtime["configs"]:
                 image_config_in = schemas.ImageConfigCreate(
                     image_id=docker_image.id,
-                    object_type=int(config.pop("object_type")),
-                    type=int(config.pop("type")),
                     config=json.dumps(config),
+                    type=int(config["type"]),
                 )
                 crud.image_config.create(db, obj_in=image_config_in)
 

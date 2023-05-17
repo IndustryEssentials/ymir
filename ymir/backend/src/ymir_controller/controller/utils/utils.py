@@ -4,13 +4,12 @@ from pathlib import Path
 import re
 import subprocess
 import time
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List
 
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase
 from controller.label_model.label_free import LabelFree
 from controller.label_model.label_studio import LabelStudio
-from controller.utils.errors import MirCtrError
 from id_definition import task_id as task_id_proto
 from id_definition.error_codes import CTLResponseCode
 from mir.protos import mir_command_pb2 as mir_cmd_pb
@@ -92,7 +91,6 @@ def object_type_str(object_type: mir_cmd_pb.ObjectType) -> str:
     format_enum_dict = {
         mir_cmd_pb.ObjectType.OT_DET_BOX: 'det-box',
         mir_cmd_pb.ObjectType.OT_SEG: 'seg',
-        mir_cmd_pb.ObjectType.OT_NO_ANNOS: 'no-annos',
     }
     return format_enum_dict[object_type]
 
@@ -117,11 +115,11 @@ def time_it(f: Callable) -> Callable:
     return wrapper
 
 
-def create_label_instance(user_token: Optional[str] = None) -> LabelBase:
+def create_label_instance() -> LabelBase:
     if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
         label_instance = LabelStudio()
     elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
-        label_instance = LabelFree(user_token)  # type: ignore
+        label_instance = LabelFree()  # type: ignore
     else:
         raise ValueError("Error! Please setting your label tools")
 
@@ -131,34 +129,3 @@ def create_label_instance(user_token: Optional[str] = None) -> LabelBase:
 def ensure_dirs_exist(paths: List[str]) -> None:
     for path in paths:
         Path(path).mkdir(parents=True, exist_ok=True)
-
-
-def check_general_req_user_and_repo(req: backend_pb2.GeneralReq) -> None:
-    all_tids = [req.task_id]  # tids from current req user
-    if req.dst_dataset_id:
-        all_tids.append(req.dst_dataset_id)
-    all_tids.extend(req.ex_dataset_ids)
-    if req.req_type == backend_pb2.RequestType.TASK_CREATE:
-        if req.req_create_task.exporting.dataset_id:
-            all_tids.append(req.req_create_task.exporting.dataset_id)
-        all_tids.extend([x.dataset_id for x in req.req_create_task.training.in_dataset_types])
-
-        is_copy_task = req.req_create_task.task_type == mir_cmd_pb.TaskTypeCopyData
-        for tid in req.in_dataset_ids:
-            # for copy task, only allowed to copy from "0001" (the admin / public dataset owner) or uid's repos
-            # so skip those tids belongs to 0001
-            if is_copy_task and "0001" == task_id_proto.TaskId.from_task_id(tid).user_id:
-                continue
-            all_tids.append(tid)
-    else:
-        all_tids.extend(req.in_dataset_ids)
-
-    check_repo = req.req_create_task.task_type not in {mir_cmd_pb.TaskTypeCopyData, mir_cmd_pb.TaskTypeCopyModel}
-    for tid in all_tids:
-        task_id = task_id_proto.TaskId.from_task_id(tid)
-        if req.user_id != task_id.user_id:
-            raise MirCtrError(error_code=CTLResponseCode.INVOKER_INVALID_ARGS,
-                              error_message=f"Task id mismatch: {tid} vs user: {req.user_id}")
-        if check_repo and req.repo_id != task_id.repo_id:
-            raise MirCtrError(error_code=CTLResponseCode.INVOKER_INVALID_ARGS,
-                              error_message=f"Task id mismatch: {tid} vs repo: {req.repo_id}")

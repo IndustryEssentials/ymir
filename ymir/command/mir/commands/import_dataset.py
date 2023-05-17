@@ -2,9 +2,7 @@ import argparse
 import logging
 import os
 import shutil
-from typing import Dict, Optional
-from urllib.parse import urlparse
-from zipfile import ZipFile
+from typing import Dict
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -13,7 +11,6 @@ from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, settings
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
-from mir.tools.files import locate_ymir_dataset_dirs, download_file
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.tools.mir_storage import get_asset_storage_path, sha1sum_for_file
 
@@ -24,9 +21,9 @@ class CmdImport(base.BaseCommand):
 
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        label_storage_file=self.args.label_storage_file,
+                                       index_file=self.args.index_file,
                                        pred_abs=self.args.pred_abs,
                                        gt_abs=self.args.gt_abs,
-                                       asset_abs=self.args.asset_abs,
                                        gen_abs=self.args.gen_abs,
                                        dst_rev=self.args.dst_rev,
                                        src_revs=self.args.src_revs or 'master',
@@ -38,65 +35,39 @@ class CmdImport(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, pred_abs: Optional[str], gt_abs: Optional[str], asset_abs: str, gen_abs: str,
+    def run_with_args(mir_root: str, index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
                       dst_rev: str, src_revs: str, work_dir: str, label_storage_file: str,
                       unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
                       is_instance_segmentation: bool) -> int:
-        # step 0: check args
-        if not gen_abs or not work_dir or not asset_abs:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message="empty asset_abs, gen_abs or work_dir")
+        # Step 1: check args and prepare environment.
+        if not index_file or not gen_abs or not os.path.isfile(index_file):
+            logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
+            return MirCode.RC_CMD_INVALID_DATASET
+        if pred_abs and not os.path.isdir(pred_abs):
+            logging.error(f"prediction dir invalid: {pred_abs}")
+            return MirCode.RC_CMD_INVALID_DATASET
+        if gt_abs and not os.path.isdir(gt_abs):
+            logging.error(f"groundtruth dir invalid: {gt_abs}")
+            return MirCode.RC_CMD_INVALID_DATASET
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+
+        PhaseLoggerCenter.create_phase_loggers(top_phase='import',
+                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
+                                               task_name=dst_typ_rev_tid.tid)
+
         check_code = checker.check(mir_root,
                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if check_code != MirCode.RC_OK:
             return check_code
 
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
-        PhaseLoggerCenter.create_phase_loggers(top_phase='import',
-                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
-                                               task_name=dst_typ_rev_tid.tid)
+        PhaseLoggerCenter.update_phase(phase="import.init")
 
-        # Step 1: download, unzip and analyse
-        if os.path.splitext(asset_abs)[-1].lower() in {'.txt', '.tsv', '.csv'}:
-            index_file = asset_abs
-        else:
-            # download
-            if urlparse(asset_abs).netloc:
-                asset_abs = download_file(url=asset_abs, output_dir=work_dir)
-
-            # decompress and locate dirs
-            if os.path.isfile(asset_abs):
-                extract_dir = os.path.join(work_dir, 'extract')
-                os.makedirs(extract_dir)
-                with ZipFile(asset_abs, "r") as zip_ref:
-                    zip_ref.extractall(extract_dir)
-                asset_abs = extract_dir
-
-            asset_abs, gt_abs = locate_ymir_dataset_dirs(dataset_root_dir=asset_abs)
-            pred_abs = None
-
-            # gen index file from asset dir
-            index_file = os.path.join(asset_abs, 'index.txt')
-            _gen_index_file(media_dir=asset_abs, index_file=index_file)
-
-        logging.info(f"Import dataset from idx file: {index_file}, gt dir: {gt_abs}, pred dir: {pred_abs}")
-
-        PhaseLoggerCenter.update_phase(phase="import.prepare")
-
-        # Step 2: check dirs
-        if pred_abs and not os.path.isdir(pred_abs):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
-                                  error_message=f"invalid pred_abs: {pred_abs}")
-        if gt_abs and not os.path.isdir(gt_abs):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
-                                  error_message=f"invalid gt_abs: {gt_abs}")
-
-        # Step 3: generate sha1 file and rename images.
+        # Step 2: generate sha1 file and rename images.
         # sha1 file to be written.
         file_name_to_asset_ids = _generate_sha_and_copy(index_file, gen_abs)
 
-        # Step 4 import metadat and annotations:
+        # Step 3 import metadat and annotations:
         mir_metadatas = mirpb.MirMetadatas()
         ret = metadatas.import_metadatas(mir_metadatas=mir_metadatas,
                                          file_name_to_asset_ids=file_name_to_asset_ids,
@@ -117,7 +88,7 @@ class CmdImport(base.BaseCommand):
                                                              is_instance_segmentation=is_instance_segmentation,
                                                              phase='import.others')
 
-        logging.info(f"pred / gt import unknown result: {dict(unknown_class_names)}")
+        logging.info(f"pred / gt import unknown result: {unknown_class_names}")
 
         # create and write tasks
         task = mir_storage_ops.create_task_record(
@@ -190,14 +161,6 @@ def _generate_sha_and_copy(index_file: str, sha_folder: str) -> Dict[str, str]:
     return {name: asset_id for asset_id, name in asset_id_to_file_names.items()}
 
 
-def _gen_index_file(media_dir: str, index_file: str) -> None:
-    media_files = [
-        os.path.join(media_dir, f) for f in os.listdir(media_dir) if os.path.isfile(os.path.join(media_dir, f))
-    ]
-    with open(index_file, 'w') as f:
-        f.write('\n'.join(media_files))
-
-
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     import_dataset_arg_parser = subparsers.add_parser(
         "import",
@@ -205,6 +168,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
         description="use this command to import data from img/anno folder",
         help="import raw data",
         formatter_class=argparse.RawTextHelpFormatter)
+    import_dataset_arg_parser.add_argument("--index-file",
+                                           dest="index_file",
+                                           required=True,
+                                           type=str,
+                                           help="index of input media, one file per line")
     import_dataset_arg_parser.add_argument("--pred-dir",
                                            dest="pred_abs",
                                            type=str,
@@ -215,15 +183,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                            type=str,
                                            required=False,
                                            help="corresponding ground-truth folder")
-    import_dataset_arg_parser.add_argument("--asset-path",
-                                           dest="asset_abs",
-                                           type=str,
-                                           required=False,
-                                           help="path to a dataset, of the following statements:\n"
-                                           "1. path to a directory of dataset, with sub dirs: images and gt\n"
-                                           "2. path to a local zip file\n"
-                                           "3. URL to a remote zip file\n"
-                                           "4. path to an index file: *.txt, *.tsv, *.csv")
     import_dataset_arg_parser.add_argument("--gen-dir",
                                            dest="gen_abs",
                                            required=True,
@@ -248,7 +207,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg', 'no-annos'],
+                                           choices=['det-box', 'seg', 'no-annotations'],
                                            help='annotations type\n')
     import_dataset_arg_parser.add_argument('--ins-seg',
                                            dest='is_instance_segmentation',

@@ -29,7 +29,6 @@ class ProjectBase(BaseModel):
     training_dataset_count_target: Optional[int]
 
     is_example: Optional[bool] = False
-    recommended_docker_image_id: Optional[int]
 
     object_type: ObjectType = ObjectType.object_detect
     candidate_training_dataset_id: Optional[int]

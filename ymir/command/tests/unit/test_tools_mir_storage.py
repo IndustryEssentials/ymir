@@ -133,7 +133,7 @@ class TestMirStorage(unittest.TestCase):
                 }
             },
             'ground_truth': {
-                'type': mirpb.ObjectType.OT_NO_ANNOS,
+                'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
             }
         }
         pb_format.ParseDict(dict_annotations, mir_annotations)
@@ -250,11 +250,11 @@ class TestMirStorage(unittest.TestCase):
             pb_format.ParseDict({
                 "prediction": {
                     'task_id': 't2',
-                    'type': mirpb.ObjectType.OT_NO_ANNOS,
+                    'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
                 },
                 "ground_truth": {
                     'task_id': 't2',
-                    'type': mirpb.ObjectType.OT_NO_ANNOS,
+                    'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
                 },
             }, mirpb.MirAnnotations()),
             mirpb.MirStorage.MIR_TASKS:

@@ -23,8 +23,8 @@ class TestInvokerTaskFusion(unittest.TestCase):
         # └── user
         #     └── repoid
         super().__init__(methodName)
-        self._user_name = "aaaa"
-        self._mir_repo_name = "bbbbbb"
+        self._user_name = "user"
+        self._mir_repo_name = "repoid"
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzd5'
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'

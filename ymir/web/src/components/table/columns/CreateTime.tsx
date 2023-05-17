@@ -3,7 +3,7 @@ import { ColumnType } from 'antd/lib/table'
 import { diffTime } from '@/utils/date'
 import StrongTitle from './StrongTitle'
 
-function CreateTime<T extends { createTime: string }>(sort: boolean = true): ColumnType<T> {
+function CreateTime<T extends YModels.Result>(sort: boolean = true): ColumnType<T> {
   const sortConfig = {
     sorter: (a: T, b: T) => diffTime(a.createTime, b.createTime),
     sortDirections: ['ascend', 'descend', 'ascend'],

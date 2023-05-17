@@ -36,7 +36,6 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             description=obj_in.description,
             enable_iteration=obj_in.enable_iteration,
             is_example=obj_in.is_example,
-            recommended_docker_image_id=obj_in.recommended_docker_image_id,
         )
         db.add(db_obj)
         db.commit()

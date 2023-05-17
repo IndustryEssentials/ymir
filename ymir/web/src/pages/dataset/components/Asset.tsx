@@ -17,13 +17,11 @@ import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import GtSelector from '@/components/form/GtSelector'
 import { evaluationTags } from '@/constants/dataset'
-import { List } from '@/models/typings/common'
-import { Prediction } from '@/constants'
 
 type Props = {
-  id: number
-  asset?: YModels.Asset
-  dataset?: YModels.Dataset | Prediction
+  id: string
+  asset: YModels.Asset
+  dataset?: YModels.Dataset | YModels.Prediction
   pred?: boolean
   datasetKeywords?: KeywordsType
   filterKeyword?: KeywordsType
@@ -42,12 +40,12 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
   const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState<YModels.Annotation[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<KeywordsType>([])
-  const [currentIndex, setCurrentIndex] = useState<IndexType>()
+  const [currentIndex, setCurrentIndex] = useState<IndexType>({ index: 0 })
   const [assetHistory, setAssetHistory] = useState<IndexType[]>([])
   const [gtSelected, setGtSelected] = useState<string[]>([])
   const [evaluation, setEvaluation] = useState(0)
   const [colors, setColors] = useState<{ [key: string]: string }>({})
-  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<List<YModels.Asset>>('asset/getAssets')
+  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('asset/getAssets')
 
   useEffect(() => {
     setAsset(undefined)
@@ -86,29 +84,28 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
     type FilterType = (annotation: YModels.Annotation) => boolean
     const wrong = [evaluationTags.fn, evaluationTags.fp]
     const typeFilter: FilterType = (anno) => pred || !!anno.gt
-    const gtFilter: FilterType = (anno) => !pred || (gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt)
+    const gtFilter: FilterType = (anno) => !pred || ((gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt))
     const keywordFilter: FilterType = (annotation) => selectedKeywords.includes(annotation.keyword)
-    const evaluationFilter: FilterType = (annotation) =>
-      !evaluation || (!wrong.includes(evaluation) ? !wrong.includes(annotation.cm) : evaluation === annotation.cm)
+    const evaluationFilter: FilterType = (annotation) => !evaluation || (!wrong.includes(evaluation) ? !wrong.includes(annotation.cm) : evaluation === annotation.cm)
     const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && gtFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
     setShowAnnotations(visibleAnnotations)
   }, [selectedKeywords, evaluation, asset, gtSelected, pred])
 
   function fetchAssetHash() {
     setAsset((asset) => (asset ? { ...asset, annotations: [] } : undefined))
-    getAssets({ ...filters, id, keyword: currentIndex?.keyword, offset: currentIndex?.index || 0, limit: 1, datasetKeywords })
+    getAssets({ id, ...filters, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1, datasetKeywords })
   }
 
   function next() {
-    setCurrentIndex((cu) => ({ ...cu, index: (cu?.index || 0) + 1 }))
+    setCurrentIndex((cu) => ({ ...cu, index: cu.index + 1 }))
   }
 
   function prev() {
-    setCurrentIndex((cu) => ({ ...cu, index: (cu?.index || 0) - 1 }))
+    setCurrentIndex((cu) => ({ ...cu, index: cu.index - 1 }))
   }
 
   function random() {
-    setCurrentIndex((cu) => ({ ...cu, index: randomBetween(0, total - 1, (cu?.index || 0)) }))
+    setCurrentIndex((cu) => ({ ...cu, index: randomBetween(0, total - 1, cu.index) }))
   }
 
   function back() {
@@ -138,7 +135,7 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
       <div className={styles.info}>
         <Row className={styles.infoRow} align="middle" wrap={false}>
           <Col flex={'20px'} style={{ alignSelf: 'center' }}>
-            <LeftOutlined hidden={(currentIndex?.index || 0) <= 0} className={styles.prev} onClick={prev} />
+            <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
           </Col>
           <Col flex={1} className={`${styles.asset_img} scrollbar`}>
             {asset.annotations ? <AssetAnnotation asset={{ ...asset, annotations: showAnnotations }} /> : null}
@@ -224,7 +221,7 @@ const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, fi
             </Space>
           </Col>
           <Col style={{ alignSelf: 'center' }} flex={'20px'}>
-            <RightOutlined hidden={(currentIndex?.index || 0) >= total - 1} className={styles.next} onClick={next} />
+            <RightOutlined hidden={currentIndex.index >= total - 1} className={styles.next} onClick={next} />
           </Col>
         </Row>
       </div>

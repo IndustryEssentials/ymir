@@ -11,14 +11,13 @@ type Props = {
   code?: string
 }
 
-const StateTag: React.FC<Props> = ({ state = states.READY, label, code }) => {
+const StateTag: React.FC<Props> = ({ state = states.PENDING, label, code }) => {
   const stateMaps = {
-    [states.READY]: { key: 'pending', icon: <LoadingOutlined style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} /> },
-    [states.VALID]: { key: 'done', icon: <SuccessIcon style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} /> },
-    [states.INVALID]: { key: 'error', icon: <FailIcon style={{ color: 'rgba(242, 99, 123, 1)', fontSize: 16 }} /> },
+    [states.PENDING]: { key: 'pending', icon: <LoadingOutlined style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} /> },
+    [states.DONE]: { key: 'done', icon: <SuccessIcon style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} /> },
+    [states.ERROR]: { key: 'error', icon: <FailIcon style={{ color: 'rgba(242, 99, 123, 1)', fontSize: 16 }} /> },
   }
   const tag = stateMaps[state]
-  if (!tag) return null
   const text = (
     <span>
       {tag.icon}

@@ -8,7 +8,7 @@ import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { string2Array } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
-import { TYPES, getConfig } from '@/constants/image'
+import { TYPES } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
@@ -16,6 +16,7 @@ import { randomNumber } from '@/utils/number'
 import ModelSelect from '@/components/form/modelSelect'
 import ImageSelect from '@/components/form/ImageSelect'
 import DatasetSelect from '@/components/form/datasetSelect'
+import useAddKeywords from '@/hooks/useAddKeywords'
 import AddKeywordsBtn from '@/components/keyword/addKeywordsBtn'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
@@ -28,22 +29,35 @@ import styles from './index.less'
 import OpenpaiForm from '@/components/form/items/openpai'
 import Tip from '@/components/form/tip'
 
-function Inference({ ...func }) {
+const { Option } = Select
+
+const getArray = (str = '') => str.split('|')
+const parseModelStage = (str = '') => {
+  return str ? getArray(str).map((stage) => string2Array(stage)) : []
+}
+
+const Algorithm = () => [{ id: 'aldd', label: 'ALDD', checked: true }]
+
+function Inference({...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { image } = location.query
-  const stage = string2Array(location.query.mid)
-  const [selectedModel, setSelectedModel] = useState(null)
+  const stage = parseModelStage(location.query.mid)
+  const [selectedModels, setSelectedModels] = useState([])
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState({})
   const [gpu_count, setGPU] = useState(0)
+  const [taskCount, setTaskCount] = useState(1)
+  const [selectedGpu, setSelectedGpu] = useState(0)
   const [keywordRepeatTip, setKRTip] = useState('')
   const [{ newer }, checkKeywords] = useFetch('keyword/checkDuplication', { newer: [] })
   const [live, setLiveCode] = useState(false)
   const [liveInitialValues, setLiveInitialValues] = useState({})
   const [project, getProject] = useFetch('project/getProject', {})
+  const watchStages = Form.useWatch('stages', form)
+  const watchTestingSets = Form.useWatch('datasets', form)
   const [openpai, setOpenpai] = useState(false)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
@@ -69,14 +83,25 @@ function Inference({ ...func }) {
   }, [pid])
 
   useEffect(() => {
-    const did = Number(location.query?.did)
+    const did = location.query?.did ? getArray(location.query.did).map(Number) : undefined
 
-    did && form.setFieldsValue({ dataset: did })
+    did && form.setFieldsValue({ datasets: did })
   }, [location.query.did])
+
+  useEffect(() => {}, [stage])
+
+  useEffect(() => {
+    pid && func.getDatasets(pid)
+  }, [pid])
 
   useEffect(() => {
     checkModelKeywords()
-  }, [selectedModel])
+  }, [selectedModels])
+
+  useEffect(() => {
+    const taskCount = watchStages?.length * watchTestingSets?.length || 1
+    setTaskCount(taskCount)
+  }, [watchStages, watchTestingSets])
 
   useEffect(() => {
     if (newer.length) {
@@ -102,12 +127,13 @@ function Inference({ ...func }) {
       } = state.record
       const { dataset_id, docker_image_id, model_id, model_stage_id } = parameters
       form.setFieldsValue({
-        dataset: dataset_id,
+        datasets: [dataset_id],
         gpu_count: config.gpu_count,
         stages: [[model_id, model_stage_id]],
         image: docker_image_id,
         description,
       })
+      setSelectedGpu(config.gpu_count)
       if (!HIDDENMODULES.LIVECODE) {
         setLiveCode(!!config.git_url)
         setLiveInitialValues(config)
@@ -120,15 +146,20 @@ function Inference({ ...func }) {
   }, [location.state])
 
   function checkModelKeywords() {
-    selectedModel?.keywords.length && checkKeywords(selectedModel?.keywords)
+    const keywords = (selectedModels.map((model) => model?.keywords) || []).flat().filter((item) => item)
+    checkKeywords(keywords)
   }
 
-  function imageChange(_, option) {
-    if (!option) {
-      return setConfig({})
+  async function fetchSysInfo() {
+    const result = await func.getSysInfo()
+    if (result) {
+      setGPU(result.gpu_count)
     }
-    const { image, objectType } = option
-    const configObj = getConfig(option.image, TYPES.INFERENCE, objectType) || {}
+  }
+
+  function imageChange(_, option = {}) {
+    const { url, configs = [] } = option.image
+    const configObj = configs.find((conf) => conf.type === TYPES.INFERENCE) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }
@@ -156,7 +187,12 @@ function Inference({ ...func }) {
     }
     const result = await func.infer(params)
     if (result) {
-      history.replace(`/home/project/${pid}/prediction`)
+      const tasksCount = values.stages.length * values.datasets.length
+      const resultCount = result.filter((item) => item).length
+      if (resultCount < tasksCount) {
+        message.warn(t('task.inference.failure.some'))
+      }
+      history.replace(`/home/project/${pid}/diagnose`)
     }
   }
 
@@ -164,17 +200,16 @@ function Inference({ ...func }) {
     console.log('Failed:', errorInfo)
   }
 
-  function modelChange(id, option = []) {
-    const opt = option[0]
-    const model = opt?.model
-    setSelectedModel(model)
+  function modelChange(id, options = []) {
+    const models = options.map(([{ model }]) => model) || []
+    setSelectedModels(models)
   }
 
   async function selectModelFromIteration() {
     const iterations = await func.getIterations(pid)
     if (iterations) {
       const models = iterations.map((iter) => (iter.model ? [iter.model] : null)).filter((i) => i) || []
-      form.setFieldsValue({ stage: models })
+      form.setFieldsValue({ stages: models })
     }
   }
 
@@ -196,10 +231,12 @@ function Inference({ ...func }) {
     </Row>
   )
 
+  const getCheckedValue = (list) => list.find((item) => item.checked)['id']
   const initialValues = {
     description: '',
-    stage,
+    stages: stage.length ? stage : undefined,
     image: image ? parseInt(image) : undefined,
+    algorithm: getCheckedValue(Algorithm()),
     gpu_count: 0,
   }
   return (
@@ -223,14 +260,20 @@ function Inference({ ...func }) {
             <Form.Item
               label={t('task.inference.form.dataset.label')}
               required
-              name="dataset"
+              name="datasets"
               rules={[{ required: true, message: t('task.inference.form.dataset.required') }]}
             >
-              <DatasetSelect pid={pid} filters={testSetFilters} renderLabel={renderLabel} placeholder={t('task.inference.form.dataset.placeholder')} />
+              <DatasetSelect
+                mode="multiple"
+                pid={pid}
+                filters={testSetFilters}
+                renderLabel={renderLabel}
+                placeholder={t('task.inference.form.dataset.placeholder')}
+              />
             </Form.Item>
             <Form.Item required tooltip={t('tip.task.filter.imodel')} label={t('task.mining.form.model.label')}>
-              <Form.Item noStyle name="stage" rules={[{ required: true, message: t('task.mining.form.model.required') }]}>
-                <ModelSelect placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
+              <Form.Item noStyle name="stages" rules={[{ required: true, message: t('task.mining.form.model.required') }]}>
+                <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
               </Form.Item>
               {project.enableIteration ? (
                 <div style={{ marginTop: 10 }}>
@@ -250,7 +293,7 @@ function Inference({ ...func }) {
               <ImageSelect
                 placeholder={t('task.inference.form.image.placeholder')}
                 pid={pid}
-                relatedId={selectedModel?.task?.parameters?.docker_image_id}
+                relatedId={selectedModels[0]?.task?.parameters?.docker_image_id}
                 type={TYPES.INFERENCE}
                 onChange={imageChange}
               />
@@ -262,14 +305,14 @@ function Inference({ ...func }) {
                 name="gpu_count"
                 rules={[
                   {
-                    validator: (rules, value) => (value <= gpu_count ? Promise.resolve() : Promise.reject()),
-                    message: t('task.gpu.tip', { count: gpu_count }),
+                    validator: (rules, value) => (value <= Math.floor(gpu_count / taskCount) ? Promise.resolve() : Promise.reject()),
+                    message: t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu }),
                   },
                 ]}
               >
-                <InputNumber min={0} max={gpu_count} precision={0} />
+                <InputNumber min={0} max={Math.floor(gpu_count / taskCount)} precision={0} onChange={setSelectedGpu} />
               </Form.Item>
-              <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+              <span style={{ marginLeft: 20 }}>{t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })}</span>
             </Form.Item>
 
             <LiveCodeForm form={form} live={live} initialValues={liveInitialValues} />
@@ -300,6 +343,26 @@ function Inference({ ...func }) {
 
 const dis = (dispatch) => {
   return {
+    getSysInfo() {
+      return dispatch({
+        type: 'common/getSysInfo',
+      })
+    },
+    getDatasets(pid) {
+      return dispatch({
+        type: 'dataset/queryAllDatasets',
+        payload: { pid, force: true },
+      })
+    },
+    getDataset(id, force) {
+      return dispatch({
+        type: 'dataset/getDataset',
+        payload: { id, force },
+      })
+    },
+    clearCache() {
+      return dispatch({ type: 'dataset/clearCache' })
+    },
     infer(payload) {
       return dispatch({
         type: 'task/infer',

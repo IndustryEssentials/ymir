@@ -1,22 +1,23 @@
 import { format } from '@/utils/date'
 import { TYPES, STATES, imageIsPending, getImageTypeLabel, getImageStateLabel, transferImage } from '../image'
 
-describe('constants: image', () => {
-  it('image type have right mapping', () => {
+describe("constants: image", () => {
+  it("image type have right mapping", () => {
     expect(TYPES.TRAINING).toBe(1)
     expect(TYPES.MINING).toBe(2)
     expect(TYPES.UNKOWN).toBe(0)
     expect(TYPES.INFERENCE).toBe(9)
   })
-  it('image states have right mapping', () => {
-    expect(STATES.READY).toBe(0)
-    expect(STATES.VALID).toBe(1)
-    expect(STATES.INVALID).toBe(2)
+  it("image states have right mapping", () => {
+    expect(STATES.PENDING).toBe(1)
+    expect(STATES.DONE).toBe(3)
+    expect(STATES.ERROR).toBe(4)
   })
   it('imageIsPending: image state is pending', () => {
-    expect(imageIsPending(STATES.READY)).toBe(true)
-    expect(imageIsPending(STATES.VALID)).toBe(false)
-    expect(imageIsPending(STATES.INVALID)).toBe(false)
+
+    expect(imageIsPending(STATES.PENDING)).toBe(true)
+    expect(imageIsPending(STATES.DONE)).toBe(false)
+    expect(imageIsPending(STATES.ERROR)).toBe(false)
     expect(imageIsPending()).toBe(false) // undefined
     expect(imageIsPending('1')).toBe(false) // type
   })
@@ -32,11 +33,12 @@ describe('constants: image', () => {
     expect(inferenceLabel).toEqual(['image.type.train', 'image.type.inference'])
     expect(emptyLabel).toEqual([])
     expect(unmatchLabel).toEqual([undefined])
+
   })
   it('getImageStateLabel: get label by match state', () => {
-    const pendingLabel = getImageStateLabel(STATES.READY)
-    const doneLabel = getImageStateLabel(STATES.VALID)
-    const errorLabel = getImageStateLabel(STATES.INVALID)
+    const pendingLabel = getImageStateLabel(STATES.PENDING)
+    const doneLabel = getImageStateLabel(STATES.DONE)
+    const errorLabel = getImageStateLabel(STATES.ERROR)
     const emptyLabel = getImageStateLabel()
     const unmatchLabel = getImageStateLabel('34')
 
@@ -53,23 +55,24 @@ describe('constants: image', () => {
         expected_map: 0.983,
         idle_seconds: 60,
         trigger_crash: 0,
-        type: 1,
+        type: 1
       },
-      object_type: 2,
-      type,
+      type
     })
-    const createTime = '2022-03-10T03:39:09'
+    const createTime = "2022-03-10T03:39:09"
     const functions = [1, 2, 9]
-    const configs = functions.map((conf) => config(1, conf))
+    const configs = functions.map(conf => config(1, conf))
     const backendData = {
-      name: 'sample_image',
-      result_state: 3,
-      hash: 'f3da055bacc7',
-      url: 'sample-tmi:stage-test-01',
-      description: 'test',
+      name: "sample_image",
+      state: 3,
+      object_type: 1,
+      hash: "f3da055bacc7",
+      url: "sample-tmi:stage-test-01",
+      description: "test",
       is_deleted: false,
       create_datetime: createTime,
       id: 1,
+      is_shared: false,
       related: [],
       configs,
     }
@@ -77,18 +80,16 @@ describe('constants: image', () => {
     const expected = {
       configs,
       createTime: format(createTime),
-      description: 'test',
+      description: "test",
       functions,
-      objectTypes: [2],
-      errorCode: undefined,
+      objectType: 1,
+      error_code: undefined,
       liveCode: undefined,
       id: 1,
-      name: 'sample_image',
+      name: "sample_image",
       related: [],
       state: 3,
-      official: undefined,
-      url: 'sample-tmi:stage-test-01',
-      isSample: true,
+      url: "sample-tmi:stage-test-01",
     }
     expect(image).toEqual(expected)
   })

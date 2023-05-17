@@ -35,7 +35,7 @@ enum RequestType {
     CMD_LABEL_ADD = 12;
     CMD_LABEL_GET = 13;
     CMD_TERMINATE = 14;
-    CMD_INSPECT_IMAGE = 16;
+    CMD_PULL_IMAGE = 16;
     CMD_GPU_INFO_GET = 17;
     CMD_SAMPLING = 18;
     CMD_EVALUATE = 19;
@@ -53,7 +53,6 @@ enum RequestType {
 
     // Long task
     TASK_CREATE = 1001;
-    TASK_SEQ_CREATE = 1002;
 
     reserved 15;
 }
@@ -95,11 +94,7 @@ message GeneralReq {
     string model_stage = 27;
     // use in filter and fuse: filter from gt, or pred, or any of them
     mir.command.AnnotationType annotation_type = 28;
-    // required by LabelFree API
-    string user_token = 29;
-    mir.command.ObjectType object_type = 30;
     ReqCreateTask req_create_task = 1001;
-    ReqCreateSequentialTask req_create_seq = 1002;
 
     reserved 17, 24;
 }
@@ -110,19 +105,17 @@ message GeneralResp {
     string message = 3;
     repeated string ext_strs = 4;
     string hash_id = 6;
+    map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
     repeated string sandbox_versions = 11;
-    // key: model object type, value: map<task_type, config>
-    // task_type: train, mine and infer, see mir.command.TaskType
-    map<int32, Int32ToStringMap> docker_image_config = 12;
     RespCMDInference objects = 1000;
-    bool docker_image_enable_livecode = 1001;
+    bool enable_livecode = 1001;
     mir.command.Evaluation evaluation = 1002;
-    bool docker_image_is_official = 1004;
+    mir.command.ObjectType object_type = 1003;
 
-    reserved 5, 7, 1003;
+    reserved 5;
 }
 
 // base args for create task request
@@ -138,12 +131,6 @@ message ReqCreateTask {
     TaskReqCopyData copy = 105;
     TaskReqLabeling labeling = 106;
     TaskReqImportModel import_model = 107;
-}
-
-message ReqCreateSequentialTask {
-    string seq_id = 1;
-    repeated GeneralReq tasks = 2;
-    int32 gpu_count = 3;
 }
 
 message TrainingDatasetType {
@@ -162,9 +149,7 @@ message TaskReqMining {
 }
 
 message TaskReqImportDataset {
-    // path to dataset dir, with sub dirs: images and gt
-    // or path to dataset zip file
-    // or URL to dataset zip file
+    // store media files
     string asset_dir = 1;
     // pred and gt file dir
     //  for voc: single pascal xml per asset, same base_filename as in asset-folder
@@ -174,9 +159,8 @@ message TaskReqImportDataset {
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
+    mir.command.ObjectType object_type = 6;
     bool is_instance_segmentation = 7;
-
-    reserved 6;
 }
 
 message TaskReqExporting {
@@ -200,9 +184,8 @@ message TaskReqLabeling {
     string project_name = 3;
     bool export_annotation = 4;
     mir.command.AnnotationType annotation_type = 5;
+    mir.command.ObjectType object_type = 6;
     bool is_instance_segmentation = 7;
-
-    reserved 6;
 }
 
 message TaskReqImportModel {
@@ -225,10 +208,6 @@ message Label {
     repeated string aliases = 3;
     string create_time = 4;  // RFC 3339 date strings
     string update_time = 5;  // RFC 3339 date strings
-}
-
-message Int32ToStringMap {
-    map<int32, string> config = 1;
 }
 
 service mir_controller_service {

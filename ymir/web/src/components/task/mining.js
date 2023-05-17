@@ -7,7 +7,8 @@ import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
-import { TYPES, getConfig } from '@/constants/image'
+import { TYPES } from '@/constants/image'
+import { randomNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
@@ -22,14 +23,14 @@ import Desc from '@/components/form/desc'
 import MergeType from '@/components/form/items/MergeType'
 
 import styles from './mining.less'
-import SubmitButtons from './SubmitButtons'
+import SubmitButtons from './submitButtons'
 
 function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image, topK, config, iterationId } = query
+  const { mid, image, topK, config, iterationId, generate_annotations = true } = query
   const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
   const did = Number(query.did)
   const [dataset, setDataset] = useState({})
@@ -37,6 +38,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState({})
   const [gpu_count, setGPU] = useState(0)
+  const [imageHasInference, setImageHasInference] = useState(false)
   const [live, setLiveCode] = useState(false)
   const [liveInitialValues, setLiveInitialValues] = useState({})
   const [openpai, setOpenpai] = useState(false)
@@ -103,6 +105,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
         modelStage: [model_id, model_stage_id],
         image: docker_image_id,
         topk: top_k,
+        inference: generate_annotations,
         description,
       })
       setShowConfig(true)
@@ -117,11 +120,11 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   }, [location.state])
 
   function imageChange(_, option = {}) {
-    if (!option) {
-      return setConfig({})
-    }
-    const { image, objectType } = option
-    const configObj = getConfig(image, TYPES.MINING, objectType) || {}
+    const { url, configs = [] } = option.image
+    const configObj = configs.find((conf) => conf.type === TYPES.MINING) || {}
+    const hasInference = configs.some((conf) => conf.type === TYPES.INFERENCE)
+    setImageHasInference(hasInference)
+    form.setFieldsValue({ inference: hasInference && generate_annotations })
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }
@@ -224,9 +227,9 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
           <Form.Item
             tooltip={t('tip.task.filter.strategy')}
             label={t('task.mining.form.topk.label')}
-            name="topk"
-            rules={[{ type: 'number', min: 1, max: dataset.assetCount - 1 || 1 }]}
-          >
+            name='topk' rules={[
+              { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
+            ]}>
             <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
           </Form.Item>
           <Form.Item tooltip={t('tip.task.filter.mgpucount')} label={t('task.gpu.count')}>

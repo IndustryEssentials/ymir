@@ -2,10 +2,9 @@ import { FC, useEffect, useState } from 'react'
 import { Form, Select, SelectProps } from 'antd'
 import { isDetection } from '@/constants/objectType'
 import t from '@/utils/t'
-import { Prediction } from '@/constants'
 
 type Props = SelectProps & {
-  prediction?: Prediction
+  prediction?: YModels.Prediction
 }
 
 const CKSelector: FC<Props> = ({ prediction }) => {

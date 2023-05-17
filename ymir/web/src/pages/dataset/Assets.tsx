@@ -1,24 +1,24 @@
-import { ComponentProps, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FC } from 'react'
 import { useLocation, useParams } from 'umi'
-import { Pagination, Button, Space, Card } from 'antd'
+import { Pagination, Row, Col, Button, Space, Card, Tag, Modal, Select } from 'antd'
 
 import t from '@/utils/t'
 import { randomBetween } from '@/utils/number'
 import useRequest from '@/hooks/useRequest'
-import useModal from '@/hooks/useModal'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
+import KeywordSelector from '@/components/form/KeywordFilter'
+import EvaluationSelector from '@/components/form/EvaluationSelector'
 import Asset from './components/Asset'
 import List from './components/AssetList'
-import AssetsTitle, { FormValues } from './components/AssetsTitle'
 
 import styles from './assets.less'
-
-import { List as ListType } from '@/models/typings/common'
-import { ValueType } from '@/components/form/KeywordFilter'
-import { validState } from '@/constants/common'
-import { Prediction } from '@/constants'
+import DatasetInfo from './components/DatasetInfo'
+import ListColumnCountSelect from './components/ListColumnCountSelect'
+import ListVisualSelect from './components/ListVisualSelect'
+import VisualModes from './components/VisualModes'
+import { isDetection } from '@/constants/objectType'
 
 type IndexType = {
   hash: string
@@ -27,78 +27,64 @@ type IndexType = {
 }
 
 const Dataset: FC = () => {
-  const { id: pid, did, prid } = useParams<{ id: string; did: string; type: string; prid?: string }>()
-  const isPred = !!prid
-  const [id, setId] = useState(0)
+  const { id: pid, did: id } = useParams<{ id: string; did: string; type: string }>()
+  const location = useLocation()
+  const type = location.hash.replace(/^#/, '')
   const initQuery = {
     pid,
-    annoType: isPred ? 2 : 1,
-    id: 0,
+    annoType: type === 'pred' ? 2 : 1,
+    id,
     offset: 0,
     limit: 20,
   }
   const [filterParams, setFilterParams] = useState<YParams.AssetQueryParams>(initQuery)
   const [currentPage, setCurrentPage] = useState(1)
+  const [assetVisible, setAssetVisible] = useState(false)
   const [currentAsset, setCurrentAsset] = useState<IndexType>({
     hash: '',
     index: 0,
   })
+  const [columns, setColumns] = useState(5)
+  const [isPred, setPred] = useState(false)
+  const [mode, setMode] = useState<VisualModes>(VisualModes.Gt)
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
   })
   const { data: prediction, run: getPrediction } = useRequest<YModels.Dataset>('prediction/getPrediction', {
     loading: false,
   })
-  const [current, setCurrent] = useState<Prediction | YModels.Dataset>()
+  const [current, setCurrent] = useState<YModels.Prediction | YModels.Dataset>()
   const { data: { items: assets, total } = { items: [], total: 0 }, run: getAssets } = useRequest<
-    ListType<YModels.Asset>,
+    YStates.List<YModels.Asset>,
     [
       YParams.AssetQueryParams & {
         datasetKeywords?: string[]
       },
     ]
   >('asset/getAssets')
-  const [AssetModal, showAssetModal] = useModal<ComponentProps<typeof Asset>>(Asset, {
-    width: '100%',
-    className: styles.assetDetail,
-    title: t('dataset.asset.title'),
-  })
-  const [filterValues, setFilterValues] = useState<FormValues>({})
 
   useEffect(() => {
-    const id = Number(prid ? prid : did)
-    setId(id)
-  }, [did, prid])
+    ;(type === 'pred' ? getPrediction : getDataset)({ id, verbose: true, force: true })
+  }, [id])
 
   useEffect(() => {
-    id && (isPred ? getPrediction : getDataset)({ id, verbose: true, force: true })
-  }, [id, isPred])
+    const isPred = type === 'pred'
+    setPred(isPred)
+    setMode(isPred ? VisualModes.All : VisualModes.Gt)
+  }, [type])
 
   useEffect(() => {
     setCurrent(isPred ? prediction : dataset)
-  }, [dataset, prediction, isPred])
+  }, [dataset, prediction, type])
 
   useEffect(() => {
-    if (current?.id && validState(current.state)) {
-      const { offset = 0, limit = 20 } = filterParams
-      setCurrentPage(offset / limit + 1)
-      filter({ ...filterParams, id: current.id })
-    }
+    const { offset = 0, limit = 20 } = filterParams
+    setCurrentPage(offset / limit + 1)
+    current?.id && filter(filterParams)
+    console.log('current:', current)
   }, [current, filterParams])
 
-  useEffect(() => {
-    filterValues.keywords && filterKw(filterValues.keywords)
-  }, [filterValues.keywords])
-
-  useEffect(() => {
-    setFilterParams((query) => ({
-      ...query,
-      cm: filterValues.evaluation,
-      offset: initQuery.offset,
-    }))
-  }, [filterValues.evaluation])
-
-  const filterKw = ({ type, selected }: ValueType) => {
+  const filterKw = ({ type, selected }: { type: string; selected?: string[] }) => {
     if (!selected?.length && !filterParams.keywords?.length) {
       return
     }
@@ -122,8 +108,7 @@ const Dataset: FC = () => {
   const goAsset = (asset: YModels.Asset, hash: string, current: number) => {
     const index = (filterParams.offset || 0) + current
     setCurrentAsset({ asset, hash, index })
-    // setAssetVisible(true)
-    showAssetModal()
+    setAssetVisible(true)
   }
 
   const randomPage = () => {
@@ -133,8 +118,16 @@ const Dataset: FC = () => {
     filterPage(page, limit)
   }
 
-  const filterChange = (values: FormValues) => {
-    setFilterValues(values)
+  const updateFilterParams = (value: string | string[] | number, field: string) => {
+    setFilterParams((query) => ({
+      ...query,
+      [field]: value,
+      offset: initQuery.offset,
+    }))
+  }
+
+  const reset = () => {
+    setFilterParams({ ...initQuery, keywords: [] })
   }
 
   const randomPageButton = (
@@ -143,26 +136,63 @@ const Dataset: FC = () => {
     </Button>
   )
 
+  const renderTitle = (
+    <Row className={styles.labels}>
+      <Col flex={1}>
+        <DatasetInfo dataset={current} />
+      </Col>
+      <Col>
+        <ListColumnCountSelect value={columns} onChange={setColumns} />
+      </Col>
+      <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
+        <Space size={20} wrap={true} style={{ textAlign: 'left' }}>
+          <ListVisualSelect value={mode} style={{ width: 200 }} pred={isPred} seg={!isDetection(current?.type)} onChange={setMode} />
+          {isPred && current?.evaluated ? (
+            <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} />
+          ) : null}
+          <KeywordSelector onChange={filterKw} dataset={current} />
+        </Space>
+      </Col>
+    </Row>
+  )
+
+  const assetDetail = (
+    <Modal
+      className={styles.assetDetail}
+      destroyOnClose
+      title={t('dataset.asset.title')}
+      visible={assetVisible}
+      onCancel={() => setAssetVisible(false)}
+      centered
+      width={'100%'}
+      footer={null}
+    >
+      {currentAsset.asset ? (
+        <Asset
+          id={id}
+          pred={isPred}
+          asset={currentAsset.asset}
+          datasetKeywords={current?.keywords}
+          filters={filterParams}
+          filterKeyword={assetVisible ? filterParams.keywords : undefined}
+          index={currentAsset.index}
+          total={total}
+          dataset={current}
+        />
+      ) : null}
+    </Modal>
+  )
+
   return (
     <div className={styles.datasetDetail}>
       <Breadcrumbs />
-      <AssetModal
-        id={id}
-        pred={isPred}
-        asset={currentAsset.asset}
-        datasetKeywords={current?.keywords}
-        filters={filterParams}
-        filterKeyword={filterParams?.keywords}
-        index={currentAsset.index}
-        total={total}
-        dataset={current}
-      />
-      <Card className="list" title={<AssetsTitle isPred={isPred} current={current} onChange={filterChange} />}>
+      {assetDetail}
+      <Card className="list" title={renderTitle}>
         <List
           list={assets}
           goAsset={goAsset}
-          columns={filterValues.columns}
-          mode={filterValues.mode}
+          columns={columns}
+          mode={mode}
           pager={
             <Space className={styles.pagi}>
               <Pagination

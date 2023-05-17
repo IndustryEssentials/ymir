@@ -25,7 +25,6 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             req_executor_config=request.docker_image_config,
             class_names=class_names,
             output_config_file=output_config_file,
-            object_type=request.object_type,
             assets_config=self._assets_config,
             preprocess=train_request.preprocess_config,
         )

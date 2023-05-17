@@ -2,58 +2,58 @@ import { diffTime } from '@/utils/date'
 import { actions } from '@/constants/common'
 import { transferPrediction } from '@/constants/prediction'
 import { batchAct, evaluate, getPrediction, getPredictions } from '@/services/prediction'
-import { createEffect, createReducersByState, transferList } from './_utils'
-import { PredictionState, PredictionStore } from '.'
-import { Prediction } from '@/constants'
+import { createEffect, createReducers, transferList } from './_utils'
 type PredictionsPayload = { pid: number; force?: boolean; [key: string]: any }
 type PredictionPayload = { id: number; force?: boolean }
 
-const state: PredictionState =  {
-  predictions: {},
-  prediction: {},
-}
-const reducers = createReducersByState(state)
+const reducersList = [
+  { name: 'UpdatePredictions', field: 'predictions' },
+  { name: 'UpdatePrediction', field: 'prediction' },
+]
 
 const hideAction = (type: actions) =>
   createEffect<{ pid: number; ids: number[] }>(function* ({ payload: { pid, ids = [] } }, { call, put }) {
     const { code, result } = yield call(batchAct, type, pid, ids)
     if (code === 0) {
-      return result.map(transferPrediction)
+      return result
     }
   })
 
-const PredictionModel: PredictionStore = {
+const PredictionModel: YStates.PredictionStore = {
   namespace: 'prediction',
-  state,
+  state: {
+    predictions: {},
+    prediction: {},
+  },
   effects: {
     getPredictions: createEffect<PredictionsPayload>(function* ({ payload }, { call, select, put }) {
       const { pid, force, ...params } = payload
       if (!force) {
-        const list = yield select(({ prediction }) => prediction.predictions[pid])
+        const list: YStates.List<YModels.Prediction> = yield select(({ prediction }) => prediction.predictions[pid])
         if (list) {
           return list
         }
       }
-      const { code, result } = yield call<YModels.Response<YModels.ResponseResultList>>(getPredictions, { pid, ...params })
+      const { code, result } = yield call<YModels.ResponseResultList>(getPredictions, { pid, ...params })
       if (code === 0 && result) {
-        type originData = YModels.BackendData & { create_datatime: string }
+        type originData = { create_datatime: string; [key: string]: any }
         const sorter = (a: originData, b: originData) => diffTime(b.create_datetime, a.create_datetime)
-        const groupByModel = ({ items, total }: YModels.ResponseResultList) => ({
+        const groupByModel = ({ items, total }: { items: { [key: string]: originData[] }; total: number }) => ({
           items: Object.values(items)
             .map((list) =>
-              list.sort(sorter).map((item: originData, index: number) => ({
+              list.sort(sorter).map((item, index) => ({
                 ...item,
                 rowSpan: index === 0 ? list.length : 0,
               })),
             )
             .sort(([a], [b]) => sorter(a, b))
-            .map((its, index) => its.map((it: originData) => ({ ...it, odd: index % 2 === 0 })))
+            .map((its, index) => its.map((it) => ({ ...it, odd: index % 2 === 0 })))
             .flat(),
           total,
         })
 
         const listResponse = groupByModel(result)
-        const predictions = transferList(listResponse, transferPrediction)
+        const predictions = transferList<YModels.Prediction>(listResponse, transferPrediction)
 
         const getIds = (key: keyof YModels.InferenceParams) => {
           const ids = predictions.items
@@ -123,18 +123,7 @@ const PredictionModel: PredictionStore = {
 
     hide: hideAction(actions.hide),
     restore: hideAction(actions.restore),
-    batch: createEffect<number[]>(function* ({ payload: ids }, { put }) {
-      const list = []
-      for (let key = 0; key < ids.length; key++) {
-        const id = ids[key]
-        const pred = yield put.resolve({
-          type: 'getPrediction',
-          payload: { id, force: true },
-        })
-        list.push(pred)
-      }
-      return list
-    }),
+
     evaluate: createEffect<YParams.EvaluationParams>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(evaluate, payload)
       if (code === 0) {
@@ -142,7 +131,7 @@ const PredictionModel: PredictionStore = {
       }
     }),
   },
-  reducers,
+  reducers: createReducers(reducersList),
 }
 
 export default PredictionModel

@@ -14,7 +14,7 @@ import {
 } from "antd"
 
 import t from "@/utils/t"
-import ProjectEmpty from "@/components/empty/Project"
+import ProjectEmpty from "@/components/empty/project"
 import Del from "./del"
 import Item from "@/components/project/list/Item"
 import s from "./list.less"

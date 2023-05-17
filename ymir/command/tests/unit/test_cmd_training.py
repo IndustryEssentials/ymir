@@ -215,10 +215,9 @@ class TestCmdTraining(unittest.TestCase):
             executor_config = yaml.safe_load(f.read())
         executor_config['class_names'] = ['airplane']
         executor_config['gpu_id'] = '0'
-        task_context = {'object_type': mirpb.ObjectType.OT_DET_BOX}
-        config = {mir_settings.EXECUTOR_CONFIG_KEY: executor_config, mir_settings.TASK_CONTEXT_KEY: task_context}
+        config = {mir_settings.EXECUTOR_CONFIG_KEY: executor_config}
         with open(self._config_file, 'w') as f:
-            yaml.dump(config, f, allow_unicode=True)
+            yaml.dump(config, f)
 
     def __deprepare_dirs(self):
         if os.path.isdir(self._test_root):

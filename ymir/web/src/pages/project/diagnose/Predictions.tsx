@@ -1,39 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Card, ConfigProvider, Pagination, Table, TableColumnsType } from 'antd'
-import { useHistory, useParams, useSelector } from 'umi'
-import {  } from 'react-redux'
+import { Card, Pagination, Table, TableColumnsType } from 'antd'
+import { useHistory, useParams } from 'umi'
+import { useSelector } from 'react-redux'
 
+import useFetch from '@/hooks/useFetch'
 import t from '@/utils/t'
 import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask, validState } from '@/constants/common'
-import useRequest from '@/hooks/useRequest'
 
 import { getPredictionColumns } from '@/components/table/Columns'
 import Actions from '@/components/table/Actions'
 import Hide, { RefProps } from '@/components/common/hide'
-import MetricsModal from './components/MetricsModal'
-import Empty from '@/components/empty/Pred'
 
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
-import { List } from '@/models/typings/common'
-import { Prediction } from '@/constants'
+import { validDataset } from '@/constants/dataset'
+import MetricsModal from './components/MetricsModal'
+import useRequest from '@/hooks/useRequest'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
 const Predictions: React.FC = () => {
   const { id: pid } = useParams<{ id?: string }>()
   const history = useHistory()
-  const [predictions, setPredictions] = useState<Prediction[]>([])
+  const [predictions, setPredictions] = useState<YModels.Prediction[]>([])
   const [query, setQuery] = useState(initQuery)
   const hideRef = useRef<RefProps>(null)
-  const { data: { items, total } = { items: [], total: 0 }, run: getPredictions } = useRequest<List<Prediction>>('prediction/getPredictions')
+  const { data: { items, total } = { items: [], total: 0 }, run: getPredictions } = useRequest<YStates.List<YModels.Prediction>>('prediction/getPredictions')
   const cols = getPredictionColumns(predictions[0]?.type)
-  const [currentPrediction, setCurrentPrediction] = useState<Prediction>()
+  const [currentPrediction, setCurrentPrediction] = useState<YModels.Prediction>()
   const [metricsModalVisible, setMModalVisible] = useState(false)
-  const cacheDatasets = useSelector((state) => state.dataset.dataset)
-  const cacheModels = useSelector((state) => state.model.model)
-  const progressTasks = useSelector(({ socket }) => socket.tasks)
-  const actions = (record: Prediction): YComponents.Action[] => [
+  const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
+  const cacheModels = useSelector<YStates.Root, YStates.IdMap<YModels.Model>>((state) => state.model.model)
+  const progressTasks = useSelector<YStates.Root, YModels.ProgressTask[]>(({ socket }) => socket.tasks)
+  const actions = (record: YModels.Prediction): YComponents.Action[] => [
     {
       key: 'diagnose',
       label: t('common.action.diagnose'),
@@ -56,7 +55,7 @@ const Predictions: React.FC = () => {
       icon: <DeleteIcon />,
     },
   ]
-  const actionCol: TableColumnsType<Prediction> = [
+  const actionCol: TableColumnsType<YModels.Prediction> = [
     {
       dataIndex: 'action',
       title: t('common.action'),
@@ -76,7 +75,7 @@ const Predictions: React.FC = () => {
         fetchPredictions()
       } else {
         const updatedDatasets = predictions.map((dataset) => {
-          const ds = updateResultByTask(
+          const ds = updateResultByTask<typeof dataset>(
             dataset,
             progressTasks.find((task) => task.hash === dataset.task.hash),
           )
@@ -102,7 +101,7 @@ const Predictions: React.FC = () => {
     )
   }, [cacheDatasets, cacheModels, items])
 
-  const popupModal = (prediction: Prediction) => {
+  const popupModal = (prediction: YModels.Prediction) => {
     setCurrentPrediction(prediction)
     setMModalVisible(true)
   }
@@ -117,34 +116,28 @@ const Predictions: React.FC = () => {
     return getPredictions({ pid, ...query })
   }
 
-  const hide = (dataset: Prediction) => {
+  const hide = (dataset: YModels.Prediction) => {
     hideRef?.current?.hide([dataset])
   }
 
   return (
-    <div className={s.list}>
-      {predictions.length ? (
-        <>
-          <Table
-            columns={columns}
-            dataSource={predictions}
-            rowKey={(record) => record.id}
-            rowClassName={(record) => (record.odd ? 'oddRow' : '')}
-            pagination={false}
-          />
-          <Pagination
-            className={`pager`}
-            onChange={pageChange}
-            current={query.current}
-            defaultPageSize={query.limit}
-            total={total}
-            showQuickJumper
-            showSizeChanger
-          />
-        </>
-      ) : (
-        <Empty />
-      )}
+    <div className={s.inferDataset}>
+      <Table
+        columns={columns}
+        dataSource={predictions}
+        rowKey={(record) => record.id}
+        rowClassName={(record) => (record.odd ? 'oddRow' : '')}
+        pagination={false}
+      />
+      <Pagination
+        className={`pager`}
+        onChange={pageChange}
+        current={query.current}
+        defaultPageSize={query.limit}
+        total={total}
+        showQuickJumper
+        showSizeChanger
+      />
       <Hide ref={hideRef} type="prediction" ok={fetchPredictions} msg="pred.action.del.confirm.content" />
       <MetricsModal width={'90%'} prediction={currentPrediction} visible={metricsModalVisible} onCancel={() => setMModalVisible(false)} footer={null} />
     </div>

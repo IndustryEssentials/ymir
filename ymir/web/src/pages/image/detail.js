@@ -3,7 +3,7 @@ import { Descriptions, Space, Card, Button, Row, Col } from 'antd'
 import { useParams, Link, useHistory, useSelector } from 'umi'
 
 import t from '@/utils/t'
-import { TYPES, STATES, getImageTypeLabel, isSampleImage } from '@/constants/image'
+import { TYPES, STATES, getImageTypeLabel } from '@/constants/image'
 import { getProjectTypeLabel } from '@/constants/project'
 import { ROLES } from '@/constants/user'
 import useFetch from '@/hooks/useFetch'
@@ -13,8 +13,6 @@ import LinkModal from './components/relate'
 import Del from './components/del'
 import ImagesLink from './components/imagesLink'
 import StateTag from '@/components/image/StateTag'
-import Configs from './components/Configs'
-import OfficialTag from '@/components/image/OfficialTag'
 
 import styles from './detail.less'
 import { EditIcon, PublishIcon, DeleteIcon, LinkIcon } from '@/components/common/Icons'
@@ -35,7 +33,7 @@ function ImageDetail() {
     const { name, related } = image
     linkModalRef.current.show({ id, name, related })
   }
-  const publish = ({ name = '', url = '', description = '' }) =>
+  const share = ({ name = '', url = '', description = '' }) =>
     history.push(`/home/public_image/publish?name=${name}&image_addr=${url}&description=${description}`)
 
   const del = () => {
@@ -55,19 +53,38 @@ function ImageDetail() {
   }
 
   function isDone() {
-    return image.state === STATES.VALID
+    return image.state === STATES.DONE
   }
 
   function isError() {
-    return image.state === STATES.INVALID
+    return image.state === STATES.ERROR
+  }
+
+  function renderConfigs(configs = []) {
+    return configs.map(({ config, type }) => {
+      return (
+        <div key={type} style={{ margin: '10px 0 20px' }}>
+          <h3>{t(getImageTypeLabel([type])[0])}</h3>
+          <div>{renderConfig(config)}</div>
+        </div>
+      )
+    })
+  }
+
+  function renderConfig(config = {}) {
+    return Object.keys(config).map((key) => (
+      <Row key={key}>
+        <Col style={{ width: 200, fontWeight: 'bold' }}>{key}:</Col>
+        <Col>{config[key]}</Col>
+      </Row>
+    ))
   }
 
   function renderTitle() {
     return (
       <Row>
         <Col flex={1}>
-          <span>{image.name} </span>
-          <OfficialTag official={image.official} />
+          {image.name}{' '}
           {isAdmin() ? (
             <Link to={`/home/image/add/${id}`}>
               <EditIcon />
@@ -90,7 +107,7 @@ function ImageDetail() {
         <div className="infoTable">
           <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('image.detail.title')}>
             <Item label={t('image.detail.label.name')}>{image.name}</Item>
-            <Item label={t('common.object.type')}>{image?.objectTypes?.map((type) => t(getProjectTypeLabel(type, true))).join(',')}</Item>
+            <Item label={t('common.object.type')}>{t(getProjectTypeLabel(image.objectType, true))}</Item>
             <Item label={t('image.detail.label.type')}>
               {getImageTypeLabel(image.functions)
                 .map((label) => t(label))
@@ -115,18 +132,18 @@ function ImageDetail() {
               {image.description}
             </Item>
             <Item label={t('image.detail.label.config')} span={2}>
-              <Configs configs={image.configs} />
+              {renderConfigs(image.configs)}
             </Item>
             <Item label={t('image.detail.label.state')} span={2}>
-              <StateTag label={true} state={image.state} code={image.errorCode} />
+              <StateTag label={true} state={image.state} />
             </Item>
 
             <Item label={''} span={2}>
               <Space>
-                <Button hidden={!isAdmin() || !isDone()} onClick={() => publish(image)} icon={<PublishIcon />}>
+                <Button hidden={!isAdmin() || !isDone()} onClick={() => share(image)} icon={<PublishIcon />}>
                   {t('image.action.publish')}
                 </Button>
-                <Button hidden={!isAdmin() || isSampleImage(image)} onClick={del} icon={<DeleteIcon />}>
+                <Button hidden={!isAdmin() || (!isDone() && !isError())} onClick={del} icon={<DeleteIcon />}>
                   {t('common.del')}
                 </Button>
               </Space>

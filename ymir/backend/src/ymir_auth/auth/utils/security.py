@@ -58,10 +58,3 @@ def generate_password_reset_token(email: str) -> str:
 
 def verify_api_key(api_key: str) -> bool:
     return api_key == settings.APP_API_KEY
-
-
-def update_jwt_name(jwt_token: str, new_name: str) -> str:
-    payload = jwt.decode(jwt_token, settings.APP_SECRET_KEY)
-    payload["name"] = new_name
-    updated_jwt_token = jwt.encode(payload, settings.APP_SECRET_KEY, algorithm=ALGORITHM)
-    return updated_jwt_token

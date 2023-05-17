@@ -7,7 +7,7 @@ import zipfile
 from enum import IntEnum
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 from xml.etree import ElementTree
 
 from mir.protos import mir_command_pb2 as mir_cmd_pb
@@ -22,13 +22,8 @@ class LabelFreeProjectType(IntEnum):
 
 
 class LabelFree(LabelBase):
-    def __init__(self, user_token: Optional[str] = None) -> None:
-        if user_token is not None:
-            # use user specific token
-            self._requests = RequestHandler(headers={"Authorization": f"Bearer {user_token}"})
-        else:
-            # use default token
-            self._requests = RequestHandler()
+    def __init__(self, request_handler: RequestHandler = RequestHandler()) -> None:
+        self._requests = request_handler
 
     @staticmethod
     def gen_detection_label_config(keywords: List) -> str:

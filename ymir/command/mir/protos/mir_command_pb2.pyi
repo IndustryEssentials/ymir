@@ -99,13 +99,12 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     TaskTypeSampling = TaskType.V(10)
     TaskTypeFusion = TaskType.V(11)
     TaskTypeInit = TaskType.V(12)
-    TaskTypeImportModel = TaskType.V(13)
     """/ used by ymir_controller"""
 
+    TaskTypeImportModel = TaskType.V(13)
     TaskTypeCopyModel = TaskType.V(14)
     TaskTypeDatasetInfer = TaskType.V(15)
     TaskTypeEvaluate = TaskType.V(16)
-    TaskTypePullImage = TaskType.V(17)
 
 TaskTypeUnknown = TaskType.V(0)
 TaskTypeTraining = TaskType.V(1)
@@ -120,13 +119,12 @@ TaskTypeInfer = TaskType.V(9)
 TaskTypeSampling = TaskType.V(10)
 TaskTypeFusion = TaskType.V(11)
 TaskTypeInit = TaskType.V(12)
-TaskTypeImportModel = TaskType.V(13)
 """/ used by ymir_controller"""
 
+TaskTypeImportModel = TaskType.V(13)
 TaskTypeCopyModel = TaskType.V(14)
 TaskTypeDatasetInfer = TaskType.V(15)
 TaskTypeEvaluate = TaskType.V(16)
-TaskTypePullImage = TaskType.V(17)
 global___TaskType = TaskType
 
 
@@ -142,7 +140,6 @@ class _TaskStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enum
     TaskStateDone = TaskState.V(3)
     TaskStateError = TaskState.V(4)
     TaskStateMiss = TaskState.V(5)
-    TaskStateTerminate = TaskState.V(100)
 
 TaskStateUnknown = TaskState.V(0)
 TaskStatePending = TaskState.V(1)
@@ -150,7 +147,6 @@ TaskStateRunning = TaskState.V(2)
 TaskStateDone = TaskState.V(3)
 TaskStateError = TaskState.V(4)
 TaskStateMiss = TaskState.V(5)
-TaskStateTerminate = TaskState.V(100)
 global___TaskState = TaskState
 
 
@@ -222,10 +218,8 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
-    OT_INS_SEG = ObjectType.V(4)
-    """used by controller and app"""
-
-    OT_NO_ANNOS = ObjectType.V(100)
+    OT_MULTI_MODAL = ObjectType.V(50)
+    OT_NO_ANNOTATIONS = ObjectType.V(100)
 
 OT_UNKNOWN = ObjectType.V(0)
 OT_CLASS = ObjectType.V(1)
@@ -237,10 +231,8 @@ OT_DET_BOX = ObjectType.V(2)
 OT_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
 
-OT_INS_SEG = ObjectType.V(4)
-"""used by controller and app"""
-
-OT_NO_ANNOS = ObjectType.V(100)
+OT_MULTI_MODAL = ObjectType.V(50)
+OT_NO_ANNOTATIONS = ObjectType.V(100)
 global___ObjectType = ObjectType
 
 

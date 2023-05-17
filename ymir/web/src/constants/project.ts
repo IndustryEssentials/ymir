@@ -39,7 +39,6 @@ function transferProject(data: YModels.BackendData) {
     modelCount: data.model_count || 0,
     modelProcessingCount: data.processing_model_count || 0,
     modelErrorCount: data.error_model_count || 0,
-    recommendImage: data.recommended_docker_image_id || 0,
   }
   return project
 }

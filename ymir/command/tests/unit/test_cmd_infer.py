@@ -96,11 +96,11 @@ class TestCmdInfer(unittest.TestCase):
                                             },
                                             stages={model_stage.stage_name: model_stage},
                                             best_stage_name=model_stage.stage_name,
-                                            object_type=mirpb.ObjectType.OT_DET_BOX,
+                                            object_type=models.ModelObjectType.MOT_DET_BOX.value,
                                             package_version=YMIR_MODEL_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
-            yaml.dump(model_storage.dict(), f, allow_unicode=True)
+            yaml.dump(model_storage.dict(), f)
 
         # pack model
         with tarfile.open(os.path.join(self._models_location, 'fake_model_hash'), "w:gz") as dest_tar_gz:
@@ -114,10 +114,8 @@ class TestCmdInfer(unittest.TestCase):
         # shutil.copyfile(src=os.path.join(test_assets_root, 'infer-template.yaml'), dst=self._config_file)
         with open(os.path.join(test_assets_root, 'infer-template.yaml'), 'r') as f:
             executor_config = yaml.safe_load(f)
-        task_context = {"object_type": mirpb.ObjectType.OT_DET_BOX}
         with open(self._config_file, 'w') as f:
-            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config,
-                            mir_settings.TASK_CONTEXT_KEY: task_context}, f, allow_unicode=True)
+            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config}, f)
 
     def _prepare_infer_result_file(self):
         fake_infer_output_dict = {

@@ -27,6 +27,12 @@ const Item: FC<Props> = ({ project, more }) => {
             <ObjectTypeTag type={project.type} />
             {project.isExample ? <span className="extraTag example">{t('project.example')}</span> : null}
           </span>
+          <span className="titleItem">
+            <span className="titleLabel">{t('project.train_classes')}:</span>
+            <span className="titleContent">
+              <KeywordsItem keywords={project.keywords} />
+            </span>
+          </span>
           {project.enableIteration ? (
             <span className="titleItem">
               <span className="titleLabel">{t('project.iteration.current')}:</span>
@@ -102,7 +108,7 @@ const Item: FC<Props> = ({ project, more }) => {
   return (
     <List.Item
       onClick={() => {
-        history.push(`/home/project/${project.id}/dataset`)
+        history.push(`/home/project/${project.id}/detail`)
       }}
     >
       <Skeleton active loading={!project.id}>

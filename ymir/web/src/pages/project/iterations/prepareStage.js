@@ -78,7 +78,7 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
       </Row>
     )
 
-  const running = <Select disabled labelInValue value={result?.name}></Select>
+  const running = <Select disabled labelInValue value={`${result?.name} ${result?.versionName}`}></Select>
 
   return (
     <Form.Item tooltip={t(stage.tip)} label={t(stage.label)} required={!stage.option}>

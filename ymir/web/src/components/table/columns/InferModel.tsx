@@ -3,29 +3,13 @@ import { ColumnType } from 'antd/lib/table'
 import StrongTitle from './StrongTitle'
 import ModelVersionName from '@/components/result/ModelVersionName'
 import { Link } from 'umi'
-import usePrimaryMetric from '@/hooks/usePrimaryMetric'
-import { getRecommendStage } from '@/constants/model'
-import { Prediction } from '@/constants'
 
-const Model = <T extends Prediction>(): ColumnType<T> => ({
+const Model = <T extends YModels.Prediction>(): ColumnType<T> => ({
   title: <StrongTitle label="dataset.column.model" />,
   dataIndex: 'model',
-  render: (_, { type, projectId, inferModel, inferModelId }) => {
-    const Metric = usePrimaryMetric(({ metricLabel, metric, percent }) => {
-      return (
-        <>
-          {metricLabel}: {percent}
-        </>
-      )
-    })
-    const stage = inferModel ? getRecommendStage(inferModel) : undefined
+  render: (_, { projectId, inferModel, inferModelId }) => {
     const label = inferModel ? <ModelVersionName result={inferModel} stageId={inferModelId[1]} /> : inferModelId.join(',')
-    return (
-      <Link to={`/home/project/${projectId}/model/${inferModelId[0]}`}>
-        <span>{label}</span> <br />
-        <Metric type={type} primaryMetric={stage?.primaryMetric} />
-      </Link>
-    )
+    return <Link to={`/home/project/${projectId}/model/${inferModelId[0]}`}>{label}</Link>
   },
   onCell: ({ rowSpan }) => ({
     rowSpan,

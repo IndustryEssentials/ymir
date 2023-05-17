@@ -10,7 +10,7 @@ from app.crud.base import CRUDBase
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
 from app.schemas import CommonPaginationParams
-from id_definition.task_id import gen_task_id
+from app.utils.ymir_controller import gen_task_hash
 
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
@@ -64,7 +64,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         - dataset fusion
         - model import
         """
-        task_hash = hash_ or gen_task_id(user_id, project_id)
+        task_hash = hash_ or gen_task_hash(user_id, project_id)
         # for a placeholder task, task state and percent are closely related
         percent = 1 if state_ is TaskState.done else 0
         db_obj = Task(
@@ -158,10 +158,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             self.update_duration(db, task=task)
         return task
 
-    def update_last_message_datetime(self, db: Session, *, id: int, dt: datetime) -> Optional[Task]:
-        task = self.get(db, id=id)
-        if not task:
-            return task
+    def update_last_message_datetime(self, db: Session, *, task: Task, dt: datetime) -> Task:
         task.last_message_datetime = dt
         db.add(task)
         db.commit()

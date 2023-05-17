@@ -8,7 +8,6 @@ from .crud_iteration_step import iteration_step
 from .crud_model import model
 from .crud_model_stage import model_stage
 from .crud_model_group import model_group
-from .crud_message import message
 from .crud_project import project
 from .crud_role import role
 from .crud_task import task

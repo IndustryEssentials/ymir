@@ -9,11 +9,11 @@ import useFetch from '@/hooks/useFetch'
 import { getMergeStrategies } from '@/constants/common'
 import { MiningStrategy } from '@/constants/iteration'
 
-import RecommendKeywords from '@/components/common/RecommendKeywords'
+import RecommendKeywords from '@/components/common/recommendKeywords'
 import Panel from '@/components/form/panel'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
-import SubmitButtons from './SubmitButtons'
+import SubmitButtons from './submitButtons'
 import Dataset from '@/components/form/option/Dataset'
 
 const mergeStrategiesOptions = getMergeStrategies()

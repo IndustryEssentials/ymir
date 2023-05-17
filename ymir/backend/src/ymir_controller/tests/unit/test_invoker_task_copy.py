@@ -24,8 +24,8 @@ class TestInvokerTaskCopy(unittest.TestCase):
         # └── test_user
         #     └── ymir-dvc-test
         super().__init__(methodName=methodName)
-        self._user_name = "aaaa"
-        self._mir_repo_name = "bbbbbb"
+        self._user_name = "user"
+        self._mir_repo_name = "repoid"
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzb5'
         self._sub_task_id = utils.sub_task_id(self._task_id, 1)

@@ -1,4 +1,3 @@
-import { Prediction } from '@/constants'
 import { ReactElement } from 'react'
 
 type TabIdType = 'ap' | 'iou' | 'acc' | 'maskap' | 'boxap' | 'curve' | 'rp' | 'pr'
@@ -25,7 +24,7 @@ type Task = {
 
 type ViewProps = {
   type: TabIdType
-  predictions: Prediction[]
+  predictions: YModels.Prediction[]
   datasets: YModels.Dataset[]
   models: YModels.Model[]
   data?: EvaluationResult

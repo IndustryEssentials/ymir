@@ -5,14 +5,9 @@ import { ResultStates } from '@/constants/common'
 import t from '@/utils/t'
 import StateTag from '../task/StateTag'
 import { calTimeLeft } from '@/utils/date'
-type SourceType = {
-  progress: number
-  createTime: string
-  taskState?: number
-  task: any
-}
-function RenderProgress(state: ResultStates, result: SourceType, simple = false) {
-  const { progress, createTime, taskState, task } = result
+
+function RenderProgress(state: ResultStates, result: YModels.AllResult, simple = false) {
+  const { id, progress, createTime, taskState, task } = result
   if (ResultStates.READY === state && task?.is_terminated) {
     return t('task.state.terminating')
   }

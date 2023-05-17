@@ -58,7 +58,7 @@ class TestDatasetReader(unittest.TestCase):
             },
         }
         with open(self._custom_env_file, 'w') as f:
-            yaml.safe_dump(env_obj, f, allow_unicode=True)
+            yaml.safe_dump(env_obj, f)
 
         # training index
         with open(self._training_index_file, 'w') as f:

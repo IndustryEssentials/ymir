@@ -11,7 +11,6 @@ from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, errors, gpu_utils, tasks_util, utils
 from id_definition.error_codes import CTLResponseCode
-from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -30,6 +29,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                             prerequisites=[
                                                 checker.Prerequisites.CHECK_USER_ID,
                                                 checker.Prerequisites.CHECK_REPO_ID,
+                                                checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
                                             ])
         if checker_ret.code != CTLResponseCode.CTR_OK:
             return checker_ret
@@ -92,7 +92,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     def gen_executor_config_lock_gpus(req_executor_config: str,
                                       class_names: List,
                                       output_config_file: str,
-                                      object_type: "mir_cmd_pb.ObjectType.V",
                                       assets_config: Dict = {},
                                       preprocess: Optional[str] = None) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
@@ -106,11 +105,9 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             task_context["preprocess"] = preprocess_config
 
         task_context['server_runtime'] = assets_config['server_runtime']
-        task_context["object_type"] = object_type
 
         gpu_count = executor_config.get("gpu_count", 0)
         executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
-        executor_config["object_type"] = object_type
 
         # Openpai enabled
         if strtobool(str(executor_config.get("openpai_enable", "False"))):
@@ -150,7 +147,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             yaml.safe_dump(dict(
                 executor_config=executor_config,
                 task_context=task_context,
-            ), f, allow_unicode=True)
+            ), f)
 
         return True
 

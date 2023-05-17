@@ -54,8 +54,6 @@ class Project(Base):
     current_iteration_id = Column(Integer)
     user_id = Column(Integer, index=True, nullable=False)
 
-    recommended_docker_image_id = Column(Integer)
-
     training_dataset_group = relationship(
         "DatasetGroup",
         primaryjoin="foreign(DatasetGroup.id)==Project.training_dataset_group_id",

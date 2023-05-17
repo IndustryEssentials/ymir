@@ -3,9 +3,8 @@ import { ColumnType } from 'antd/lib/table'
 import { percent } from '@/utils/number'
 import StrongTitle from './StrongTitle'
 import { getStage } from '@/constants/model'
-import { Prediction } from '@/constants'
 
-function Map<T extends Prediction>(label = 'model.stage.metrics.primary.label.det'): ColumnType<T> {
+function Map<T extends YModels.Prediction>(label = 'model.stage.metrics.primary.label.det'): ColumnType<T> {
   return {
     title: <StrongTitle label={label} />,
     dataIndex: 'map',

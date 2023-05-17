@@ -196,7 +196,7 @@ function List({ project }) {
     if (!dataset) {
       return
     }
-    const label = `${dataset.name} (${dataset.assetCount})`
+    const label = `${dataset.name} ${dataset.versionName} (${dataset.assetCount})`
     return (
       <span title={label}>
         <Dataset dataset={dataset} />

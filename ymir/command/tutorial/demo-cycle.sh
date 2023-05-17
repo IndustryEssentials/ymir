@@ -168,7 +168,7 @@ import() {
     _echo_in_color $C_YELLOW "import from master to $TRAINING_SET_PREFIX"
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
-                    --asset-path "$RAW_TRAINING_SET_INDEX_PATH" \
+                    --index-file "$RAW_TRAINING_SET_INDEX_PATH" \
                     --pred-dir "$RAW_TRAINING_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$TRAINING_SET_PREFIX" \
@@ -178,7 +178,7 @@ import() {
     _echo_in_color $C_YELLOW "import from master to $VAL_SET_PREFIX"
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
-                    --asset-path "$RAW_VAL_SET_INDEX_PATH" \
+                    --index-file "$RAW_VAL_SET_INDEX_PATH" \
                     --pred-dir "$RAW_VAL_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$VAL_SET_PREFIX" \
@@ -188,7 +188,7 @@ import() {
     _echo_in_color $C_YELLOW "import from master to $MINING_SET_PREFIX"
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
-                    --asset-path "$RAW_MINING_SET_INDEX_PATH" \
+                    --index-file "$RAW_MINING_SET_INDEX_PATH" \
                     --pred-dir "$RAW_MINING_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$MINING_SET_PREFIX" \
@@ -373,7 +373,7 @@ inlabel() {
     if [[ $2 -ge 0 ]]; then
         _echo_in_color $C_YELLOW "import"
         $MIR_EXE import --root "$MIR_ROOT" \
-                    --asset-path "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2.index.tsv" \
+                    --index-file "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2.index.tsv" \
                     --pred-dir "$3" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$MINING_SET_PREFIX" \

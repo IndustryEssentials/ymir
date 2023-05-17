@@ -22,6 +22,7 @@ class DatasetBase(BaseModel):
     project_id: int
     # task_id haven't created yet
     # user_id can be parsed from token
+    keywords: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -58,7 +59,6 @@ class DatasetCreate(DatasetBase):
     hash: str = Field(description="related task hash")
     task_id: int
     user_id: int
-    is_visible: bool = True
 
     class Config:
         use_enum_values = True
@@ -68,6 +68,7 @@ class DatasetCreate(DatasetBase):
 class DatasetUpdate(BaseModel):
     description: Optional[str]
     result_state: Optional[ResultState]
+    keywords: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -87,32 +88,21 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
         orm_mode = True
 
 
-class DatasetBasicAnalysis(BaseModel):
-    """
-    used for dataset improvement suggestion
-    """
-
-    density_proportion: Optional[Dict]
-    class_proportion: Optional[Dict]
-    class_obj_count: Optional[Dict]
-
-
 class DatasetInDB(DatasetInDBBase):
-    keywords: Optional[Dict]
-    analysis: Optional[DatasetBasicAnalysis]
-
-    # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords", "analysis", pre=True)
-    def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict:
-        if v is None:
-            return {}
-        if isinstance(v, str):
-            return json.loads(v)
-        return v
+    pass
 
 
 # Properties to return to caller
-class Dataset(DatasetInDB):
+class Dataset(DatasetInDBBase):
+    keywords: Optional[str]
+
+    # make sure all the json dumped value is unpacked before returning to caller
+    @validator("keywords")
+    def unpack(cls, v: Optional[str]) -> Dict[str, int]:
+        if v is None:
+            return {}
+        return json.loads(v)
+
     class Config:
         use_enum_values = True
         validate_all = True
@@ -165,8 +155,7 @@ class DatasetInfo(DatasetInDBBase):
     gt: Optional[DatasetAnnotation]
     pred: Optional[DatasetAnnotation]
 
-    keywords: Optional[Dict]
-    analysis: Optional[DatasetBasicAnalysis]
+    keywords: Optional[Any]
     cks_count: Optional[Dict]
     cks_count_total: Optional[Dict]
 
@@ -174,8 +163,8 @@ class DatasetInfo(DatasetInDBBase):
     evaluation_state: Optional[int]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords", "analysis", pre=True)
-    def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict:
+    @validator("keywords")
+    def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict[str, int]:
         if v is None:
             return {}
         if isinstance(v, str):

@@ -66,8 +66,6 @@ COPY ./backend/src /app
 
 COPY --from=hel-build /ymir_hel/hel_server /app/ymir_hel/hel_server
 
-COPY ./backend/src/yapi /yapi
-
 WORKDIR /app
 COPY ./backend/deploy/git.config /root/.gitconfig
 COPY ./backend/deploy/supervisor /app/supervisor

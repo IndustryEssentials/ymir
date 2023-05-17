@@ -1,18 +1,21 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Select, Radio, Button, Form, InputNumber, Tag, Tooltip } from 'antd'
+import { connect } from 'dva'
+import { Select, Radio, Button, Form, Space, InputNumber, Tag, Tooltip } from 'antd'
 import { formLayout } from '@/config/antd'
 import { useHistory, useLocation, useParams } from 'umi'
 
 import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
-import { generateName } from '@/utils/string'
+import { string2Array, generateName } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
-import { TYPES, getConfig } from '@/constants/image'
+import { TYPES } from '@/constants/image'
 import { randomNumber } from '@/utils/number'
+import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
 import ImageSelect from '@/components/form/ImageSelect'
 import ModelSelect from '@/components/form/modelSelect'
+import SampleRates from '@/components/dataset/SampleRates'
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
@@ -22,12 +25,9 @@ import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
 import useDuplicatedCheck from '@/hooks/useDuplicatedCheck'
 import TrainFormat from './training/trainFormat'
-import SubmitButtons from './SubmitButtons'
-import useModal from '@/hooks/useModal'
-import Analysis from '@/components/dataset/Analysis'
+import SubmitButtons from './submitButtons'
 
 import styles from './training/training.less'
-import { BarChart2LineIcon } from '@/components/common/Icons'
 
 const TrainType = [
   {
@@ -39,7 +39,7 @@ const TrainType = [
 
 const KeywordsMaxCount = 5
 
-function Train({ query = {}, hidden, ok = () => {}, bottom }) {
+function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -61,24 +61,13 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   const [liveInitialValues, setLiveInitialValues] = useState({})
   const [openpai, setOpenpai] = useState(false)
   const checkDuplicated = useDuplicatedCheck(submit)
-  const { data: sys, run: getSysInfo } = useRequest('common/getSysInfo', {
-    loading: false,
-  })
-  const { data: project, run: getProject } = useRequest('project/getProject', {
-    loading: false,
-  })
-  const { data: updated, run: updateProject } = useRequest('project/updateProject')
-  const { run: getDataset } = useRequest('dataset/getDataset', {
-    loading: false,
-  })
+  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const [project, getProject] = useFetch('project/getProject', {})
+  const [updated, updateProject] = useFetch('project/updateProject')
   const { runAsync: train } = useRequest('task/train', {
     debounceWait: 300,
   })
   const [fromCopy, setFromCopy] = useState(false)
-  const [AnalysisModal, showAnalysisModal] = useModal(Analysis, {
-    width: '90%',
-    style: { paddingTop: 20 },
-  })
 
   const selectOpenpai = Form.useWatch('openpai', form)
   const [showConfig, setShowConfig] = useState(false)
@@ -92,14 +81,14 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   }, [])
 
   useEffect(() => {
-    setGPU(sys?.gpu_count)
+    setGPU(sys.gpu_count)
     if (!HIDDENMODULES.OPENPAI) {
-      setOpenpai(!!sys?.openpai_enabled)
+      setOpenpai(!!sys.openpai_enabled)
     }
   }, [sys])
 
   useEffect(() => {
-    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys?.gpu_count || 0)
+    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys.gpu_count || 0)
   }, [selectOpenpai])
 
   useEffect(() => {
@@ -118,11 +107,11 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   }, [did])
 
   useEffect(() => {
-    did && getDataset({ id: did })
+    did && func.getDataset(did)
   }, [did])
 
   useEffect(() => {
-    trainDataset && !iterationContext && !fromCopy && autoSetKeywords(trainDataset?.gt?.keywords)
+    trainDataset && !iterationContext && !fromCopy && setAllKeywords()
     if (!trainDataset && fromCopy) {
       setSelectedKeywords([])
       form.setFieldsValue({ keywords: [] })
@@ -153,8 +142,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
         setLiveCode(!!config.git_url)
         setLiveInitialValues(config)
       }
-      setTimeout(() => {
-        setConfig(config)}, 800)
+      setTimeout(() => setConfig(config), 500)
       setTestSet(validation_dataset_id)
       setTrainSet(dataset_id)
       setSelectedKeywords(keywords)
@@ -165,17 +153,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   }, [location.state])
 
   function setAllKeywords() {
-    setSelected(trainDataset?.gt?.keywords)
-  }
-
-  function autoSetKeywords(kws = []) {
-    if (kws.length > KeywordsMaxCount) {
-      return
-    }
-    setSelected(kws)
-  }
-
-  function setSelected(kws = []) {
+    const kws = trainDataset?.gt?.keywords
     setSelectedKeywords(kws)
     form.setFieldsValue({ keywords: kws })
   }
@@ -189,12 +167,9 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
     setValidationDataset(option?.dataset)
   }
 
-  function imageChange(_, option) {
-    if(!option) {
-      setConfig({})
-    }
-    const { image, objectType } = option
-    const configObj = getConfig(image, TYPES.TRAINING, objectType)
+  function imageChange(_, option = {}) {
+    const { configs } = option.image
+    const configObj = (configs || []).find((conf) => conf.type === TYPES.TRAINING) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }
@@ -224,7 +199,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
       strategy,
       name: 'group_' + randomNumber(),
       projectId: pid,
-      keywords: iterationContext ? project?.keywords : values.keywords,
+      keywords: iterationContext ? project.keywords : values.keywords,
       config,
     }
     const result = await train(params)
@@ -315,62 +290,52 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
           ) : (
             <Form.Item
               label={t('task.train.form.keywords.label')}
+              name="keywords"
+              rules={[
+                {
+                  required: true,
+                  message: t('project.add.form.keyword.required'),
+                },
+              ]}
               tooltip={t('tip.task.filter.keywords')}
-              required
               help={
                 trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ? (
-                  <Button type="link" size="small" style={{ marginLeft: '-10px' }} onClick={() => setAllKeywords()}>
+                  <Button type="link" size='small' style={{ marginLeft: '-10px' }} onClick={() => setAllKeywords()}>
                     {t('dataset.train.all.train.target')}
                   </Button>
                 ) : null
               }
             >
-              <Form.Item
-                noStyle
-                name="keywords"
-                rules={[
-                  {
-                    required: true,
-                    message: t('project.add.form.keyword.required'),
-                  },
-                ]}
-              >
-                <Select
-                  mode="multiple"
-                  style={{ width: 'calc(100% - 30px)' }}
-                  showArrow
-                  allowClear
-                  placeholder={t('project.add.form.keyword.required')}
-                  disabled={!trainSet}
-                  title={trainSet ? '' : t('task.train.keywords.disabled.tip')}
-                  onChange={setSelectedKeywords}
-                  options={(trainDataset?.gt?.keywords || []).map((k) => ({
-                    label: k,
-                    value: k,
-                  }))}
-                  maxTagCount={KeywordsMaxCount}
-                  maxTagPlaceholder={
-                    <Tooltip
-                      trigger="hover"
-                      color="white"
-                      title={selectedKeywords.slice(KeywordsMaxCount).map((k) => (
-                        <Tag key={k}>{k}</Tag>
-                      ))}
-                    >
-                      {selectedKeywords.length - KeywordsMaxCount}+
-                    </Tooltip>
-                  }
-                />
-              </Form.Item>
-              <span style={{ display: trainSet ? 'inline-block' : 'none', width: 30, textAlign: 'right' }}>
-                <BarChart2LineIcon
-                  onClick={() => {
-                    showAnalysisModal()
-                  }}
-                />
-              </span>
+              <Select
+                mode="multiple"
+                showArrow
+                allowClear
+                placeholder={t('project.add.form.keyword.required')}
+                disabled={!trainSet}
+                title={trainSet ? '' : t('task.train.keywords.disabled.tip')}
+                onChange={setSelectedKeywords}
+                options={(trainDataset?.gt?.keywords || []).map((k) => ({
+                  label: k,
+                  value: k,
+                }))}
+                maxTagCount={KeywordsMaxCount}
+                maxTagPlaceholder={
+                  <Tooltip
+                    trigger="hover"
+                    color="white"
+                    title={selectedKeywords.slice(KeywordsMaxCount).map((k) => (
+                      <Tag key={k}>{k}</Tag>
+                    ))}
+                  >
+                    {selectedKeywords.length - KeywordsMaxCount}+
+                  </Tooltip>
+                }
+              />
             </Form.Item>
           )}
+          <Form.Item label={t('dataset.train.form.samples')}>
+            <SampleRates keywords={selectedKeywords} dataset={trainDataset} negative />
+          </Form.Item>
           <Form.Item
             label={t('task.train.form.testsets.label')}
             name="testset"
@@ -424,9 +389,34 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
         </div>
         <Form.Item wrapperCol={{ offset: 8 }}>{bottom ? bottom : <SubmitButtons label="common.action.train" />}</Form.Item>
       </Form>
-      <AnalysisModal ids={[trainSet]} classes={selectedKeywords} />
     </div>
   )
 }
 
-export default Train
+const dis = (dispatch) => {
+  return {
+    getDatasets(pid, force = true) {
+      return dispatch({
+        type: 'dataset/queryAllDatasets',
+        payload: { pid, force },
+      })
+    },
+    getDataset(id, force) {
+      return dispatch({
+        type: 'dataset/getDataset',
+        payload: { id, force },
+      })
+    },
+    clearCache() {
+      return dispatch({ type: 'model/clearCache' })
+    },
+    train(payload) {
+      return dispatch({
+        type: 'task/train',
+        payload,
+      })
+    },
+  }
+}
+
+export default connect(null, dis)(Train)

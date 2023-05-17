@@ -1,4 +1,6 @@
 import enum
+import secrets
+import time
 from dataclasses import dataclass
 from typing import Any, Dict, Generator, List, Optional, Union
 
@@ -9,16 +11,15 @@ from google.protobuf.text_format import MessageToString
 
 from app.api.errors.errors import FailedtoCreateSegLabelTask, InvalidRepo
 from app.config import settings
-from app.constants.state import TaskType, RequestType, AnnotationType, DatasetType, ObjectType
+from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectType
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
-from id_definition.task_id import gen_repo_hash, gen_task_id, gen_user_hash, TaskId
+from id_definition.task_id import TaskId
 from id_definition.error_codes import CTLResponseCode as controller_error_code
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
-from app.utils.security import create_access_token
 
 
 class ExtraRequestType(enum.IntEnum):
@@ -28,6 +29,7 @@ class ExtraRequestType(enum.IntEnum):
     add_label = 400
     get_label = 401
     kill = 500
+    pull_image = 600
     get_gpu_info = 601
     create_user = 602
     evaluate = 603
@@ -78,9 +80,24 @@ def gen_typed_datasets(typed_datasets: List[Dict]) -> Generator:
         yield dataset_with_type
 
 
+def gen_user_hash(user_id: int) -> str:
+    return f"{user_id:0>4}"
+
+
+def gen_repo_hash(project_id: int) -> str:
+    return f"{project_id:0>6}"
+
+
+def gen_task_hash(user_id: int, project_id: int) -> str:
+    user_hash = gen_user_hash(user_id)
+    repo_hash = gen_repo_hash(project_id)
+    hex_task_id = f"{secrets.token_hex(3)}{int(time.time())}"
+    return str(TaskId("t", "0", "00", user_hash, repo_hash, hex_task_id))
+
+
 @dataclass
 class ControllerRequest:
-    type: Union[TaskType, ExtraRequestType, RequestType]
+    type: Union[TaskType, ExtraRequestType]
     user_id: int
     project_id: int = 0
     task_id: Optional[str] = None
@@ -90,7 +107,7 @@ class ControllerRequest:
     def __post_init__(self) -> None:
         user_hash = gen_user_hash(self.user_id)
         repo_hash = gen_repo_hash(self.project_id)
-        task_hash = self.task_id or gen_task_id(self.user_id, self.project_id)
+        task_hash = self.task_id or gen_task_hash(self.user_id, self.project_id)
 
         request = mirsvrpb.GeneralReq(user_id=user_hash, repo_id=repo_hash, task_id=task_hash)
 
@@ -107,7 +124,6 @@ class ControllerRequest:
 
     def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
-        request.object_type = args["object_type"]
         train_task_req = mirsvrpb.TaskReqTraining()
         for dataset in gen_typed_datasets(args["typed_datasets"]):
             train_task_req.in_dataset_types.append(dataset)
@@ -133,7 +149,6 @@ class ControllerRequest:
 
     def prepare_mining(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"]]
-        request.object_type = args["object_type"]
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k"):
             mine_task_req.top_k = args["top_k"]
@@ -155,15 +170,18 @@ class ControllerRequest:
         import_dataset_request = mirsvrpb.TaskReqImportDataset()
 
         import_dataset_request.asset_dir = args["asset_dir"]
+        strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
+        if strategy != ImportStrategy.no_annotations:
+            if args.get("gt_dir"):
+                import_dataset_request.gt_dir = args["gt_dir"]
+            if args.get("pred_dir"):
+                import_dataset_request.pred_dir = args["pred_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
+
+        import_dataset_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
         if args["object_type"] == ObjectType.instance_segmentation:
             import_dataset_request.is_instance_segmentation = True
 
-        strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
-        if strategy == ImportStrategy.no_annotations:
-            request.object_type = mir_cmd_pb.ObjectType.OT_NO_ANNOS
-        else:
-            request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
@@ -178,13 +196,12 @@ class ControllerRequest:
         dataset = args["typed_datasets"][0]  # label need only one dataset
         request.in_dataset_ids[:] = [dataset["hash"]]
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
-        request.user_token = create_access_token({"id": self.user_id, "name": request.user_id})
         label_request = mirsvrpb.TaskReqLabeling()
         label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
 
         # ad hoc: controller's object_type has no instance_segmentation
-        request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+        label_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
         if args["object_type"] == ObjectType.instance_segmentation:
             label_request.is_instance_segmentation = True
 
@@ -226,7 +243,6 @@ class ControllerRequest:
 
     def prepare_inference(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_INFERENCE
-        request.object_type = args["object_type"]
         request.model_hash = args["model_hash"]
         request.model_stage = args["model_stage_name"]
         request.asset_dir = args["asset_dir"]
@@ -248,20 +264,10 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_TERMINATE
         request.executant_name = args["target_container"]
         request.terminated_task_type = args["task_type"]
-        request.user_token = create_access_token({"id": self.user_id, "name": request.user_id})
         return request
 
     def prepare_pull_image(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypePullImage
-
-        request.req_type = mirsvrpb.RequestType.TASK_CREATE
-        request.singleton_op = args["url"]
-        request.req_create_task.CopyFrom(req_create_task)
-        return request
-
-    def prepare_inspect_image(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.req_type = mirsvrpb.RequestType.CMD_INSPECT_IMAGE
+        request.req_type = mirsvrpb.CMD_PULL_IMAGE
         request.singleton_op = args["url"]
         return request
 
@@ -444,12 +450,12 @@ class ControllerClient:
         resp = self.send(req)
         return resp
 
-    def pull_image(self, user_id: int, task_hash: str, url: str) -> Dict:
-        req = ControllerRequest(type=TaskType.pull_image, user_id=user_id, task_id=task_hash, args={"url": url})
-        return self.send(req)
-
-    def inspect_image(self, user_id: int, url: str) -> Dict:
-        req = ControllerRequest(type=RequestType.inspect_image, user_id=user_id, args={"url": url})
+    def pull_docker_image(self, url: str, user_id: int) -> Dict:
+        req = ControllerRequest(
+            type=ExtraRequestType.pull_image,
+            user_id=user_id,
+            args={"url": url},
+        )
         return self.send(req)
 
     def get_gpu_info(self, user_id: int) -> Dict[str, int]:
@@ -487,7 +493,6 @@ class ControllerClient:
         self,
         user_id: int,
         project_id: int,
-        object_type: int,
         model_hash: Optional[str],
         model_stage_name: Optional[str],
         asset_dir: str,
@@ -504,7 +509,6 @@ class ControllerClient:
                 "model_hash": model_hash,
                 "model_stage_name": model_stage_name,
                 "asset_dir": asset_dir,
-                "object_type": object_type,
                 "docker_image": docker_image,
                 "docker_image_config": docker_image_config,
             },

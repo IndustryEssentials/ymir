@@ -93,20 +93,6 @@ def validate_token(
     return {"message": "ok"}
 
 
-@router.post("/auth/refresh_token_name", response_model=schemas.TokenOut)
-def refresh_token_name(
-    current_user: models.User = Depends(deps.get_current_active_user),
-    token: str = Depends(deps.reusable_oauth2),
-) -> Any:
-    """
-    Refresh username in token
-    This is an adhoc endpoint for LabelFree username sync
-    """
-    new_token = security.update_jwt_name(token, current_user.username)
-    payload = {"access_token": new_token, "token_type": "bearer"}
-    return {"result": payload, **payload}
-
-
 @router.post("/password-recovery/{email}", response_model=schemas.Msg)
 def recover_password(email: str, db: Session = Depends(deps.get_db)) -> Any:
     """

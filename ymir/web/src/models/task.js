@@ -1,17 +1,30 @@
-import { getTasks, getTask, updateTask, stopTask, fusion, merge, filter, mine, train, label, infer } from '@/services/task'
-import { TASKTYPES, TASKSTATES, isFinalState } from '@/constants/task'
+import {
+  getTasks,
+  getTask,
+  deleteTask,
+  updateTask,
+  stopTask,
+  fusion,
+  merge,
+  filter,
+  mine,
+  train,
+  label,
+  infer,
+} from "@/services/task"
+import { TASKTYPES, TASKSTATES, isFinalState } from "@/constants/task"
 
 const initQuery = {
-  name: '',
-  type: '',
-  state: '',
+  name: "",
+  type: "",
+  state: "",
   time: 0,
   offset: 0,
   limit: 20,
 }
 
 export default {
-  namespace: 'task',
+  namespace: "task",
   state: {
     query: initQuery,
     tasks: {
@@ -25,7 +38,7 @@ export default {
       let { code, result } = yield call(getTasks, payload)
       if (code === 0) {
         yield put({
-          type: 'UPDATE_TASKS',
+          type: "UPDATE_TASKS",
           payload: result,
         })
         return result
@@ -38,7 +51,7 @@ export default {
         state: TASKSTATES.FINISH,
         limit: 1000,
       }
-      const result = yield put.resolve({ type: 'getTasks', payload: params })
+      const result = yield put.resolve({ type: "getTasks", payload: params })
       if (result) {
         return result.items
       }
@@ -54,28 +67,35 @@ export default {
         const ids = [...filterSets, ...trainSets, ...testSets, ...excludeSets]
         if (ids.length) {
           const datasets = yield put.resolve({
-            type: 'dataset/batchDatasets',
+            type: "dataset/batchDatasets",
             payload: { pid: result?.project_id, ids },
           })
-          const findDs = (dss) => dss.map((sid) => datasets.find((ds) => ds.id === sid))
+          const findDs = (dss) =>
+            dss.map((sid) => datasets.find((ds) => ds.id === sid))
           if (datasets && datasets.length) {
-            result['filterSets'] = findDs(filterSets)
-            result['trainSets'] = findDs(trainSets)
-            result['testSets'] = findDs(testSets)
-            result['excludeSets'] = findDs(excludeSets)
+            result["filterSets"] = findDs(filterSets)
+            result["trainSets"] = findDs(trainSets)
+            result["testSets"] = findDs(testSets)
+            result["excludeSets"] = findDs(excludeSets)
           }
           if (ps.model_id) {
             const model = yield put.resolve({
-              type: 'model/getModel',
+              type: "model/getModel",
               payload: ps.model_id,
             })
-            result['model'] = model
+            result["model"] = model
           }
           yield put({
-            type: 'UPDATE_TASK',
+            type: "UPDATE_TASK",
             payload: result,
           })
         }
+        return result
+      }
+    },
+    *deleteTask({ payload }, { call, put }) {
+      let { code, result } = yield call(deleteTask, payload)
+      if (code === 0) {
         return result
       }
     },
@@ -84,10 +104,10 @@ export default {
       let { code, result } = yield call(stopTask, id, with_data)
       if (code === 0) {
         yield put.resolve({
-          type: 'dataset/clearCache',
+          type: "dataset/clearCache",
         })
         yield put.resolve({
-          type: 'model/clearCache',
+          type: "model/clearCache",
         })
         return result
       }
@@ -97,7 +117,7 @@ export default {
       let { code, result } = yield call(updateTask, id, name)
       if (code === 0) {
         yield put({
-          type: 'UPDATE_TASK',
+          type: "UPDATE_TASK",
           payload: result,
         })
         return result
@@ -108,7 +128,7 @@ export default {
       if (code === 0) {
         if (result?.result_dataset?.id) {
           yield put.resolve({
-            type: 'dataset/getDataset',
+            type: "dataset/getDataset",
             payload: { id: result?.result_dataset?.id },
           })
         }
@@ -120,7 +140,7 @@ export default {
       if (code === 0) {
         if (result?.result_dataset?.id) {
           yield put.resolve({
-            type: 'dataset/getDataset',
+            type: "dataset/getDataset",
             payload: { id: result?.result_dataset?.id },
           })
         }
@@ -132,7 +152,7 @@ export default {
       if (code === 0) {
         if (result?.result_dataset?.id) {
           yield put.resolve({
-            type: 'dataset/getDataset',
+            type: "dataset/getDataset",
             payload: { id: result?.result_dataset?.id },
           })
         }
@@ -143,7 +163,7 @@ export default {
       let { code, result } = yield call(train, payload)
       if (code === 0) {
         yield put({
-          type: 'model/getModel',
+          type: "model/getModel",
           payload: { id: result?.result_model?.id, force: true },
         })
         return result
@@ -153,22 +173,17 @@ export default {
       let { code, result } = yield call(mine, payload)
       if (code === 0) {
         yield put({
-          type: 'dataset/getDataset',
+          type: "dataset/getDataset",
           payload: { id: result?.result_dataset?.id, force: true },
         })
         return result
       }
     },
     *label({ payload }, { call, put }) {
-      const { keywords } = payload
-      yield put.resolve({
-        type: 'keyword/updateKeywords',
-        payload: {keywords: keywords.map((kw) => ({ name: kw, aliases: [] }))},
-      })
       let { code, result } = yield call(label, payload)
       if (code === 0) {
         yield put({
-          type: 'dataset/getDataset',
+          type: "dataset/getDataset",
           payload: { id: result?.result_dataset?.id, force: true },
         })
         return result
@@ -177,12 +192,14 @@ export default {
     *infer({ payload }, { call, put }) {
       let { code, result } = yield call(infer, payload)
       if (code === 0) {
-        const id = result?.result_dataset?.id
-        const pid = result?.project_id
-        if (pid && id) {
+        const ids = result
+          .map((item) => item?.result_dataset?.id)
+          .filter((i) => i)
+        const pid = result[0]?.project_id
+        if (pid && ids?.length) {
           yield put({
-            type: 'dataset/batchLocalDatasets',
-            payload: { ids: [id], pid },
+            type: "dataset/batchLocalDatasets",
+            payload: { ids, pid },
           })
         }
         return result
@@ -203,24 +220,25 @@ export default {
         return task
       })
       yield put({
-        type: 'UPDATE_TASKS',
+        type: "UPDATE_TASKS",
         payload: { items: result, total: tasks.total },
       })
     },
     *updateQuery({ payload = {} }, { put, select }) {
       const query = yield select(({ task }) => task.query)
       yield put({
-        type: 'UPDATE_QUERY',
+        type: "UPDATE_QUERY",
         payload: {
           ...query,
           ...payload,
-          offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
+          offset:
+            query.offset === payload.offset ? initQuery.offset : payload.offset,
         },
       })
     },
     *resetQuery({}, { put }) {
       yield put({
-        type: 'UPDATE_QUERY',
+        type: "UPDATE_QUERY",
         payload: initQuery,
       })
     },

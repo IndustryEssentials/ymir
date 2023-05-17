@@ -145,10 +145,7 @@ def run_migrations_online() -> None:
 
         with backup_database():
             with context.begin_transaction():
-                try:
-                    context.run_migrations()
-                except Exception:
-                    logging.exception("Failed to run migration")
+                context.run_migrations()
 
 
 if context.is_offline_mode():

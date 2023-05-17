@@ -1,6 +1,5 @@
 from typing import Dict, List, Union
 
-from app.api.errors.errors import ClassNameNotFound
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient
 from common_utils.labels import SingleLabel, UserLabels
@@ -34,7 +33,7 @@ def ensure_labels_exist(
 ) -> List[int]:
     try:
         return keywords_to_class_ids(user_labels, keywords)
-    except ClassNameNotFound:
+    except ValueError:
         new_labels = UserLabels(labels=[SingleLabel(name=k) for k in keywords])
         upsert_labels(user_id=user_id, new_labels=new_labels, controller_client=controller_client)
         user_labels = controller_client.get_labels_of_user(user_id)
@@ -43,10 +42,7 @@ def ensure_labels_exist(
 
 
 def keywords_to_class_ids(user_labels: UserLabels, keywords: List[str]) -> List[int]:
-    try:
-        class_ids, _ = user_labels.id_for_names(names=keywords, raise_if_unknown=True)
-    except ValueError:
-        raise ClassNameNotFound()
+    class_ids, _ = user_labels.id_for_names(names=keywords, raise_if_unknown=True)
     return class_ids
 
 
