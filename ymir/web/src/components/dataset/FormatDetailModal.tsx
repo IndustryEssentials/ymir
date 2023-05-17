@@ -11,7 +11,6 @@ interface Props extends ModalProps {
 enum ObjectTypes {
   voc = 'xml',
   coco = 'json',
-  yaml = 'yaml',
 }
 
 const vocXml = `<annotation>
@@ -119,18 +118,6 @@ const cocoJson = {
 const contents = {
   [ObjectTypes.voc]: <XMLViewer xml={vocXml} />,
   [ObjectTypes.coco]: <JsonViewer src={cocoJson} name={false} />,
-  [ObjectTypes.yaml]: (
-    <div>
-      <pre>
-        <code>
-          {`eval_class_names:
-      - person
-      - cat
-      `}
-        </code>
-      </pre>
-    </div>
-  ),
 }
 
 const FormatDetailModal: FC<Props> = ({ objectType, ...props }) => {
@@ -138,7 +125,7 @@ const FormatDetailModal: FC<Props> = ({ objectType, ...props }) => {
   const [active, setActive] = useState<ObjectTypes>(isDetection ? ObjectTypes.voc : ObjectTypes.coco)
   const vocTab = { tab: '*.xml', key: ObjectTypes.voc }
   const cocoTab = { tab: '*.json', key: ObjectTypes.coco }
-  const tabs = [!isDetection ? cocoTab : vocTab, { tab: 'meta.yaml', key: ObjectTypes.yaml }]
+  const tabs = [!isDetection ? cocoTab : vocTab]
   return (
     <Modal width={'80%'} style={{ top: 40 }} {...props} footer={null}>
       <Card tabList={tabs} activeTabKey={active} onTabChange={(value) => setActive(value as ObjectTypes)}>
