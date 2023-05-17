@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, FC } from 'react'
 import { Button, Card, Form, Input, message, Space, Radio } from 'antd'
 import { useParams, useHistory } from 'umi'
 
