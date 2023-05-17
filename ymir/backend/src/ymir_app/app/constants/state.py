@@ -88,7 +88,7 @@ class ObjectType(IntEnum):
     classification = mir_cmd_pb.ObjectType.OT_CLASS  # 1
     object_detect = mir_cmd_pb.ObjectType.OT_DET_BOX  # 2
     segmentation = mir_cmd_pb.ObjectType.OT_SEG  # 3
-    instance_segmentation = mir_cmd_pb.ObjectType.OT_SEG + 1  # 4
+    instance_segmentation = mir_cmd_pb.ObjectType.OT_INS_SEG  # 4
     multi_modal = mir_cmd_pb.ObjectType.OT_MULTI_MODAL  # 50
 
 
