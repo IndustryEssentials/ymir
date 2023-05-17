@@ -89,6 +89,7 @@ class ObjectType(IntEnum):
     object_detect = mir_cmd_pb.ObjectType.OT_DET_BOX  # 2
     segmentation = mir_cmd_pb.ObjectType.OT_SEG  # 3
     instance_segmentation = mir_cmd_pb.ObjectType.OT_SEG + 1  # 4
+    multi_modal = mir_cmd_pb.ObjectType.OT_MULTI_MODAL  # 50
 
 
 class AnnotationType(IntEnum):
