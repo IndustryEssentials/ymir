@@ -11,7 +11,6 @@ interface Props extends ModalProps {
 enum ObjectTypes {
   voc = 'xml',
   coco = 'json',
-  yaml = 'yaml',
 }
 
 const vocXml = `<annotation>
@@ -64,51 +63,34 @@ const cocoJson = {
     version: '1.0',
     year: 2022,
   },
-  licenses: [
-    {
-      url: 'http://creativecommons.org/licenses/by-nc-sa/2.0/',
-      id: 1,
-      name: 'Attribution-NonCommercial-ShareAlike License',
-    },
-  ],
+  licenses: [],
   images: [
     {
       id: 33,
       width: 2048,
       height: 1024,
-      file_name: '2baefd19-strasbourg_000000_010372_leftImg8bit.png',
+      file_name: 'image_name_in_images.png',
     },
   ],
   annotations: [
     {
       id: 30,
       image_id: 33,
-      segmentation: [
-        [
-          1191.0962343096237, 314.9121338912134, 1111.8326359832636, 443.44769874476987, 1096.836820083682, 531.2803347280335, 1071.129707112971,
-          559.1297071129707, 1073.2719665271966, 625.5397489539749, 1079.6987447698746, 721.9414225941423, 1546.7112970711298, 751.9330543933054,
-          1565.991631799163, 529.1380753138076, 1553.1380753138076, 494.8619246861925, 1585.2719665271966, 456.30125523012555, 1570.2761506276152,
-          441.30543933054395, 1540.2845188284518, 434.87866108786613, 1529.5732217573222, 439.163179916318, 1491.0125523012553, 340.6192468619247,
-        ],
-      ],
-      area: 181829.0,
-      bbox: [1071.0, 314.0, 515.0, 438.0],
+      segmentation: [[1191.09, 314.91, 1111.83, '..., polygon format']],
+      area: 181829,
+      bbox: [1071, 314, 515, 438],
       iscrowd: 0,
       category_id: 1,
     },
     {
       id: 31,
       image_id: 33,
-      segmentation: [
-        [
-          578.4100418410042, 327.765690376569, 494.8619246861925, 426.30962343096235, 507.7154811715481, 475.581589958159, 589.1213389121339, 469.1548117154812,
-          672.6694560669456, 456.30125523012555, 685.5230125523012, 464.8702928870293, 709.0878661087866, 462.72803347280336, 719.7991631799163,
-          449.8744769874477, 739.0794979079498, 439.163179916318, 749.7907949790795, 449.8744769874477, 786.2092050209205, 449.8744769874477, 790.4937238493724,
-          439.163179916318, 826.9121338912134, 434.87866108786613, 820.4853556485356, 310.6276150627615,
-        ],
-      ],
-      area: 41284.0,
-      bbox: [494.0, 310.0, 333.0, 166.0],
+      segmentation: {
+        counts: [23, 34, 38, '..., mask format'],
+        size: [1920, 1080],
+      },
+      area: 41284,
+      bbox: [494, 310, 333, 166],
       iscrowd: 0,
       category_id: 1,
     },
@@ -119,26 +101,14 @@ const cocoJson = {
 const contents = {
   [ObjectTypes.voc]: <XMLViewer xml={vocXml} />,
   [ObjectTypes.coco]: <JsonViewer src={cocoJson} name={false} />,
-  [ObjectTypes.yaml]: (
-    <div>
-      <pre>
-        <code>
-          {`eval_class_names:
-      - person
-      - cat
-      `}
-        </code>
-      </pre>
-    </div>
-  ),
 }
 
 const FormatDetailModal: FC<Props> = ({ objectType, ...props }) => {
   const isDetection = objectType === ObjectType.ObjectDetection
   const [active, setActive] = useState<ObjectTypes>(isDetection ? ObjectTypes.voc : ObjectTypes.coco)
   const vocTab = { tab: '*.xml', key: ObjectTypes.voc }
-  const cocoTab = { tab: '*.json', key: ObjectTypes.coco }
-  const tabs = [!isDetection ? cocoTab : vocTab, { tab: 'meta.yaml', key: ObjectTypes.yaml }]
+  const cocoTab = { tab: 'coco-annotations.json', key: ObjectTypes.coco }
+  const tabs = [!isDetection ? cocoTab : vocTab]
   return (
     <Modal width={'80%'} style={{ top: 40 }} {...props} footer={null}>
       <Card tabList={tabs} activeTabKey={active} onTabChange={(value) => setActive(value as ObjectTypes)}>
