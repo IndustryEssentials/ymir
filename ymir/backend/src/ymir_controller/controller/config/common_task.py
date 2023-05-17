@@ -11,6 +11,7 @@ IMAGE_CONFIG_DIR_NAMES = {
     mir_cmd_pb.ObjectType.OT_DET_BOX: "det",
     mir_cmd_pb.ObjectType.OT_SEG: "semantic-seg",
     mir_cmd_pb.ObjectType.OT_INS_SEG: "instance-seg",
+    mir_cmd_pb.ObjectType.OT_MULTI_MODAL: "multi-modal",
 }
 IMAGE_CONFIG_FILE_NAMES = {
     mir_cmd_pb.TaskType.TaskTypeTraining: "training-template.yaml",
