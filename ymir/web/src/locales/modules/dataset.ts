@@ -92,7 +92,7 @@ const dataset = {
   'dataset.add.form.net.label': { cn: 'URL地址', en: 'URL' },
   'dataset.add.form.net.placeholder': { cn: '请输入压缩文件的url地址', en: 'Please input a url of zip file' },
   'dataset.add.form.path.label': { cn: '相对路径', en: 'Relative Path' },
-  'dataset.add.form.tip.format.detail': { cn: '查看标注示例文件及meta.yaml格式', en: 'View annotations sample file or meta.yaml' },
+  'dataset.add.form.tip.format.detail': { cn: '查看标注示例文件格式', en: 'View annotations sample file format' },
   'dataset.add.form.tip.structure': {
     cn: '图片文件需放入images文件夹内，标注文件需放入gt文件夹内。gt可选。文件结构如下：{br}{pic}{br}{detail}',
     en: 'image -> images; gt -> GT annotations; gt is optional. structure: {br}{pic}',
