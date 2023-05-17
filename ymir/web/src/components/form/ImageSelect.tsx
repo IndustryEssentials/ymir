@@ -10,7 +10,7 @@ import { useDebounce } from 'ahooks'
 import { Image, Project } from '@/constants'
 import { List } from '@/models/typings/common.d'
 import { useSelector } from 'umi'
-import { ObjectType } from '@/constants/objectType'
+import { isMultiModal, ObjectType } from '@/constants/objectType'
 import { QueryParams } from '@/services/typings/image.d'
 
 interface Props extends SelectProps {
@@ -55,9 +55,8 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   const { run: getImage } = useRequest<Image, [{ id: number }]>('image/getImage', {
     loading: false,
   })
-  useRequest<Image, [{ id: number }]>('image/getOfficialImage', {
+  const { run: getOfficialImage } = useRequest<Image>('image/getOfficialImage', {
     loading: false,
-    manual: false,
     loadingDelay: 500,
   })
   const { data: project, run: getProject } = useRequest<Project, [{ id: number }]>('project/getProject', {
@@ -70,16 +69,20 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       setSelected(project?.recommendImage)
     } else if (value) {
       setSelected(value)
-    } else if (official && validState(official.state)) {
+    } else if (!isMultiModal(project?.type) && official && validState(official.state)) {
       setSelected(official.id)
     } else {
       setSelected(undefined)
     }
-  }, [value, official, project?.recommendImage])
+  }, [value, official, project?.recommendImage, project?.type])
 
   useEffect(() => {
     pid && getProject({ id: pid })
   }, [pid])
+
+  useEffect(() => {
+    project?.type && !isMultiModal(project.type) && getOfficialImage()
+  }, [project?.type])
 
   useEffect(() => {
     project?.recommendImage && getImage({ id: project.recommendImage })
@@ -91,7 +94,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       if (sampleImage) {
         items = withPriorityImage(list.items, sampleImage)
       }
-      if (official) {
+      if (project?.type && !isMultiModal(project?.type) && official) {
         items = withPriorityImage(items, official)
       }
       items = items.filter((item) => options.every((opt) => opt.value !== item.id))
@@ -99,7 +102,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       setOptions((options) => [...options, ...opts])
     }
     list && setTotal(list?.total)
-  }, [list, official, sampleImage])
+  }, [list, official, sampleImage, project?.type])
 
   useEffect(() => {
     relatedId && getImage({ id: relatedId })

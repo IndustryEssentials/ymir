@@ -1,31 +1,33 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Descriptions, Space, Card, Button, Row, Col } from 'antd'
 import { useParams, Link, useHistory, useSelector } from 'umi'
 
 import t from '@/utils/t'
-import { TYPES, STATES, getImageTypeLabel, isSampleImage } from '@/constants/image'
+import { getImageTypeLabel, isSampleImage } from '@/constants/image'
 import { getProjectTypeLabel } from '@/constants/project'
-import { ROLES } from '@/constants/user'
+import { isAdmin } from '@/constants/user'
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
-import LinkModal from './components/relate'
-import Del from './components/del'
-import ImagesLink from './components/imagesLink'
+import LinkModal, { RefProps } from './components/Relate'
+import Del, { RefProps as DelRefProps } from '@/components/image/Del'
+import ImagesLink from './components/ImagesLink'
 import StateTag from '@/components/image/StateTag'
 import Configs from './components/Configs'
 import OfficialTag from '@/components/image/OfficialTag'
 
 import styles from './detail.less'
 import { EditIcon, PublishIcon, DeleteIcon, LinkIcon } from '@/components/common/Icons'
+import { validState } from '@/constants/common'
 
 const { Item } = Descriptions
 
 function ImageDetail() {
-  const { id } = useParams()
+  const params = useParams<{ id: string }>()
+  const id = Number(params.id)
   const history = useHistory()
-  const linkModalRef = useRef(null)
-  const delRef = useRef(null)
+  const linkModalRef = useRef<RefProps>(null)
+  const delRef = useRef<DelRefProps>(null)
   const image = useSelector(({ image }) => image.image[id] || {})
   const [_, getImage] = useFetch('image/getImage', { id })
   const role = useSelector(({ user }) => user.user.role)
@@ -33,33 +35,17 @@ function ImageDetail() {
   useEffect(() => id && getImage({ id }), [id])
   function relateImage() {
     const { name, related } = image
-    linkModalRef.current.show({ id, name, related })
+    linkModalRef.current?.show({ id, name, related })
   }
   const publish = ({ name = '', url = '', description = '' }) =>
     history.push(`/home/public_image/publish?name=${name}&image_addr=${url}&description=${description}`)
 
   const del = () => {
-    delRef.current.del(id, image.name)
+    delRef.current?.del(id, image.name)
   }
 
   const delOk = () => {
     history.push('/home/image')
-  }
-
-  function isAdmin() {
-    return role > ROLES.USER
-  }
-
-  function isTrain(type) {
-    return type === TYPES.TRAINING
-  }
-
-  function isDone() {
-    return image.state === STATES.VALID
-  }
-
-  function isError() {
-    return image.state === STATES.INVALID
   }
 
   function renderTitle() {
@@ -68,7 +54,7 @@ function ImageDetail() {
         <Col flex={1}>
           <span>{image.name} </span>
           <OfficialTag official={image.official} />
-          {isAdmin() ? (
+          {isAdmin(role) ? (
             <Link to={`/home/image/add/${id}`}>
               <EditIcon />
             </Link>
@@ -102,7 +88,7 @@ function ImageDetail() {
                 <Col flex={1}>
                   <ImagesLink images={image.related} />
                 </Col>
-                {isAdmin() && isDone() ? (
+                {isAdmin(role) && validState(image.state) ? (
                   <Col>
                     <Button type="primary" onClick={() => relateImage()} icon={<LinkIcon />}>
                       {t('image.detail.relate')}
@@ -123,10 +109,10 @@ function ImageDetail() {
 
             <Item label={''} span={2}>
               <Space>
-                <Button hidden={!isAdmin() || !isDone()} onClick={() => publish(image)} icon={<PublishIcon />}>
+                <Button hidden={!isAdmin(role) || !validState(image.state)} onClick={() => publish(image)} icon={<PublishIcon />}>
                   {t('image.action.publish')}
                 </Button>
-                <Button hidden={!isAdmin() || isSampleImage(image)} onClick={del} icon={<DeleteIcon />}>
+                <Button hidden={!isAdmin(role) || isSampleImage(image)} onClick={del} icon={<DeleteIcon />}>
                   {t('common.del')}
                 </Button>
               </Space>

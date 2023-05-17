@@ -6,7 +6,6 @@ ARG ENV=prod
 
 COPY package.json .
 COPY package-lock.json .
-RUN npm set-script prepare ""
 RUN npm install --registry ${NPM_REGISTRY}
 COPY . .
 RUN npm run build:${ENV}
