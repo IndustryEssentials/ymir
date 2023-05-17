@@ -148,7 +148,6 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     class_names = executor_config['class_names']
     idle_seconds: float = executor_config.get('idle_seconds', 60)
     crash_code: bool = executor_config.get('crash_code', ExecutorReturnCode.RC_EXEC_NO_ERROR)
-    prompt: str = executor_config.get('prompt', None)
 
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
@@ -182,8 +181,6 @@ def _run_infer(env_config: env.EnvConfig) -> None:
                 "area": 0,  # mask area
                 'confidence': 1  # confidence of this segmentation, 0 <= conf <= 1
             }
-            if prompt:
-                annotation['prompt'] = f"box prompt: {prompt}"
             annotations_list.append(annotation)
 
     coco_dict = {
