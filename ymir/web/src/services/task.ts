@@ -198,7 +198,7 @@ export function train({ openpai, description, projectId, datasetId, keywords, te
     docker_image_config: { ...config, openpai_enable: openpai },
     parameters: {
       task_type: 'training',
-      strategy,
+      duplication_strategy: strategy,
       dataset_id: datasetId,
       validation_dataset_id: testset,
       keywords,

@@ -16,11 +16,11 @@ alembic upgrade head
 # Create initial data in DB
 python app/initial_data.py ${base_alembic_revision}
 
-# Install Official Docker Image
-python app/init_docker_image.py
-
 # Clean legacy tasks
 python app/clean_tasks.py
+
+# Install Official Docker Image
+python app/init_docker_image.py
 
 # Fix dirty repos
 python app/fix_dirty_repos.py

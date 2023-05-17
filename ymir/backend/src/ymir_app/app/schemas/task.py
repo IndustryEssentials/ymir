@@ -47,7 +47,7 @@ class TaskBase(BaseModel):
         use_enum_values = True
 
 
-class TrainingDatasetsStrategy(enum.IntEnum):
+class TrainingDuplicationStrategy(enum.IntEnum):
     stop = 0
     as_training = 1  # use duplicated assets as training assets
     as_validation = 2  # use duplicated assets as validation assets
@@ -114,7 +114,7 @@ class TrainingParameter(TaskParameterBase):
     task_type: Literal["training"]
 
     validation_dataset_id: Optional[int]
-    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
+    duplication_strategy: Optional[TrainingDuplicationStrategy] = TrainingDuplicationStrategy.stop
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
