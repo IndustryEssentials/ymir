@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from typing import Dict, Optional
+from typing import Dict, Optional, TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -16,6 +16,12 @@ from sqlalchemy.dialects.mysql import DATETIME
 from app.config import settings
 from app.db.base_class import Base
 from app.utils.timeutil import convert_datetime_to_timestamp
+
+if TYPE_CHECKING:
+    from app.models.model import Model
+    from app.models.dataset import Dataset
+    from app.models.prediction import Prediction
+    from app.models.image import DockerImage
 
 
 class Task(Base):
@@ -56,3 +62,8 @@ class Task(Base):
     @property
     def last_message_timestamp(self) -> Optional[float]:
         return convert_datetime_to_timestamp(self.last_message_datetime) if self.last_message_datetime else None
+
+    result_model: "Model"
+    result_dataset: "Dataset"
+    result_prediction: "Prediction"
+    result_docker_image: "DockerImage"

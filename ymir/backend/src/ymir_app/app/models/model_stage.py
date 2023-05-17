@@ -1,12 +1,15 @@
 from datetime import datetime
 import json
 
-from typing import Dict
+from typing import Dict, TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text, UniqueConstraint
 
 from app.config import settings
 from app.db.base_class import Base
+
+if TYPE_CHECKING:
+    from app.models.model import Model
 
 
 class ModelStage(Base):
@@ -31,3 +34,5 @@ class ModelStage(Base):
     @property
     def metrics(self) -> Dict:
         return json.loads(self.serialized_metrics) if self.serialized_metrics else {}
+
+    model: "Model"

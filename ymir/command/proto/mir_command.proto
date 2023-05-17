@@ -130,6 +130,8 @@ enum ObjectType {
     OT_INS_SEG = 4; // used by controller and app
     OT_MULTI_MODAL = 50;
 
+    OT_MULTI_MODAL = 50;
+
     OT_NO_ANNOS = 100;
 };
 
