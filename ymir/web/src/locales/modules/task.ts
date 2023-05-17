@@ -8,8 +8,9 @@ const task = {
   'task.type.inference': { cn: '推理', en: 'Inference' },
   'task.type.import': { cn: '添加数据集', en: 'Dataset Add' },
   'task.type.copy': { cn: '复制', en: 'Copy' },
-  'task.type.modelimport': { cn: '导入模型', en: 'Model Import' },
-  'task.type.modelcopy': { cn: '复制模型', en: 'Copy Model' },
+  'task.type.modelimport': { cn: '模型导入', en: 'Model Import' },
+  'task.type.imageimport': { cn: '镜像添加', en: 'Image Import' },
+  'task.type.modelcopy': { cn: '模型复制', en: 'Copy Model' },
   'task.type.sys': { cn: '项目训练集', en: 'Project Training Dataset' },
   'task.state.pending': { cn: '排队中', en: 'Queuing' },
   'task.state.doing': { cn: '进行中', en: 'In-Progress' },
@@ -387,19 +388,6 @@ const task = {
   'task.train.action.duplicated.all': {
     en: 'Duplicated completely, please select another training dataset or validation dataset.',
     cn: '数据完全重复，请重新选择训练集或验证集',
-  },
-  'task.train.preprocess.title': { en: 'Image Preprocess', cn: '图像前处理' },
-  'task.train.preprocess.resize': {
-    en: 'Maximum Side Length Resize',
-    cn: '最长边长缩放',
-  },
-  'task.train.preprocess.resize.tip': {
-    en: 'Images will resize as original scale which longest width/height equal to input value',
-    cn: '图像将按原始比例缩放至最长边为设置值',
-  },
-  'task.train.preprocess.resize.placeholder': {
-    en: 'Max width/height',
-    cn: '最大高/宽',
   },
   'task.filter.includes.placeholder': {
     en: 'Please select inclusion classes',

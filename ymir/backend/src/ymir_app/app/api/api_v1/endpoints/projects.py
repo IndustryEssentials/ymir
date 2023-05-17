@@ -17,11 +17,12 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.constants.state import ResultState, RunningStates, TaskType, ObjectType
 from app.utils.cache import CacheClient
-from app.utils.ymir_controller import ControllerClient, gen_task_hash
+from app.utils.ymir_controller import ControllerClient
 from app.libs.projects import setup_sample_project_in_background
 from app.libs.labels import ensure_labels_exist
 from app.libs.metrics import send_project_metrics
 from common_utils.labels import UserLabels
+from id_definition.task_id import gen_task_id
 
 router = APIRouter()
 
@@ -69,14 +70,18 @@ def create_sample_project(
     Create sample project
     """
     project_name = f"sample_project_{uuid.uuid4().hex[:8]}"
+
+    # FIXME remove adhoc recommended_docker_image_id
+    sample_docker_image = crud.docker_image.get_by_url(db, settings.SAMPLE_PROJECT_DOCKER_IMAGE_URL)
     project_in = schemas.ProjectCreate(
         name=project_name,
         training_keywords=settings.SAMPLE_PROJECT_KEYWORDS,
         chunk_size=2,
         is_example=True,
+        recommended_docker_image_id=sample_docker_image.id if sample_docker_image else None
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
-    project_task_hash = gen_task_hash(current_user.id, project.id)
+    project_task_hash = gen_task_id(current_user.id, project.id)
     training_class_ids = ensure_labels_exist(
         user_id=current_user.id,
         user_labels=user_labels,
@@ -134,7 +139,7 @@ def create_project(
     # 1.create project to get task_id for sending to controller
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
 
-    task_id = gen_task_hash(current_user.id, project.id)
+    task_id = gen_task_id(current_user.id, project.id)
 
     # 2.send to controller
     try:
@@ -169,6 +174,7 @@ def create_project(
             source=task.type,
             result_state=ResultState.ready,
             task_id=task.id,
+            is_visible=False,
         )
         initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
 

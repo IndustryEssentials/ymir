@@ -11,6 +11,7 @@ from app.constants.state import TaskType
 from tests.utils.tasks import create_task
 from tests.utils.datasets import create_dataset_record, create_dataset_group_record
 from tests.utils.models import create_model_group_record
+from tests.utils.projects import create_project_record
 
 
 class TestCreateSingleTask:
@@ -21,7 +22,7 @@ class TestCreateSingleTask:
         mocker.patch.object(m, "ControllerClient", return_value=ctrl)
         mocker.patch.object(m, "ensure_datasets_are_ready", return_value=[dataset])
         user_id = randint(100, 200)
-        project_id = randint(1000, 2000)
+        project_id = create_project_record(db).id
         user_labels = mocker.Mock()
         j = {
             "name": random_lower_string(),

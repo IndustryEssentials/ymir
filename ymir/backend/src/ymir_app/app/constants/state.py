@@ -34,10 +34,15 @@ class TaskType(IntEnum):
     copy_model = mir_cmd_pb.TaskType.TaskTypeCopyModel
     import_model = mir_cmd_pb.TaskType.TaskTypeImportModel
     dataset_infer = mir_cmd_pb.TaskType.TaskTypeDatasetInfer
+    pull_image = mir_cmd_pb.TaskType.TaskTypePullImage
 
     # fixme
     #  create_project is not the type of TASK_CREATE, but empty dataset need a task
     create_project = mirsvrpb.RequestType.REPO_CREATE
+
+
+class RequestType(IntEnum):
+    inspect_image = mirsvrpb.RequestType.CMD_INSPECT_IMAGE  # 16
 
 
 class TaskState(IntEnum):
@@ -54,6 +59,7 @@ class ResultType(IntEnum):
     dataset = 1
     model = 2
     prediction = 3
+    docker_image = 4
 
 
 class ResultState(IntEnum):

@@ -4,7 +4,6 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.config import settings
-from app.constants.state import TaskType
 from app.db.base_class import Base
 from app.models.dataset import Dataset  # noqa
 
@@ -18,17 +17,16 @@ class DatasetGroup(Base):
     project_id = Column(Integer, index=True, nullable=False)
     user_id = Column(Integer, index=True, nullable=False)
 
-    datasets = relationship(
+    all_datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.dataset_group_id)==DatasetGroup.id",
         backref="group",
         uselist=True,
         viewonly=True,
     )
-    # FIXME: revert when datasets and preds separated
-    visible_datasets = relationship(
+    datasets = relationship(
         "Dataset",
-        primaryjoin=f"and_(foreign(Dataset.dataset_group_id)==DatasetGroup.id, foreign(Dataset.source)!={TaskType.dataset_infer.value}, foreign(Dataset.is_visible))",  # noqa
+        primaryjoin="and_(foreign(Dataset.dataset_group_id)==DatasetGroup.id, foreign(Dataset.is_visible))",
         uselist=True,
         viewonly=True,
     )
@@ -44,4 +42,4 @@ class DatasetGroup(Base):
 
     @property
     def is_visible(self) -> bool:
-        return bool(self.visible_datasets)
+        return bool(self.datasets)

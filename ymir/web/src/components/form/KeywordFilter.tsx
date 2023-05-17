@@ -1,15 +1,18 @@
 import { Cascader, Col, Row, Select } from 'antd'
 import t from '@/utils/t'
 import { FC, useEffect, useState } from 'react'
+import { Prediction } from '@/constants';
 
 enum Type {
   keywords = 'keywords',
   cks = 'cks',
   tags = 'tags',
 }
+export type ValueType = { type: Type; selected?: string[] }
 type Props = {
-  onChange?: (value: { type: Type; selected?: string[] }) => void
-  dataset?: YModels.Dataset | YModels.Prediction
+  value?: ValueType
+  onChange?: (value: ValueType) => void
+  dataset?: YModels.Dataset | Prediction
 }
 type KeywordOptionsType = {
   [key in Type]: KeywordOption[]
@@ -31,7 +34,7 @@ const types = [Type.keywords, Type.cks, Type.tags]
 
 const visibleTypes = (types: TypeOption[]) => types.filter(({ hidden }) => !hidden)
 
-const KeywordSelector: FC<Props> = ({ onChange, dataset }) => {
+const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
   const [typeOptions, setTypeOptions] = useState<TypeOption[]>(
     types.map((type) => ({ value: type, label: t(`dataset.assets.keyword.selector.types.${labels[type]}`) })),
   )
@@ -43,6 +46,13 @@ const KeywordSelector: FC<Props> = ({ onChange, dataset }) => {
   const [currentType, setCurrentType] = useState<Type>(Type.keywords)
   const [selected, setSelected] = useState<string[]>([])
   const [ckSelected, setCkSelected] = useState<string[][]>([])
+
+  useEffect(() => {
+    if (value) {
+      setCurrentType(value.type)
+      value.selected && setSelected(value.selected)
+    }
+  }, [value])
 
   useEffect(() => {
     const validTypes = visibleTypes(typeOptions).map(({ value }) => value)
@@ -77,10 +87,11 @@ const KeywordSelector: FC<Props> = ({ onChange, dataset }) => {
     onChange && onChange({ type: currentType, selected })
   }, [ckSelected])
 
-  useEffect(() => {
+  const changeType = (type: Type) => {
+    setCurrentType(type)
     setSelected([])
     setCkSelected([])
-  }, [currentType])
+  }
 
   const renderKeywords = (type: Type) => {
     const targetOptions = kwOptions[type]
@@ -115,7 +126,7 @@ const KeywordSelector: FC<Props> = ({ onChange, dataset }) => {
   return visibleTypes(typeOptions).length ? (
     <Row gutter={10}>
       <Col style={{ width: 150 }}>
-        <Select style={{ width: '100%' }} value={currentType} onChange={setCurrentType} options={visibleTypes(typeOptions)} />
+        <Select style={{ width: '100%' }} value={currentType} onChange={changeType} options={visibleTypes(typeOptions)} />
       </Col>
       <Col flex={1}>{renderKeywords(currentType)}</Col>
     </Row>

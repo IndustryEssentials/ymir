@@ -46,12 +46,13 @@ enum TaskType {
     TaskTypeInfer = 9;
     TaskTypeSampling = 10;
     TaskTypeFusion = 11;
-    /// used by ymir_controller
     TaskTypeInit = 12;
+    /// used by ymir_controller
     TaskTypeImportModel = 13;
     TaskTypeCopyModel = 14;
     TaskTypeDatasetInfer = 15;
     TaskTypeEvaluate = 16;
+    TaskTypePullImage = 17;
 };
 
 enum TaskState {
@@ -61,6 +62,7 @@ enum TaskState {
     TaskStateDone = 3;
     TaskStateError = 4;
     TaskStateMiss = 5;
+    TaskStateTerminate = 100;
 };
 
 enum Sha1Type {
@@ -125,10 +127,10 @@ enum ObjectType {
     OT_CLASS = 1; // Classification with class id, not implemented.
     OT_DET_BOX = 2; // Detection w. bounding box.
     OT_SEG = 3;  // semantic segmentation w. polygon or mask
-
+    OT_INS_SEG = 4; // used by controller and app
     OT_MULTI_MODAL = 50;
 
-    OT_NO_ANNOTATIONS = 100;
+    OT_NO_ANNOS = 100;
 };
 
 enum ObjectSubType {

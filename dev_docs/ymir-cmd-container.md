@@ -190,7 +190,7 @@ no training data found
 | /in/assets | 必要，图像资源所在的目录，只读 |
 | /in/annotations | 必要，图像标注所在的目录 |
 
-注1. `config.yaml` 文件的固定保留键
+注1. `config.yaml` 文件的固定保留键：在任务开始时，这些键值对会根据任务的实际情况由 YMIR 系统自动填入，就算镜像作者在 training-template.yaml / mining-template.yaml / infer-template.yaml 三个模板文件中写入了其他的值，在任务开始的时候也会被系统写入的值替换掉。
 
 * `task_id`: 任务id，只含英文数字下划线，用于标识或区别任务，会出现在 `/out/monitor.txt` 中，也可以出现在日志中
 
@@ -213,6 +213,8 @@ no training data found
         * `seg-coco`: 导出 coco json 格式的检测及分割标注
 
     * `图像格式` 目前只能指定为 `raw`
+
+* `object_type`: 本次训练任务的类别，2 - 目标检测，3 - 语义分割，4 - 实例分割
 
 #### 4.3.2. 输出挂载点
 
@@ -272,6 +274,8 @@ evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
 * `run_mining`: 取值为0或1，1表示需要将挖掘结果写入 `/out/result.tsv` 中，0表示不需要进行挖掘
 
 * `class_names`: 模型可以识别的类型名称列表
+
+* `object_type`: 任务模型类型，2 - 目标检测，3 - 语义分割，4 - 实例分割
 
 #### 4.4.2. 输出挂载点
 

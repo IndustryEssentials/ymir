@@ -21,6 +21,7 @@ def setup_dataset_and_group(
     input_url: Optional[str] = None,
     object_type: int = ObjectType.object_detect.value,
     result_state: Optional[ResultState] = ResultState.processing,
+    is_visible: bool = True,
 ) -> models.Dataset:
     task_state = TaskState.done if result_state is ResultState.ready else TaskState.pending
     task = crud.task.create_placeholder(db, type_=task_type, state_=task_state, user_id=user_id, project_id=project_id)
@@ -38,6 +39,7 @@ def setup_dataset_and_group(
             user_id=user_id,
             source=task.type,
             task_id=task.id,
+            is_visible=is_visible,
         ),
     )
     if input_url:
@@ -103,6 +105,7 @@ def setup_sample_project_in_background(
         task_hash=project_task_hash,
         task_type=TaskType.create_project,
         result_state=ResultState.ready,
+        is_visible=False,
     )
 
     # import testing dataset

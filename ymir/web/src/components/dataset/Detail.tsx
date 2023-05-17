@@ -51,11 +51,11 @@ const DatasetDetail: FC<{ dataset: YModels.Dataset }> = ({ dataset }) => {
         <Item label={t('dataset.detail.label.name')} span={2}>
           <Row>
             <Col flex={1}>
-              {dataset.name} {dataset.versionName}
+              {dataset.name}
             </Col>
 
             <Col hidden={dataset.state !== ResultStates.VALID}>
-              <Button type="primary" icon={<SearchIcon />} onClick={() => history.push(`/home/project/${dataset.projectId}/dataset/${dataset.id}/assets`)}>
+              <Button type="primary" icon={<SearchIcon />} onClick={() => history.push(`/home/project/${dataset.projectId}/dataset/${dataset.id}`)}>
                 {t('common.view')}
               </Button>
             </Col>

@@ -1,52 +1,48 @@
 import React, { useEffect, useState } from 'react'
-import { connect } from 'dva'
-import { Select, Input, Button, Form, Row, Col, Checkbox, Space } from 'antd'
-import { useHistory, useParams, Link } from 'umi'
+import { Select, Input, Form, Row, Col, Checkbox } from 'antd'
+import { useHistory, useParams, Link, useSelector } from 'umi'
 
 import { formLayout } from '@/config/antd'
 import { getLabelToolUrl } from '@/constants/common'
 import t from '@/utils/t'
 import Uploader from '@/components/form/uploader'
-import { randomNumber } from '@/utils/number'
-import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
 import Tip from '@/components/form/tip'
-import SubmitButtons from './submitButtons'
+import SubmitButtons from './SubmitButtons'
 import MergeType from '@/components/form/items/MergeType'
+import KeepAnnotations from './label/KeepAnnotations'
+import UserKeywordsSelector from '@/components/form/UserKeywordsSelector'
 
 import styles from './label.less'
-import KeepAnnotations from './label/keepAnnotations'
 
-const LabelTypes = () => [
-  { id: 'part', label: t('task.label.form.type.newer'), checked: true },
-  { id: 'all', label: t('task.label.form.type.all') },
-]
+const { Item } = Form
 
-function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, ...func }) {
+function Label({ query = {}, hidden, ok = () => {}, bottom }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { iterationId, type, url } = query
   const did = Number(query.did)
-  const history = useHistory()
   const [doc, setDoc] = useState(undefined)
   const [form] = Form.useForm()
   const [asChecker, setAsChecker] = useState(false)
-  const [project, getProject] = useFetch('project/getProject', {})
+  const { data: project, run: getProject } = useRequest('project/getProject', { loading: false })
+  const { data: created, run: label } = useRequest('task/label')
 
   useEffect(() => {
-    func.getKeywords({ limit: 100000 })
-  }, [])
+    created && ok(created)
+  }, [created])
 
   useEffect(() => {
     const desc = url ? [{ name: url.replace(/^.*\/([^\/]+)$/, '$1') }] : undefined
-      form.setFieldsValue({
-        datasetId: did || undefined,
-        keepAnnotations: type,
-        desc,
-      })
-      url && setDoc(url)
+    form.setFieldsValue({
+      datasetId: did || undefined,
+      keepAnnotations: type ? type : 0,
+      desc,
+    })
+    url && setDoc(url)
   }, [did])
 
   useEffect(() => {
@@ -55,10 +51,10 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
   }, [pid])
 
   useEffect(() => {
-    project.id && form.setFieldsValue({ keywords: project.keywords })
+    project && form.setFieldsValue({ keywords: project.keywords })
   }, [project])
 
-  const onFinish = async (values) => {
+  const onFinish = (values) => {
     const { labellers, checker } = values
     const emails = [labellers]
     checker && emails.push(checker)
@@ -68,7 +64,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
       labellers: emails,
       doc,
     }
-    const result = await func.label(params)
+    const result = label(params)
     result && ok(result)
   }
 
@@ -80,10 +76,8 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
     console.log('Failed:', errorInfo)
   }
 
-  const getCheckedValue = (list) => list.find((item) => item.checked)['id']
   const initialValues = {
     datasetId: did || undefined,
-    labelType: getCheckedValue(LabelTypes()),
     keepAnnotations: type,
   }
   return (
@@ -97,20 +91,19 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
       >
-
         <div hidden={hidden}>
-          <Form.Item wrapperCol={{ span: 20 }}>
+          <Item wrapperCol={{ span: 20 }}>
             <Tip content={t('task.label.header.tip')} />
-          </Form.Item>
+          </Item>
           <MergeType form={form} disabledNew={!!iterationId} />
-          <Form.Item label={t('task.fusion.form.dataset')} name="datasetId">
+          <Item label={t('task.fusion.form.dataset')} name="datasetId">
             <DatasetSelect pid={pid} />
-          </Form.Item>
+          </Item>
           {false ? (
-            <Form.Item label={t('task.label.form.member')} tooltip={t('tip.task.filter.labelmember')} required>
+            <Item label={t('task.label.form.member')} tooltip={t('tip.task.filter.labelmember')} required>
               <Row gutter={20}>
                 <Col flex={1}>
-                  <Form.Item
+                  <Item
                     name="labellers"
                     noStyle
                     rules={[
@@ -125,7 +118,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
                     ]}
                   >
                     <Input placeholder={t('task.label.form.member.placeholder')} allowClear />
-                  </Form.Item>
+                  </Item>
                 </Col>
                 <Col style={{ lineHeight: '30px' }}>
                   <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>
@@ -133,12 +126,12 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
                   </Checkbox>
                 </Col>
               </Row>
-            </Form.Item>
+            </Item>
           ) : null}
-          <Form.Item hidden={!asChecker} tooltip={t('tip.task.filter.labelplatacc')} label={t('task.label.form.plat.label')} required>
+          <Item hidden={!asChecker} tooltip={t('tip.task.filter.labelplatacc')} label={t('task.label.form.plat.label')} required>
             <Row gutter={20}>
               <Col flex={1}>
-                <Form.Item
+                <Item
                   name="checker"
                   noStyle
                   rules={
@@ -157,7 +150,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
                   }
                 >
                   <Input placeholder={t('task.label.form.member.labelplatacc')} allowClear />
-                </Form.Item>
+                </Item>
               </Col>
               <Col>
                 <a target="_blank" href={getLabelToolUrl()}>
@@ -165,8 +158,8 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
                 </a>
               </Col>
             </Row>
-          </Form.Item>
-          <Form.Item
+          </Item>
+          <Item
             label={t('task.label.form.target.label')}
             tooltip={t('tip.task.filter.labeltarget')}
             name="keywords"
@@ -177,23 +170,10 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
               },
             ]}
           >
-            <Select
-              mode="multiple"
-              showArrow
-              placeholder={t('task.label.form.member.labeltarget')}
-              filterOption={(value, option) => [option.value, ...(option.aliases || [])].some((key) => key.indexOf(value) >= 0)}
-            >
-              {keywords.map((keyword) => (
-                <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                  <Row>
-                    <Col flex={1}>{keyword.name}</Col>
-                  </Row>
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+            <UserKeywordsSelector />
+          </Item>
           <KeepAnnotations />
-          <Form.Item label={t('task.label.form.desc.label')} name="desc">
+          <Item label={t('task.label.form.desc.label')} name="desc">
             <Uploader
               onChange={docChange}
               onRemove={() => setDoc(undefined)}
@@ -201,10 +181,10 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
               max={50}
               info={t('task.label.form.desc.info', { br: <br /> })}
             ></Uploader>
-          </Form.Item>
+          </Item>
           <Desc form={form} />
         </div>
-        <Form.Item wrapperCol={{ offset: 8 }}>
+        <Item wrapperCol={{ offset: 8 }}>
           {bottom ? bottom : <SubmitButtons label="common.action.label" />}
           <div className={styles.bottomTip}>
             {t('task.label.bottomtip', {
@@ -215,43 +195,10 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
               ),
             })}
           </div>
-        </Form.Item>
+        </Item>
       </Form>
     </div>
   )
 }
 
-const dis = (dispatch) => {
-  return {
-    getDataset(id, force) {
-      return dispatch({
-        type: 'dataset/getDataset',
-        payload: { id, force },
-      })
-    },
-    label(payload) {
-      return dispatch({
-        type: 'task/label',
-        payload,
-      })
-    },
-    clearCache() {
-      return dispatch({ type: 'dataset/clearCache' })
-    },
-    getKeywords(payload) {
-      return dispatch({
-        type: 'keyword/getKeywords',
-        payload,
-      })
-    },
-  }
-}
-
-const stat = (state) => {
-  return {
-    datasets: state.dataset.dataset,
-    keywords: state.keyword.keywords.items,
-  }
-}
-
-export default connect(stat, dis)(Label)
+export default Label

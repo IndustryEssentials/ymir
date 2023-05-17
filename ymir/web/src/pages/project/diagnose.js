@@ -6,17 +6,15 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Training from './diagnose/training'
 import Predictions from './diagnose/Predictions'
 
 import s from './detail.less'
-const TabsKey = ['infer_datasets', 'training']
+const TabsKey = ['infer_datasets']
 const tab = (key) => ({ tab: `model.diagnose.tab.${key}`, key })
 const tabs = TabsKey.map((key) => tab(key))
 
 const content = {
   [TabsKey[0]]: Predictions,
-  [TabsKey[1]]: Training,
 }
 
 const DynamicContent = ({ active, id, project }) => {

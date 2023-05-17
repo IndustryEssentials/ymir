@@ -113,6 +113,14 @@ class CmdInfer(base.BaseCommand):
         if not executant_name:
             executant_name = task_id
 
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
+        task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
+        if task_config["object_type"] != model_storage.object_type:
+            raise MirRuntimeError(
+                error_code=MirCode.RC_CMD_INVALID_MODEL,
+                error_message=f"object types mismatch: {task_config['object_type']} != {model_storage.object_type}")
+
         work_dir_in = os.path.join(work_dir, "in")
         work_dir_out = os.path.join(work_dir, "out")
         prepare_executant_env(work_dir_in=work_dir_in, work_dir_out=work_dir_out, asset_cache_dir=media_path)
@@ -126,12 +134,10 @@ class CmdInfer(base.BaseCommand):
         class_names = model_storage.class_names
         if not class_names:
             raise MirRuntimeError(
-                error_code=MirCode.RC_CMD_INVALID_FILE,
+                error_code=MirCode.RC_CMD_INVALID_MODEL,
                 error_message=f"empty class names in model: {model_storage.model_hash}@{model_storage.stage_name}")
 
         model_names = model_storage.stages[model_storage.stage_name].files
-        with open(config_file, 'r') as f:
-            config = yaml.safe_load(f)
         prepare_config_file(
             config=config,
             dst_config_file=work_config_file,
@@ -146,7 +152,6 @@ class CmdInfer(base.BaseCommand):
                                                          run_infer=run_infer,
                                                          env_config_file_path=work_env_config_file)
 
-        task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
         run_docker_executant(
             work_dir_in=work_dir_in,
             work_dir_out=work_dir_out,
@@ -165,7 +170,7 @@ class CmdInfer(base.BaseCommand):
             task_annotations.type = (mirpb.ObjectType.OT_DET_BOX if model_storage.object_type
                                      == mirpb.ObjectType.OT_DET_BOX else mirpb.ObjectType.OT_SEG)
             task_annotations.is_instance_segmentation = (
-                model_storage.object_type == models.ModelObjectType.MOT_INS_SEG.value)
+                model_storage.object_type == mirpb.ObjectType.OT_INS_SEG)
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET_BOX else _process_infer_seg_coco_result)
             process_result_func(task_annotations, work_dir_out, class_id_mgr)
@@ -234,7 +239,7 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
 
     detections = results.get('detection')
     if not isinstance(detections, dict):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
                               error_message=f"Invalid infer result file: {infer_result_file}, have no detection dict")
 
     unknown_class_id_annos_cnt = 0
@@ -308,7 +313,7 @@ def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> No
     logging.info(f"container config: {executor_config}")
 
     with open(dst_config_file, 'w') as f:
-        yaml.dump(executor_config, f)
+        yaml.dump(executor_config, f, allow_unicode=True)
 
 
 # public: cli bind

@@ -1,29 +1,5 @@
 import request from '@/utils/request'
-import { TYPES } from '@/constants/image'
-import { ObjectType } from '@/constants/project'
-
-export type QueryParams = {
-  name?: string
-  type?: number
-  objectType?: ObjectType
-  state?: TYPES
-  url?: string
-  limit?: number
-  offset?: number
-}
-type Image = {
-  name: string
-  url: string
-  description?: string
-  enable_livecode?: boolean
-}
-type EditImage = Omit<Image, 'url'>
-type ShareParams = {
-  username: string
-  email: string
-  phone: string
-  org: string
-}
+import { QueryParams, Image, EditImage } from './typings/image.d'
 
 /** image service */
 /**
@@ -32,7 +8,7 @@ type ShareParams = {
  * @returns
  */
 export function getImage(id: number) {
-  return request.get(`images/${id}`)
+  return request.get(`/images/${id}`)
 }
 
 /**
@@ -45,8 +21,8 @@ export function getImage(id: number) {
  * @export
  * @param {QueryParams} { name, type, objectType, state, url, limit = 10, offset = 0 }
  */
-export function getImages({ name, type, objectType, state, url, limit = 10, offset = 0 }: QueryParams) {
-  return request.get('images/', {
+export function getImages({ name, type, objectType, state, url, limit = 10, offset = 0, official }: QueryParams) {
+  return request.get('/images/', {
     params: {
       name,
       type,
@@ -55,6 +31,7 @@ export function getImages({ name, type, objectType, state, url, limit = 10, offs
       url,
       limit,
       offset,
+      is_official: official,
     },
   })
 }
@@ -99,16 +76,6 @@ export function updateImage(id: number, { name, description }: EditImage) {
   })
 }
 
-export function shareImage(id: number, { username, email, phone, org }: ShareParams) {
-  return request.post(`/images/shared`, {
-    docker_image_id: id,
-    contributor: username,
-    email,
-    phone,
-    organization: org,
-  })
-}
-
 export function relateImage(id: number, relations: number[]) {
   return request({
     url: `/images/${id}/related`,
@@ -117,8 +84,4 @@ export function relateImage(id: number, relations: number[]) {
       dest_image_ids: relations,
     },
   })
-}
-
-export function getShareImages() {
-  return request.get('/images/shared')
 }

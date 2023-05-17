@@ -71,6 +71,7 @@ describe("constants: model", () => {
       projectId: origin.project_id,
       name: origin.name,
       createTime: format(time),
+      versions: []
     }
     expect(transferModelGroup(origin)).toEqual(expected)
   })
@@ -81,7 +82,7 @@ describe("constants: model", () => {
       id,
       groupId: 1,
       projectId: 234,
-      name: 'model_training',
+      name: 'model_training V1',
       type: 2,
       version: 1,
       versionName: 'V1',

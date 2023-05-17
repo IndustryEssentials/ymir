@@ -23,6 +23,7 @@ from app.schemas.common import (
     DatasetResult,
     ModelResult,
     PredictionResult,
+    DockerImageResult,
     IdModelMixin,
     IsDeletedModelMixin,
     IterationContext,
@@ -82,16 +83,24 @@ class TaskParameterBase(BaseModel):
 
     merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
 
+    object_type: Optional[ObjectType]
+
     @validator("keywords")
     def normalize_keywords(cls, v: Optional[List[str]]) -> Optional[List[str]]:
         if v is None:
             return v
         return [keyword.strip() for keyword in v]
 
+    def update_with_project_context(self, project_context: Dict) -> None:
+        if project_context.get("object_type"):
+            self.object_type = project_context["object_type"]
+        return
+
 
 class LabelParameter(TaskParameterBase):
     task_type: Literal["label"]
 
+    username: Optional[str]
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
     annotation_type: Optional[AnnotationType] = None
@@ -99,11 +108,6 @@ class LabelParameter(TaskParameterBase):
 
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
-
-    def update_with_project_context(self, project_getter: Callable) -> None:
-        project = project_getter()
-        self.object_type = project.object_type
-        return
 
 
 class TrainingParameter(TaskParameterBase):
@@ -250,7 +254,7 @@ class TaskCreate(TaskBase):
         iterations_getter: Callable,
         labels_getter: Callable,
         docker_image_getter: Callable,
-        project_getter: Callable,
+        project_context: Dict,
     ) -> None:
         """
         Update task parameters when database and user_labels are ready
@@ -259,8 +263,9 @@ class TaskCreate(TaskBase):
             # extra logic for dataset fusion:
             # reorder datasets based on merge_strategy
             self.parameters.update_with_iteration_context(iterations_getter)
-        elif isinstance(self.parameters, LabelParameter):
-            self.parameters.update_with_project_context(project_getter)
+
+        if project_context:
+            self.parameters.update_with_project_context(project_context)
 
         if self.parameters.typed_datasets:
             fillin_dataset_hashes(datasets_getter, self.parameters.typed_datasets)
@@ -350,6 +355,8 @@ class TaskInternal(TaskInDBBase):
             return ResultType.model
         elif task_type == TaskType.dataset_infer:
             return ResultType.prediction
+        elif task_type == TaskType.pull_image:
+            return ResultType.docker_image
         elif task_type in [
             TaskType.mining,
             TaskType.label,
@@ -371,6 +378,7 @@ class Task(TaskInternal):
     result_model: Optional[ModelResult]
     result_dataset: Optional[DatasetResult]
     result_prediction: Optional[PredictionResult]
+    result_docker_image: Optional[DockerImageResult]
 
     @root_validator
     def ensure_terminate_state(cls, values: Any) -> Any:
@@ -448,10 +456,16 @@ class TaskResultUpdateMessage(BaseModel):
     result_model: Optional[ModelResult]
     result_dataset: Optional[DatasetResult]
     result_prediction: Optional[PredictionResult]
+    result_docker_image: Optional[DockerImageResult]
 
     @root_validator(pre=True)
     def gen_result_state(cls, values: Any) -> Any:
-        result = values.get("result_model") or values.get("result_dataset") or values.get("result_prediction")
+        result = (
+            values.get("result_model")
+            or values.get("result_dataset")
+            or values.get("result_prediction")
+            or values.get("result_docker_image")
+        )
         if not result:
             raise ValueError("Invalid Task Result")
         values["result_state"] = result.result_state

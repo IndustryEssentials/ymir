@@ -24,8 +24,8 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         # └── test_user
         #     └── ymir-dvc-test
         super().__init__(methodName=methodName)
-        self._user_name = "user"
-        self._mir_repo_name = "repoid"
+        self._user_name = "aaaa"
+        self._mir_repo_name = "bbbbbb"
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzb5'
         self._sub_task_id = utils.sub_task_id(self._task_id, 1)
@@ -85,7 +85,6 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         import_dataset_request.pred_dir = self._storage_root
         import_dataset_request.gt_dir = self._storage_root
         import_dataset_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
-        import_dataset_request.object_type = mir_cmd_pb.ObjectType.OT_DET_BOX
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportData
         req_create_task.no_task_monitor = True
@@ -95,6 +94,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
                                          sandbox_root=self._sandbox_root,
                                          assets_config=assets_config,
                                          req_type=backend_pb2.TASK_CREATE,
+                                         object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
@@ -107,10 +107,10 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
 
         expected_cmd_import_dataset = (
             f"mir import --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} --src-revs master "
-            f"--index-file {os.path.join(working_dir, 'index.txt')} --gen-dir {self._storage_root} -w {working_dir} "
+            f"--gen-dir {self._storage_root} -w {working_dir} "
             f"--user-label-file {test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
-            f"--anno-type det-box --pred-dir {self._storage_root} --gt-dir {self._storage_root} "
-            "--unknown-types-strategy add")
+            f"--anno-type det-box --asset-path {self._storage_root} "
+            f"--pred-dir {self._storage_root} --gt-dir {self._storage_root} --unknown-types-strategy add")
         mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
                                                          repo_id=self._mir_repo_name,
                                                          task_id=self._task_id)

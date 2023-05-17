@@ -2,26 +2,36 @@ import { Col, Row, Select, SelectProps } from 'antd'
 import { FC, UIEvent, UIEventHandler, useCallback, useEffect, useState } from 'react'
 
 import { TYPES } from '@/constants/image'
-import { HIDDENMODULES } from '@/constants/common'
+import { HIDDENMODULES, validState } from '@/constants/common'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
-import { QueryParams } from '@/services/image'
+import { QueryParams } from '@/services/typings/image.d'
 import { DefaultOptionType } from 'antd/lib/select'
 import { useDebounce } from 'ahooks'
+import { Image } from '@/constants'
+import { List } from '@/models/typings/common'
+import { useSelector } from 'umi'
+import { ObjectType } from '@/constants/objectType'
 
 interface Props extends SelectProps {
   pid: number
   relatedId?: number
   type?: TYPES
+  fixedSelected?: number
 }
 
 type OptionType = DefaultOptionType & {
-  image?: YModels.Image
+  value?: number
+  image?: Image
+  objectType?: ObjectType
 }
 
-const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, onChange = () => {}, ...resProps }) => {
+type GO = OptionType
+
+const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, onChange = () => {}, fixedSelected, ...resProps }) => {
   const [options, setOptions] = useState<OptionType[]>([])
-  const [groupOptions, setGroupOptions] = useState<{ label: string; options?: OptionType[] }[]>([])
+  const [groupOptions, setGroupOptions] = useState<OptionType[]>([])
+  const [selected, setSelected] = useState<number>()
   const [query, setQuery] = useState<QueryParams>({
     type,
     limit: 10,
@@ -30,15 +40,25 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   const [name, setSearchName] = useState<string>()
   const searchName = useDebounce(name, { wait: 400 })
   const [total, setTotal] = useState(0)
+  const { official, trainImage, sampleImage } = useSelector(({ image }) => ({
+    ...image,
+    trainImage: relatedId ? image.image[relatedId] : undefined,
+    sampleImage: project?.recommendImage ? image.image[project?.recommendImage] : undefined,
+  }))
   const {
     data: list,
     run: getImages,
     loading,
-  } = useRequest<YModels.ImageList, [QueryParams]>('image/getImages', {
+  } = useRequest<List<Image>, [QueryParams]>('image/getImages', {
     loading: false,
   })
-  const { data: trainImage, run: getRelatedImage } = useRequest<YModels.Image, [{ id: number }]>('image/getImage', {
+  const { run: getImage } = useRequest<Image, [{ id: number }]>('image/getImage', {
     loading: false,
+  })
+  useRequest<Image, [{ id: number }]>('image/getOfficialImage', {
+    loading: false,
+    manual: false,
+    loadingDelay: 500,
   })
   const { data: project, run: getProject } = useRequest<YModels.Project, [{ id: number }]>('project/getProject', {
     cacheKey: 'getProject',
@@ -46,20 +66,43 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   })
 
   useEffect(() => {
+    if (project?.recommendImage) {
+      setSelected(project?.recommendImage)
+    } else if (value) {
+      setSelected(value)
+    } else if (official && validState(official.state)) {
+      setSelected(official.id)
+    } else {
+      setSelected(undefined)
+    }
+  }, [value, official, project?.recommendImage])
+
+  useEffect(() => {
     pid && getProject({ id: pid })
   }, [pid])
 
   useEffect(() => {
+    project?.recommendImage && getImage({ id: project.recommendImage })
+  }, [project?.recommendImage])
+
+  useEffect(() => {
     if (list?.items?.length) {
-      const items = list.items.filter((item) => options.every((opt) => opt.value !== item.id))
+      let items = list.items
+      if (sampleImage) {
+        items = withPriorityImage(list.items, sampleImage)
+      }
+      if (official) {
+        items = withPriorityImage(items, official)
+      }
+      items = items.filter((item) => options.every((opt) => opt.value !== item.id))
       const opts = generateOptions(items)
       setOptions((options) => [...options, ...opts])
     }
     list && setTotal(list?.total)
-  }, [list])
+  }, [list, official, sampleImage])
 
   useEffect(() => {
-    relatedId && getRelatedImage({ id: relatedId })
+    relatedId && getImage({ id: relatedId })
   }, [relatedId])
 
   useEffect(() => {
@@ -98,18 +141,22 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
 
   useEffect(() => {
     if (options.length === 1) {
-      if (!value) {
-        value = options[0].value
+      if (!selected) {
+        setSelected(options[0].value)
       }
     }
   }, [options])
 
   useEffect(() => {
-    if (value) {
-      const opt = options.find(({ image }) => image?.id === value)
-      opt && onChange(value, opt)
+    if (options.length && selected) {
+      const opt = options.find(({ image }) => image?.id === selected)
+      if (opt) {
+        onChange(selected, opt)
+      } else {
+        setSelected(undefined)
+      }
     }
-  }, [options])
+  }, [options, selected])
 
   const fetchImages = () => {
     if (!project) {
@@ -118,20 +165,26 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     getImages(query)
   }
 
-  const generateOption = (image: YModels.Image) => ({
-    label: (
-      <Row>
-        <Col flex={1}>{image.name}</Col>
-        {!HIDDENMODULES.LIVECODE ? (
-          <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col>
-        ) : null}
-      </Row>
-    ),
-    image,
-    value: image.id,
-  })
+  const withPriorityImage = (list: Image[], image?: Image) => (image ? [image, ...list.filter(({ id }) => id !== image.id)] : list)
 
-  const generateOptions = (images: YModels.Image[]) => images.map(generateOption)
+  const generateOption = useCallback(
+    (image: Image) => ({
+      label: (
+        <Row>
+          <Col flex={1}>{image.name}</Col>
+          {!HIDDENMODULES.LIVECODE ? (
+            <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col>
+          ) : null}
+        </Row>
+      ),
+      image,
+      value: image.id,
+      objectType: project?.type,
+    }),
+    [project],
+  )
+
+  const generateOptions = (images: Image[]) => images.map(generateOption)
 
   const scrollChange = (e: UIEvent<HTMLDivElement>) => {
     e.persist()
@@ -146,18 +199,19 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   }
 
   return (
-    <Select
-      value={value}
+    <Select<number, OptionType>
       optionFilterProp="label"
       allowClear
       {...resProps}
-      onChange={(value, opt) => onChange(value, opt)}
+      value={selected}
+      onChange={onChange}
       onPopupScroll={scrollChange}
       options={groupOptions.length ? groupOptions : options}
       loading={loading}
       onSearch={setSearchName}
       showSearch
       filterOption={false}
+      disabled={!!project?.recommendImage}
     ></Select>
   )
 }

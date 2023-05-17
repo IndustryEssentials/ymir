@@ -1,20 +1,18 @@
 import { FC } from 'react'
-import { useHistory } from 'umi'
-import { Button } from 'antd'
+import { useHistory, useParams } from 'umi'
+import { Button, ButtonProps } from 'antd'
 
 import t from '@/utils/t'
 import { AddIcon } from '@/components/common/Icons'
 
-type Props = {
-  id?: number | string
-}
-const AddButton: FC<Props> = ({ id }) => {
+const AddButton: FC<ButtonProps> = ({ ...props }) => {
   const history = useHistory()
+  const { id } = useParams<{ id: string}>()
   function add() {
     history.push(`/home/project/${id}/dataset/add`)
   }
   return (
-    <Button type="primary" onClick={add}>
+    <Button type="primary" {...props} onClick={add}>
       <AddIcon /> {t('dataset.import.label')}
     </Button>
   )

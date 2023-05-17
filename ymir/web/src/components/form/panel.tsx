@@ -3,7 +3,7 @@ import { Col, Row } from 'antd'
 import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/Icons'
 import s from './panel.less'
 
-type Props = {
+export type Props = {
   visible?: boolean
   setVisible?: (visible: boolean) => void
   toogleVisible?: boolean

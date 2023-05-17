@@ -11,7 +11,7 @@ import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
 import MergeType from '@/components/form/items/MergeType'
 import Strategy from './merge/formItem.strategy'
-import SubmitButtons from './submitButtons'
+import SubmitButtons from './SubmitButtons'
 import Dataset from '@/components/form/option/Dataset'
 
 import s from './merge/merge.less'
@@ -60,7 +60,7 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
       return message.error(t('dataset.merge.validate.inputs'))
     }
     const originDataset = did ? did : values.dataset
-    let datasets = [ originDataset, ...(values.includes || [])].filter(True => True)
+    let datasets = [originDataset, ...(values.includes || [])].filter((True) => True)
 
     const params = {
       ...values,
@@ -90,7 +90,7 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
 
   const excludesFilter = useCallback((datasets) => filter(datasets, [selectedDataset, ...(includes || [])]), [selectedDataset, includes])
 
-  const generate2ExistGroup = type => type === DatasetMergeType.Exist
+  const generate2ExistGroup = (type) => type === DatasetMergeType.Exist
 
   return (
     <Form form={form} name="mergeForm" {...formLayout} initialValues={initialValues} onFinish={onFinish} onFinishFailed={onFinishFailed}>
@@ -100,7 +100,7 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
           <Form.Item label={t('task.fusion.form.dataset')}>
             <Dataset dataset={dataset} />
           </Form.Item>
-        ) : (generate2ExistGroup(type) || dataset.id) ? (
+        ) : generate2ExistGroup(type) || dataset.id ? (
           <Form.Item name="dataset" label={t('task.fusion.form.dataset')} rules={[{ required: true }]}>
             <DatasetSelect pid={pid} onChange={originDatasetChange} filters={originFilter} />
           </Form.Item>

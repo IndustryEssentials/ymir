@@ -50,8 +50,8 @@ const model = {
   'model.add.form.url.placeholder': { en: 'Please input model url from internet', cn: '请输入模型文件的网络地址' },
   'model.file.required': { en: 'Please upload model', cn: '请上传模型' },
   'model.add.form.upload.info': {
-    en: `1. Only support model generating on YMIR; {br} 2. Size <= {max}M. 3. Please import model corresponding to {objectType}`,
-    cn: `1. 仅支持YMIR系统产生的模型；{br} 2. 上传文件应小于 {max}MB {br} 3. 请导入{objectType}对应的模型`,
+    en: `1. Only support model generating on this system; {br} 2. Size <= {max}M. 3. Please import model corresponding to {objectType}`,
+    cn: `1. 仅支持本系统产生的模型；{br} 2. 上传文件应小于 {max}MB {br} 3. 请导入{objectType}对应的模型`,
   },
   'model.verify.upload.info': { cn: '支持jpg, png, bmp格式, 图片大小 < {size}M', en: 'Support *.jpg, *.png, *.bmp, size < {size}M' },
   'model.verify.confidence': { cn: '置信度', en: 'Confidence' },

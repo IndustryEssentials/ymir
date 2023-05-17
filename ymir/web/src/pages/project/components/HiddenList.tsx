@@ -1,7 +1,6 @@
-import React, { FC, useEffect, useState } from 'react'
-import { Table, Space, Button, message, Card, TableColumnsType, TableProps, TableColumnType } from 'antd'
-import { useHistory } from 'umi'
-import { useSelector } from 'react-redux'
+import { FC, useEffect, useState } from 'react'
+import { Table, Space, Button, Card, TableColumnsType, TableProps, TableColumnType } from 'antd'
+import { useHistory, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import Actions from '@/components/table/Actions'
@@ -15,9 +14,11 @@ import { ObjectType } from '@/constants/objectType'
 import Stages from '@/components/table/columns/Stages'
 import InferDataset from '@/components/table/columns/InferDataset'
 import Model from '@/components/table/columns/InferModel'
+import { List } from '@/models/typings/common'
+import { Prediction } from '@/constants'
 
 export type AType = 'dataset' | 'model' | 'prediction'
-type DataType = YModels.Dataset | YModels.Model | YModels.Prediction
+type DataType = YModels.Dataset | YModels.Model | Prediction
 type ColumnType = TableColumnType<DataType>
 type ColumnsType = TableColumnsType<DataType>
 type Props = {
@@ -40,11 +41,11 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
   })
   const [selected, setSelected] = useState<(number | string)[]>([])
   const [columns, setColumns] = useState<ColumnsType>([])
-  const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
-  const cacheModels = useSelector<YStates.Root, YStates.IdMap<YModels.Model>>((state) => state.model.model)
+  const cacheDatasets = useSelector((state) => state.dataset.dataset)
+  const cacheModels = useSelector((state) => state.model.model)
   const { data: project, run: getProject } = useRequest<YModels.Project, [{ id: number | string }]>('project/getProject')
   const { data: recoverResult, run: recoverAPI } = useRequest(`${active}/restore`)
-  const { data: listData, run: getList } = useRequest<YStates.List<DataType>, [{ [key: string]: any }]>(`${active}/getHiddenList`)
+  const { data: listData, run: getList } = useRequest<List<DataType>, [{ [key: string]: any }]>(`${active}/getHiddenList`)
 
   useEffect(() => {
     pid && getProject({ id: pid })
@@ -52,8 +53,8 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
 
   useEffect(() => {
     if (active === 'prediction' && list.length) {
-      const predictions = list as YModels.Prediction[]
-      const updatedPredictions = predictions.map((prediction: YModels.Prediction) => {
+      const predictions = list as Prediction[]
+      const updatedPredictions = predictions.map((prediction: Prediction) => {
         const { inferDatasetId, inferModelId } = prediction
         const inferModel = inferModelId[0] ? cacheModels[inferModelId[0]] : undefined
         const inferDataset = inferDatasetId ? cacheDatasets[inferDatasetId] : undefined

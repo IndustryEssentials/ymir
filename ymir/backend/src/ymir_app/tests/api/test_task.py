@@ -1,12 +1,16 @@
+from datetime import datetime
 import random
+import time
 from typing import Dict
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app import crud
 from app.api.api_v1.api import tasks as m
 from app.config import settings
+from app.utils.timeutil import convert_datetime_to_timestamp
 from tests.utils.tasks import create_task
 from tests.utils.utils import random_lower_string
 
@@ -181,14 +185,14 @@ class TestUpdateTaskStatus:
     ):
         task = create_task(db, user_id)
         task_hash = task.hash
-        last_message_datetime = task.last_message_datetime
+        assert task.last_message_datetime is None
 
         data = {
             "user_id": 233,
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
-            "timestamp": m.convert_datetime_to_timestamp(last_message_datetime) + 1,
+            "timestamp": time.time(),
         }
         r = client.post(
             f"{settings.API_V1_STR}/tasks/status",
@@ -210,14 +214,14 @@ class TestUpdateTaskStatus:
     ):
         task = create_task(db, user_id)
         task_hash = task.hash
-        last_message_datetime = task.last_message_datetime
+        task = crud.task.update_last_message_datetime(db, id=task.id, dt=datetime.utcnow())
 
         data = {
             "user_id": 233,
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
-            "timestamp": m.convert_datetime_to_timestamp(last_message_datetime) - 1,
+            "timestamp": convert_datetime_to_timestamp(task.last_message_datetime) - 1,
         }
         r = client.post(
             f"{settings.API_V1_STR}/tasks/status",

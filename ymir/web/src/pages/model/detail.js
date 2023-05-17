@@ -21,7 +21,7 @@ import useRerunAction from '../../hooks/useRerunAction'
 import useCardTitle from '@/hooks/useCardTitle'
 import VersionName from '@/components/result/VersionName'
 import EditDescBox from '@/components/form/editDescBox'
-import Empty from '@/components/empty/default'
+import Empty from '@/components/empty/Default'
 
 import styles from './detail.less'
 
@@ -30,19 +30,29 @@ const { Item } = Descriptions
 function ModelDetail() {
   const { mid: id, id: pid } = useParams()
   const history = useHistory()
-  const model = useSelector(({ model }) => model.model[id] || {})
+  const [model, setModel] = useState({})
+  const rModel = useSelector(({ model }) => model.model[id] || {})
   const [_, getModel] = useFetch('model/getModel')
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
   const generateRerunBtn = useRerunAction('btn')
   const cardTitle = useCardTitle(null, model?.name)
   const [editing, setEditing] = useState({})
+  const editDescBoxRef = useRef(null)
 
   useEffect(async () => (id || model?.needReload) && fetchModel(model.needReload), [id, model?.needReload])
 
+  useEffect(() => rModel && setModel(rModel), [rModel])
+
   function editDesc() {
-    setEditing({})
-    setTimeout(() => setEditing(model), 0)
+    editDescBoxRef.current?.show()
+    setEditing(model)
+  }
+
+  const saveDescHandle = (result) => {
+    if (result) {
+      setModel((model) => ({ ...model, description: result.description }))
+    }
   }
 
   const hide = (version) => {
@@ -124,19 +134,19 @@ function ModelDetail() {
 
   return (
     <div className={styles.modelDetail}>
-      <Breadcrumbs suffix={model.name} />
+      <Breadcrumbs suffix={model?.name} />
       <Card title={cardTitle}>
         <div className={styles.content}>
           <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className="infoTable">
             <Item label={t('model.detail.label.name')}>
               <VersionName result={model} />
             </Item>
-            <Item label={t('common.object.type')}>{t(getProjectTypeLabel(model.type, true))}</Item>
-            {model.hidden ? <Item label={t('common.trash.label')}>{t('common.state.deleted')}</Item> : null}
-            {keywordsItem(model.keywords)}
+            <Item label={t('common.object.type')}>{t(getProjectTypeLabel(model?.type, true))}</Item>
+            {model?.hidden ? <Item label={t('common.trash.label')}>{t('common.state.deleted')}</Item> : null}
+            {keywordsItem(model?.keywords)}
             <Item label={t('model.detail.label.stage')} span={2}>
               <div style={{ width: '100%' }}>
-                {model.stages?.map((stage) => (
+                {model?.stages?.map((stage) => (
                   <Tag key={stage.id} title={stage.primaryMetric}>
                     {stage.name} {stage.primaryMetricLabel}: {percent(stage.primaryMetric)}
                   </Tag>
@@ -144,38 +154,38 @@ function ModelDetail() {
               </div>
             </Item>
             <Item label={t('common.desc')} span={2}>
-              <DescPop description={model.description} />
+              <DescPop description={model?.description} />
             </Item>
           </Descriptions>
           {renderMetrics()}
           <TaskProgress
-            state={model.state}
+            state={model?.state}
             result={model}
-            task={model.task}
-            duration={model.durationLabel}
-            progress={model.progress}
+            task={model?.task}
+            duration={model?.durationLabel}
+            progress={model?.progress}
             fresh={() => fetchModel(true)}
           />
-          <Error code={model.task?.error_code} msg={model.task?.error_message} terminated={model?.task?.is_terminated} />
-          <TaskDetail task={model.task}></TaskDetail>
+          <Error code={model?.task?.error_code} msg={model?.task?.error_message} terminated={model?.task?.is_terminated} />
+          <TaskDetail task={model?.task}></TaskDetail>
           <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-            {!model.hidden ? (
+            {!model?.hidden ? (
               <>
-                {model.url ? (
+                {model?.url ? (
                   <Button>
                     <Link target="_blank" to={model.url}>
                       {t('model.action.download')}
                     </Link>
                   </Button>
                 ) : null}
-                <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
-                <Button type="primary" onClick={() => history.push(`/home/project/${model.projectId}/mining?mid=${getModelStage()}`)}>
+                <Button onClick={() => history.push(`/home/project/${model?.projectId}/model/${model?.id}/verify`)}>{t('model.action.verify')}</Button>
+                <Button type="primary" onClick={() => history.push(`/home/project/${model?.projectId}/mining?mid=${getModelStage()}`)}>
                   {t('dataset.action.mining')}
                 </Button>
-                <Button type="primary" onClick={() => history.push(`/home/project/${model.projectId}/inference?mid=${getModelStage()}`)}>
+                <Button type="primary" onClick={() => history.push(`/home/project/${model?.projectId}/inference?mid=${getModelStage()}`)}>
                   {t('dataset.action.inference')}
                 </Button>
-                <Button type="primary" onClick={() => history.push(`/home/project/${model.projectId}/train?mid=${getModelStage()}`)}>
+                <Button type="primary" onClick={() => history.push(`/home/project/${model?.projectId}/train?mid=${getModelStage()}`)}>
                   {t('dataset.action.train')}
                 </Button>
                 <Button type="primary" onClick={() => hide(model)}>
@@ -194,6 +204,7 @@ function ModelDetail() {
           </Space>
         </div>
       </Card>
+      <EditDescBox ref={editDescBoxRef} type="model" record={editing} handle={saveDescHandle} />
       <EditDescBox type="model" record={editing} />
       <Hide ref={hideRef} type={'model'} msg="model.action.del.confirm.content" />
     </div>

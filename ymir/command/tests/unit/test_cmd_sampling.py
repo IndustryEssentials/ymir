@@ -77,8 +77,8 @@ class TestCmdSampling(unittest.TestCase):
         mir_metadatas = mirpb.MirMetadatas()
         json_format.ParseDict(metadatas_dict, mir_metadatas)
         mir_annotations = mirpb.MirAnnotations()
-        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
-        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOS
+        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOS
 
         task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportData, task_id='t0', message='import')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,

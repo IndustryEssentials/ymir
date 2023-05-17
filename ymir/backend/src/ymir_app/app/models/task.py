@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from typing import Dict
+from typing import Dict, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -15,6 +15,7 @@ from sqlalchemy.dialects.mysql import DATETIME
 
 from app.config import settings
 from app.db.base_class import Base
+from app.utils.timeutil import convert_datetime_to_timestamp
 
 
 class Task(Base):
@@ -39,7 +40,7 @@ class Task(Base):
 
     is_terminated = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
-    last_message_datetime = Column(DATETIME(fsp=6), default=datetime.utcnow, nullable=False)
+    last_message_datetime = Column(DATETIME(fsp=6))
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
         DateTime,
@@ -51,3 +52,7 @@ class Task(Base):
     @property
     def task_parameters(self) -> Dict:
         return json.loads(self.parameters) if self.parameters else {}
+
+    @property
+    def last_message_timestamp(self) -> Optional[float]:
+        return convert_datetime_to_timestamp(self.last_message_datetime) if self.last_message_datetime else None

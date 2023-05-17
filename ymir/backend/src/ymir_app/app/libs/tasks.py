@@ -10,23 +10,16 @@ from sqlalchemy.orm import Session
 
 from app.api.errors.errors import (
     ProjectNotFound,
-    DatasetIndexNotReady,
     DuplicateDatasetGroupError,
     FailedToUpdateTaskStatusTemporally,
     FailedtoCreateTask,
-    ModelNotReady,
     ModelNotFound,
     TaskNotFound,
     DatasetNotFound,
     DatasetGroupNotFound,
     RequiredFieldMissing,
 )
-from app.constants.state import (
-    FinalStates,
-    TaskState,
-    ResultType,
-    ResultState,
-)
+from app.constants.state import FinalStates, TaskState, TaskType, ResultType, ResultState
 from app.config import settings
 from app import schemas, crud, models
 from app.libs.datasets import ensure_datasets_are_ready
@@ -35,10 +28,11 @@ from app.libs.metrics import send_keywords_metrics
 from app.libs.models import create_model_stages
 from app.utils.cache import CacheClient
 from app.utils.err import retry
-from app.utils.ymir_controller import ControllerClient, gen_task_hash
+from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
 from app.utils.data import split_seq
 from common_utils.labels import UserLabels
+from id_definition.task_id import gen_task_id
 
 
 class Retry(Exception):
@@ -80,12 +74,19 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
 
 
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
-    project_getter = partial(crud.project.get, db, task_in.project_id)
     iterations_getter = partial(crud.iteration.get_multi_by_project, db)
     datasets_getter = partial(ensure_datasets_are_ready, db, user_id=user_id)
     model_stages_getter = partial(crud.model_stage.get_multi_by_user_and_ids, db, user_id=user_id)
     labels_getter = partial(keywords_to_class_ids, user_labels)
     docker_image_getter = partial(crud.docker_image.get, db)
+
+    if task_in.project_id:
+        project = crud.project.get(db, task_in.project_id)
+        if not project:
+            raise ProjectNotFound()
+        project_context = schemas.Project.from_orm(project).dict()
+    else:
+        project_context = {}
 
     task_in.fulfill_parameters(
         datasets_getter,
@@ -93,9 +94,9 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         iterations_getter,
         labels_getter,
         docker_image_getter,
-        project_getter,
+        project_context
     )
-    task_hash = gen_task_hash(user_id, task_in.project_id)
+    task_hash = gen_task_id(user_id, task_in.project_id)
     try:
         controller_client = ControllerClient()
         resp = controller_client.create_task(
@@ -131,6 +132,32 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
             [label.class_id for label in task_in.parameters.typed_labels],
             int(task.create_datetime.timestamp()),
         )
+    return task
+
+
+def create_pull_docker_image_task(db: Session, user_id: int, docker_image_in: schemas.DockerImageCreate) -> models.Task:
+    # docker image has nothing to do with project_id.
+    # but task hash require project_id(repo_id) anyway. Use 0 in this case.
+    project_id = 0
+    task_hash = gen_task_id(user_id, project_id)
+    try:
+        controller = ControllerClient()
+        resp = controller.pull_image(user_id, task_hash, url=docker_image_in.url)
+        logger.info("[create image] pull image controller response: %s", resp)
+    except ValueError:
+        logger.exception("[create image] controller error")
+        raise FailedtoCreateTask()
+    except KeyError:
+        logger.exception("[create image] parameter check failed")
+        raise RequiredFieldMissing()
+
+    task = crud.task.create_placeholder(
+        db, TaskType.pull_image, user_id, project_id, state_=TaskState.pending, hash_=task_hash
+    )
+    crud.docker_image.create(
+        db, obj_in=schemas.image.DockerImageCreateWithTask(task_id=task.id, **docker_image_in.dict())
+    )
+    logger.info("[create image] created related task(%s)", task.hash)
     return task
 
 
@@ -173,7 +200,7 @@ class TaskResult:
     def model_info(self) -> Optional[Dict]:
         try:
             result = self.viz.get_model_info(self.task_hash)
-        except (ModelNotReady, ModelNotFound):
+        except ModelNotFound:
             logger.exception("[update task] failed to get model_info: model not ready")
             return None
         except Exception:
@@ -185,20 +212,40 @@ class TaskResult:
 
     @cached_property
     def dataset_info(self) -> Optional[Dict]:
-        get_dataset_info = partial(self.viz.get_dataset_info, self.task_hash, self.user_labels, check_index_status=True)
+        """
+        get dataset_info for prediction, which has a underlying dataset
+        """
+        get_dataset_info = partial(self.viz.get_dataset_info, self.task_hash, self.user_labels)
         try:
-            dataset_info = retry(
-                get_dataset_info, n_times=3, wait=settings.CRON_UPDATE_TASK_RETRY_INTERVAL, backoff=True
-            )
-        except DatasetIndexNotReady:
-            raise FailedToUpdateTaskStatusTemporally()
+            dataset_info = retry(get_dataset_info, n_times=3, backoff=True)
         except Exception:
-            logger.exception("[update task] failed to get dataset_info, check viz log")
+            logger.exception("[update task] failed to get dataset_info, check viewer log")
             return None
-        if dataset_info["new_types_added"]:
+        return dataset_info
+
+    @cached_property
+    def dataset_analysis(self) -> Optional[Dict]:
+        get_dataset_analysis = partial(
+            self.viz.get_dataset_analysis, self.task_hash, self.user_labels, require_hist=True
+        )
+        try:
+            dataset_analysis = retry(get_dataset_analysis, n_times=3, backoff=True)
+        except Exception:
+            logger.exception("[update task] failed to get dataset_analysis, check viewer log")
+            return None
+        if dataset_analysis["new_types_added"]:
             logger.info("[update task] delete user keywords cache for new keywords from dataset")
             self.cache.delete_personal_keywords_cache()
-        return dataset_info
+        return dataset_analysis
+
+    @cached_property
+    def docker_image_configs(self) -> Optional[Dict]:
+        docker_image = crud.docker_image.get_by_task_id(self.db, self.task.id)
+        if not docker_image:
+            return None
+        docker_configs = self.controller.inspect_image(self.user_id, docker_image.url)
+        logger.info("[update task] docker image(%s) configs: %s", docker_image.url, docker_configs)
+        return docker_configs
 
     def ensure_dest_model_group_exists(self, dataset_id: int) -> int:
         model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
@@ -271,10 +318,7 @@ class TaskResult:
         else:
             logger.info("[create task] no task result record needed")
 
-    def update(
-        self,
-        task_result: schemas.TaskUpdateStatus,
-    ) -> models.Task:
+    def update(self, task_result: schemas.TaskUpdateStatus) -> models.Task:
         task_in_db = crud.task.get(self.db, id=self.task.id)
         if not task_in_db:
             logger.error(
@@ -315,6 +359,8 @@ class TaskResult:
             self.update_prediction_result(task_result)
         elif self.result_type is ResultType.model:
             self.update_model_result(task_result, task_in_db)
+        elif self.result_type is ResultType.docker_image:
+            self.update_docker_image_result(task_result)
 
     def update_model_result(self, task_result: schemas.TaskUpdateStatus, task_in_db: models.Task) -> None:
         """
@@ -339,18 +385,18 @@ class TaskResult:
 
     def update_dataset_result(self, task_result: schemas.TaskUpdateStatus) -> None:
         """
-        Criterion for ready dataset: task state is DONE and viewer returns valid dataset_info
+        Criterion for ready dataset: task state is DONE and viewer returns valid dataset_analysis
         """
         dataset_record = crud.dataset.get_by_task_id(self.db, task_id=self.task.id)
         if not dataset_record:
             logger.error("[update task] task result (dataset) not found, skip")
             return
-        if task_result.state is TaskState.done and self.dataset_info:
+        if task_result.state is TaskState.done and self.dataset_analysis:
             crud.dataset.finish(
                 self.db,
                 dataset_record.id,
                 result_state=ResultState.ready,
-                result=self.dataset_info,
+                result=self.dataset_analysis,
             )
         else:
             crud.dataset.finish(
@@ -380,3 +426,35 @@ class TaskResult:
                 prediction_record.id,
                 result_state=ResultState.error,
             )
+
+    def update_docker_image_result(self, task_result: schemas.TaskUpdateStatus) -> None:
+        docker_image = crud.docker_image.get_by_task_id(self.db, task_id=self.task.id)
+        if not docker_image:
+            logger.error("[update task] task(%s) result (docker_image) not found, skip", self.task.id)
+            return
+        if task_result.state is TaskState.done and self.docker_image_configs:
+            # create docker image configs
+            for object_type, object_type_configs in self.docker_image_configs["docker_image_config"].items():
+                for type_, serialized_config in object_type_configs["config"].items():
+                    crud.image_config.create(
+                        self.db,
+                        obj_in=schemas.ImageConfigCreate(
+                            image_id=docker_image.id,
+                            config=serialized_config,
+                            object_type=object_type,
+                            type=type_,
+                        ),
+                    )
+            updates = {
+                "hash": self.docker_image_configs["hash_id"],
+                "result_state": int(ResultState.ready),
+                "enable_livecode": self.docker_image_configs["docker_image_enable_livecode"],
+                "is_official": self.docker_image_configs["docker_image_is_official"],
+            }
+        else:
+            updates = {"result_state": int(ResultState.error)}
+        crud.docker_image.update_from_dict(
+            self.db,
+            docker_image_id=docker_image.id,
+            updates=updates,
+        )

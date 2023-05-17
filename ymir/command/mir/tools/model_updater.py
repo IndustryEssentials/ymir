@@ -64,7 +64,7 @@ def _update_model_110_200(model_info_path: str) -> None:
 
     # write back again
     with open(os.path.join(model_info_path), 'w') as f:
-        yaml.safe_dump(model_info_dst, f)
+        yaml.safe_dump(model_info_dst, f, allow_unicode=True)
 
 
 def _check_model_110(ymir_info: dict) -> None:

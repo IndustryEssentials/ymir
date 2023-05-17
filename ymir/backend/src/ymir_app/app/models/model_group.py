@@ -18,14 +18,14 @@ class ModelGroup(Base):
     project_id = Column(Integer, index=True, nullable=False)
     training_dataset_id = Column(Integer, index=True)
 
-    models = relationship(
+    all_models = relationship(
         "Model",
         primaryjoin="foreign(Model.model_group_id)==ModelGroup.id",
         backref="group",
         uselist=True,
         viewonly=True,
     )
-    visible_models = relationship(
+    models = relationship(
         "Model",
         primaryjoin="and_(foreign(Model.model_group_id)==ModelGroup.id, foreign(Model.is_visible))",
         uselist=True,
@@ -43,4 +43,4 @@ class ModelGroup(Base):
 
     @property
     def is_visible(self) -> bool:
-        return bool(self.visible_models)
+        return bool(self.models)

@@ -16,6 +16,15 @@ http:
       service: backend
       rule: PathPrefix(`/api/v1/openapi.json`)
 
+    yapi_router:
+      entryPoints:
+        - web
+      middlewares:
+        - APIRateLimiter
+        - Authenticator
+      service: yapi
+      rule: PathPrefix(`/yapi/v1/`)
+
     backend_router:
       entryPoints:
         - web
@@ -53,6 +62,12 @@ http:
       loadBalancer:
         servers:
           - url: http://backend:8088/
+
+    yapi:
+      loadBalancer:
+        servers:
+          - url: http://yapi:80/
+
     backend:
       loadBalancer:
         servers:
@@ -80,8 +95,8 @@ http:
 
     APIRateLimiter:
       rateLimit:
-        average: 3
-        burst: 10
+        average: 10
+        burst: 20
 
     updateSocketPath:
       stripPrefix:

@@ -10,6 +10,7 @@ import Terminate, { RefProps } from '@/components/task/terminate'
 import { getModelColumns } from '@/components/table/Columns'
 import useListActions from '@/hooks/useListActions'
 import Actions from '@/components/table/columns/Actions'
+import { List } from '@/models/typings/common'
 
 type Props = {
   pid: number
@@ -17,8 +18,8 @@ type Props = {
   query?: YParams.ResultListQuery
 }
 const ModelList: FC<Props> = ({ pid, name, query }) => {
-  const [models, setModels] = useState<YStates.List<YModels.Model>>()
-  const { data: remoteModels, run: getModels } = useRequest<YStates.List<YModels.Model>, [YParams.ModelsQuery]>('model/queryModels', {
+  const [models, setModels] = useState<List<YModels.Model>>()
+  const { data: remoteModels, run: getModels } = useRequest<List<YModels.Model>, [YParams.ModelsQuery]>('model/queryModels', {
     debounceWait: 100,
   })
   const [modelQuery, setQuery] = useState<YParams.ModelsQuery>({

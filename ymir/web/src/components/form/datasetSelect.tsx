@@ -3,22 +3,22 @@ import type { FC, ReactNode } from 'react'
 
 import { useEffect, useState } from 'react'
 import { Col, ConfigProvider, Row, Select, SelectProps } from 'antd'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
-import EmptyState from '@/components/empty/dataset'
+import EmptyState from '@/components/empty/Dataset'
 import Dataset from '@/components/form/option/Dataset'
 
 interface Props extends SelectProps {
   pid: number
-filter?: number[]
-allowEmpty?: boolean
-filters?: (ds: YModels.Dataset[]) => YModels.Dataset[]
-renderLabel?: (d: YModels.Dataset) => ReactNode
-onReady?: Function
-extra?: ReactNode
-changeByUser?: boolean
+  filter?: number[]
+  allowEmpty?: boolean
+  filters?: (ds: YModels.Dataset[]) => YModels.Dataset[]
+  renderLabel?: (d: YModels.Dataset) => ReactNode
+  onReady?: Function
+  extra?: ReactNode
+  changeByUser?: boolean
 }
 interface DatasetOption extends YModels.Dataset {
   disabled?: boolean
@@ -38,7 +38,7 @@ const DatasetSelect: FC<Props> = ({
   changeByUser,
   ...resProps
 }) => {
-  const datasets = useSelector<YStates.Root, YModels.Dataset[]>(({ dataset }) => dataset.allDatasets[pid])
+  const datasets = useSelector(({ dataset }) => dataset.allDatasets[pid])
   const [options, setOptions] = useState<DefaultOptionType[]>([])
   const { run: getDatasets } = useRequest('dataset/queryAllDatasets', {
     debounceWait: 300,
@@ -88,17 +88,17 @@ const DatasetSelect: FC<Props> = ({
 
   useEffect(() => {
     const list = datasets || []
-    let dss: DatasetOption[]  = filters ? filters(list) : list
+    let dss: DatasetOption[] = filters ? filters(list) : list
 
-    dss= allowEmpty ? dss : filterEmptyAsset(dss)
+    dss = allowEmpty ? dss : filterEmptyAsset(dss)
     const opts = dss.map((item) => {
-        return {
-          label: renderLabel(item),
-          dataset: item,
-          value: item.id,
-          disabled: item.disabled,
-        }
-      })
+      return {
+        label: renderLabel(item),
+        dataset: item,
+        value: item.id,
+        disabled: item.disabled,
+      }
+    })
     setOptions(opts)
   }, [filters, datasets])
 

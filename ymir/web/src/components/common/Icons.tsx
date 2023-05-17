@@ -11,6 +11,7 @@ import StoreSVG from './icons/StoreSVG'
 import React from 'react'
 import PublishSVG from './icons/PublishSVG'
 import AddSVG from './icons/AddSVG'
+import NotifySVG from './icons/NotifySVG'
 type Props = {
   [key: string]: any,
 }
@@ -29,6 +30,7 @@ export const MyAlgoIcon = Icon(MyAlgoSVG)
 export const StoreIcon = Icon(StoreSVG)
 export const PublishIcon = Icon(PublishSVG)
 export const AddIcon = Icon(AddSVG)
+export const NotifyIcon = Icon(NotifySVG)
 
 export const AddDelTwoIcon = iconFont('add-del-two')
 export const ArrowDownIcon = iconFont('arrow-down')

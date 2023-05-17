@@ -96,6 +96,7 @@ describe('constants: project', () => {
       modelCount: 0,
       modelProcessingCount: 0,
       modelErrorCount: 0,
+      recommendImage: 0,
     }
     expect(transferProject(origin)).toEqual(expected)
   })

@@ -1,11 +1,13 @@
 from typing import Any
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from app.api.api_v1.endpoints import images as m
 from app.api.errors.errors import error_codes
 from app.config import settings
 from app.constants.state import DockerImageType
 from tests.utils.utils import random_lower_string
+from app.libs import tasks
 
 
 class TestListImages:
@@ -54,21 +56,20 @@ class TestGetImage:
 
 
 class TestCreateImage:
-    def test_create_image_success(self, client: TestClient, admin_token_headers):
+    def test_create_image_success(self, db: Session, client: TestClient, user_id, admin_token_headers, mocker):
         j = {"url": random_lower_string(), "name": random_lower_string()}
+        mocker.patch.object(tasks, "ControllerClient", return_value=mocker.Mock())
         r = client.post(f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j)
+        assert "result_docker_image" in r.json()['result']
         assert r.ok
-        result = r.json()["result"]
-        assert result["name"] == j["name"]
-        assert not result["is_shared"]
 
 
 class TestDeleteImage:
-    def test_delete_a_image_success(self, client: TestClient, admin_token_headers):
+    def test_delete_a_image_success(self, db: Session, client: TestClient, user_id, admin_token_headers, mocker):
         j = {"url": random_lower_string(), "name": random_lower_string()}
+        mocker.patch.object(tasks, "ControllerClient", return_value=mocker.Mock())
         r = client.post(f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j)
-        i = r.json()["result"]["id"]
-
+        i = r.json()['result']['result_docker_image']['id']
         r = client.delete(
             f"{settings.API_V1_STR}/images/{i}",
             headers=admin_token_headers,

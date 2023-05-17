@@ -30,6 +30,7 @@ def make_cmd_request(user_id: str = None,
                      terminated_task_type: str = None,
                      sampling_count: int = None,
                      sampling_rate: float = None,
+                     object_type: "mir_cmd_pb.ObjectType.V" = mir_cmd_pb.OT_UNKNOWN,
                      evaluate_config: mir_cmd_pb.EvaluateConfig = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
@@ -84,6 +85,8 @@ def make_cmd_request(user_id: str = None,
         request.sampling_count = sampling_count
     if sampling_rate:
         request.sampling_rate = sampling_rate
+    if object_type:
+        request.object_type = object_type
     if evaluate_config:
         request.evaluate_config.CopyFrom(evaluate_config)
     return request
@@ -118,6 +121,7 @@ def make_invoker_cmd_call(invoker: Any,
                           sampling_count: int = None,
                           sampling_rate: float = None,
                           work_dir: str = '',
+                          object_type: "mir_cmd_pb.ObjectType.V" = mir_cmd_pb.OT_UNKNOWN,
                           evaluate_config: mir_cmd_pb.EvaluateConfig = None) -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
@@ -143,6 +147,7 @@ def make_invoker_cmd_call(invoker: Any,
                                terminated_task_type=terminated_task_type,
                                sampling_count=sampling_count,
                                sampling_rate=sampling_rate,
+                               object_type=object_type,
                                evaluate_config=evaluate_config)
     invoker = invoker(sandbox_root=sandbox_root,
                       request=request,

@@ -3,7 +3,6 @@ import { Col, Form, Input, InputNumber, Row, Space } from "antd"
 import Panel from "@/components/form/panel"
 import t from '@/utils/t'
 import s from "./form.less"
-import PreProcessForm from "./preProcess"
 import { AddTwoIcon, AddDelTwoIcon } from '@/components/common/Icons'
 function getArrayConfig(config = {}) {
   const excludes = ['gpu_count', 'task_id']
@@ -96,7 +95,6 @@ const DockerConfigForm = ({ show, form, seniorConfig, name = 'hyperparam' }) => 
         </Form.List>
 
       </Form.Item>
-      <PreProcessForm />
     </Panel> : null
 }
 

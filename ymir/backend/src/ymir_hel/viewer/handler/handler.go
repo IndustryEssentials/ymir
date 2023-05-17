@@ -27,6 +27,7 @@ type BaseMongoServer interface {
 		mirRepo *constants.MirRepo,
 		mirMetadatas *protos.MirMetadatas,
 		mirAnnotations *protos.MirAnnotations,
+		mirContext *protos.MirContext,
 	)
 	RemoveNonReadyDataset()
 	QueryDatasetAssets(
@@ -127,11 +128,16 @@ func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 	}
 
 	log.Printf("Mongodb %s not exist, loading mirdatas.", mirRepo.TaskID)
-	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
+	filesToLoad := []constants.MirFile{
+		constants.MirfileMetadatas,
+		constants.MirfileAnnotations,
+		constants.MirfileContext,
+	}
 	mirDatas := v.mirLoader.LoadMutipleMirDatas(mirRepo, filesToLoad)
 	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
 	mirAnnotations := mirDatas[1].(*protos.MirAnnotations)
-	v.mongoServer.IndexDatasetData(mirRepo, mirMetadatas, mirAnnotations)
+	mirContext := mirDatas[2].(*protos.MirContext)
+	v.mongoServer.IndexDatasetData(mirRepo, mirMetadatas, mirAnnotations, mirContext)
 }
 
 func (v *ViewerHandler) GetAssetsHandler(
