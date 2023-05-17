@@ -3,5 +3,4 @@
 #   3 for semantic segmentation
 #   4 for instance segmentation
 #   50 for multi modal
-#   default: 2
-"object_type": 50
+"object_type": 3
