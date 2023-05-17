@@ -225,6 +225,7 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_INS_SEG = ObjectType.V(4)
     """used by controller and app"""
 
+    OT_MULTI_MODAL = ObjectType.V(50)
     OT_NO_ANNOS = ObjectType.V(100)
 
 OT_UNKNOWN = ObjectType.V(0)
@@ -240,6 +241,7 @@ OT_SEG = ObjectType.V(3)
 OT_INS_SEG = ObjectType.V(4)
 """used by controller and app"""
 
+OT_MULTI_MODAL = ObjectType.V(50)
 OT_NO_ANNOS = ObjectType.V(100)
 global___ObjectType = ObjectType
 
