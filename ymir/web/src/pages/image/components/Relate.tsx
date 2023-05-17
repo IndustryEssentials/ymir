@@ -8,11 +8,11 @@ import { Image } from '@/constants'
 import { List } from '@/models/typings/common'
 import { QueryParams } from '@/services/typings/image'
 
-type RefProps = {
-  show: (img: Image) => void
+export type RefProps = {
+  show: (img: Pick<Image, 'id' | 'related' | 'name'>) => void
 }
 type Props = {
-  ok: () => void
+  ok?: () => void
 }
 const { useForm } = Form
 const RelateModal = forwardRef<RefProps, Props>(({ ok = () => {} }, ref) => {
