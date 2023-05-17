@@ -48,13 +48,13 @@ class IterationStep(Base):
     def result_dataset(self) -> Optional[Dataset]:
         if not self.task:
             return None
-        return self.task.result_dataset  # type: ignore
+        return self.task.result_dataset
 
     @property
-    def result_model(self) -> Optional[Dataset]:
+    def result_model(self) -> Optional[Model]:
         if not self.task:
             return None
-        return self.task.result_model  # type: ignore
+        return self.task.result_model
 
     @property
     def result_type(self) -> Optional[ResultType]:

@@ -39,12 +39,14 @@ def terminate_tasks() -> None:
             continue
         else:
             crud.task.update_state(db, task=task, new_state=TaskState.error)
-            if task.result_model:  # type: ignore
-                crud.model.set_result_state_to_error(db, id=task.result_model.id)  # type: ignore
-            if task.result_dataset:  # type: ignore
-                crud.dataset.set_result_state_to_error(db, id=task.result_dataset.id)  # type: ignore
-            if task.result_prediction:  # type: ignore
-                crud.dataset.set_result_state_to_error(db, id=task.result_prediction.id)  # type: ignore
+            if task.result_model:
+                crud.model.set_result_state_to_error(db, id=task.result_model.id)
+            if task.result_dataset:
+                crud.dataset.set_result_state_to_error(db, id=task.result_dataset.id)
+            if task.result_prediction:
+                crud.prediction.set_result_state_to_error(db, id=task.result_prediction.id)
+            if task.result_docker_image:
+                crud.docker_image.set_result_state_to_error(db, id=task.result_docker_image.id)
 
 
 def main() -> None:
