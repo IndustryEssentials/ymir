@@ -21,8 +21,8 @@ RUN pip3 install -r requirements.txt
 COPY universual-app /app
 RUN mkdir /img-man
 COPY universual-app/*-template.yaml /img-man/
-ARG OBJECT_TYPE="[3, 4, 50]"
-RUN echo object_type: $OBJECT_TYPE > /img-man/manifest.yaml
+ARG OBJECT_TYPE=3
+RUN echo "object_type:" $OBJECT_TYPE > /img-man/manifest.yaml
 COPY ymir_exc/ymir_exc /app/ymir_exc
 
 # dependencies: write other dependencies here (pytorch, mxnet, tensorboard-x, etc.)
