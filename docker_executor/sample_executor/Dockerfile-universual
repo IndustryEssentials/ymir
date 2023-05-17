@@ -6,6 +6,8 @@
 # docker build -f Dockerfile-universual --build-arg OBJECT_TYPE=4 -t sample-insseg-tmi:test .
 # to build multimodal docker image:
 # docker build -f Dockerfile-universual --build-arg OBJECT_TYPE=50 -t sample-multimodal-tmi:test .
+# to build universual docker image:
+# docker build -f Dockerfile-universual --build-arg OBJECT_TYPE="[3, 4, 50]" -t sample-universual-tmi:test .
 
 FROM python:3.8.13-alpine
 
