@@ -10,7 +10,7 @@ import { useDebounce } from 'ahooks'
 import { Image, Project } from '@/constants'
 import { List } from '@/models/typings/common.d'
 import { useSelector } from 'umi'
-import { ObjectType } from '@/constants/objectType'
+import { isMultiModal, ObjectType } from '@/constants/objectType'
 import { QueryParams } from '@/services/typings/image.d'
 
 interface Props extends SelectProps {
@@ -70,12 +70,12 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       setSelected(project?.recommendImage)
     } else if (value) {
       setSelected(value)
-    } else if (official && validState(official.state)) {
+    } else if (!isMultiModal(project?.type) && official && validState(official.state)) {
       setSelected(official.id)
     } else {
       setSelected(undefined)
     }
-  }, [value, official, project?.recommendImage])
+  }, [value, official, project?.recommendImage, project?.type])
 
   useEffect(() => {
     pid && getProject({ id: pid })

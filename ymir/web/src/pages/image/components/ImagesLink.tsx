@@ -1,7 +1,9 @@
+import { FC } from 'react'
+import { Image } from '@/constants'
 import { Space } from 'antd'
 import { Link } from 'umi'
 
-const ImagesLink = ({ images = [] }) => {
+const ImagesLink: FC<{ images?: Image[] }> = ({ images = [] }) => {
   return images.length ? (
     <Space>
       {images.map((image) => (

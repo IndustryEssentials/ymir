@@ -9,9 +9,9 @@ import { ROLES } from '@/constants/user'
 import { TYPES, STATES, getImageTypeLabel, isSampleImage } from '@/constants/image'
 import { getProjectTypeLabel } from '@/constants/project'
 
-import RelateModal from './relate'
-import Del from './del'
-import ImagesLink from './imagesLink'
+import RelateModal from './Relate'
+import Del from '@/components/image/Del'
+import ImagesLink from './ImagesLink'
 import StateTag from '@/components/image/StateTag'
 import OfficialTag from '@/components/image/OfficialTag'
 

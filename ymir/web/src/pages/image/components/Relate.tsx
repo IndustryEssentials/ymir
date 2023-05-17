@@ -3,17 +3,26 @@ import { forwardRef, useEffect, useState, useImperativeHandle } from 'react'
 
 import t from '@/utils/t'
 import { TYPES } from '@/constants/image'
-import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
+import { Image } from '@/constants'
+import { List } from '@/models/typings/common'
+import { QueryParams } from '@/services/typings/image'
 
+type RefProps = {
+  show: (img: Image) => void
+}
+type Props = {
+  ok: () => void
+}
 const { useForm } = Form
-const RelateModal = forwardRef(({ ok = () => {} }, ref) => {
+const RelateModal = forwardRef<RefProps, Props>(({ ok = () => {} }, ref) => {
   const [visible, setVisible] = useState(false)
-  const [links, setLinks] = useState([])
-  const [id, setId] = useState(null)
+  const [links, setLinks] = useState<Image[]>([])
+  const [id, setId] = useState<number>()
   const [imageName, setImageName] = useState('')
   const [linkForm] = useForm()
-  const [relateResult, relate] = useFetch('image/relateImage')
-  const [{ items: images }, getMiningImages] = useFetch('image/getImages', { items: [] })
+  const { data: relateResult, run: relate } = useRequest<Image, [{ id: number; relations: number[] }]>('image/relateImage')
+  const { data: { items: images } = {}, run: getMiningImages } = useRequest<List<Image>, [QueryParams]>('image/getImages', { loading: false })
 
   useEffect(
     () =>
@@ -23,16 +32,14 @@ const RelateModal = forwardRef(({ ok = () => {} }, ref) => {
     [links, visible],
   )
 
-  useEffect(
-    () =>
-      visible &&
+  useEffect(() => {
+    visible &&
       getMiningImages({
         type: TYPES.MINING,
         offset: 0,
         limit: 10000,
-      }),
-    [visible],
-  )
+      })
+  }, [visible])
 
   useEffect(() => {
     if (relateResult) {
@@ -49,7 +56,7 @@ const RelateModal = forwardRef(({ ok = () => {} }, ref) => {
         setVisible(true)
         setId(id)
         setImageName(name)
-        setLinks(related)
+        setLinks(related || [])
       },
     }),
     [],
@@ -59,8 +66,8 @@ const RelateModal = forwardRef(({ ok = () => {} }, ref) => {
 
   const submitLink = () => {
     linkForm.validateFields().then(() => {
-      const { relations } = linkForm.getFieldValue()
-      relate({ id, relations })
+      const { relations } = linkForm.getFieldsValue()
+      id && relations?.length && relate({ id, relations })
     })
   }
 
@@ -74,7 +81,7 @@ const RelateModal = forwardRef(({ ok = () => {} }, ref) => {
             placeholder={t('image.links.placeholder')}
             mode="multiple"
             optionFilterProp="label"
-            options={images.map((image) => ({ value: image.id, label: image.name }))}
+            options={images?.map((image) => ({ value: image.id, label: image.name }))}
           ></Select>
         </Form.Item>
       </Form>
