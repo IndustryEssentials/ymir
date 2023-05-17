@@ -58,7 +58,7 @@ def call_inference(
             current_user.id,
             project.id,
             project.object_type,
-            model_stage.model.hash,  # type: ignore
+            model_stage.model.hash,
             model_stage.name,
             asset_dir,
             docker_image.url,

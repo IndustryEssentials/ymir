@@ -11,7 +11,7 @@ from app.api.errors.errors import FailedtoCreateSegLabelTask, InvalidRepo
 from app.config import settings
 from app.constants.state import TaskType, RequestType, AnnotationType, DatasetType, ObjectType
 from app.schemas.common import ImportStrategy, MergeStrategy
-from app.schemas.task import TrainingDatasetsStrategy
+from app.schemas.task import TrainingDuplicationStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
 from id_definition.task_id import gen_repo_hash, gen_task_id, gen_user_hash, TaskId
 from id_definition.error_codes import CTLResponseCode as controller_error_code
@@ -44,9 +44,9 @@ MERGE_STRATEGY_MAPPING = {
 
 
 TRAINING_DATASET_STRATEGY_MAPPING = {
-    TrainingDatasetsStrategy.stop: mirsvrpb.MergeStrategy.STOP,
-    TrainingDatasetsStrategy.as_training: mirsvrpb.MergeStrategy.HOST,
-    TrainingDatasetsStrategy.as_validation: mirsvrpb.MergeStrategy.GUEST,
+    TrainingDuplicationStrategy.stop: mirsvrpb.MergeStrategy.STOP,
+    TrainingDuplicationStrategy.as_training: mirsvrpb.MergeStrategy.HOST,
+    TrainingDuplicationStrategy.as_validation: mirsvrpb.MergeStrategy.GUEST,
 }
 
 
@@ -126,8 +126,8 @@ class ControllerRequest:
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_image_config"]
-        # stop if training_dataset and validation_dataset share any assets
-        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["merge_strategy"]]
+        # use duplicated assets as training_dataset or validation_dataset
+        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["duplication_strategy"]]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 

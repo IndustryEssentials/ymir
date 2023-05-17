@@ -57,6 +57,6 @@ class Prediction(Base):
 
     @property
     def object_type(self) -> Optional[int]:
-        if self.project:  # type: ignore
-            return self.project.object_type  # type: ignore
+        if self.project:
+            return self.project.object_type
         return None

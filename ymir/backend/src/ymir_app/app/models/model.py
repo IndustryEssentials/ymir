@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, SmallInteger, Text
 from sqlalchemy.orm import relationship
@@ -8,6 +8,10 @@ from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
 from app.models.model_stage import ModelStage  # noqa
+
+if TYPE_CHECKING:
+    from app.models.project import Project
+    from app.models.model_group import ModelGroup
 
 
 class Model(Base):
@@ -64,9 +68,12 @@ class Model(Base):
         nullable=False,
     )
 
+    project: "Project"
+    group: "ModelGroup"
+
     @property
     def group_name(self) -> str:
-        return self.group.name  # type: ignore
+        return self.group.name
 
     @property
     def name(self) -> str:
@@ -77,7 +84,5 @@ class Model(Base):
         return self.default_stage.name if self.default_stage else None
 
     @property
-    def object_type(self) -> Optional[int]:
-        if self.project:  # type: ignore
-            return self.project.object_type  # type: ignore
-        return None
+    def object_type(self) -> int:
+        return self.project.object_type
