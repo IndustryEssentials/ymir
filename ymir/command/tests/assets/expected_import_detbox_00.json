@@ -51,6 +51,7 @@
                                 "pose": "Unspecified",
                                 "color": "pink"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -84,6 +85,7 @@
                                 "difficult": "0",
                                 "pose": "Frontal"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -111,6 +113,7 @@
                                 "difficult": "0",
                                 "pose": "Left"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -136,6 +139,7 @@
                                 "pose": "Rear",
                                 "difficult": "1"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -161,6 +165,7 @@
                                 "pose": "Rear",
                                 "difficult": "1"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -207,6 +212,7 @@
                                 "color": "white",
                                 "pose": "Frontal"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -234,6 +240,7 @@
                                 "difficult": "0",
                                 "color": "blue"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -259,6 +266,7 @@
                                 "pose": "Rear",
                                 "difficult": "1"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -284,6 +292,7 @@
                                 "pose": "Rear",
                                 "difficult": "1"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -317,6 +326,7 @@
                                 "difficult": "0",
                                 "color": "pink"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
