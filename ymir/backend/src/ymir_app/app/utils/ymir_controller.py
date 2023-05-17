@@ -67,6 +67,7 @@ OBJECT_TYPE_MAPPING = {
     ObjectType.object_detect: int(ObjectType.object_detect),
     ObjectType.segmentation: int(ObjectType.segmentation),
     ObjectType.instance_segmentation: int(ObjectType.segmentation),
+    ObjectType.multi_modal: int(ObjectType.multi_modal),
 }
 
 
