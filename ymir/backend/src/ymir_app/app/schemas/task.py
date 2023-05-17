@@ -34,6 +34,7 @@ from app.schemas.common import (
     dataset_normalize,
     label_normalize,
     model_normalize,
+    ImportStrategy,
 )
 from id_definition.task_id import TaskId
 
@@ -62,7 +63,7 @@ class TaskPreprocess(BaseModel):
 
 
 class TaskParameterBase(BaseModel):
-    dataset_id: int
+    dataset_id: Optional[int]
     dataset_group_id: Optional[int]
     dataset_group_name: Optional[str]
 
@@ -180,13 +181,30 @@ class MergeParameter(FusionParameterBase):
 
     @root_validator(pre=True)
     def fill_in_dataset_id(cls, values: Any) -> Any:
-        if not values.get("dataset_id"):
+        if not values.get("dataset_id") and values.get("include_datasets"):
             values["dataset_id"] = values["include_datasets"][0]
         return values
 
 
 class FilterParameter(FusionParameterBase):
     task_type: Literal["filter"]
+
+
+class ImportDatasetParameter(TaskParameterBase):
+    task_type: Literal["import_data"]
+    asset_dir: str
+    strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
+    object_type: ObjectType
+    clean_dirs: bool = True
+
+
+class CopyDatasetParameter(TaskParameterBase):
+    task_type: Literal["copy_data"]
+    src_user_id: int
+    src_repo_id: int
+    src_resource_id: str
+    strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
+    object_type: ObjectType
 
 
 TaskParameter = Annotated[
@@ -198,6 +216,8 @@ TaskParameter = Annotated[
         FusionParameter,
         MergeParameter,
         FilterParameter,
+        ImportDatasetParameter,
+        CopyDatasetParameter,
     ],
     Field(description="Generic Task Parameters", discriminator="task_type"),  # noqa: F722, F821
 ]

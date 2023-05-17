@@ -89,12 +89,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         project_context = {}
 
     task_in.fulfill_parameters(
-        datasets_getter,
-        model_stages_getter,
-        iterations_getter,
-        labels_getter,
-        docker_image_getter,
-        project_context
+        datasets_getter, model_stages_getter, iterations_getter, labels_getter, docker_image_getter, project_context
     )
     task_hash = gen_task_id(user_id, task_in.project_id)
     try:
@@ -260,8 +255,11 @@ class TaskResult:
         return model_group.id
 
     def ensure_dest_dataset_group_exists(
-        self, dataset_id: int, dataset_group_id: Optional[int], dataset_group_name: Optional[str]
+        self, dataset_id: Optional[int], dataset_group_id: Optional[int], dataset_group_name: Optional[str]
     ) -> int:
+        """
+        Query or create dataset_group based on various conditions
+        """
         if dataset_group_id:
             dataset_group = crud.dataset_group.get(self.db, dataset_group_id)
             if not dataset_group:
@@ -277,7 +275,7 @@ class TaskResult:
                 user_id=self.user_id,
                 project_id=self.project_id,
             )
-        else:
+        elif dataset_id:
             # if no extra dataset group info provided, save result to the same group as dataset_id
             dataset = crud.dataset.get(self.db, dataset_id)
             if not dataset:
@@ -289,18 +287,23 @@ class TaskResult:
             dataset_group = crud.dataset_group.get(self.db, dataset.dataset_group_id)
             if not dataset_group:
                 raise DatasetGroupNotFound()
+        else:
+            raise RequiredFieldMissing()
         return dataset_group.id
 
     def get_dest_group_id(
-        self, dataset_id: int, dataset_group_id: Optional[int], dataset_group_name: Optional[str]
+        self, dataset_id: Optional[int], dataset_group_id: Optional[int], dataset_group_name: Optional[str]
     ) -> int:
         if self.result_type is ResultType.dataset:
             return self.ensure_dest_dataset_group_exists(dataset_id, dataset_group_id, dataset_group_name)
+
+        if not dataset_id:
+            raise RequiredFieldMissing()
         return self.ensure_dest_model_group_exists(dataset_id)
 
     def create(
         self,
-        dataset_id: int,
+        dataset_id: Optional[int],
         dataset_group_id: Optional[int],
         dataset_group_name: Optional[str],
         description: Optional[str] = None,
