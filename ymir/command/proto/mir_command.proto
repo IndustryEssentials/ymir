@@ -128,6 +128,7 @@ enum ObjectType {
     OT_DET_BOX = 2; // Detection w. bounding box.
     OT_SEG = 3;  // semantic segmentation w. polygon or mask
     OT_INS_SEG = 4; // used by controller and app
+    OT_MULTI_MODAL = 50;
 
     OT_NO_ANNOS = 100;
 };
