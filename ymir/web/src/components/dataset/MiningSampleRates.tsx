@@ -3,7 +3,7 @@ import { useParams } from 'umi'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 import KeywordRates from './KeywordRates'
-import { MiningStats } from '@/constants/typings/iteration'
+import { MiningStats } from '@/constants/typings/iteration.d'
 
 const MiningSampleRates: FC<{ iid: number; progressWidth?: number }> = ({ iid, progressWidth = 0.5 }) => {
   const { id: pid } = useParams<{ id: string }>()
