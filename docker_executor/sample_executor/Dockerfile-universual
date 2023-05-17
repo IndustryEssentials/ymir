@@ -1,12 +1,5 @@
 # a docker file for an sample training / mining / infer executor
 
-# to build semantic segmentation docker image:
-# docker build -f Dockerfile-universual --build-arg OBJECT_TYPE=3 -t sample-semseg-tmi:test .
-# to build instance segmentation docker image:
-# docker build -f Dockerfile-universual --build-arg OBJECT_TYPE=4 -t sample-insseg-tmi:test .
-# to build multimodal docker image:
-# docker build -f Dockerfile-universual --build-arg OBJECT_TYPE=50 -t sample-multimodal-tmi:test .
-
 FROM python:3.8.13-alpine
 
 # Add bash
@@ -20,9 +13,10 @@ RUN pip3 install -r requirements.txt
 # tmi framework and your app
 COPY universual-app /app
 RUN mkdir /img-man
-COPY universual-app/*-template.yaml /img-man/
-ARG OBJECT_TYPE=3
-RUN echo "object_type:" $OBJECT_TYPE > /img-man/manifest.yaml
+COPY universual-app/manifest.yaml /img-man/
+COPY universual-app/*-template.yaml /img-man/semantic-seg/
+COPY universual-app/*-template.yaml /img-man/instance-seg/
+COPY universual-app/*-template.yaml /img-man/multi-modal/
 COPY ymir_exc/ymir_exc /app/ymir_exc
 
 # dependencies: write other dependencies here (pytorch, mxnet, tensorboard-x, etc.)

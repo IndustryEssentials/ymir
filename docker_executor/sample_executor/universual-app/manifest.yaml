@@ -3,4 +3,4 @@
 #   3 for semantic segmentation
 #   4 for instance segmentation
 #   50 for multi modal
-"object_type": 3
+"object_type": [3, 4, 50]
