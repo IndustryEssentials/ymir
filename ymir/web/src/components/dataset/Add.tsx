@@ -23,7 +23,7 @@ import SegSamplePic from '@/assets/sample_seg.png'
 import { ValidateErrorEntity } from 'rc-field-form/lib/interface'
 import TypeSelector from './add/TypeSelector'
 import { Types } from './add/AddTypes'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 import { Dataset as DatasetType } from '@/constants'
 import { isSegmentation } from '@/constants/objectType'
 

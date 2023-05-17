@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 import { createFd } from '@/utils/object'
 import CryptoJS from 'crypto-js'
-import { LoginParams, QueryUsersParams, ResetPwdParams, SignupParams, UpdatePermissionParams, UpdateRoleParams, UpdateUserParams } from './typings/user'
+import { LoginParams, QueryUsersParams, ResetPwdParams, SignupParams, UpdatePermissionParams, UpdateRoleParams, UpdateUserParams } from './typings/user.d'
 
 function sha1(value: string) {
   return CryptoJS.SHA1(value).toString()

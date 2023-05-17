@@ -4,7 +4,7 @@ import { createEffect } from './_utils'
 import { history } from 'umi'
 import { Socket as SocketType } from 'socket.io-client'
 import { SocketStore } from '.'
-import { IdMap } from './typings/common'
+import { IdMap } from './typings/common.d'
 import { Backend, ProgressTask, User } from '@/constants'
 history
 const pageMaps = [

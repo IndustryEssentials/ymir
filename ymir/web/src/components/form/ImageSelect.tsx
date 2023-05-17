@@ -8,10 +8,10 @@ import useRequest from '@/hooks/useRequest'
 import { DefaultOptionType } from 'antd/lib/select'
 import { useDebounce } from 'ahooks'
 import { Image, Project } from '@/constants'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 import { useSelector } from 'umi'
 import { ObjectType } from '@/constants/objectType'
-import { QueryParams } from '@/services/typings/image'
+import { QueryParams } from '@/services/typings/image.d'
 
 interface Props extends SelectProps {
   pid: number

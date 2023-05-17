@@ -13,7 +13,7 @@ import StrongTitle from '@/components/table/columns/StrongTitle'
 import Stages from '@/components/table/columns/Stages'
 import InferDataset from '@/components/table/columns/InferDataset'
 import Model from '@/components/table/columns/InferModel'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 import { Dataset, Model as ModelType, Prediction, Project } from '@/constants'
 
 export type AType = 'dataset' | 'model' | 'prediction'

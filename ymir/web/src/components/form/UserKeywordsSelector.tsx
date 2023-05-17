@@ -5,7 +5,7 @@ import { useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 import { ClassObject } from '@/constants'
 
 type OptionType = DefaultOptionType & {

@@ -15,7 +15,7 @@ import AssetsTitle, { FormValues } from './components/AssetsTitle'
 
 import styles from './assets.less'
 
-import { List as ListType } from '@/models/typings/common'
+import { List as ListType } from '@/models/typings/common.d'
 import { ValueType } from '@/components/form/KeywordFilter'
 import { validState } from '@/constants/common'
 import { Asset, Dataset, Prediction } from '@/constants'

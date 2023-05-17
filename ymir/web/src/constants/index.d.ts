@@ -19,22 +19,9 @@ import { Message, MessageResultModules } from './typings/message.d'
 import { Model, ModelGroup, Stage, StageMetrics } from './typings/model.d'
 import { Prediction } from './typings/prediction.d'
 import { Project } from './typings/project.d'
-import { SysInfo } from './typings/sysinfo.d'
 import { Task, ProgressTask } from './typings/task.d'
 import { Iteration, Step } from './typings/iteration.d'
-import { Queue, QueueItem } from './typings/queue.d'
 import { User } from './typings/user.d'
-
-type UserLogRecord = {
-  id: number
-  action: number
-  state: number
-  content: string
-  actionLabel: string
-  // relatedEntity: {}
-  time: string
-  task?: Task
-}
 
 export {
   Asset,
@@ -52,7 +39,6 @@ export {
   ImageConfig,
   DockerImageConfig,
   Task,
-  SysInfo,
   Backend,
   Classes,
   ClassObject,
@@ -79,8 +65,5 @@ export {
   ProgressTask,
   Iteration,
   Step,
-  UserLogRecord,
-  Queue,
-  QueueItem,
   User,
 }

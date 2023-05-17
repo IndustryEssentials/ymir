@@ -6,7 +6,7 @@ import GroupActions from './GroupActions'
 import DatasetItems from './DatasetItems'
 import { useSelector } from 'umi'
 import useRequest from '@/hooks/useRequest'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 import { Project, Group as GroupType } from '@/constants'
 
 type Group = GroupType & {

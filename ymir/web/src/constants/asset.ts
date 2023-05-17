@@ -1,5 +1,5 @@
-import { Annotation, Asset } from './typings/asset'
-import { Backend } from './typings/common'
+import { Annotation, Asset } from './typings/asset.d'
+import { Backend } from './typings/common.d'
 
 export enum AnnotationType {
   BoundingBox = 0,

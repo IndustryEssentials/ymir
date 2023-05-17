@@ -1,5 +1,5 @@
-import { Backend } from './typings/common'
-import { Iteration, MiningStats, Step } from './typings/iteration'
+import { Backend } from './typings/common.d'
+import { Iteration, MiningStats, Step } from './typings/iteration.d'
 
 export enum Stages {
   prepareMining = 0,

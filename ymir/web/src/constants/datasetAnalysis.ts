@@ -1,4 +1,4 @@
-import { Suggestion } from './typings/dataset'
+import { Suggestion } from './typings/dataset.d'
 
 enum ClassBias {
   perfect = 1,

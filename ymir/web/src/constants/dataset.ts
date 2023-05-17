@@ -4,7 +4,7 @@ import { getVersionLabel } from './common'
 import { ObjectType } from './project'
 import { transferSuggestion } from './datasetAnalysis'
 import { Backend, Dataset, DatasetGroup, DatasetSuggestions, Project } from '.'
-import { AnalysisChartData, CKCounts, DatasetAnalysis, KeywordCountsType } from './typings/dataset'
+import { AnalysisChartData, CKCounts, DatasetAnalysis, KeywordCountsType } from './typings/dataset.d'
 
 export enum MergeType {
   New = 0,

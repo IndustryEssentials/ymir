@@ -5,7 +5,7 @@ import { batchAct, evaluate, getPrediction, getPredictions } from '@/services/pr
 import { createEffect, createReducersByState, transferList } from './_utils'
 import { PredictionState, PredictionStore } from '.'
 import { Backend, Project } from '@/constants'
-import { List } from './typings/common'
+import { List } from './typings/common.d'
 type PredictionsPayload = { pid: number; force?: boolean; [key: string]: any }
 type PredictionPayload = { id: number; force?: boolean }
 

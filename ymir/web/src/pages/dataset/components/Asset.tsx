@@ -17,7 +17,7 @@ import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import GtSelector from '@/components/form/GtSelector'
 import { evaluationTags } from '@/constants/dataset'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 import { Annotation, Asset, Dataset, Prediction } from '@/constants'
 
 type Props = {

@@ -10,7 +10,7 @@ import Terminate, { RefProps } from '@/components/task/terminate'
 import { getModelColumns } from '@/components/table/Columns'
 import useListActions from '@/hooks/useListActions'
 import Actions from '@/components/table/columns/Actions'
-import { List } from '@/models/typings/common'
+import { List } from '@/models/typings/common.d'
 import { Model } from '@/constants'
 
 type Props = {

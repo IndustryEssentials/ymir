@@ -2,8 +2,8 @@ import { calDuration, format } from '@/utils/date'
 import { getVersionLabel, ResultStates as states } from './common'
 import { getLocale } from 'umi'
 import { getProjectTypeLabel, ObjectType } from './project'
-import { Model, ModelGroup, Stage, StageMetrics } from './typings/model'
-import { Backend } from './typings/common'
+import { Model, ModelGroup, Stage, StageMetrics } from './typings/model.d'
+import { Backend } from './typings/common.d'
 
 export function transferModelGroup(data: Backend) {
   const group: ModelGroup = {

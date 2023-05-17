@@ -4,7 +4,7 @@ import { TaskResultType } from '@/constants/TaskResultType'
 import { getMessages as queryMessages, getMessage, readMessage as readMsg } from '@/services/message'
 import { QueryParams } from '@/services/typings/message'
 import { MessageState, MessageStore } from '.'
-import { Effect } from './typings/common'
+import { Effect } from './typings/common.d'
 import { createEffect, createReducers } from './_utils'
 
 const state: MessageState = {

@@ -3,7 +3,7 @@ import { transferAsset } from '@/constants/asset'
 import { getAsset, getAssets } from '@/services/asset'
 import { createEffect, createReducersByState } from './_utils'
 import { AssetStore } from '.'
-import { List } from './typings/common'
+import { List } from './typings/common.d'
 import { Asset } from '@/constants'
 type AssetsPayload = Omit<YParams.AssetQueryParams, 'cm'> & { datasetKeywords?: string[]; cm: evaluationTags }
 type AssetPayload = { pid: number; id: number; type?: number; hash: string }

@@ -21,7 +21,7 @@ import { createEffect, createReducersByState } from './_utils'
 import { deepClone } from '@/utils/object'
 import { TASKTYPES } from '@/constants/task'
 import { DatasetState, DatasetStore } from '.'
-import { List } from './typings/common'
+import { List } from './typings/common.d'
 import { Backend, Dataset, ProgressTask } from '@/constants'
 
 const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
