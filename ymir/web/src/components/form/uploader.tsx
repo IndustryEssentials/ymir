@@ -8,26 +8,22 @@ import storage from '@/utils/storage'
 import t from '@/utils/t'
 import 'antd/es/slider/style'
 import { UploadFile } from 'antd/lib/upload/interface'
+import { UploadProps } from 'antd/es/upload/interface'
 
 export type { UploadFile }
 
-type Props = {
-  className?: string
+type Props = Omit<UploadProps, 'fileList'> & {
   value?: UploadFile[]
   format?: string
   label?: string
   max?: number
-  maxCount?: number
   info?: string
   crop?: boolean
   btnProps?: ButtonProps
-  showUploadList?: boolean
-  onChange?: (files: UploadFile[], url: string) => void
-  onRemove?: (file: UploadFile) => void
 }
 
 type ResponseType = {
-  code: number,
+  code: number
   result: string
 }
 
@@ -40,8 +36,7 @@ const fileSuffix: { [type: string]: string[] } = {
 }
 
 const Uploader: FC<Props> = ({
-  className,
-  value = null,
+  value,
   format = 'zip',
   label,
   max = 200,
@@ -49,22 +44,23 @@ const Uploader: FC<Props> = ({
   info = '',
   crop = false,
   btnProps = {},
-  showUploadList = true,
   onChange = () => {},
-  onRemove = () => {},
+  ...rest
 }) => {
   label = label || t('model.add.form.upload.btn')
   const [files, setFiles] = useState<UploadFile[]>()
 
   useEffect(() => {
-    value && value.length && setFiles(value)
+    value?.length && setFiles(value)
   }, [value])
 
   function onFileChange({ file, fileList }: { file: UploadFile; fileList: UploadFile[] }) {
-    if (file.status === 'done') {
-      uploadSuccess(file.response)
-    }
-    setFiles([...fileList])
+    const fileListWithUrl = fileList.map((file) => ({
+      ...file,
+      url: file?.response?.result,
+    }))
+    setFiles(fileListWithUrl)
+    onChange({ file, fileList: fileListWithUrl })
   }
 
   function beforeUpload(file: File) {
@@ -87,22 +83,20 @@ const Uploader: FC<Props> = ({
 
   const beforeCrop = (file: File) => validFile(file)
 
-  const uploadSuccess = ({ code, result }: ResponseType) => code === 0 && files && onChange(files, result)
+  // const uploadSuccess = (files: UploadFile[], { code, result }: ResponseType) => code === 0 && files && onChange(files, result)
 
   const uploader = (
     <Upload
-      className={className}
+      {...rest}
       fileList={files}
       action={getUploadUrl()}
       name="file"
       headers={{ Authorization: `Bearer ${storage.get('access_token')}` }}
       onChange={onFileChange}
-      onRemove={onRemove}
       beforeUpload={beforeUpload}
-      maxCount={maxCount}
-      showUploadList={showUploadList}
+      multiple={maxCount > 1}
     >
-      <Button type='primary' ghost icon={<CloudUploadOutlined />} {...btnProps}>
+      <Button type="primary" ghost icon={<CloudUploadOutlined />} {...btnProps}>
         {label}
       </Button>
     </Upload>
