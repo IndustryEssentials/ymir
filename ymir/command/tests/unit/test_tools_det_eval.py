@@ -291,6 +291,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 1,
                             'box': {
@@ -312,6 +313,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 2,
                             'box': {
@@ -333,6 +335,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 3,
                             'box': {
@@ -354,6 +357,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }],
                         'img_class_ids': [0, 1, 2],
                     },
@@ -379,6 +383,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }],
                         'img_class_ids': [2],
                     },
@@ -414,6 +419,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }],
                         'img_class_ids': [2],
                     },
@@ -439,6 +445,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 1,
                             'box': {
@@ -460,6 +467,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 2,
                             'box': {
@@ -481,6 +489,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 3,
                             'box': {
@@ -502,6 +511,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 4,
                             'box': {
@@ -523,6 +533,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 5,
                             'box': {
@@ -544,6 +555,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }],
                         'img_class_ids': [0, 1, 2, 3],
                     }

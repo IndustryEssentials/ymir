@@ -51,6 +51,7 @@
                                 "pose": "Unspecified",
                                 "difficult": "0"
                             },
+                            "prompt": "",
                             "cm": 3,
                             "det_link_id": -1,
                             "index": 0,
@@ -84,6 +85,7 @@
                                 "color": "white",
                                 "difficult": "0"
                             },
+                            "prompt": "",
                             "cm": 11,
                             "index": 0,
                             "det_link_id": 0,
@@ -111,6 +113,7 @@
                                 "color": "blue",
                                 "difficult": "0"
                             },
+                            "prompt": "",
                             "cm": 3,
                             "det_link_id": -1,
                             "polygon": [],
@@ -136,6 +139,7 @@
                                 "pose": "Rear",
                                 "difficult": "1"
                             },
+                            "prompt": "",
                             "cm": 3,
                             "det_link_id": -1,
                             "polygon": [],
@@ -161,6 +165,7 @@
                                 "difficult": "1",
                                 "pose": "Rear"
                             },
+                            "prompt": "",
                             "cm": 3,
                             "det_link_id": -1,
                             "polygon": [],
@@ -207,6 +212,7 @@
                                 "color": "white",
                                 "difficult": "0"
                             },
+                            "prompt": "",
                             "cm": 1,
                             "index": 0,
                             "det_link_id": 0,
@@ -234,6 +240,7 @@
                                 "pose": "Left",
                                 "difficult": "0"
                             },
+                            "prompt": "",
                             "cm": 12,
                             "det_link_id": -1,
                             "polygon": [],
@@ -259,6 +266,7 @@
                                 "pose": "Rear",
                                 "difficult": "1"
                             },
+                            "prompt": "",
                             "cm": 12,
                             "det_link_id": -1,
                             "polygon": [],
@@ -284,6 +292,7 @@
                                 "pose": "Rear",
                                 "difficult": "1"
                             },
+                            "prompt": "",
                             "cm": 12,
                             "det_link_id": -1,
                             "polygon": [],
@@ -317,6 +326,7 @@
                                 "pose": "Unspecified",
                                 "difficult": "0"
                             },
+                            "prompt": "",
                             "cm": 12,
                             "det_link_id": -1,
                             "index": 0,

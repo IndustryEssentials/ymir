@@ -149,6 +149,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     obj_anno.det_link_id = -1
     obj_anno.score = float(anno_dict.get('confidence', '-1.0'))
     obj_anno.anno_quality = float(anno_dict.get('box_quality', '-1.0'))
+    obj_anno.prompt = anno_dict.get('prompt', '')
 
     return obj_anno
 

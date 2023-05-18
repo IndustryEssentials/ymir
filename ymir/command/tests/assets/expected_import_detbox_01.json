@@ -51,6 +51,7 @@
                                 "pose": "Frontal",
                                 "color": "white"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -78,6 +79,7 @@
                                 "pose": "Left",
                                 "color": "blue"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -110,6 +112,7 @@
                                 "pose": "Unspecified",
                                 "color": "pink"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -155,6 +158,7 @@
                                 "color": "pink",
                                 "pose": "Unspecified"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -188,6 +192,7 @@
                                 "pose": "Frontal",
                                 "color": "white"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -215,6 +220,7 @@
                                 "difficult": "0",
                                 "color": "blue"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
