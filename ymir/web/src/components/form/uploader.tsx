@@ -7,13 +7,12 @@ import { getUploadUrl } from '@/services/common'
 import storage from '@/utils/storage'
 import t from '@/utils/t'
 import 'antd/es/slider/style'
-import { UploadFile } from 'antd/lib/upload/interface'
-import { UploadProps } from 'antd/es/upload/interface'
-
-export type { UploadFile }
+import { UploadProps, UploadFile } from 'antd/es/upload/interface'
+type UFile = UploadFile<ResponseType>
+export type { UploadFile, UFile }
 
 type Props = Omit<UploadProps, 'fileList'> & {
-  value?: UploadFile[]
+  value?: UFile[]
   format?: string
   label?: string
   max?: number
@@ -48,26 +47,27 @@ const Uploader: FC<Props> = ({
   ...rest
 }) => {
   label = label || t('model.add.form.upload.btn')
-  const [files, setFiles] = useState<UploadFile[]>()
+  const [files, setFiles] = useState<UFile[]>()
 
   useEffect(() => {
     value?.length && setFiles(value)
   }, [value])
 
-  function onFileChange({ file, fileList }: { file: UploadFile; fileList: UploadFile[] }) {
+  function onFileChange({ file, fileList }: { file: UFile; fileList: UFile[] }) {
     const fileListWithUrl = fileList.map((file) => ({
       ...file,
       url: file?.response?.result,
     }))
     setFiles(fileListWithUrl)
-    onChange({ file, fileList: fileListWithUrl })
+
+    file.response?.result && onChange({ file, fileList: fileListWithUrl })
   }
 
-  function beforeUpload(file: File) {
+  function beforeUpload(file: UFile) {
     return validFile(file) || Upload.LIST_IGNORE
   }
 
-  function validFile(file: File) {
+  function validFile(file: UFile | File) {
     const fix = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase()
     const isValid = format === 'all' ? true : fileSuffix[format].indexOf(fix) > -1
     if (!isValid) {
