@@ -54,7 +54,7 @@ const Uploader: FC<Props> = ({
   }, [value])
 
   function onFileChange({ file, fileList }: { file: UFile; fileList: UFile[] }) {
-    const fileListWithUrl = fileList.map((file) => ({
+    const fileListWithUrl = fileList.splice(-maxCount).map((file) => ({
       ...file,
       url: file?.response?.result,
     }))
