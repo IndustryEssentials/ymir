@@ -12,7 +12,7 @@ type UFile = UploadFile<ResponseType>
 export type { UploadFile, UFile }
 
 type Props = Omit<UploadProps, 'fileList'> & {
-  value?: UploadFile[]
+  value?: UFile[]
   format?: string
   label?: string
   max?: number
