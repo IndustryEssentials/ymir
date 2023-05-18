@@ -73,7 +73,8 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken }) {
       }
     })
   }
-  const onAvatarOk = async (files, url) => {
+  const onAvatarOk = async ({ fileList }) => {
+    const url = fileList[0] ? fileList[0].url : ''
     // submit
     if (url) {
       const result = await updateUserInfo({ avatar: url })
