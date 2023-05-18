@@ -149,7 +149,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     obj_anno.det_link_id = -1
     obj_anno.score = float(anno_dict.get('confidence', '-1.0'))
     obj_anno.anno_quality = float(anno_dict.get('box_quality', '-1.0'))
-    obj_anno.prompt = anno_dict.get('prompt', '')
+    obj_anno.prompt = anno_dict.get('meta', {}).get('prompt', '')
 
     return obj_anno
 
@@ -315,6 +315,15 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     if not isinstance(annotations_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
                               error_message=f"Can not find annotations list in coco json: {coco_file_path}")
+    if len({v['id'] for v in images_list}) != len(images_list):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
+                              error_message='Found duplicated image ids in coco json')
+    if len({v['id'] for v in categories_list}) != len(categories_list):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
+                              error_message='Found duplicated category ids in coco json')
+    if len({v['id'] for v in annotations_list}) != len(annotations_list):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
+                              error_message='Found duplicated annotation ids in coco json')
 
     unhashed_filenames_cnt = 0
     unknown_category_ids_cnt = 0
