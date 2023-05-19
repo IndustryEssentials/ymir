@@ -576,14 +576,12 @@ def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
     # check type
     if (host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOS
             and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOS
-            and host_task_annotations.type != guest_task_annotations.type
-            and host_task_annotations.is_instance_segmentation != guest_task_annotations.is_instance_segmentation):
+            and host_task_annotations.type != guest_task_annotations.type):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
-                              error_message='host and guest object type / is_instance_segmentation unequal')
+                              error_message='host and guest object type unequal')
 
     if host_task_annotations.type == mirpb.ObjectType.OT_NO_ANNOS:
         host_task_annotations.type = guest_task_annotations.type
-        host_task_annotations.is_instance_segmentation = guest_task_annotations.is_instance_segmentation
 
     _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_task_annotations.image_annotations,
                                   guest_asset_ids_dict=guest_task_annotations.image_annotations,
