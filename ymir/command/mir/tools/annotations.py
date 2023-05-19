@@ -396,7 +396,8 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     if unknown_category_ids_cnt:
         logging.warning(f"[import error]: Count of unknown category ids in categories list: {unknown_category_ids_cnt}")
     if unknown_image_objects_cnt:
-        logging.warning(f"[import error]: Count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
+        logging.warning(
+            f"[import error]: Count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
     if error_format_objects_cnt:
         logging.warning(f"[import error]: Count of error format objects: {error_format_objects_cnt}")
     if zero_size_count:
