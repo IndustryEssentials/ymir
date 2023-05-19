@@ -33,7 +33,6 @@
         "ground_truth": {
             "task_id": "import_detbox_03",
             "image_annotations": {},
-            "is_instance_segmentation": false,
             "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],
@@ -42,7 +41,6 @@
         "prediction": {
             "task_id": "import_detbox_03",
             "image_annotations": {},
-            "is_instance_segmentation": false,
             "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],

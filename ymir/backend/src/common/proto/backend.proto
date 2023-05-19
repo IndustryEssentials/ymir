@@ -174,9 +174,8 @@ message TaskReqImportDataset {
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
-    bool is_instance_segmentation = 7;
 
-    reserved 6;
+    reserved 6, 7;
 }
 
 message TaskReqExporting {
@@ -200,9 +199,8 @@ message TaskReqLabeling {
     string project_name = 3;
     bool export_annotation = 4;
     mir.command.AnnotationType annotation_type = 5;
-    bool is_instance_segmentation = 7;
 
-    reserved 6;
+    reserved 6, 7;
 }
 
 message TaskReqImportModel {
