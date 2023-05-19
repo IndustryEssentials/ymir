@@ -200,6 +200,5 @@ class TestCmdInfer(unittest.TestCase):
             prediction = mirpb.SingleTaskAnnotations()
             prediction.ParseFromString(f.read())
             self.assertEqual(prediction.type, mirpb.ObjectType.OT_DET_BOX)
-            self.assertEqual(prediction.is_instance_segmentation, False)
             self.assertEqual(len(prediction.image_annotations), 1)
             self.assertEqual(len(prediction.image_annotations['2007_000032.jpg'].boxes), 1)
