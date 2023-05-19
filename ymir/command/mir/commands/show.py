@@ -53,13 +53,10 @@ class CmdShow(base.BaseCommand):
 
     @classmethod
     def _show_general_annotations(cls, mir_annotations: mirpb.MirAnnotations) -> None:
-        print(
-            f"    pred: {len(mir_annotations.prediction.image_annotations)}, "
-            f"type: {mir_annotations.prediction.type}, "
-            f"is instance segmentation: {mir_annotations.prediction.is_instance_segmentation}, "
-            f"    gt: {len(mir_annotations.ground_truth.image_annotations)}, "
-            f"type: {mir_annotations.ground_truth.type}, "
-            f"is instance segmentation: {mir_annotations.ground_truth.is_instance_segmentation}")
+        print(f"    pred: {len(mir_annotations.prediction.image_annotations)}, "
+              f"type: {mirpb.ObjectType.Name(mir_annotations.prediction.type)};"
+              f"    gt: {len(mir_annotations.ground_truth.image_annotations)}, "
+              f"type: {mirpb.ObjectType.Name(mir_annotations.ground_truth.type)}")
 
     @classmethod
     def _show_general_context(cls, mir_context: mirpb.MirContext, mir_keywords: mirpb.MirKeywords) -> None:
