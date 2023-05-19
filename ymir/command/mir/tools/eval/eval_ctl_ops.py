@@ -88,7 +88,6 @@ def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnno
                                           asset_ids: Collection[str]) -> mirpb.SingleTaskAnnotations:
     filtered_task_annotations = mirpb.SingleTaskAnnotations()
     filtered_task_annotations.type = task_annotations.type
-    filtered_task_annotations.is_instance_segmentation = task_annotations.is_instance_segmentation
     for asset_id in asset_ids:
         if asset_id not in task_annotations.image_annotations:
             continue
