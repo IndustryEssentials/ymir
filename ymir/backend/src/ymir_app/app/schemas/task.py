@@ -36,7 +36,7 @@ from app.schemas.common import (
     model_normalize,
     ImportStrategy,
 )
-from id_definition.task_id import TaskId
+from id_definition.task_id import TaskId, gen_repo_hash, gen_user_hash
 
 
 class TaskBase(BaseModel):
@@ -208,10 +208,20 @@ class ImportDatasetParameter(TaskParameterBase):
 
 class CopyDatasetParameter(TaskParameterBase):
     task_type: Literal["copy_data"]
-    src_user_id: int
-    src_repo_id: int
-    src_resource_id: str
     strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
+
+    src_user_id: Optional[int]
+    src_repo_id: Optional[int]
+    src_resource_id: Optional[int]
+
+    def update_with_src_dataset(self, datasets_getter: Callable, project_context: Dict) -> None:
+        dataset = datasets_getter(dataset_ids=[self.dataset_id])[0]
+        self.src_user_id = gen_user_hash(dataset.user_id)
+        self.src_repo_id = gen_repo_hash(dataset.project_id)
+        self.src_resource_id = dataset.hash
+        if project_context.get("object_type") != dataset.object_type:
+            self.strategy = ImportStrategy.no_annotations
+        return
 
 
 TaskParameter = Annotated[
@@ -290,6 +300,9 @@ class TaskCreate(TaskBase):
             # extra logic for dataset fusion:
             # reorder datasets based on merge_strategy
             self.parameters.update_with_iteration_context(iterations_getter)
+
+        if isinstance(self.parameters, CopyDatasetParameter):
+            self.parameters.update_with_src_dataset(datasets_getter, project_context)
 
         if project_context:
             self.parameters.update_with_project_context(project_context)
