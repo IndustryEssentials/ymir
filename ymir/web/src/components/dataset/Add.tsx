@@ -384,9 +384,10 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
           {isType(Types.LOCAL) ? (
             <Form.Item label={t('dataset.add.form.upload.btn')} required>
               <Uploader
-                onChange={(files, result) => {
-                  setFile(result)
-                  setFileDefaultName(files)
+                onChange={({ fileList }) => {
+                  const file = fileList[0]
+                  setFile(file.url || '')
+                  setFileDefaultName(fileList)
                 }}
                 max={1024}
                 onRemove={() => setFile('')}
