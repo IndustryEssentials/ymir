@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, SmallInteger, Text, JSON
 from sqlalchemy.orm import relationship
@@ -34,6 +34,8 @@ class Dataset(Base):
     keyword_count = Column(Integer)
     analysis = Column(JSON, default={})
 
+    object_type = Column(SmallInteger, index=True, nullable=False)
+
     related_task = relationship(
         "Task",
         primaryjoin="foreign(Task.id)==Dataset.task_id",
@@ -62,7 +64,3 @@ class Dataset(Base):
     @property
     def name(self) -> str:
         return "_".join([self.group_name, str(self.version_num)])
-
-    @property
-    def object_type(self) -> Optional[int]:
-        return self.project.object_type

@@ -35,6 +35,8 @@ class Model(Base):
     miou = Column(Float, nullable=True)
     mask_ap = Column(Float, nullable=True)
 
+    object_type = Column(SmallInteger, index=True, nullable=False)
+
     related_task = relationship(
         "Task",
         primaryjoin="foreign(Task.id)==Model.task_id",
@@ -82,7 +84,3 @@ class Model(Base):
     @property
     def default_stage_name(self) -> Optional[str]:
         return self.default_stage.name if self.default_stage else None
-
-    @property
-    def object_type(self) -> int:
-        return self.project.object_type
