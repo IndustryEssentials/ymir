@@ -167,12 +167,13 @@ class CmdInfer(base.BaseCommand):
             # result files -> task_annotations and save
             class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
             task_annotations = mirpb.SingleTaskAnnotations()
-            task_annotations.type = (mirpb.ObjectType.OT_DET_BOX if model_storage.object_type
-                                     == mirpb.ObjectType.OT_DET_BOX else mirpb.ObjectType.OT_SEG)
+            # TODO: also use OT_INS_SEG in repo pb storage
+            task_annotations.type = (mirpb.ObjectType.OT_SEG if model_storage.object_type == mirpb.ObjectType.OT_INS_SEG
+                                     else model_storage.object_type)  # type: ignore
             task_annotations.is_instance_segmentation = (
                 model_storage.object_type == mirpb.ObjectType.OT_INS_SEG)
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
-                                   == mirpb.ObjectType.OT_DET_BOX else _process_infer_seg_coco_result)
+                                   == mirpb.ObjectType.OT_DET_BOX else _process_infer_coco_result)
             process_result_func(task_annotations, work_dir_out, class_id_mgr)
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
@@ -280,8 +281,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
     logging.info(f"count of objects without score: {no_score_annos_cnt}")
 
 
-def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
-                                   class_id_mgr: class_ids.UserLabels) -> None:
+def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
+                               class_id_mgr: class_ids.UserLabels) -> None:
     coco_json_filename = 'infer-result.json'
 
     with open(os.path.join(work_dir_out, coco_json_filename), 'r') as f:

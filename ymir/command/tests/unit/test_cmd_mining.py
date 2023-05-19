@@ -52,7 +52,7 @@ class TestMiningCmd(unittest.TestCase):
             f.writelines("d4e4a60147f1e35bc7f5bc89284aa16073b043c9\t0.1")
 
         # a fake prediction result file
-        prediction = mirpb.SingleTaskAnnotations()
+        prediction = mirpb.SingleTaskAnnotations(type=mirpb.ObjectType.OT_DET_BOX)
         with open(os.path.join(kwargs['work_dir'], 'out', 'prediction.mir'), 'wb') as f:
             f.write(prediction.SerializeToString())
 

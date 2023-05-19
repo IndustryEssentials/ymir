@@ -84,6 +84,7 @@ def _get_eval_model_function(anno_type: Any, is_instance_segmentation: bool) -> 
         (mirpb.ObjectType.OT_DET_BOX, False): det_eval_voc,
         (mirpb.ObjectType.OT_SEG, False): sem_seg_eval_mm,
         (mirpb.ObjectType.OT_SEG, True): ins_seg_eval_coco,
+        (mirpb.ObjectType.OT_MULTI_MODAL, False): det_eval_voc,
     }
     return mapping.get((anno_type, is_instance_segmentation))
 
