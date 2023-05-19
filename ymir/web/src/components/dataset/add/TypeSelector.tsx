@@ -9,8 +9,12 @@ const types = [
   { id: Types.COPY, label: 'copy' },
   { id: Types.INTERNAL, label: 'internal' },
 ]
-const TypeSelector: FC<Omit<SelectProps, 'options'>> = (props) => {
-  const options = types.map((type) => ({
+type OptionType = {
+  label: string
+  value: Types
+}
+const TypeSelector: FC<Omit<SelectProps<Types>, 'options'>> = (props) => {
+  const options: OptionType[] = types.map((type) => ({
     value: type.id,
     label: t(`dataset.add.types.${type.label}`),
   }))

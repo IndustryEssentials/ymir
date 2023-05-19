@@ -1,8 +1,8 @@
 import { FC } from 'react'
 import { useLocation, Location } from 'umi'
 
-import Add from '@/components/dataset/Add'
 import Breadcrumbs from '@/components/common/breadcrumb'
+import BatchAdd from '@/components/dataset/BatchAdd'
 
 const AddPage: FC = () => {
   const location: Location = useLocation()
@@ -10,7 +10,7 @@ const AddPage: FC = () => {
   return (
     <div className={'datasetImport'} style={{ height: '100%' }}>
       <Breadcrumbs />
-      <Add id={Number(id)} from={from} stepKey={stepKey} style={{ height: 'calc(100vh - 186px)'}} />
+      <BatchAdd />
     </div>
   )
 }

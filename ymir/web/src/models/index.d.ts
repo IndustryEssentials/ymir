@@ -17,11 +17,14 @@ type Root = {
   loading: Loading
   common: CommonState
   message: MessageState
+  task: TaskState
 }
 
 interface CommonState {
   loading: boolean
 }
+
+interface TaskState {}
 
 interface UserState {
   user: User
@@ -99,6 +102,7 @@ type SocketStore = StoreType<'socket', SocketState>
 type ImageStore = StoreType<'image', ImageState>
 type DatasetStore = StoreType<'dataset', DatasetState>
 type MessageStore = StoreType<'message', MessageState>
+type TaskStore = StoreType<'task', TaskState>
 type CommonStore = StoreType<'common', CommonState>
 type IterationStore = StoreType<'iteration', IterationState>
 type UserStore = StoreType<'user', UserState>
@@ -123,6 +127,8 @@ export {
   IterationState,
   UserState,
   UserStore,
+  TaskState,
+  TaskStore,
   KeywordState,
   KeywordStore,
 }
