@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
 import enum
 import json
 import logging
@@ -315,15 +315,10 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     if not isinstance(annotations_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
                               error_message=f"Can not find annotations list in coco json: {coco_file_path}")
-    if len({v['id'] for v in images_list}) != len(images_list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
-                              error_message='Found duplicated image ids in coco json')
-    if len({v['id'] for v in categories_list}) != len(categories_list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
-                              error_message='Found duplicated category ids in coco json')
-    if len({v['id'] for v in annotations_list}) != len(annotations_list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
-                              error_message='Found duplicated annotation ids in coco json')
+    counter = Counter([v['id'] for v in images_list])
+    duplicated_image_ids = [iid for iid, cnt in counter.items() if cnt > 1]
+    counter = Counter([v['id'] for v in categories_list])
+    duplicated_category_ids = [cid for cid, cnt in counter.items() if cnt > 1]
 
     unhashed_filenames_cnt = 0
     unknown_category_ids_cnt = 0
@@ -339,11 +334,17 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         if filename not in file_name_to_asset_ids:
             unhashed_filenames_cnt += 1
             continue
+        if v['id'] in duplicated_image_ids:
+            continue
+
         image_id_to_hashes[v['id']] = file_name_to_asset_ids[filename]
 
     # categories_list -> category_id_to_cids (key: coco category id, value: ymir class id)
     category_id_to_cids: Dict[int, int] = {}
     for v in categories_list:
+        if v['id'] in duplicated_category_ids:
+            continue
+
         name = v['name']
         cid, _ = class_type_manager.id_and_main_name_for_name(name)
         if cid >= 0:
@@ -384,6 +385,8 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
         known_signatures.add(signature)
 
+    logging.info(f"duplicated image ids: {duplicated_image_ids}")
+    logging.info(f"duplicated category ids: {duplicated_category_ids}")
     logging.info(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
     logging.info(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
     logging.info(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
