@@ -284,8 +284,10 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                 anno_idx += 1
                 known_signatures.add(signature)
 
-    logging.info(f"count of zero size objects: {zero_size_count}")
-    logging.info(f"count of duplicate objects: {duplicate_count}")
+    if zero_size_count:
+        logging.info(f"count of zero size objects: {zero_size_count}")
+    if duplicate_count:
+        logging.info(f"count of duplicate objects: {duplicate_count}")
 
 
 def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
@@ -307,14 +309,14 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
                               error_message=f"Can not open or parse annotation file, {e}")
 
     if not images_list or not isinstance(images_list, list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
-                              error_message=f"Can not find images list in coco json: {coco_file_path}")
+        logging.warning(f"Can not find images list in coco json: {coco_file_path}")
+        images_list = []
     if not isinstance(categories_list, list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
-                              error_message=f"Can not find categories list in coco json: {coco_file_path}")
+        logging.warning(f"Can not find categories list in coco json: {coco_file_path}")
+        categories_list = []
     if not isinstance(annotations_list, list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
-                              error_message=f"Can not find annotations list in coco json: {coco_file_path}")
+        logging.warning(f"Can not find annotations list in coco json: {coco_file_path}")
+        annotations_list = []
     counter = Counter([v['id'] for v in images_list])
     duplicated_image_ids = [iid for iid, cnt in counter.items() if cnt > 1]
     counter = Counter([v['id'] for v in categories_list])
@@ -385,14 +387,22 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
         known_signatures.add(signature)
 
-    logging.info(f"duplicated image ids: {duplicated_image_ids}")
-    logging.info(f"duplicated category ids: {duplicated_category_ids}")
-    logging.info(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
-    logging.info(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
-    logging.info(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
-    logging.info(f"count of error format objects: {error_format_objects_cnt}")
-    logging.info(f"count of zero size objects: {zero_size_count}")
-    logging.info(f"count of duplicate objects: {duplicate_count}")
+    if duplicated_image_ids:
+        logging.warning(f"duplicated image ids: {duplicated_image_ids}")
+    if duplicated_category_ids:
+        logging.warning(f"duplicated category ids: {duplicated_category_ids}")
+    if unhashed_filenames_cnt:
+        logging.warning(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
+    if unknown_category_ids_cnt:
+        logging.warning(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
+    if unknown_image_objects_cnt:
+        logging.warning(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
+    if error_format_objects_cnt:
+        logging.warning(f"count of error format objects: {error_format_objects_cnt}")
+    if zero_size_count:
+        logging.warning(f"count of zero size objects: {zero_size_count}")
+    if duplicate_count:
+        logging.warning(f"count of duplicate objects: {duplicate_count}")
 
 
 def _import_no_annotations(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
