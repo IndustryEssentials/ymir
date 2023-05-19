@@ -103,7 +103,7 @@ const errors = {
   'error160010': { cn: 'CMD: 文件不可用', en: 'RC_CMD_INVALID_FILE: invalid file', },
   'error160011': { cn: 'CMD: 无结果生成', en: 'RC_CMD_NO_RESULT: no result', },
   'error160015': { cn: 'CMD: 模型解析失败', en: 'Model parse failed', },
-  'error160016': { cn: 'CMD: 数据集解析失败或不可用', en: 'Dataset parse failed or invalid', },
+  'error160016': { cn: 'CMD: 数据集解析失败', en: 'Dataset parse failed', },
   'error160019': { cn: 'CMD: 权限不够', en: 'Permission denied', },
   'error169999': { cn: 'CMD: 未知错误', en: 'RC_CMD_ERROR_UNKNOWN: unkown error', },
   'error300001': { cn: '容器: 配置文件错误', en: 'Container: Config file error', },
