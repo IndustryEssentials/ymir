@@ -318,9 +318,9 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         logging.warning(f"[import error]: Can not find annotations list in coco json: {coco_file_path}")
         annotations_list = []
     counter = Counter([v['id'] for v in images_list])
-    duplicated_image_ids = [iid for iid, cnt in counter.items() if cnt > 1]
+    duplicated_image_ids = {iid for iid, cnt in counter.items() if cnt > 1}
     counter = Counter([v['id'] for v in categories_list])
-    duplicated_category_ids = [cid for cid, cnt in counter.items() if cnt > 1]
+    duplicated_category_ids = {cid for cid, cnt in counter.items() if cnt > 1}
 
     unhashed_filenames_cnt = 0
     unknown_category_ids_cnt = 0
