@@ -192,10 +192,18 @@ class FilterParameter(FusionParameterBase):
 
 class ImportDatasetParameter(TaskParameterBase):
     task_type: Literal["import_data"]
-    asset_dir: str
+    url: Optional[str]
+    path: Optional[str]
     strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
-    object_type: ObjectType
-    clean_dirs: bool = True
+
+    asset_dir: Optional[str]
+    clean_dirs: Optional[bool]
+
+    @root_validator(pre=True)
+    def fillin_fields(cls, values: Any) -> Any:
+        values["asset_dir"] = values.get("path") or values.get("url")
+        values["clean_dirs"] = values.get("path") is None
+        return values
 
 
 class CopyDatasetParameter(TaskParameterBase):
@@ -204,7 +212,6 @@ class CopyDatasetParameter(TaskParameterBase):
     src_repo_id: int
     src_resource_id: str
     strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
-    object_type: ObjectType
 
 
 TaskParameter = Annotated[
