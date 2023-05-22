@@ -186,6 +186,16 @@ class MergeParameter(FusionParameterBase):
         return values
 
 
+class ExcludeParameter(FusionParameterBase):
+    task_type: Literal["exclude_data"]
+
+    @root_validator(pre=True)
+    def fill_in_dataset_id(cls, values: Any) -> Any:
+        if not values.get("dataset_id"):
+            values["dataset_id"] = values["include_datasets"][0]
+        return values
+
+
 class FilterParameter(FusionParameterBase):
     task_type: Literal["filter"]
 
@@ -232,6 +242,7 @@ TaskParameter = Annotated[
         InferParameter,
         FusionParameter,
         MergeParameter,
+        ExcludeParameter,
         FilterParameter,
         ImportDatasetParameter,
         CopyDatasetParameter,
