@@ -53,6 +53,7 @@ enum TaskType {
     TaskTypeDatasetInfer = 15;
     TaskTypeEvaluate = 16;
     TaskTypePullImage = 17;
+    TaskTypeExcludeData = 18;
 };
 
 enum TaskState {
