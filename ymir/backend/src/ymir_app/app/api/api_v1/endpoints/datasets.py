@@ -391,6 +391,29 @@ def merge_datasets(
     return {"result": task_in_db}
 
 
+@router.post("/exclude", response_model=schemas.TaskOut)
+def exclude_dataset(
+    *,
+    db: Session = Depends(deps.get_db),
+    in_exclude: schemas.task.FusionParameter,
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    """
+    Filter dataset
+    """
+    logger.info("[exclude] excluding datasets with payload: %s", in_exclude.json())
+
+    task_in = schemas.TaskCreate(
+        type=TaskType.exclude_data,
+        project_id=in_exclude.project_id,
+        parameters=in_exclude,
+    )
+    task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
+    return {"result": task_in_db}
+
+
 @router.post("/filter", response_model=schemas.TaskOut)
 def filter_dataset(
     *,
