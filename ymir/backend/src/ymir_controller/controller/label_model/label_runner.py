@@ -35,7 +35,9 @@ def get_mir_export_fmt(label_tool: str, object_type: int) -> str:
     labelfree uses coco for segmentation dataset, LS for detection dataset
     """
     if label_tool == label_task_config.LABEL_FREE and object_type in {
-            mir_cmd_pb.ObjectType.OT_SEG, mir_cmd_pb.ObjectType.OT_INS_SEG
+            mir_cmd_pb.ObjectType.OT_SEG,
+            mir_cmd_pb.ObjectType.OT_INS_SEG,
+            mir_cmd_pb.ObjectType.OT_MULTI_MODAL,
     }:
         return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_COCO_JSON)
     return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
