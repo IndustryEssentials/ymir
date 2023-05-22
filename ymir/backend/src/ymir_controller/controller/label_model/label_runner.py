@@ -98,7 +98,6 @@ def start_label_task(
     expert_instruction: str,
     annotation_type: Optional[int],
     object_type: int,
-    is_instance_segmentation: bool,
     user_token: Optional[str],
 ) -> None:
     logging.info("start label task!!!")
@@ -126,6 +125,5 @@ def start_label_task(
                        media_location=media_location,
                        import_work_dir=import_work_dir,
                        use_pre_annotation=bool(annotation_type),
-                       object_type=object_type,
-                       is_instance_segmentation=is_instance_segmentation)
+                       object_type=object_type)
     logging.info("finish label task!!!")

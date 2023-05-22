@@ -55,16 +55,13 @@ class LabelFree(LabelBase):
         return label_config
 
     @staticmethod
-    def map_object_type_to_label_free_project_type(object_type: int, is_instance_segmentation: bool) -> int:
-        if is_instance_segmentation:
-            project_type = LabelFreeProjectType.instance_segmentation
-        elif object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
-            project_type = LabelFreeProjectType.detection
-        elif object_type == mir_cmd_pb.ObjectType.OT_SEG:
-            project_type = LabelFreeProjectType.semantic_segmentation
-        else:
-            raise ValueError(f"LabelFree DOES NOT SUPPORT object_type({object_type})")
-        return project_type.value
+    def map_object_type_to_label_free_project_type(object_type: int) -> int:
+        mapping = {
+            mir_cmd_pb.ObjectType.OT_DET_BOX: LabelFreeProjectType.detection,
+            mir_cmd_pb.ObjectType.OT_SEG: LabelFreeProjectType.semantic_segmentation,
+            mir_cmd_pb.ObjectType.OT_INS_SEG: LabelFreeProjectType.instance_segmentation
+        }
+        return mapping[object_type].value
 
     def create_label_project(
         self,
@@ -73,7 +70,6 @@ class LabelFree(LabelBase):
         collaborators: List,
         expert_instruction: str,
         object_type: int,
-        is_instance_segmentation: bool,
     ) -> int:
         # Create a project and set up the labeling interface
         url_path = "/api/projects"
@@ -83,7 +79,7 @@ class LabelFree(LabelBase):
             collaborators=collaborators,
             label_config=label_config,
             expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
-            project_type=self.map_object_type_to_label_free_project_type(object_type, is_instance_segmentation),
+            project_type=self.map_object_type_to_label_free_project_type(object_type),
         )
         resp = self._requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp).get("id")
@@ -243,11 +239,10 @@ class LabelFree(LabelBase):
         import_work_dir: str,
         use_pre_annotation: bool,
         object_type: int,
-        is_instance_segmentation: bool,
     ) -> None:
         logging.info("start LABELFREE run()")
         project_id = self.create_label_project(
-            project_name, keywords, collaborators, expert_instruction, object_type, is_instance_segmentation)
+            project_name, keywords, collaborators, expert_instruction, object_type)
         storage_id = self.set_import_storage(project_id, input_asset_dir, use_pre_annotation)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
@@ -262,5 +257,4 @@ class LabelFree(LabelBase):
             exported_storage_id,
             input_asset_dir,
             object_type,
-            is_instance_segmentation,
         )
