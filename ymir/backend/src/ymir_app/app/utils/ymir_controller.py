@@ -9,7 +9,7 @@ from google.protobuf.text_format import MessageToString
 
 from app.api.errors.errors import InvalidRepo
 from app.config import settings
-from app.constants.state import TaskType, RequestType, AnnotationType, DatasetType, ObjectType
+from app.constants.state import TaskType, RequestType, AnnotationType, DatasetType
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDuplicationStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
@@ -60,14 +60,6 @@ IMPORTING_STRATEGY_MAPPING = {
 ANNOTATION_TYPE_MAPPING = {
     AnnotationType.gt: mir_cmd_pb.AnnotationType.AT_GT,
     AnnotationType.pred: mir_cmd_pb.AnnotationType.AT_PRED,
-}
-
-OBJECT_TYPE_MAPPING = {
-    ObjectType.classification: int(ObjectType.classification),
-    ObjectType.object_detect: int(ObjectType.object_detect),
-    ObjectType.segmentation: int(ObjectType.segmentation),
-    ObjectType.instance_segmentation: int(ObjectType.segmentation),
-    ObjectType.multi_modal: int(ObjectType.multi_modal),
 }
 
 
@@ -158,15 +150,11 @@ class ControllerRequest:
         import_dataset_request.asset_dir = args["asset_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
 
-        # FIXME: remove
-        if args["object_type"] == ObjectType.instance_segmentation:
-            import_dataset_request.is_instance_segmentation = True
-
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy == ImportStrategy.no_annotations:
             request.object_type = mir_cmd_pb.ObjectType.OT_NO_ANNOS
         else:
-            request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+            request.object_type = args["object_type"]
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
@@ -186,10 +174,7 @@ class ControllerRequest:
         label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
 
-        # ad hoc: controller's object_type has no instance_segmentation
-        request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
-        if args["object_type"] == ObjectType.instance_segmentation:
-            label_request.is_instance_segmentation = True
+        request.object_type = args["object_type"]
 
         # pre annotation
         if args.get("annotation_type"):
@@ -340,7 +325,6 @@ class ControllerRequest:
         if args.get("iou_thrs_interval"):
             evaluate_config.iou_thrs_interval = args["iou_thrs_interval"]
         evaluate_config.need_pr_curve = args["need_pr_curve"]
-        evaluate_config.is_instance_segmentation = args["is_instance_segmentation"]
         if args.get("main_ck"):
             evaluate_config.main_ck = args["main_ck"]
 
@@ -531,7 +515,6 @@ class ControllerClient:
         iou_thrs_interval: Optional[str],
         need_pr_curve: bool,
         main_ck: Optional[str],
-        is_instance_segmentation: bool,
         dataset_hash: str,
     ) -> Dict:
         req = ControllerRequest(
@@ -544,7 +527,6 @@ class ControllerClient:
                 "iou_thrs_interval": iou_thrs_interval,
                 "need_pr_curve": need_pr_curve,
                 "main_ck": main_ck,
-                "is_instance_segmentation": is_instance_segmentation,
             },
         )
         try:

@@ -23,7 +23,6 @@ def evaluate_predictions(
     need_pr_curve: bool,
     main_ck: Optional[str],
     prediction_id_mapping: Dict[str, int],
-    is_instance_segmentation: bool = False,
 ) -> Dict:
     iou_thrs_interval = convert_to_iou_thrs_interval(iou_threshold, require_average_iou)
     f_evaluate = partial(
@@ -35,7 +34,6 @@ def evaluate_predictions(
         iou_thrs_interval,
         need_pr_curve,
         main_ck,
-        is_instance_segmentation,
     )
     with ThreadPoolExecutor() as executor:
         res = executor.map(f_evaluate, prediction_id_mapping.keys())
