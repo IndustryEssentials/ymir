@@ -2,13 +2,11 @@ import logging
 from typing import Dict, List, Optional, Tuple
 
 from common_utils import labels
-from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.label_model import label_runner
 from controller.utils import utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
-from mir.protos import mir_command_pb2 as mir_cmd_pb
 
 
 class TaskLabelingInvoker(TaskBaseInvoker):
@@ -17,12 +15,6 @@ class TaskLabelingInvoker(TaskBaseInvoker):
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
                                                message=f"Invalid in_dataset_ids {request.in_dataset_ids}")
 
-        if (
-            label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO
-            and request.object_type == mir_cmd_pb.ObjectType.OT_SEG
-        ):
-            return utils.make_general_response(code=CTLResponseCode.INVOKER_LABEL_TASK_SEG_NOT_SUPPORTED,
-                                               message="label_studio does not support segmentation")
         try:
             utils.create_label_instance()
         except ValueError:
