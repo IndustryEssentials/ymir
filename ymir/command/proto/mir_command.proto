@@ -95,9 +95,9 @@ message MetadataAttributes {
     Timestamp timestamp = 2;
     TvtType tvt_type = 3;
     AssetType asset_type = 4;
-    int32 width = 5;  // column number
-    int32 height = 6;  // row number
-    int32 image_channels = 7;  // (for images) channel count
+    int32 width = 5;
+    int32 height = 6;
+    int32 image_channels = 7;
     int32 byte_size = 8;
     string origin_filename = 9;
 
@@ -124,10 +124,14 @@ message MirAnnotations {
 enum ObjectType {
     OT_UNKNOWN = 0;
 
-    OT_CLASS = 1; // Classification with class id, not implemented.
-    OT_DET_BOX = 2; // Detection w. bounding box.
-    OT_SEG = 3;  // semantic segmentation w. polygon or mask
-    OT_INS_SEG = 4; // used by controller and app
+    // Classification with class id, not implemented.
+    OT_CLASS = 1;
+    // Detection w. bounding box.
+    OT_DET_BOX = 2;
+    // semantic segmentation w. polygon or mask
+    OT_SEG = 3;
+    // used by controller and app
+    OT_INS_SEG = 4;
 
     OT_MULTI_MODAL = 50;
 
@@ -137,7 +141,7 @@ enum ObjectType {
 enum ObjectSubType {
     OST_NOTSET = 0;
 
-    //OT_SEG sub types
+    // OT_SEG sub types
     OST_SEG_MASK = 30;
     OST_SEG_POLYGON = 31;
 }
@@ -192,10 +196,13 @@ message ObjectAnnotation {
     map<string, string> tags = 6;
     ConfusionMatrixType cm = 7;
     int32 det_link_id = 8;
-    string class_name = 9;  // for data parsed from outside, e.g. inference.
+    // for data parsed from outside, e.g. inference.
+    string class_name = 9;
     repeated IntPoint polygon = 10;
-    string mask = 11;  // RLE encoded mask
-    int32 iscrowd = 12;  // 0 or 1
+    // RLE encoded mask
+    string mask = 11;
+    // 0 or 1
+    int32 iscrowd = 12;
     ObjectSubType type = 13;
     int32 mask_area = 14;
     string prompt = 15;
@@ -218,13 +225,16 @@ message Rect {
     int32 y = 2;
     int32 w = 3;
     int32 h = 4;
-    float rotate_angle = 5; // unit in pi.
+    // unit in pi.
+    float rotate_angle = 5;
 };
 
 // ========== keywords.mir ==========
 message MirKeywords {
-    CiTagToIndex pred_idx = 7;  // ci to assets, generated from preds
-    CiTagToIndex gt_idx = 8;  // ci to assets, generated from gt
+    // ci to assets, generated from preds
+    CiTagToIndex pred_idx = 7;
+    // ci to assets, generated from gt
+    CiTagToIndex gt_idx = 8;
 
     // key: ck main key, value: assets and assets with sub keys, from (mir_annotations.image_cks) pred and gt
     map<string, AssetAnnoIndex> ck_idx = 9;
@@ -252,8 +262,10 @@ message Int32List {
 }
 
 message AssetAnnoIndex {
-    map<string, Int32List> asset_annos = 1;  // key: asset id, value: annotation indexes
-    map<string, MapStringToInt32List> sub_indexes = 2;  // key: ck value, value: asset and it's annotation indexes
+    // key: asset id, value: annotation indexes
+    map<string, Int32List> asset_annos = 1;
+    // key: ck value, value: asset and it's annotation indexes
+    map<string, MapStringToInt32List> sub_indexes = 2;
 };
 
 // ========== tasks.mir ==========
@@ -269,7 +281,7 @@ message Task {
     // auto generated unique id
     string task_id = 3;
     // execution time of this task
-    int32 timestamp = 5;  // RFC 3339 date strings
+    int32 timestamp = 5;
     // (for training task): result model for cmd train
     ModelMeta model = 6;
     int32 return_code = 8;
@@ -339,24 +351,33 @@ message EvaluateConfig {
 
 message SingleDatasetEvaluation {
     float conf_thr = 1;
-    map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
-    SingleIouEvaluation iou_averaged_evaluation = 5;  // average for all ious
+    // key: string of iou threshold
+    map<string, SingleIouEvaluation> iou_evaluations = 4;
+    // average for all ious
+    SingleIouEvaluation iou_averaged_evaluation = 5;
     SegmentationMetrics segmentation_metrics = 6;
 
     reserved 2, 3;
 }
 
 message SegmentationMetrics {
-    float aAcc = 1;  // overall accuracy
-    float mAcc = 2;  // mean accuracy
-    float mIoU = 3;  // mean iou
-    map<int32, float> Acc = 4; // classwise accuracy
-    map<int32, float> IoU = 5; // classwise iou
+    // overall accuracy
+    float aAcc = 1;
+    // mean accuracy
+    float mAcc = 2;
+    // mean iou
+    float mIoU = 3;
+    // classwise accuracy
+    map<int32, float> Acc = 4;
+    // classwise iou
+    map<int32, float> IoU = 5;
 }
 
 message SingleIouEvaluation {
-    map<int32, SingleEvaluationElement> ci_evaluations = 1;  // key: class ids
-    SingleEvaluationElement ci_averaged_evaluation = 2;  // evaluations averaged by class ids
+    // key: class ids
+    map<int32, SingleEvaluationElement> ci_evaluations = 1;
+    // evaluations averaged by class ids
+    SingleEvaluationElement ci_averaged_evaluation = 2;
 
     reserved 3;
 }
