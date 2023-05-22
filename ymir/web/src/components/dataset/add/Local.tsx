@@ -9,6 +9,7 @@ import Uploader from '@/components/form/uploader'
 import Tip from './Tip'
 import { formLayout } from '@/config/antd'
 import SubmitBtn from './SubmitBtn'
+import { Button } from 'antd'
 
 const Local: FC = () => {
   const [form] = Form.useForm()
