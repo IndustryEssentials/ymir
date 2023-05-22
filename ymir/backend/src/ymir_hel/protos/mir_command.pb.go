@@ -20,7 +20,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// assertion type: training, validation or test
+/// assertion type: training, validation or test
 type TvtType int32
 
 const (
@@ -195,7 +195,7 @@ func (AnnotationType) EnumDescriptor() ([]byte, []int) {
 	return file_mir_command_proto_rawDescGZIP(), []int{2}
 }
 
-// task type
+/// task type
 type TaskType int32
 
 const (
@@ -212,7 +212,7 @@ const (
 	TaskType_TaskTypeSampling   TaskType = 10
 	TaskType_TaskTypeFusion     TaskType = 11
 	TaskType_TaskTypeInit       TaskType = 12
-	// used by ymir_controller
+	/// used by ymir_controller
 	TaskType_TaskTypeImportModel  TaskType = 13
 	TaskType_TaskTypeCopyModel    TaskType = 14
 	TaskType_TaskTypeDatasetInfer TaskType = 15
@@ -508,15 +508,11 @@ func (AssetFormat) EnumDescriptor() ([]byte, []int) {
 type ObjectType int32
 
 const (
-	ObjectType_OT_UNKNOWN ObjectType = 0
-	// Classification with class id, not implemented.
-	ObjectType_OT_CLASS ObjectType = 1
-	// Detection w. bounding box.
-	ObjectType_OT_DET_BOX ObjectType = 2
-	// semantic segmentation w. polygon or mask
-	ObjectType_OT_SEG ObjectType = 3
-	// used by controller and app
-	ObjectType_OT_INS_SEG     ObjectType = 4
+	ObjectType_OT_UNKNOWN     ObjectType = 0
+	ObjectType_OT_CLASS       ObjectType = 1 // Classification with class id, not implemented.
+	ObjectType_OT_DET_BOX     ObjectType = 2 // Detection w. bounding box.
+	ObjectType_OT_SEG         ObjectType = 3 // semantic segmentation w. polygon or mask
+	ObjectType_OT_INS_SEG     ObjectType = 4 // used by controller and app
 	ObjectType_OT_MULTI_MODAL ObjectType = 50
 	ObjectType_OT_NO_ANNOS    ObjectType = 100
 )
@@ -574,7 +570,7 @@ type ObjectSubType int32
 
 const (
 	ObjectSubType_OST_NOTSET ObjectSubType = 0
-	// OT_SEG sub types
+	//OT_SEG sub types
 	ObjectSubType_OST_SEG_MASK    ObjectSubType = 30
 	ObjectSubType_OST_SEG_POLYGON ObjectSubType = 31
 )
@@ -800,13 +796,13 @@ func (EvaluationState) EnumDescriptor() ([]byte, []int) {
 	return file_mir_command_proto_rawDescGZIP(), []int{12}
 }
 
-// ========== metadatas.mir ==========
+/// ========== metadatas.mir ==========
 type MirMetadatas struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// key: asset hash, value: attributes
+	/// key: asset hash, value: attributes
 	Attributes map[string]*MetadataAttributes `protobuf:"bytes,1,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
@@ -857,9 +853,9 @@ type MetadataAttributes struct {
 	Timestamp      *Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	TvtType        TvtType    `protobuf:"varint,3,opt,name=tvt_type,json=tvtType,proto3,enum=mir.command.TvtType" json:"tvt_type,omitempty"`
 	AssetType      AssetType  `protobuf:"varint,4,opt,name=asset_type,json=assetType,proto3,enum=mir.command.AssetType" json:"asset_type,omitempty"`
-	Width          int32      `protobuf:"varint,5,opt,name=width,proto3" json:"width,omitempty"`
-	Height         int32      `protobuf:"varint,6,opt,name=height,proto3" json:"height,omitempty"`
-	ImageChannels  int32      `protobuf:"varint,7,opt,name=image_channels,json=imageChannels,proto3" json:"image_channels,omitempty"`
+	Width          int32      `protobuf:"varint,5,opt,name=width,proto3" json:"width,omitempty"`                                      /// column number
+	Height         int32      `protobuf:"varint,6,opt,name=height,proto3" json:"height,omitempty"`                                    /// row number
+	ImageChannels  int32      `protobuf:"varint,7,opt,name=image_channels,json=imageChannels,proto3" json:"image_channels,omitempty"` /// (for images) channel count
 	ByteSize       int32      `protobuf:"varint,8,opt,name=byte_size,json=byteSize,proto3" json:"byte_size,omitempty"`
 	OriginFilename string     `protobuf:"bytes,9,opt,name=origin_filename,json=originFilename,proto3" json:"origin_filename,omitempty"`
 }
@@ -957,9 +953,9 @@ type Timestamp struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// start time stamp, use int32 as int64 is not correctly parsed.
+	/// start time stamp, use int32 as int64 is not correctly parsed.
 	Start int32 `protobuf:"varint,1,opt,name=start,proto3" json:"start,omitempty"`
-	// duration (in seconds), for images, it's always 0
+	/// duration (in seconds), for images, it's always 0
 	Duration float32 `protobuf:"fixed32,2,opt,name=duration,proto3" json:"duration,omitempty"`
 }
 
@@ -1009,7 +1005,7 @@ func (x *Timestamp) GetDuration() float32 {
 	return 0
 }
 
-// ========== annotations.mir ==========
+/// ========== annotations.mir ==========
 type MirAnnotations struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1079,7 +1075,7 @@ type SingleTaskAnnotations struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// key: image id, value: annotations of that single image
+	/// key: image id, value: annotations of that single image
 	ImageAnnotations map[string]*SingleImageAnnotations `protobuf:"bytes,1,rep,name=image_annotations,json=imageAnnotations,proto3" json:"image_annotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	TaskId           string                             `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
 	Type             ObjectType                         `protobuf:"varint,3,opt,name=type,proto3,enum=mir.command.ObjectType" json:"type,omitempty"`
@@ -1299,16 +1295,13 @@ type ObjectAnnotation struct {
 	Tags        map[string]string   `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	Cm          ConfusionMatrixType `protobuf:"varint,7,opt,name=cm,proto3,enum=mir.command.ConfusionMatrixType" json:"cm,omitempty"`
 	DetLinkId   int32               `protobuf:"varint,8,opt,name=det_link_id,json=detLinkId,proto3" json:"det_link_id,omitempty"`
-	// for data parsed from outside, e.g. inference.
-	ClassName string      `protobuf:"bytes,9,opt,name=class_name,json=className,proto3" json:"class_name,omitempty"`
-	Polygon   []*IntPoint `protobuf:"bytes,10,rep,name=polygon,proto3" json:"polygon,omitempty"`
-	// RLE encoded mask
-	Mask string `protobuf:"bytes,11,opt,name=mask,proto3" json:"mask,omitempty"`
-	// 0 or 1
-	Iscrowd  int32         `protobuf:"varint,12,opt,name=iscrowd,proto3" json:"iscrowd,omitempty"`
-	Type     ObjectSubType `protobuf:"varint,13,opt,name=type,proto3,enum=mir.command.ObjectSubType" json:"type,omitempty"`
-	MaskArea int32         `protobuf:"varint,14,opt,name=mask_area,json=maskArea,proto3" json:"mask_area,omitempty"`
-	Prompt   string        `protobuf:"bytes,15,opt,name=prompt,proto3" json:"prompt,omitempty"`
+	ClassName   string              `protobuf:"bytes,9,opt,name=class_name,json=className,proto3" json:"class_name,omitempty"` // for data parsed from outside, e.g. inference.
+	Polygon     []*IntPoint         `protobuf:"bytes,10,rep,name=polygon,proto3" json:"polygon,omitempty"`
+	Mask        string              `protobuf:"bytes,11,opt,name=mask,proto3" json:"mask,omitempty"`        // RLE encoded mask
+	Iscrowd     int32               `protobuf:"varint,12,opt,name=iscrowd,proto3" json:"iscrowd,omitempty"` // 0 or 1
+	Type        ObjectSubType       `protobuf:"varint,13,opt,name=type,proto3,enum=mir.command.ObjectSubType" json:"type,omitempty"`
+	MaskArea    int32               `protobuf:"varint,14,opt,name=mask_area,json=maskArea,proto3" json:"mask_area,omitempty"`
+	Prompt      string              `protobuf:"bytes,15,opt,name=prompt,proto3" json:"prompt,omitempty"`
 }
 
 func (x *ObjectAnnotation) Reset() {
@@ -1453,12 +1446,11 @@ type Rect struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	X int32 `protobuf:"varint,1,opt,name=x,proto3" json:"x,omitempty"`
-	Y int32 `protobuf:"varint,2,opt,name=y,proto3" json:"y,omitempty"`
-	W int32 `protobuf:"varint,3,opt,name=w,proto3" json:"w,omitempty"`
-	H int32 `protobuf:"varint,4,opt,name=h,proto3" json:"h,omitempty"`
-	// unit in pi.
-	RotateAngle float32 `protobuf:"fixed32,5,opt,name=rotate_angle,json=rotateAngle,proto3" json:"rotate_angle,omitempty"`
+	X           int32   `protobuf:"varint,1,opt,name=x,proto3" json:"x,omitempty"`
+	Y           int32   `protobuf:"varint,2,opt,name=y,proto3" json:"y,omitempty"`
+	W           int32   `protobuf:"varint,3,opt,name=w,proto3" json:"w,omitempty"`
+	H           int32   `protobuf:"varint,4,opt,name=h,proto3" json:"h,omitempty"`
+	RotateAngle float32 `protobuf:"fixed32,5,opt,name=rotate_angle,json=rotateAngle,proto3" json:"rotate_angle,omitempty"` // unit in pi.
 }
 
 func (x *Rect) Reset() {
@@ -1528,16 +1520,14 @@ func (x *Rect) GetRotateAngle() float32 {
 	return 0
 }
 
-// ========== keywords.mir ==========
+/// ========== keywords.mir ==========
 type MirKeywords struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// ci to assets, generated from preds
-	PredIdx *CiTagToIndex `protobuf:"bytes,7,opt,name=pred_idx,json=predIdx,proto3" json:"pred_idx,omitempty"`
-	// ci to assets, generated from gt
-	GtIdx *CiTagToIndex `protobuf:"bytes,8,opt,name=gt_idx,json=gtIdx,proto3" json:"gt_idx,omitempty"`
+	PredIdx *CiTagToIndex `protobuf:"bytes,7,opt,name=pred_idx,json=predIdx,proto3" json:"pred_idx,omitempty"` // ci to assets, generated from preds
+	GtIdx   *CiTagToIndex `protobuf:"bytes,8,opt,name=gt_idx,json=gtIdx,proto3" json:"gt_idx,omitempty"`       // ci to assets, generated from gt
 	// key: ck main key, value: assets and assets with sub keys, from (mir_annotations.image_cks) pred and gt
 	CkIdx map[string]*AssetAnnoIndex `protobuf:"bytes,9,rep,name=ck_idx,json=ckIdx,proto3" json:"ck_idx,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
@@ -1798,10 +1788,8 @@ type AssetAnnoIndex struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// key: asset id, value: annotation indexes
-	AssetAnnos map[string]*Int32List `protobuf:"bytes,1,rep,name=asset_annos,json=assetAnnos,proto3" json:"asset_annos,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// key: ck value, value: asset and it's annotation indexes
-	SubIndexes map[string]*MapStringToInt32List `protobuf:"bytes,2,rep,name=sub_indexes,json=subIndexes,proto3" json:"sub_indexes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	AssetAnnos map[string]*Int32List            `protobuf:"bytes,1,rep,name=asset_annos,json=assetAnnos,proto3" json:"asset_annos,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // key: asset id, value: annotation indexes
+	SubIndexes map[string]*MapStringToInt32List `protobuf:"bytes,2,rep,name=sub_indexes,json=subIndexes,proto3" json:"sub_indexes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // key: ck value, value: asset and it's annotation indexes
 }
 
 func (x *AssetAnnoIndex) Reset() {
@@ -1850,7 +1838,7 @@ func (x *AssetAnnoIndex) GetSubIndexes() map[string]*MapStringToInt32List {
 	return nil
 }
 
-// ========== tasks.mir ==========
+/// ========== tasks.mir ==========
 type MirTasks struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1912,20 +1900,20 @@ type Task struct {
 	unknownFields protoimpl.UnknownFields
 
 	Type TaskType `protobuf:"varint,1,opt,name=type,proto3,enum=mir.command.TaskType" json:"type,omitempty"`
-	// user defined task name
+	/// user defined task name
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// auto generated unique id
+	/// auto generated unique id
 	TaskId string `protobuf:"bytes,3,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
-	// execution time of this task
-	Timestamp int32 `protobuf:"varint,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// (for training task): result model for cmd train
+	/// execution time of this task
+	Timestamp int32 `protobuf:"varint,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"` // RFC 3339 date strings
+	/// (for training task): result model for cmd train
 	Model      *ModelMeta  `protobuf:"bytes,6,opt,name=model,proto3" json:"model,omitempty"`
 	ReturnCode int32       `protobuf:"varint,8,opt,name=return_code,json=returnCode,proto3" json:"return_code,omitempty"`
 	ReturnMsg  string      `protobuf:"bytes,9,opt,name=return_msg,json=returnMsg,proto3" json:"return_msg,omitempty"`
 	Evaluation *Evaluation `protobuf:"bytes,10,opt,name=evaluation,proto3" json:"evaluation,omitempty"`
-	// (for import task): new types for cmd import, key: class name, value: asset count
+	/// (for import task): new types for cmd import, key: class name, value: asset count
 	NewTypes map[string]int32 `protobuf:"bytes,11,rep,name=new_types,json=newTypes,proto3" json:"new_types,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
-	// (for import task): reason for new types, True: added, False: ignored
+	/// (for import task): reason for new types, True: added, False: ignored
 	NewTypesAdded            bool   `protobuf:"varint,12,opt,name=new_types_added,json=newTypesAdded,proto3" json:"new_types_added,omitempty"`
 	SerializedExecutorConfig string `protobuf:"bytes,103,opt,name=serialized_executor_config,json=serializedExecutorConfig,proto3" json:"serialized_executor_config,omitempty"`
 	SrcRevs                  string `protobuf:"bytes,104,opt,name=src_revs,json=srcRevs,proto3" json:"src_revs,omitempty"`
@@ -2068,21 +2056,21 @@ type ModelMeta struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// hash for models.tar.gz
+	/// hash for models.tar.gz
 	ModelHash string `protobuf:"bytes,1,opt,name=model_hash,json=modelHash,proto3" json:"model_hash,omitempty"`
-	// available in detection models
+	/// available in detection models
 	MAP float32 `protobuf:"fixed32,2,opt,name=mAP,proto3" json:"mAP,omitempty"`
-	// context generated by train command
+	/// context generated by train command
 	Context        string                 `protobuf:"bytes,3,opt,name=context,proto3" json:"context,omitempty"`
 	Stages         map[string]*ModelStage `protobuf:"bytes,4,rep,name=stages,proto3" json:"stages,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	BestStageName  string                 `protobuf:"bytes,5,opt,name=best_stage_name,json=bestStageName,proto3" json:"best_stage_name,omitempty"`
 	ClassNames     []string               `protobuf:"bytes,6,rep,name=class_names,json=classNames,proto3" json:"class_names,omitempty"`
 	EvaluateConfig *EvaluateConfig        `protobuf:"bytes,7,opt,name=evaluate_config,json=evaluateConfig,proto3" json:"evaluate_config,omitempty"`
-	// detection: 2, semantic segmentation: 3, instance segmentation: 4
+	/// detection: 2, semantic segmentation: 3, instance segmentation: 4
 	ObjectType int32 `protobuf:"varint,8,opt,name=object_type,json=objectType,proto3" json:"object_type,omitempty"`
-	// available in semantic segmentation models
+	/// available in semantic segmentation models
 	MIoU float32 `protobuf:"fixed32,9,opt,name=mIoU,proto3" json:"mIoU,omitempty"`
-	// available in instance segmentation models
+	/// available in instance segmentation models
 	MaskAP float32 `protobuf:"fixed32,10,opt,name=maskAP,proto3" json:"maskAP,omitempty"`
 }
 
@@ -2430,12 +2418,10 @@ type SingleDatasetEvaluation struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ConfThr float32 `protobuf:"fixed32,1,opt,name=conf_thr,json=confThr,proto3" json:"conf_thr,omitempty"`
-	// key: string of iou threshold
-	IouEvaluations map[string]*SingleIouEvaluation `protobuf:"bytes,4,rep,name=iou_evaluations,json=iouEvaluations,proto3" json:"iou_evaluations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// average for all ious
-	IouAveragedEvaluation *SingleIouEvaluation `protobuf:"bytes,5,opt,name=iou_averaged_evaluation,json=iouAveragedEvaluation,proto3" json:"iou_averaged_evaluation,omitempty"`
-	SegmentationMetrics   *SegmentationMetrics `protobuf:"bytes,6,opt,name=segmentation_metrics,json=segmentationMetrics,proto3" json:"segmentation_metrics,omitempty"`
+	ConfThr               float32                         `protobuf:"fixed32,1,opt,name=conf_thr,json=confThr,proto3" json:"conf_thr,omitempty"`
+	IouEvaluations        map[string]*SingleIouEvaluation `protobuf:"bytes,4,rep,name=iou_evaluations,json=iouEvaluations,proto3" json:"iou_evaluations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // key: string of iou threshold
+	IouAveragedEvaluation *SingleIouEvaluation            `protobuf:"bytes,5,opt,name=iou_averaged_evaluation,json=iouAveragedEvaluation,proto3" json:"iou_averaged_evaluation,omitempty"`                                                                  // average for all ious
+	SegmentationMetrics   *SegmentationMetrics            `protobuf:"bytes,6,opt,name=segmentation_metrics,json=segmentationMetrics,proto3" json:"segmentation_metrics,omitempty"`
 }
 
 func (x *SingleDatasetEvaluation) Reset() {
@@ -2503,16 +2489,11 @@ type SegmentationMetrics struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// overall accuracy
-	AAcc float32 `protobuf:"fixed32,1,opt,name=aAcc,proto3" json:"aAcc,omitempty"`
-	// mean accuracy
-	MAcc float32 `protobuf:"fixed32,2,opt,name=mAcc,proto3" json:"mAcc,omitempty"`
-	// mean iou
-	MIoU float32 `protobuf:"fixed32,3,opt,name=mIoU,proto3" json:"mIoU,omitempty"`
-	// classwise accuracy
-	Acc map[int32]float32 `protobuf:"bytes,4,rep,name=Acc,proto3" json:"Acc,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"fixed32,2,opt,name=value,proto3"`
-	// classwise iou
-	IoU map[int32]float32 `protobuf:"bytes,5,rep,name=IoU,proto3" json:"IoU,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"fixed32,2,opt,name=value,proto3"`
+	AAcc float32           `protobuf:"fixed32,1,opt,name=aAcc,proto3" json:"aAcc,omitempty"`                                                                                        // overall accuracy
+	MAcc float32           `protobuf:"fixed32,2,opt,name=mAcc,proto3" json:"mAcc,omitempty"`                                                                                        // mean accuracy
+	MIoU float32           `protobuf:"fixed32,3,opt,name=mIoU,proto3" json:"mIoU,omitempty"`                                                                                        // mean iou
+	Acc  map[int32]float32 `protobuf:"bytes,4,rep,name=Acc,proto3" json:"Acc,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"fixed32,2,opt,name=value,proto3"` // classwise accuracy
+	IoU  map[int32]float32 `protobuf:"bytes,5,rep,name=IoU,proto3" json:"IoU,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"fixed32,2,opt,name=value,proto3"` // classwise iou
 }
 
 func (x *SegmentationMetrics) Reset() {
@@ -2587,10 +2568,8 @@ type SingleIouEvaluation struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// key: class ids
-	CiEvaluations map[int32]*SingleEvaluationElement `protobuf:"bytes,1,rep,name=ci_evaluations,json=ciEvaluations,proto3" json:"ci_evaluations,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// evaluations averaged by class ids
-	CiAveragedEvaluation *SingleEvaluationElement `protobuf:"bytes,2,opt,name=ci_averaged_evaluation,json=ciAveragedEvaluation,proto3" json:"ci_averaged_evaluation,omitempty"`
+	CiEvaluations        map[int32]*SingleEvaluationElement `protobuf:"bytes,1,rep,name=ci_evaluations,json=ciEvaluations,proto3" json:"ci_evaluations,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // key: class ids
+	CiAveragedEvaluation *SingleEvaluationElement           `protobuf:"bytes,2,opt,name=ci_averaged_evaluation,json=ciAveragedEvaluation,proto3" json:"ci_averaged_evaluation,omitempty"`                                                                   // evaluations averaged by class ids
 }
 
 func (x *SingleIouEvaluation) Reset() {
@@ -2888,15 +2867,15 @@ func (x *FloatPoint) GetZ() float32 {
 	return 0
 }
 
-// ========== context.mir ==========
+/// ========== context.mir ==========
 type MirContext struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// total images count
+	/// total images count
 	ImagesCnt int32 `protobuf:"varint,1,opt,name=images_cnt,json=imagesCnt,proto3" json:"images_cnt,omitempty"`
-	// from pred and gt
+	/// from pred and gt
 	CksCnt           map[string]*SingleMapCount `protobuf:"bytes,6,rep,name=cks_cnt,json=cksCnt,proto3" json:"cks_cnt,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	TotalAssetMbytes int32                      `protobuf:"varint,11,opt,name=total_asset_mbytes,json=totalAssetMbytes,proto3" json:"total_asset_mbytes,omitempty"`
 	PredStats        *AnnoStats                 `protobuf:"bytes,100,opt,name=pred_stats,json=predStats,proto3" json:"pred_stats,omitempty"`

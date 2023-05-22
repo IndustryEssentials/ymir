@@ -13,7 +13,7 @@ import typing_extensions
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
 
 class TvtType(_TvtType, metaclass=_TvtTypeEnumTypeWrapper):
-    """assertion type: training, validation or test"""
+    """/ assertion type: training, validation or test"""
     pass
 class _TvtType:
     V = typing.NewType('V', builtins.int)
@@ -80,7 +80,7 @@ global___AnnotationType = AnnotationType
 
 
 class TaskType(_TaskType, metaclass=_TaskTypeEnumTypeWrapper):
-    """task type"""
+    """/ task type"""
     pass
 class _TaskType:
     V = typing.NewType('V', builtins.int)
@@ -100,7 +100,7 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     TaskTypeFusion = TaskType.V(11)
     TaskTypeInit = TaskType.V(12)
     TaskTypeImportModel = TaskType.V(13)
-    """used by ymir_controller"""
+    """/ used by ymir_controller"""
 
     TaskTypeCopyModel = TaskType.V(14)
     TaskTypeDatasetInfer = TaskType.V(15)
@@ -121,7 +121,7 @@ TaskTypeSampling = TaskType.V(10)
 TaskTypeFusion = TaskType.V(11)
 TaskTypeInit = TaskType.V(12)
 TaskTypeImportModel = TaskType.V(13)
-"""used by ymir_controller"""
+"""/ used by ymir_controller"""
 
 TaskTypeCopyModel = TaskType.V(14)
 TaskTypeDatasetInfer = TaskType.V(15)
@@ -357,7 +357,7 @@ global___EvaluationState = EvaluationState
 
 
 class MirMetadatas(google.protobuf.message.Message):
-    """========== metadatas.mir =========="""
+    """/ ========== metadatas.mir =========="""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class AttributesEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -377,7 +377,7 @@ class MirMetadatas(google.protobuf.message.Message):
     ATTRIBUTES_FIELD_NUMBER: builtins.int
     @property
     def attributes(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___MetadataAttributes]:
-        """key: asset hash, value: attributes"""
+        """/ key: asset hash, value: attributes"""
         pass
     def __init__(self,
         *,
@@ -401,8 +401,14 @@ class MetadataAttributes(google.protobuf.message.Message):
     tvt_type: global___TvtType.V = ...
     asset_type: global___AssetType.V = ...
     width: builtins.int = ...
+    """/ column number"""
+
     height: builtins.int = ...
+    """/ row number"""
+
     image_channels: builtins.int = ...
+    """/ (for images) channel count"""
+
     byte_size: builtins.int = ...
     origin_filename: typing.Text = ...
     def __init__(self,
@@ -425,10 +431,10 @@ class Timestamp(google.protobuf.message.Message):
     START_FIELD_NUMBER: builtins.int
     DURATION_FIELD_NUMBER: builtins.int
     start: builtins.int = ...
-    """start time stamp, use int32 as int64 is not correctly parsed."""
+    """/ start time stamp, use int32 as int64 is not correctly parsed."""
 
     duration: builtins.float = ...
-    """duration (in seconds), for images, it's always 0"""
+    """/ duration (in seconds), for images, it's always 0"""
 
     def __init__(self,
         *,
@@ -439,7 +445,7 @@ class Timestamp(google.protobuf.message.Message):
 global___Timestamp = Timestamp
 
 class MirAnnotations(google.protobuf.message.Message):
-    """========== annotations.mir =========="""
+    """/ ========== annotations.mir =========="""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class ImageCksEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -503,7 +509,7 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
     @property
     def image_annotations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleImageAnnotations]:
-        """key: image id, value: annotations of that single image"""
+        """/ key: image id, value: annotations of that single image"""
         pass
     task_id: typing.Text = ...
     type: global___ObjectType.V = ...
@@ -686,7 +692,7 @@ class Rect(google.protobuf.message.Message):
 global___Rect = Rect
 
 class MirKeywords(google.protobuf.message.Message):
-    """========== keywords.mir =========="""
+    """/ ========== keywords.mir =========="""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class CkIdxEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -880,7 +886,7 @@ class AssetAnnoIndex(google.protobuf.message.Message):
 global___AssetAnnoIndex = AssetAnnoIndex
 
 class MirTasks(google.protobuf.message.Message):
-    """========== tasks.mir =========="""
+    """/ ========== tasks.mir =========="""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class TasksEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -941,17 +947,19 @@ class Task(google.protobuf.message.Message):
     EXECUTOR_FIELD_NUMBER: builtins.int
     type: global___TaskType.V = ...
     name: typing.Text = ...
-    """user defined task name"""
+    """/ user defined task name"""
 
     task_id: typing.Text = ...
-    """auto generated unique id"""
+    """/ auto generated unique id"""
 
     timestamp: builtins.int = ...
-    """execution time of this task"""
+    """/ execution time of this task
+    RFC 3339 date strings
+    """
 
     @property
     def model(self) -> global___ModelMeta:
-        """(for training task): result model for cmd train"""
+        """/ (for training task): result model for cmd train"""
         pass
     return_code: builtins.int = ...
     return_msg: typing.Text = ...
@@ -959,10 +967,10 @@ class Task(google.protobuf.message.Message):
     def evaluation(self) -> global___Evaluation: ...
     @property
     def new_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """(for import task): new types for cmd import, key: class name, value: asset count"""
+        """/ (for import task): new types for cmd import, key: class name, value: asset count"""
         pass
     new_types_added: builtins.bool = ...
-    """(for import task): reason for new types, True: added, False: ignored"""
+    """/ (for import task): reason for new types, True: added, False: ignored"""
 
     serialized_executor_config: typing.Text = ...
     src_revs: typing.Text = ...
@@ -1017,13 +1025,13 @@ class ModelMeta(google.protobuf.message.Message):
     MIOU_FIELD_NUMBER: builtins.int
     MASKAP_FIELD_NUMBER: builtins.int
     model_hash: typing.Text = ...
-    """hash for models.tar.gz"""
+    """/ hash for models.tar.gz"""
 
     mAP: builtins.float = ...
-    """available in detection models"""
+    """/ available in detection models"""
 
     context: typing.Text = ...
-    """context generated by train command"""
+    """/ context generated by train command"""
 
     @property
     def stages(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___ModelStage]: ...
@@ -1033,13 +1041,13 @@ class ModelMeta(google.protobuf.message.Message):
     @property
     def evaluate_config(self) -> global___EvaluateConfig: ...
     object_type: builtins.int = ...
-    """detection: 2, semantic segmentation: 3, instance segmentation: 4"""
+    """/ detection: 2, semantic segmentation: 3, instance segmentation: 4"""
 
     mIoU: builtins.float = ...
-    """available in semantic segmentation models"""
+    """/ available in semantic segmentation models"""
 
     maskAP: builtins.float = ...
-    """available in instance segmentation models"""
+    """/ available in instance segmentation models"""
 
     def __init__(self,
         *,
@@ -1373,7 +1381,7 @@ class FloatPoint(google.protobuf.message.Message):
 global___FloatPoint = FloatPoint
 
 class MirContext(google.protobuf.message.Message):
-    """========== context.mir =========="""
+    """/ ========== context.mir =========="""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class CksCntEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -1396,11 +1404,11 @@ class MirContext(google.protobuf.message.Message):
     PRED_STATS_FIELD_NUMBER: builtins.int
     GT_STATS_FIELD_NUMBER: builtins.int
     images_cnt: builtins.int = ...
-    """total images count"""
+    """/ total images count"""
 
     @property
     def cks_cnt(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleMapCount]:
-        """from pred and gt"""
+        """/ from pred and gt"""
         pass
     total_asset_mbytes: builtins.int = ...
     @property
