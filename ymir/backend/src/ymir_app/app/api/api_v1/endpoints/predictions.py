@@ -13,7 +13,6 @@ from app.api.errors.errors import (
     MissingOperations,
     RefuseToProcessMixedOperations,
 )
-from app.constants.state import ObjectType
 from app.utils.ymir_viz import VizClient
 from app.utils.ymir_controller import ControllerClient
 from app.libs.predictions import evaluate_predictions, ensure_predictions_are_ready
@@ -141,6 +140,5 @@ def batch_evaluate_datasets(
         in_evaluation.need_pr_curve,
         in_evaluation.main_ck,
         prediction_id_mapping,
-        is_instance_segmentation=(project.object_type == ObjectType.instance_segmentation),
     )
     return {"result": evaluations}
