@@ -11,7 +11,7 @@ import { ObjectType } from '@/constants/project'
 
 import { urlValidator } from '@/components/form/validators'
 import Uploader, { UploadFile } from '@/components/form/uploader'
-import ProjectDatasetSelect from '@/components/form/ProjectDatasetSelect'
+import ProjectDatasetSelect, { DataNodeType } from '@/components/form/ProjectDatasetSelect'
 import Desc from '@/components/form/desc'
 import DatasetName from '@/components/form/items/DatasetName'
 import FormatDetailModal from '@/components/dataset/FormatDetailModal'
@@ -215,12 +215,6 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
     setDefaultName(filename)
   }
 
-  function setCopyDefaultName(value: number, option: DatasetOptionType[]) {
-    const dataset = option[1] ? option[1].dataset : null
-    const label = dataset ? `${dataset.name}` : ''
-    setDefaultName(label)
-  }
-
   function addDefaultName(name = '') {
     if (!nameChangedByUser) {
       form.setFieldsValue({ name })
@@ -343,7 +337,14 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
                 },
               ]}
             >
-              <ProjectDatasetSelect pid={pid} onChange={setCopyDefaultName} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
+              <ProjectDatasetSelect
+                onChange={(_, option) => {
+                  const dataset = option[1] ? option[1].dataset : null
+                  const label = dataset ? `${dataset.name}` : ''
+                  setDefaultName(label)
+                }}
+                placeholder={t('dataset.add.form.copy.placeholder')}
+              ></ProjectDatasetSelect>
             </Form.Item>
           ) : null}
           {!isType(Types.INTERNAL) ? (

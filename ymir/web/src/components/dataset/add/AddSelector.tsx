@@ -6,6 +6,8 @@ import Local from './Local'
 import Net from './Net'
 import Path from './Path'
 import TypeSelector from './TypeSelector'
+import s from '../add.less'
+
 type Props = {
   confirm: (items: ImportItem[]) => void
 }
@@ -18,19 +20,14 @@ const Selectors = {
 }
 const AddSelector: FC<Props> = ({ confirm }) => {
   const [current, setCurrent] = useState(Types.LOCAL)
-  const [items, setItems] = useState<ImportItem[]>([])
   const [Selector, setSelector] = useState<FC<ImportSelectorProps>>()
 
   useEffect(() => {
     setSelector(() => Selectors[current])
   }, [current])
 
-  const ok = () => {
-    confirm(items)
-  }
-
   return (
-    <div>
+    <div className={s.selector}>
       <Row>
         <Col>
           <TypeSelector
@@ -40,11 +37,8 @@ const AddSelector: FC<Props> = ({ confirm }) => {
             }}
           />
         </Col>
-        <Col flex={1}>{Selector ? <Selector onChange={(items) => setItems(items)} /> : null}</Col>
+        <Col flex={1}>{Selector ? <Selector confirm={confirm} /> : null}</Col>
       </Row>
-      <Button type="primary" onClick={ok}>
-        Confirm
-      </Button>
     </div>
   )
 }

@@ -10,7 +10,7 @@ type ImportItem = {
 
 type ImportSelectorChange = (items: ImportItem[]) => void
 type ImportSelectorProps = {
-  onChange: ImportSelectorChange
+  confirm: ImportSelectorChange
 }
 
 export { ImportItem, ImportSelectorChange, ImportSelectorProps }

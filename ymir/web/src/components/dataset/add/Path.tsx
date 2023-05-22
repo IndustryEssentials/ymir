@@ -4,20 +4,20 @@ import { ImportSelectorProps } from '.'
 import { Types } from './AddTypes'
 import Inputs from './Inputs'
 
-const Path: FC<ImportSelectorProps> = ({ onChange }) => {
+const Path: FC<ImportSelectorProps> = ({ confirm }) => {
   return (
     <Inputs
       name="path"
-      onChange={(paths) => {
+      confirm={(paths) => {
         const items = paths
           .filter((item) => !!item)
           .map((path) => ({
-            type: Types.NET,
+            type: Types.PATH,
             name: path,
             source: path,
             sourceName: path,
           }))
-        onChange(items)
+        confirm(items)
       }}
       rules={[
         {

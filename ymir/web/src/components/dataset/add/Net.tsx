@@ -5,11 +5,11 @@ import { ImportSelectorProps } from '.'
 import { Types } from './AddTypes'
 import Inputs from './Inputs'
 
-const Net: FC<ImportSelectorProps> = ({ onChange }) => {
+const Net: FC<ImportSelectorProps> = ({ confirm }) => {
   return (
     <Inputs
       name="net"
-      onChange={(urls) => {
+      confirm={(urls) => {
         const items = urls
           .filter((item) => !!item)
           .map((url) => ({
@@ -18,7 +18,7 @@ const Net: FC<ImportSelectorProps> = ({ onChange }) => {
             source: url,
             sourceName: url,
           }))
-        onChange(items)
+        confirm(items)
       }}
       rules={[
         {
@@ -27,14 +27,9 @@ const Net: FC<ImportSelectorProps> = ({ onChange }) => {
         },
         { validator: urlValidator },
       ]}
-      tip={
-        <p>
-          {
-            //renderTip('net')
-          }
-        </p>
-      }
+      tip={<p>hello</p>}
     />
   )
 }
+
 export default Net

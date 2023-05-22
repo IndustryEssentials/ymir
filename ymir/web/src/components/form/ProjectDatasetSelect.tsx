@@ -5,7 +5,7 @@ import DatasetOption from '@/components/form/option/Dataset'
 import { useSelector } from 'umi'
 import { Dataset } from '@/constants'
 import useRequest from '@/hooks/useRequest'
-type DataNodeType = {
+export type DataNodeType = {
   label: ReactNode
   value: number
   dataset?: Dataset
@@ -66,7 +66,7 @@ const ProjectDatasetSelect: FC<Props> = (props) => {
     }
   }
 
-  return <Cascader allowClear {...props} options={options} loadData={loadData}></Cascader>
+  return <Cascader<DataNodeType> allowClear {...props} options={options} loadData={loadData}></Cascader>
 }
 
 export default ProjectDatasetSelect

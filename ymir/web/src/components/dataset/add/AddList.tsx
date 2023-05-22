@@ -45,7 +45,7 @@ const AddList: FC<Props> = ({ items }) => {
   }, [items])
   return (
     <>
-      <Table rowKey={(item) => item.type + item.source} dataSource={list} columns={columns} />
+      <Table rowKey={(item) => item.type + item.source} dataSource={list} columns={columns} pagination={false} />
       <Button type="primary" onClick={batch}>
         Batch Import
       </Button>
