@@ -182,7 +182,6 @@ class TestControllerClient:
         user_labels = mocker.Mock()
         confidence_threshold, iou_thrs_interval, need_pr_curve = 0.5, "0.5", True
         main_ck = None
-        is_instance_segmentation = True
         dataset_hash = random_lower_string()
         cc = m.ControllerClient(channel_str)
         mock_convertor = mocker.Mock()
@@ -197,7 +196,6 @@ class TestControllerClient:
             iou_thrs_interval,
             need_pr_curve,
             main_ck,
-            is_instance_segmentation,
             dataset_hash,
         )
         mock_convertor.assert_called()
