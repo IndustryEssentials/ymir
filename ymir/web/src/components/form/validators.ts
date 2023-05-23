@@ -16,7 +16,6 @@ export const trimValidator: ValidatorType = (_, value) => {
 }
 
 export const urlValidator: ValidatorType = (_, value) => {
-  console.log('value:', value)
   const reg = /^(([^:/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/
   if (!value || reg.test(value.trim())) {
     return Promise.resolve()

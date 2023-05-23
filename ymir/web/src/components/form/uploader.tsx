@@ -54,7 +54,6 @@ const Uploader: FC<Props> = ({
   }, [value])
 
   function onFileChange({ file, fileList }: { file: UFile; fileList: UFile[] }) {
-    console.log('file, fileList:', file, fileList)
     const fileListWithUrl = fileList.slice(-maxCount).map((file) => ({
       ...file,
       url: file?.response?.result,
@@ -78,6 +77,10 @@ const Uploader: FC<Props> = ({
     const isOver = size / 1024 / 1024 < max
     if (!isOver) {
       message.error(t('common.uploader.size.error', { max }))
+    }
+    if (maxCount <= 0) {
+      message.error('exceed maximium count')
+      return false
     }
     return isValid && isOver
   }

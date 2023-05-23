@@ -3,12 +3,14 @@ import useRequest from '@/hooks/useRequest'
 import { Button, Table, TableColumnsType } from 'antd'
 import { FC, useCallback } from 'react'
 import { useParams, useSelector } from 'umi'
+import t from '@/utils/t'
 
 const AddList: FC = () => {
   const params = useParams<{ id: string }>()
   const pid = Number(params.id)
   const { items: list } = useSelector(({ dataset }) => dataset.importing)
   const { run: batchImport } = useRequest('task/batchAdd')
+  const { run: remove } = useRequest<null, [(number | undefined)[]]>('dataset/removeImporting')
   const columns: TableColumnsType<ImportingItem> = [
     {
       title: 'Type',
@@ -29,6 +31,17 @@ const AddList: FC = () => {
       dataIndex: 'strategy',
       render: () => {
         return <>all/none/ignore</>
+      },
+    },
+    {
+      title: t('common.action'),
+      dataIndex: 'action',
+      render: (_, { index }) => {
+        return (
+          <Button type="link" onClick={() => remove([index])}>
+            Delete
+          </Button>
+        )
       },
     },
   ]

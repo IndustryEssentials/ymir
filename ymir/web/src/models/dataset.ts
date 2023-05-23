@@ -448,9 +448,8 @@ const DatasetModal: DatasetStore = {
       const updatedList = items.filter((item, index) => !indexs.includes(index))
       yield put({ type: 'updateImportingList', payload: updatedList })
     }),
-    updateImportingList: createEffect<ImportingItem[]>(function* ({ payload: items }, { put, select }) {
-      const { max }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
-      const updatedMax = max - items.length
+    updateImportingList: createEffect<ImportingItem[]>(function* ({ payload: items }, { put }) {
+      const updatedMax = ImportingMaxCount - items.length
       yield put({
         type: 'UpdateImporting',
         payload: {

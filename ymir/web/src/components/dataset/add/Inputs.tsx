@@ -1,4 +1,4 @@
-import { Button, Form, FormItemProps, Input } from 'antd'
+import { Button, Form, FormItemProps, Input, message } from 'antd'
 import { FC, ReactNode } from 'react'
 import t from '@/utils/t'
 import { AddIcon, DeleteIcon } from '@/components/common/Icons'
@@ -10,7 +10,7 @@ type Props = {
   confirm: (items: string[]) => void
   max?: number
 }
-const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max }) => {
+const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
   const [form] = Form.useForm()
 
   return (
@@ -18,8 +18,12 @@ const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max }) => {
       name={`${name}Form`}
       form={form}
       onFinish={(values) => {
-        confirm(values[name])
-        form.resetFields()
+        if (max > 0) {
+          confirm(values[name])
+          form.resetFields()
+        } else {
+          message.warning('Exceed Maximium Count')
+        }
       }}
     >
       <Form.List name={name} initialValue={['']}>
