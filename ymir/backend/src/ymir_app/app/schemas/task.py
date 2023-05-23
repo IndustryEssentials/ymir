@@ -34,8 +34,9 @@ from app.schemas.common import (
     dataset_normalize,
     label_normalize,
     model_normalize,
+    ImportStrategy,
 )
-from id_definition.task_id import TaskId
+from id_definition.task_id import TaskId, gen_repo_hash, gen_user_hash
 
 
 class TaskBase(BaseModel):
@@ -62,7 +63,7 @@ class TaskPreprocess(BaseModel):
 
 
 class TaskParameterBase(BaseModel):
-    dataset_id: int
+    dataset_id: Optional[int]
     dataset_group_id: Optional[int]
     dataset_group_name: Optional[str]
 
@@ -180,13 +181,47 @@ class MergeParameter(FusionParameterBase):
 
     @root_validator(pre=True)
     def fill_in_dataset_id(cls, values: Any) -> Any:
-        if not values.get("dataset_id"):
+        if not values.get("dataset_id") and values.get("include_datasets"):
             values["dataset_id"] = values["include_datasets"][0]
         return values
 
 
 class FilterParameter(FusionParameterBase):
     task_type: Literal["filter"]
+
+
+class ImportDatasetParameter(TaskParameterBase):
+    task_type: Literal["import_data"]
+    url: Optional[str]
+    path: Optional[str]
+    strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
+
+    asset_dir: Optional[str]
+    clean_dirs: Optional[bool]
+
+    @root_validator(pre=True)
+    def fillin_fields(cls, values: Any) -> Any:
+        values["asset_dir"] = values.get("path") or values.get("url")
+        values["clean_dirs"] = values.get("path") is None
+        return values
+
+
+class CopyDatasetParameter(TaskParameterBase):
+    task_type: Literal["copy_data"]
+    strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
+
+    src_user_id: Optional[int]
+    src_repo_id: Optional[int]
+    src_resource_id: Optional[int]
+
+    def update_with_src_dataset(self, datasets_getter: Callable, project_context: Dict) -> None:
+        dataset = datasets_getter(dataset_ids=[self.dataset_id])[0]
+        self.src_user_id = gen_user_hash(dataset.user_id)
+        self.src_repo_id = gen_repo_hash(dataset.project_id)
+        self.src_resource_id = dataset.hash
+        if project_context.get("object_type") != dataset.object_type:
+            self.strategy = ImportStrategy.no_annotations
+        return
 
 
 TaskParameter = Annotated[
@@ -198,6 +233,8 @@ TaskParameter = Annotated[
         FusionParameter,
         MergeParameter,
         FilterParameter,
+        ImportDatasetParameter,
+        CopyDatasetParameter,
     ],
     Field(description="Generic Task Parameters", discriminator="task_type"),  # noqa: F722, F821
 ]
@@ -263,6 +300,9 @@ class TaskCreate(TaskBase):
             # extra logic for dataset fusion:
             # reorder datasets based on merge_strategy
             self.parameters.update_with_iteration_context(iterations_getter)
+
+        if isinstance(self.parameters, CopyDatasetParameter):
+            self.parameters.update_with_src_dataset(datasets_getter, project_context)
 
         if project_context:
             self.parameters.update_with_project_context(project_context)
