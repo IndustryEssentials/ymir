@@ -157,6 +157,8 @@ class ControllerRequest:
 
         import_dataset_request.asset_dir = args["asset_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
+
+        # FIXME: remove
         if args["object_type"] == ObjectType.instance_segmentation:
             import_dataset_request.is_instance_segmentation = True
 
