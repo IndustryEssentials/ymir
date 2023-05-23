@@ -4,6 +4,7 @@ import unittest
 from unittest import mock
 
 import tests.utils as test_utils
+from controller.config.common_task import IMAGE_CONFIG_SENTINEL
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from id_definition.error_codes import CTLResponseCode
@@ -46,12 +47,9 @@ class TestInvokerInspectImage(unittest.TestCase):
         ret.returncode = CTLResponseCode.CTR_OK
         if "images" in args[0]:
             ret.stdout = "fake_hash"
-        elif "/img-man/manifest.yaml" in args[0]:
-            # manifest.yaml
-            ret.stdout = "object_type: 2\nis_official: False\nenable_livecode: False"
         else:
-            # xxx-template.yaml
-            ret.stdout = "config_key: config_value"
+            # manifest.yaml & template.yaml
+            ret.stdout = f"{IMAGE_CONFIG_SENTINEL}\nobject_type: 2\nis_official: False\nenable_livecode: False"
         return ret
 
     def _mock_manifest_multi_object_type(*args, **kwargs):
@@ -59,12 +57,9 @@ class TestInvokerInspectImage(unittest.TestCase):
         ret.returncode = CTLResponseCode.CTR_OK
         if "images" in args[0]:
             ret.stdout = "fake_hash_2"
-        elif "/img-man/manifest.yaml" in args[0]:
-            # manifest.yaml
-            ret.stdout = "object_type: [2, 4]\nis_official: True"
         else:
-            # xxx-template.yaml
-            ret.stdout = "config_key: config_value"
+            # manifest.yaml & template.yaml
+            ret.stdout = f"{IMAGE_CONFIG_SENTINEL}\nobject_type: [2, 4]\nis_official: True"
         return ret
 
     @mock.patch("subprocess.run", side_effect=_mock_manifest_single_object_type)
@@ -79,6 +74,12 @@ class TestInvokerInspectImage(unittest.TestCase):
             singleton_op="docker_image_name",
         )
 
+        config_paths = [
+            '/img-man/manifest.yaml',
+            '/img-man/training-template.yaml',
+            '/img-man/mining-template.yaml',
+            '/img-man/infer-template.yaml',
+        ]
         expected_calls_list = [
             mock.call(
                 ['docker', 'images', 'docker_image_name', '--format', '{{.ID}}'],
@@ -86,31 +87,14 @@ class TestInvokerInspectImage(unittest.TestCase):
                 text=True,
                 cwd=None,
             ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/manifest.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/training-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/mining-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/infer-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
         ]
+        expected_calls_list.extend([mock.call(
+            ['docker', 'run', '--rm', 'docker_image_name', 'sh', '-c',
+             f"echo {IMAGE_CONFIG_SENTINEL} && cat {p}"],
+            capture_output=True,
+            text=True,
+            cwd=None,
+        ) for p in config_paths])
         self.assertEqual(expected_calls_list, mock_run.call_args_list)
         self.assertEqual(CTLResponseCode.CTR_OK, response.code)
         self.assertEqual("fake_hash", response.hash_id)
@@ -130,6 +114,11 @@ class TestInvokerInspectImage(unittest.TestCase):
             task_id=self._task_id,
             singleton_op="docker_image_name",
         )
+
+        config_dirs = ['/img-man/det', '/img-man/instance-seg']
+        config_names = ['training-template.yaml', 'mining-template.yaml', 'infer-template.yaml']
+        config_paths = ['/img-man/manifest.yaml',]
+        config_paths.extend([f"{d}/{n}" for d in config_dirs for n in config_names])
         expected_calls_list = [
             mock.call(
                 ['docker', 'images', 'docker_image_name', '--format', '{{.ID}}'],
@@ -137,49 +126,16 @@ class TestInvokerInspectImage(unittest.TestCase):
                 text=True,
                 cwd=None,
             ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/manifest.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/det/training-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/det/mining-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/det/infer-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/instance-seg/training-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/instance-seg/mining-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
-            mock.call(
-                ['docker', 'run', '--rm', 'docker_image_name', 'cat', '/img-man/instance-seg/infer-template.yaml'],
-                capture_output=True,
-                text=True,
-                cwd=None,
-            ),
         ]
+        expected_calls_list.extend([
+            mock.call(
+                ['docker', 'run', '--rm', 'docker_image_name', 'sh', '-c',
+                 f"echo {IMAGE_CONFIG_SENTINEL} && cat {p}"],
+                capture_output=True,
+                text=True,
+                cwd=None,
+            ) for p in config_paths
+        ])
         self.assertEqual(expected_calls_list, mock_run.call_args_list)
         self.assertEqual(CTLResponseCode.CTR_OK, response.code)
         self.assertEqual("fake_hash_2", response.hash_id)

@@ -18,5 +18,6 @@ IMAGE_CONFIG_FILE_NAMES = {
     mir_cmd_pb.TaskType.TaskTypeMining: "mining-template.yaml",
     mir_cmd_pb.TaskType.TaskTypeInfer: "infer-template.yaml",
 }
+IMAGE_CONFIG_SENTINEL = '---YMIR-SENTINEL---'
 
 MONITOR_URL = os.environ.get("MONITOR_URL", "http://127.0.0.1:9098")

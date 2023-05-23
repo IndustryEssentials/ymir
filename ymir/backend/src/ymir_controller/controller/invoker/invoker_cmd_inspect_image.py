@@ -68,11 +68,13 @@ class CmdInspectImageInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def _inspect_file_in_docker_image(cls, docker_image_tag: str, filepath: str) -> Optional[str]:
-        command = ['docker', 'run', '--rm', docker_image_tag, 'cat', filepath]
+        sentinel = common_task_config.IMAGE_CONFIG_SENTINEL
+        command = ['docker', 'run', '--rm', docker_image_tag, 'sh', '-c', f"echo {sentinel} && cat {filepath}"]
         config_response = utils.run_command(command)
 
         try:
-            image_config = yaml.safe_load(config_response.message)
+            message = config_response.message[config_response.message.find(sentinel) + len(sentinel):]
+            image_config = yaml.safe_load(message)
             if not isinstance(image_config, dict):
                 raise ValueError(f"raw image config error: {config_response.message}")
         except Exception:
