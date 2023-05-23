@@ -157,7 +157,6 @@ message SingleTaskAnnotations {
     ObjectType type = 3;
     // Set of all shown class ids.
     repeated int32 task_class_ids = 4;
-    bool is_instance_segmentation = 5;
 
     // meta infos of this SingleTaskAnnotations
     repeated int32 eval_class_ids = 10;
@@ -165,6 +164,8 @@ message SingleTaskAnnotations {
     ModelMeta model = 11;
     // executor config used to generate this single task annotations
     string executor_config = 12;
+
+    reserved 5;
 };
 
 message SingleImageAnnotations {
@@ -332,9 +333,8 @@ message EvaluateConfig {
     repeated int32 class_ids = 7;
     string main_ck = 8;
     ObjectType type = 9;
-    bool is_instance_segmentation = 10;
 
-    reserved 1, 2, 6;
+    reserved 1, 2, 6, 10;
 }
 
 message SingleDatasetEvaluation {

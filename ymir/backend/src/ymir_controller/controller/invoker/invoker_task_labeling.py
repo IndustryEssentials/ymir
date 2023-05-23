@@ -55,7 +55,6 @@ class TaskLabelingInvoker(TaskBaseInvoker):
             expert_instruction=labeling_request.expert_instruction_url,
             annotation_type=labeling_request.annotation_type,
             object_type=request.object_type,
-            is_instance_segmentation=labeling_request.is_instance_segmentation,
             user_token=request.user_token,
         )
 

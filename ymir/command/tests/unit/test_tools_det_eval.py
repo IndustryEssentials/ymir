@@ -388,7 +388,6 @@ class TestToolsDetEval(unittest.TestCase):
                         'img_class_ids': [2],
                     },
                 },
-                'is_instance_segmentation': False,
                 'task_class_ids': [0, 1, 2],
                 'task_id': 'a',
                 'eval_class_ids': [],
@@ -560,7 +559,6 @@ class TestToolsDetEval(unittest.TestCase):
                         'img_class_ids': [0, 1, 2, 3],
                     }
                 },
-                'is_instance_segmentation': False,
                 'task_id': 'a',
                 'eval_class_ids': [0, 1, 2, 3],
                 'executor_config': '',
@@ -629,15 +627,15 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.need_pr_curve = False
         evaluate_config.main_ck = 'color'
         evaluation = eval_ctl_ops.evaluate_datasets(mir_root=self._mir_root,
-                                                        gt_rev_tid=gt_pred_rev_tid,
-                                                        pred_rev_tid=gt_pred_rev_tid,
-                                                        evaluate_config=evaluate_config)
+                                                    gt_rev_tid=gt_pred_rev_tid,
+                                                    pred_rev_tid=gt_pred_rev_tid,
+                                                    evaluate_config=evaluate_config)
         self.assertIsNotNone(evaluation)
         self.assertEqual({'blue', 'red'}, set(evaluation.sub_cks.keys()))
 
         evaluate_config.main_ck = 'FakeMainCk'
         evaluation = eval_ctl_ops.evaluate_datasets(mir_root=self._mir_root,
-                                                        gt_rev_tid=gt_pred_rev_tid,
-                                                        pred_rev_tid=gt_pred_rev_tid,
-                                                        evaluate_config=evaluate_config)
+                                                    gt_rev_tid=gt_pred_rev_tid,
+                                                    pred_rev_tid=gt_pred_rev_tid,
+                                                    evaluate_config=evaluate_config)
         self.assertIsNone(evaluation)

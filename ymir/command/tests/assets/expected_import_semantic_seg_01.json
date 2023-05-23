@@ -189,7 +189,6 @@
                     ]
                 }
             },
-            "is_instance_segmentation": false,
             "task_id": "import_semantic_seg_01",
             "type": 3,
             "task_class_ids": [
@@ -205,7 +204,6 @@
         "prediction": {
             "task_id": "import_semantic_seg_01",
             "image_annotations": {},
-            "is_instance_segmentation": false,
             "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],

@@ -48,7 +48,7 @@ def catch_label_task_error(f: Callable) -> Callable:
 class LabelBase(ABC):
     @abstractmethod
     def create_label_project(self, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-                             object_type: int, is_instance_segmentation: bool) -> int:
+                             object_type: int) -> int:
         # Create a label project, add extra args in kwargs if you need
         pass
 
@@ -101,7 +101,6 @@ class LabelBase(ABC):
         import_work_dir: str,
         use_pre_annotation: bool,
         object_type: int,
-        is_instance_segmentation: bool,
     ) -> None:
         # start a label task
         pass
@@ -120,7 +119,6 @@ class LabelBase(ABC):
         storage_id: int,
         input_asset_dir: str,
         object_type: int,
-        is_instance_segmentation: bool,
     ) -> None:
         # store into redis for loop get status
         label_task_content = dict(project_id=project_id,
@@ -132,7 +130,6 @@ class LabelBase(ABC):
                                   import_work_dir=import_work_dir,
                                   storage_id=storage_id,
                                   input_asset_dir=input_asset_dir,
-                                  object_type=object_type,
-                                  is_instance_segmentation=is_instance_segmentation)
+                                  object_type=object_type)
 
         rds.hset(name=label_task_config.MONITOR_MAPPING_KEY, mapping={task_id: json.dumps(label_task_content)})

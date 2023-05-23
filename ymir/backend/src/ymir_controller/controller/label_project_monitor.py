@@ -22,8 +22,7 @@ from proto import backend_pb2
 
 
 def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
-                       import_work_dir: str, object_type: int,
-                       is_instance_segmentation: bool) -> backend_pb2.GeneralResp:
+                       import_work_dir: str, object_type: int) -> backend_pb2.GeneralResp:
     import_response = TaskImportDatasetInvoker.importing_cmd(
         repo_root=repo_root,
         label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
@@ -34,8 +33,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
         media_location=media_location,
         work_dir=import_work_dir,
         unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
-        object_type=object_type,
-        is_instance_segmentation=is_instance_segmentation)
+        object_type=object_type)
     if import_response.code != CTLResponseCode.CTR_OK:
         return import_response
     # caution: here assumes that repo_root is composed by: sandbox_root + user_id + repo_id
@@ -103,7 +101,6 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
     if state == LogState.DONE:
         # For remove some special tasks. Delete the task after labeling will save file
         object_type = int(project_info.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
-        is_instance_segmentation = bool(project_info.get("is_instance_segmentation", False))
         des_annotation_path = project_info["des_annotation_path"]
         remove_json_file(des_annotation_path)
         try:
@@ -128,7 +125,6 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             media_location=project_info["media_location"],
             import_work_dir=project_info["import_work_dir"],
             object_type=object_type,
-            is_instance_segmentation=is_instance_segmentation,
         )
         if import_response.code != CTLResponseCode.CTR_OK:
             error_code = CTLResponseCode.INVOKER_LABEL_TASK_UNKNOWN_ERROR

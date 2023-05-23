@@ -270,7 +270,6 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
         prediction.executor_config = json.dumps(model_storage.executor_config)
         prediction.model.CopyFrom(model_storage.get_model_meta())
         prediction.type = infer_result_prediction.type
-        prediction.is_instance_segmentation = infer_result_prediction.is_instance_segmentation
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:

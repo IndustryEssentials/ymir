@@ -33,15 +33,13 @@ class CmdImport(base.BaseCommand):
                                        work_dir=self.args.work_dir,
                                        unknown_types_strategy=annotations.UnknownTypesStrategy(
                                            self.args.unknown_types_strategy),
-                                       anno_type=annotations.parse_object_type(self.args.anno_type),
-                                       is_instance_segmentation=self.args.is_instance_segmentation)
+                                       anno_type=annotations.parse_object_type(self.args.anno_type))
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, pred_abs: Optional[str], gt_abs: Optional[str], asset_abs: str, gen_abs: str,
                       dst_rev: str, src_revs: str, work_dir: str, label_storage_file: str,
-                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
-                      is_instance_segmentation: bool) -> int:
+                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V") -> int:
         # step 0: check args
         if not gen_abs or not work_dir or not asset_abs:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -114,7 +112,6 @@ class CmdImport(base.BaseCommand):
                                                              file_name_to_asset_ids=file_name_to_asset_ids,
                                                              unknown_types_strategy=unknown_types_strategy,
                                                              anno_type=anno_type,
-                                                             is_instance_segmentation=is_instance_segmentation,
                                                              phase='import.others')
 
         logging.info(f"pred / gt import unknown result: {dict(unknown_class_names)}")
@@ -248,10 +245,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg', 'multi-modal', 'no-annos'],
+                                           choices=['det-box', 'seg', 'ins-seg', 'multi-modal', 'no-annos'],
                                            help='annotations type\n')
-    import_dataset_arg_parser.add_argument('--ins-seg',
-                                           dest='is_instance_segmentation',
-                                           action='store_true',
-                                           help='set if this dataset is instance segmentation')
     import_dataset_arg_parser.set_defaults(func=CmdImport)

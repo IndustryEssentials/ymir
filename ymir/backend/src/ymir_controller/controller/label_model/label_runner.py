@@ -34,7 +34,11 @@ def get_mir_export_fmt(label_tool: str, object_type: int) -> str:
     ad hoc
     labelfree uses coco for segmentation dataset, LS for detection dataset
     """
-    if object_type == mir_cmd_pb.ObjectType.OT_SEG:
+    if object_type in {
+            mir_cmd_pb.ObjectType.OT_SEG,
+            mir_cmd_pb.ObjectType.OT_INS_SEG,
+            mir_cmd_pb.ObjectType.OT_MULTI_MODAL,
+    }:
         return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_COCO_JSON)
     return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
 
@@ -98,7 +102,6 @@ def start_label_task(
     expert_instruction: str,
     annotation_type: Optional[int],
     object_type: int,
-    is_instance_segmentation: bool,
     user_token: Optional[str],
 ) -> None:
     logging.info("start label task!!!")
@@ -126,6 +129,5 @@ def start_label_task(
                        media_location=media_location,
                        import_work_dir=import_work_dir,
                        use_pre_annotation=bool(annotation_type),
-                       object_type=object_type,
-                       is_instance_segmentation=is_instance_segmentation)
+                       object_type=object_type)
     logging.info("finish label task!!!")

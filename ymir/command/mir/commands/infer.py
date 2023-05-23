@@ -167,11 +167,7 @@ class CmdInfer(base.BaseCommand):
             # result files -> task_annotations and save
             class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
             task_annotations = mirpb.SingleTaskAnnotations()
-            # TODO: also use OT_INS_SEG in repo pb storage
-            task_annotations.type = (mirpb.ObjectType.OT_SEG if model_storage.object_type == mirpb.ObjectType.OT_INS_SEG
-                                     else model_storage.object_type)  # type: ignore
-            task_annotations.is_instance_segmentation = (
-                model_storage.object_type == mirpb.ObjectType.OT_INS_SEG)
+            task_annotations.type = model_storage.object_type  # type: ignore
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET_BOX else _process_infer_coco_result)
             process_result_func(task_annotations, work_dir_out, class_id_mgr)

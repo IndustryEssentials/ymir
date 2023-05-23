@@ -315,9 +315,8 @@
                     ]
                 }
             },
-            "is_instance_segmentation": true,
             "task_id": "filter3",
-            "type": "OT_SEG",
+            "type": "OT_INS_SEG",
             "task_class_ids": [
                 1,
                 2,
@@ -585,9 +584,8 @@
                     ]
                 }
             },
-            "is_instance_segmentation": true,
             "task_id": "filter3",
-            "type": "OT_SEG",
+            "type": "OT_INS_SEG",
             "task_class_ids": [
                 2,
                 4
