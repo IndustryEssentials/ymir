@@ -35,6 +35,7 @@ class TaskType(IntEnum):
     import_model = mir_cmd_pb.TaskType.TaskTypeImportModel
     dataset_infer = mir_cmd_pb.TaskType.TaskTypeDatasetInfer
     pull_image = mir_cmd_pb.TaskType.TaskTypePullImage
+    exclude_data = mir_cmd_pb.TaskType.TaskTypeExcludeData
 
     # fixme
     #  create_project is not the type of TASK_CREATE, but empty dataset need a task
