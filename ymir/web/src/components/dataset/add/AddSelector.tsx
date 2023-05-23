@@ -1,16 +1,14 @@
-import { Button, Col, Row } from 'antd'
+import { Col, Row } from 'antd'
 import { FC, useState, useEffect } from 'react'
-import { ImportItem, ImportSelectorProps } from '.'
 import { Types } from './AddTypes'
 import Local from './Local'
 import Net from './Net'
 import Path from './Path'
 import TypeSelector from './TypeSelector'
 import s from '../add.less'
+import { useSelector } from 'umi'
 
-type Props = {
-  confirm: (items: ImportItem[]) => void
-}
+type Props = {}
 const Selectors = {
   [Types.LOCAL]: Local,
   [Types.COPY]: Local,
@@ -18,9 +16,9 @@ const Selectors = {
   [Types.NET]: Net,
   [Types.PATH]: Path,
 }
-const AddSelector: FC<Props> = ({ confirm }) => {
+const AddSelector: FC<Props> = () => {
   const [current, setCurrent] = useState(Types.LOCAL)
-  const [Selector, setSelector] = useState<FC<ImportSelectorProps>>()
+  const [Selector, setSelector] = useState<FC>()
 
   useEffect(() => {
     setSelector(() => Selectors[current])
@@ -37,7 +35,7 @@ const AddSelector: FC<Props> = ({ confirm }) => {
             }}
           />
         </Col>
-        <Col flex={1}>{Selector ? <Selector confirm={confirm} /> : null}</Col>
+        <Col flex={1}>{Selector ? <Selector /> : null}</Col>
       </Row>
     </div>
   )

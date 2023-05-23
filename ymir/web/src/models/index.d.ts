@@ -1,4 +1,4 @@
-import { Asset, ClassObject, Dataset, Image, Iteration, Message, Prediction, ProgressTask, Project, Task, User, Model } from '@/constants'
+import { Asset, ClassObject, Dataset, Image, Iteration, Message, Prediction, ProgressTask, Project, Task, User, Model, ImportingItem } from '@/constants'
 import { Socket } from 'socket.io-client'
 import { Loading } from 'umi'
 import { IdMap, List, StoreType } from './typings/common.d'
@@ -47,6 +47,10 @@ interface DatasetState {
   query: YParams.DatasetsQuery
   validDatasetCount: number
   trainingDatasetCount: number
+  importing: {
+    items: ImportingItem[]
+    max: number
+  }
 }
 
 interface PredictionState {

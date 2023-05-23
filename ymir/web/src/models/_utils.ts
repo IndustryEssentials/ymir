@@ -31,7 +31,7 @@ const createReducersByState = <S extends Root[keyof Root]>(state: S) => {
   }, {})
 }
 
-const transferList = <R extends any = any>(listResponse: List<Backend>, func: (data: Backend) => R) => {
+const transferList = <R extends any = any>(listResponse: List<Backend>, func: (data: Backend) => R): List<R> => {
   const { items, total } = listResponse
   return { items: items.map((item) => func(item)), total }
 }

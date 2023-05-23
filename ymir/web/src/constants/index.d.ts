@@ -13,6 +13,7 @@ import {
   AnalysisChartData,
   AnalysisChart,
   CKItem,
+  ImportingItem,
 } from './typings/dataset.d'
 import { Image, ImageConfig, DockerImageConfig } from './typings/image.d'
 import { Message, MessageResultModules } from './typings/message.d'
@@ -55,6 +56,7 @@ export {
   AnalysisChartData,
   AnalysisChart,
   CKItem,
+  ImportingItem,
   Result,
   Group,
   Model,

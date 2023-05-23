@@ -1,3 +1,4 @@
+import { Types } from '@/components/dataset/add/AddTypes'
 import { Classes, ClassesCount } from './class'
 import { Group, Result } from './common'
 
@@ -67,6 +68,14 @@ type AnalysisChart = {
   total?: number
 }
 
+type ImportingItem = {
+  index?: number
+  type: Types
+  name: string
+  source: string
+  sourceName: string
+}
+
 export {
   DatasetGroup,
   Dataset,
@@ -79,4 +88,5 @@ export {
   AnalysisChart,
   CKItem,
   CKCounts,
+  ImportingItem,
 }

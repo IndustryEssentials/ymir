@@ -16,13 +16,13 @@ import {
   checkDuplication,
 } from '@/services/dataset'
 import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAnnotationsCount } from '@/constants/dataset'
-import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
+import { actions, updateResultState, updateResultByTask, ResultStates, ImportingMaxCount } from '@/constants/common'
 import { createEffect, createReducersByState } from './_utils'
 import { deepClone } from '@/utils/object'
 import { TASKTYPES } from '@/constants/task'
 import { DatasetState, DatasetStore } from '.'
 import { List } from './typings/common.d'
-import { Backend, Dataset, ProgressTask } from '@/constants'
+import { Backend, Dataset, ImportingItem, ProgressTask } from '@/constants'
 
 const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
 
@@ -35,6 +35,10 @@ const initState = {
   publicDatasets: [],
   validDatasetCount: 0,
   trainingDatasetCount: 0,
+  importing: {
+    items: [],
+    max: ImportingMaxCount,
+  },
 }
 
 const reducers = createReducersByState<DatasetState>(initState)
@@ -433,6 +437,27 @@ const DatasetModal: DatasetStore = {
     getLocalDatasets: createEffect<number[] | undefined>(function* ({ payload: ids = [] }, { put, select }) {
       const datasets = yield select(({ dataset }) => dataset.dataset)
       return ids.map((id) => datasets[id]).filter((d) => d)
+    }),
+    addImportingList: createEffect<ImportingItem[]>(function* ({ payload: newItems }, { put, select }) {
+      const { items } = yield select(({ dataset }) => dataset.importing)
+      const updatedList = [...items, ...newItems]
+      yield put({ type: 'updateImportingList', payload: updatedList })
+    }),
+    removeImporting: createEffect<number[]>(function* ({ payload: indexs }, { put, select }) {
+      const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
+      const updatedList = items.filter((item, index) => !indexs.includes(index))
+      yield put({ type: 'updateImportingList', payload: updatedList })
+    }),
+    updateImportingList: createEffect<ImportingItem[]>(function* ({ payload: items }, { put, select }) {
+      const { max }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
+      const updatedMax = max - items.length
+      yield put({
+        type: 'UpdateImporting',
+        payload: {
+          items: items.map((item, index) => ({ ...item, index })),
+          max: updatedMax,
+        },
+      })
     }),
   },
   reducers: {

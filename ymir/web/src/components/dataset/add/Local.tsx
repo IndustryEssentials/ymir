@@ -1,16 +1,22 @@
 import { FC, useState } from 'react'
 import Uploader from '@/components/form/uploader'
-import { ImportItem, ImportSelectorProps } from '.'
 import { Types } from './AddTypes'
 import { Button } from 'antd'
+import useRequest from '@/hooks/useRequest'
+import { ImportingItem } from '@/constants'
+import { useSelector } from 'umi'
 
-const Local: FC<ImportSelectorProps> = ({ confirm }) => {
-  const [items, setItems] = useState<ImportItem[]>([])
+const Local: FC = () => {
+  const [key, setKey] = useState<number>()
+  const [items, setItems] = useState<ImportingItem[]>([])
+  const max = useSelector(({ dataset }) => dataset.importing.max)
+  const { run: addImportingList } = useRequest('dataset/addImportingList', { loading: false })
   return (
     <>
       <Uploader
+        key={key}
         max={1024}
-        maxCount={6}
+        maxCount={max}
         onChange={({ fileList }) => {
           console.log('fileList:', fileList)
           const items = fileList
@@ -24,11 +30,17 @@ const Local: FC<ImportSelectorProps> = ({ confirm }) => {
                   }
                 : undefined
             })
-            .filter<ImportItem>((item): item is ImportItem => !!item)
+            .filter<ImportingItem>((item): item is ImportingItem => !!item)
           setItems(items)
         }}
       ></Uploader>
-      <Button type="primary" onClick={() => confirm(items)}>
+      <Button
+        type="primary"
+        onClick={() => {
+          addImportingList(items)
+          setKey(Math.random())
+        }}
+      >
         Add to List
       </Button>
     </>

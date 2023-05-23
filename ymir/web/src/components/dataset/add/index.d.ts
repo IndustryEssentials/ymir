@@ -1,16 +1,9 @@
-import { TASKTYPES } from '@/constants/task'
-import { Types } from './AddTypes'
+import { ImportingItem } from '@/constants'
 
-type ImportItem = {
-  type: Types
-  name: string
-  source: string
-  sourceName: string
-}
-
-type ImportSelectorChange = (items: ImportItem[]) => void
+type ImportSelectorChange = (items: ImportingItem[]) => void
 type ImportSelectorProps = {
   confirm: ImportSelectorChange
+  max: number
 }
 
-export { ImportItem, ImportSelectorChange, ImportSelectorProps }
+export { ImportSelectorChange, ImportSelectorProps }

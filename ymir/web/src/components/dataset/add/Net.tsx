@@ -1,14 +1,18 @@
 import { urlValidator } from '@/components/form/validators'
-import { FC } from 'react'
+import { FC, useState } from 'react'
 import t from '@/utils/t'
-import { ImportSelectorProps } from '.'
 import { Types } from './AddTypes'
 import Inputs from './Inputs'
+import { useSelector } from 'umi'
+import useRequest from '@/hooks/useRequest'
 
-const Net: FC<ImportSelectorProps> = ({ confirm }) => {
+const Net: FC = () => {
+  const max = useSelector(({ dataset }) => dataset.importing.max)
+  const { run: addImportingList } = useRequest('dataset/addImportingList', { loading: false })
   return (
     <Inputs
       name="net"
+      max={max}
       confirm={(urls) => {
         const items = urls
           .filter((item) => !!item)
@@ -18,7 +22,7 @@ const Net: FC<ImportSelectorProps> = ({ confirm }) => {
             source: url,
             sourceName: url,
           }))
-        confirm(items)
+        addImportingList(items)
       }}
       rules={[
         {

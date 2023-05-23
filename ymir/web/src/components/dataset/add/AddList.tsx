@@ -1,18 +1,15 @@
+import { ImportingItem } from '@/constants'
 import useRequest from '@/hooks/useRequest'
 import { Button, Table, TableColumnsType } from 'antd'
-import { FC, useState, useEffect, useCallback } from 'react'
-import { useParams } from 'umi'
-import { ImportItem as Item } from '.'
-type Props = {
-  items: Item[]
-}
+import { FC, useCallback } from 'react'
+import { useParams, useSelector } from 'umi'
 
-const AddList: FC<Props> = ({ items }) => {
+const AddList: FC = () => {
   const params = useParams<{ id: string }>()
   const pid = Number(params.id)
-  const [list, setList] = useState<Item[]>([])
+  const { items: list } = useSelector(({ dataset }) => dataset.importing)
   const { run: batchImport } = useRequest('task/batchAdd')
-  const columns: TableColumnsType<Item> = [
+  const columns: TableColumnsType<ImportingItem> = [
     {
       title: 'Type',
       dataIndex: 'type',
@@ -36,16 +33,12 @@ const AddList: FC<Props> = ({ items }) => {
     },
   ]
 
-  useEffect(() => {
-    setList((list) => [...list, ...items])
-  }, [items])
-
   const batch = useCallback(() => {
-    batchImport({ pid, items })
-  }, [items])
+    batchImport({ pid, items: list })
+  }, [list])
   return (
     <>
-      <Table rowKey={(item) => item.type + item.source} dataSource={list} columns={columns} pagination={false} />
+      <Table rowKey={(item) => item.index || 0} dataSource={list} columns={columns} pagination={false} />
       <Button type="primary" onClick={batch}>
         Batch Import
       </Button>
