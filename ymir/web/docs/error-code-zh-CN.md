@@ -757,16 +757,6 @@ ymir-controller 组件错误
 
 1. 检查 ymir-workplace/ymir-data/logs/ymir_controller.log 以获得更详细的错误信息
 
-### 110708
-
-#### 描述
-
-LabelStudio 不支持分割标注任务
-
-#### 建议处理方式
-
-1. 请使用 LabelFree 标注分割数据集
-
 ### 110901
 
 #### 描述
