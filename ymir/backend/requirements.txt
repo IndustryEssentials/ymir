@@ -33,3 +33,4 @@ statsd==3.3.0
 supervisor==4.2.2
 websockets==10.3
 uvicorn==0.20.0
+typing-extensions==4.5.0
