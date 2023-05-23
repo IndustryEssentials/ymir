@@ -117,7 +117,6 @@ YMIR supports deploying the trained model and public algorithm model directly to
 - [2. Installation](#2-installation)
   - [2.1. Environment dependencies](#21-environment-dependencies)
   - [2.2. Installation of YMIR-GUI](#22-installation-of-ymir-gui)
-  - [2.3. Installation of label studio (optional)](#23-installation-of-label-studio-optional)
 - [3. Use YMIR-GUI: typical model production process](#3-use-ymir-gui-typical-model-production-process)
 - [4. For advanced users: YMIR-CMD (command line) user's guide](#4-for-advanced-users-ymir-cmd-command-line-users-guide)
   - [4.1 Installation](#41-installation)
@@ -273,7 +272,6 @@ git clone https://github.com/IndustryEssentials/ymir.git
 3. If you do not need to use the **label free** labeling platform, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
 
 * When the service starts, it asks the user if they want to send usage reports to the YMIR development team, the default is yes if you do not enter it.
-* Choose between label_free and label_studio for labelling platform.
 * The default port number for YMIR's Model Deployment module is 18801. If there is a conflict that needs to be modified, you need to go to the YMIR directory and modify the .env file to configure the ModelDeployment port and MySQL access password:
 
 ```
@@ -306,38 +304,6 @@ EMAILS_FROM_EMAIL= <SENDER EMAIL ADDRESS>
 EMAILS_FROM_NAME=ymir-project
 EMAIL_RESET_TOKEN_EXPIRE_HOURS=1
 EMAIL_TEMPLATES_DIR=/app/email-templates/build
-```
-
-## 2.3. Installation of **Label Studio** (optional)
-
-**Label Sudio** is also an external labeling system supported by YMIR and can be installed as an alternative labeling tool.
-
-1. In the YMIR directory, modify Env file, set LABEL_TOOL to label_studio
-
-```
-LABEL_TOOL=label_studio
-```
-
-2. After configuring the label tool (LABEL_TOOL) start the installation of label studio command:
-
-```sh
-docker-compose -f docker-compose.label_studio.yml up -d
-```
-
-It is recommended not to use the `sudo` command, as it may result in insufficient privileges.
-
-3. Check the status of label studio:
-
-```sh
-docker-compose -f docker-compose.label_studio.yml ps
-```
-
-The user can access label studio through the default URL [http://localhost:8763/](http://localhost:8763/). The installation is successful if the login page shows up.
-
-4. The command to stop the label studio service is:
-
-```sh
-docker-compose -f docker-compose.label_studio.yml down
 ```
 
 # 3. Use YMIR-GUI: typical model production process

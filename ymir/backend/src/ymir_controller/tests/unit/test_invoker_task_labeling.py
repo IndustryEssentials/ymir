@@ -11,7 +11,6 @@ import requests
 import tests.utils as test_utils
 from common_utils import labels
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
-from controller.label_model import label_studio
 from controller.label_model.label_free import LabelFree
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
@@ -113,7 +112,7 @@ class TestTaskLabelingInvoker:
         mock_resp.content = json.dumps({"num_tasks_with_annotations": 1, "task_number": 10})
         mocker.patch.object(requests, "get", return_value=mock_resp)
 
-        res = label_studio.LabelStudio().get_task_completion_percent(1)
+        res = LabelFree().get_task_completion_percent(1)
 
         assert res == 0.1
 
@@ -122,6 +121,6 @@ class TestTaskLabelingInvoker:
 
         mock_resp.content = json.dumps({"num_tasks_with_annotations": 0, "task_number": 0})
         mocker.patch.object(requests, "get", return_value=mock_resp)
-        res = label_studio.LabelStudio().get_task_completion_percent(1)
+        res = LabelFree().get_task_completion_percent(1)
 
         assert res == 1.0

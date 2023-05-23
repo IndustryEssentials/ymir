@@ -118,7 +118,6 @@ YYMIR支持将训练好的模型直接部署到认证设备，需要查看更多
 - [2. 安装](#2-%E5%AE%89%E8%A3%85)
   - [2.1. 环境依赖](#21-%E7%8E%AF%E5%A2%83%E4%BE%9D%E8%B5%96)
   - [2.2. 安装 YMIR-GUI](#22-%E5%AE%89%E8%A3%85-ymir-gui)
-  - [2.3. 安装配置LabelStudio （可选）](#23-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AElabelstudio-%E5%8F%AF%E9%80%89)
 - [3. GUI使用-典型模型生产流程](#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B)
 - [4. 进阶版：Ymir-CMD line使用指南](#4-%E8%BF%9B%E9%98%B6%E7%89%88ymir-cmd-line%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)
   - [4.1 安装](#41-%E5%AE%89%E8%A3%85)
@@ -267,7 +266,6 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 3. 执行启动命令：`bash ymir.sh start`，建议不要使用```sudo```命令，否则可能会造成权限不足。
 
 *  服务启动时会询问用户是否愿意发送使用报告到YMIR开发团队，不输入默认为愿意。
-*  当询问用户是否需要启动标注平台时，用户可以选择 label_free 或 label_studio
 *  YMIR的模型部署模块默认端口号为18801，如有冲突需要修改，则需要前往YMIR目录下修改.env文件，配置 ModelDeployment 端口和 MySQL 访问密码：
 
 ```
@@ -300,36 +298,6 @@ EMAILS_FROM_EMAIL= <SENDER EMAIL ADDRESS>
 EMAILS_FROM_NAME=ymir-project
 EMAIL_RESET_TOKEN_EXPIRE_HOURS=1
 EMAIL_TEMPLATES_DIR=/app/email-templates/build
-```
-
-## 2.3. 安装配置LabelStudio （可选）
-
-label studio同时也是YMIR所支持的外接标注系统，可以作为备选标注工具安装。
-
-1. 在上一节的YMIR目录下，修改.env文件，配置 LABEL_TOOL
-
-```
-LABEL_TOOL=label_studio
-```
-
-2. 配置好标注工具（LABEL_TOOL）后启动安装 label studio 命令如下：
-
-```sh
-docker-compose -f docker-compose.label_studio.yml up -d
-```
-
-3. 完成后查看label studio状态命令如下：
-
-```sh
-docker-compose -f docker-compose.label_studio.yml ps`
-```
-
-可以登录默认地址 [http://localhost:8763/](http://localhost:8763/) 显示登录界面即安装成功。
-
-4. 停止label studio服务命令如下：
-
-```sh
-docker-compose -f docker-compose.label_studio.yml down
 ```
 
 # 3. GUI使用-典型模型生产流程

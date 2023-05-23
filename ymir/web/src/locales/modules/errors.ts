@@ -45,7 +45,6 @@ const errors = {
   'error110703': { cn: '任务未授权访问', en: 'Task inaccessable', },
   'error110704': { cn: '任务创建失败', en: 'TASK_FAILED_TO_CREATE: failed to create task', },
   'error110707': { cn: '无法终止任务', en: 'Failed to terminate task', },
-  'error110708': { cn: 'LabelStudio 暂不支持分割标注任务', en: 'Segmentation dataset label is not supported by Label Studio', },
   'error111001': { cn: '重复的类别名称或别名', en: 'KEYWORD_DUPLICATED: duplicated keyword or aliases', },
   'error110901': { cn: '调用推理失败', en: 'INFERENCE_FAILED_TO_CALL: failed to call inference', },
   'error110902': { cn: '推理镜像配置错误', en: 'Inference docker image configuration error', },
