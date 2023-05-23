@@ -59,7 +59,7 @@ class LabelFree(LabelBase):
         mapping = {
             mir_cmd_pb.ObjectType.OT_DET: LabelFreeProjectType.detection,
             mir_cmd_pb.ObjectType.OT_SEM_SEG: LabelFreeProjectType.semantic_segmentation,
-            mir_cmd_pb.ObjectType.OT_INS_SEG: LabelFreeProjectType.instance_segmentation
+            mir_cmd_pb.ObjectType.OT_INS_SEG: LabelFreeProjectType.instance_segmentation,
             # FIXME: ad hoc, ymir only supports detection + multimodal for now
             mir_cmd_pb.ObjectType.OT_MULTI_MODAL: LabelFreeProjectType.detection,
         }
@@ -76,7 +76,6 @@ class LabelFree(LabelBase):
         # Create a project and set up the labeling interface
         url_path = "/api/projects"
         label_config = self.gen_detection_label_config(keywords)
-        # FIXME
         data = dict(
             title=project_name,
             collaborators=collaborators,
@@ -90,6 +89,7 @@ class LabelFree(LabelBase):
         if not isinstance(project_id, int):
             raise ValueError(f"LabelFree return wrong id: {project_id} from {url_path}")
 
+        logging.info(f"[label] created LabelFree project({project_id}) with payload: {data}")
         return project_id
 
     def set_import_storage(self, project_id: int, import_path: str, use_pre_annotation: bool = False) -> int:
