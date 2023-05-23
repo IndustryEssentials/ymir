@@ -106,6 +106,7 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     TaskTypeDatasetInfer = TaskType.V(15)
     TaskTypeEvaluate = TaskType.V(16)
     TaskTypePullImage = TaskType.V(17)
+    TaskTypeExcludeData = TaskType.V(18)
 
 TaskTypeUnknown = TaskType.V(0)
 TaskTypeTraining = TaskType.V(1)
@@ -127,6 +128,7 @@ TaskTypeCopyModel = TaskType.V(14)
 TaskTypeDatasetInfer = TaskType.V(15)
 TaskTypeEvaluate = TaskType.V(16)
 TaskTypePullImage = TaskType.V(17)
+TaskTypeExcludeData = TaskType.V(18)
 global___TaskType = TaskType
 
 

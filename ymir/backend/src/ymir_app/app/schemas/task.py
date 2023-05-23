@@ -186,6 +186,10 @@ class MergeParameter(FusionParameterBase):
         return values
 
 
+class ExcludeParameter(FusionParameterBase):
+    task_type: Literal["exclude_data"]
+
+
 class FilterParameter(FusionParameterBase):
     task_type: Literal["filter"]
 
@@ -232,6 +236,7 @@ TaskParameter = Annotated[
         InferParameter,
         FusionParameter,
         MergeParameter,
+        ExcludeParameter,
         FilterParameter,
         ImportDatasetParameter,
         CopyDatasetParameter,

@@ -282,6 +282,10 @@ class ControllerRequest:
         # need different app type for web, controller use same endpoint
         return self.prepare_data_fusion(request, args)
 
+    def prepare_exclude_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        # need different app type for web, controller use same endpoint
+        return self.prepare_data_fusion(request, args)
+
     def prepare_filter(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         # need different app type for web, controller use same endpoint
         return self.prepare_data_fusion(request, args)
