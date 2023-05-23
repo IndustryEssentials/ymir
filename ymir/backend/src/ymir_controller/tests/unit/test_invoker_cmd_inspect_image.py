@@ -117,7 +117,7 @@ class TestInvokerInspectImage(unittest.TestCase):
 
         config_dirs = ['/img-man/det', '/img-man/instance-seg']
         config_names = ['training-template.yaml', 'mining-template.yaml', 'infer-template.yaml']
-        config_paths = ['/img-man/manifest.yaml',]
+        config_paths = ['/img-man/manifest.yaml']
         config_paths.extend([f"{d}/{n}" for d in config_dirs for n in config_names])
         expected_calls_list = [
             mock.call(
