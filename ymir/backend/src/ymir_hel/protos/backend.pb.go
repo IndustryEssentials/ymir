@@ -1251,7 +1251,7 @@ func (x *TaskReqExporting) GetFormat() ImportExportFormat {
 	if x != nil {
 		return x.Format
 	}
-	return ImportExportFormat_IEF_NO_ANNOTATIONS
+	return ImportExportFormat_IEF_NO_ANNOS
 }
 
 func (x *TaskReqExporting) GetAssetDir() string {
@@ -2058,7 +2058,7 @@ func (x *HelTaskRequestImportDataset) GetAnnoFormat() ImportExportFormat {
 	if x != nil {
 		return x.AnnoFormat
 	}
-	return ImportExportFormat_IEF_NO_ANNOTATIONS
+	return ImportExportFormat_IEF_NO_ANNOS
 }
 
 func (x *HelTaskRequestImportDataset) GetUnknownTypesStrategy() UnknownTypesStrategy {
@@ -2143,7 +2143,7 @@ func (x *HelTaskRequestExportDataset) GetAnnoFormat() ImportExportFormat {
 	if x != nil {
 		return x.AnnoFormat
 	}
-	return ImportExportFormat_IEF_NO_ANNOTATIONS
+	return ImportExportFormat_IEF_NO_ANNOS
 }
 
 type HelTaskRequestImportModel struct {

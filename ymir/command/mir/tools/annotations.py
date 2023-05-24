@@ -39,7 +39,7 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.ImportExportFormat.V":
         "det-ark": mirpb.ImportExportFormat.IEF_ARK_TXT,
         "seg-coco": mirpb.ImportExportFormat.IEF_COCO_JSON,
     }
-    return _anno_dict.get(anno_format_str.lower(), mirpb.ImportExportFormat.IEF_NO_ANNOTATIONS)
+    return _anno_dict.get(anno_format_str.lower(), mirpb.ImportExportFormat.IEF_NO_ANNOS)
 
 
 def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":

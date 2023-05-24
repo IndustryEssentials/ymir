@@ -197,7 +197,7 @@ def _export_mirdatas_to_raw(
             shutil.copyfile(asset_src_file, asset_abs_file)
         index_asset_f.write(f"{asset_idx_file}\n")
 
-    if ec.anno_format != mirpb.ImportExportFormat.IEF_NO_ANNOTATIONS and mir_annotations:
+    if ec.anno_format != mirpb.ImportExportFormat.IEF_NO_ANNOS and mir_annotations:
         # export annotations
         _output_func = _task_annotations_output_func(ec.anno_format)
         if ec.pred_dir:

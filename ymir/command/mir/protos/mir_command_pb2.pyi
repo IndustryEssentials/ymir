@@ -274,12 +274,12 @@ class _ImportExportFormat:
     V = typing.NewType('V', builtins.int)
 class _ImportExportFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ImportExportFormat.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    IEF_NO_ANNOTATIONS = ImportExportFormat.V(0)
+    IEF_NO_ANNOS = ImportExportFormat.V(0)
     IEF_VOC_XML = ImportExportFormat.V(1)
     IEF_ARK_TXT = ImportExportFormat.V(2)
     IEF_COCO_JSON = ImportExportFormat.V(4)
 
-IEF_NO_ANNOTATIONS = ImportExportFormat.V(0)
+IEF_NO_ANNOS = ImportExportFormat.V(0)
 IEF_VOC_XML = ImportExportFormat.V(1)
 IEF_ARK_TXT = ImportExportFormat.V(2)
 IEF_COCO_JSON = ImportExportFormat.V(4)
