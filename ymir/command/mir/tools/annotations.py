@@ -46,8 +46,8 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
 
 def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":
     _anno_dict: Dict[str, "mirpb.ObjectType.V"] = {
-        "det": mirpb.ObjectType.OT_DET_BOX,
-        "sem-seg": mirpb.ObjectType.OT_SEG,
+        "det": mirpb.ObjectType.OT_DET,
+        "sem-seg": mirpb.ObjectType.OT_SEM_SEG,
         "ins-seg": mirpb.ObjectType.OT_INS_SEG,
         "multi-modal": mirpb.ObjectType.OT_MULTI_MODAL,
         "no-annos": mirpb.ObjectType.OT_NO_ANNOS,
@@ -66,8 +66,8 @@ def anno_type_from_str(anno_type_str: str) -> "mirpb.AnnotationType.V":
 
 def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
     _func_dict: Dict["mirpb.ObjectType.V", Callable] = {
-        mirpb.ObjectType.OT_DET_BOX: _import_annotations_voc_xml,
-        mirpb.ObjectType.OT_SEG: import_annotations_coco_json,
+        mirpb.ObjectType.OT_DET: _import_annotations_voc_xml,
+        mirpb.ObjectType.OT_SEM_SEG: import_annotations_coco_json,
         mirpb.ObjectType.OT_INS_SEG: import_annotations_coco_json,
         mirpb.ObjectType.OT_MULTI_MODAL: import_annotations_coco_json,
         mirpb.ObjectType.OT_NO_ANNOS: _import_no_annotations,

@@ -94,7 +94,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
                                          sandbox_root=self._sandbox_root,
                                          assets_config=assets_config,
                                          req_type=backend_pb2.TASK_CREATE,
-                                         object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
+                                         object_type=mir_cmd_pb.ObjectType.OT_DET,
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,

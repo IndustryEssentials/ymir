@@ -71,7 +71,7 @@ class TestMirStorage(unittest.TestCase):
         dict_annotations = {
             "prediction": {
                 'task_id': 'mining-task-id',
-                'type': mirpb.ObjectType.OT_DET_BOX,
+                'type': mirpb.ObjectType.OT_DET,
                 "image_annotations": {
                     "a001": {
                         'boxes': [{

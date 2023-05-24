@@ -87,8 +87,8 @@ class MiningStrategy(IntEnum):
 class ObjectType(IntEnum):
     unknown = mir_cmd_pb.ObjectType.OT_UNKNOWN  # 0
     classification = mir_cmd_pb.ObjectType.OT_CLASS  # 1
-    object_detect = mir_cmd_pb.ObjectType.OT_DET_BOX  # 2
-    segmentation = mir_cmd_pb.ObjectType.OT_SEG  # 3
+    object_detect = mir_cmd_pb.ObjectType.OT_DET  # 2
+    segmentation = mir_cmd_pb.ObjectType.OT_SEM_SEG  # 3
     instance_segmentation = mir_cmd_pb.ObjectType.OT_INS_SEG  # 4
     multi_modal = mir_cmd_pb.ObjectType.OT_MULTI_MODAL  # 50
 

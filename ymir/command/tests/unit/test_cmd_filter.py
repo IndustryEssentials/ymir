@@ -100,7 +100,7 @@ class TestCmdFilter(unittest.TestCase):
                     "a0000000000000000000000000000000000000000000000004":
                     TestCmdFilter.__annotations_for_single_image([0, 1]),
                 },
-                "type": mirpb.ObjectType.OT_DET_BOX,
+                "type": mirpb.ObjectType.OT_DET,
             },
             "ground_truth": {
                 "image_annotations": {
@@ -115,7 +115,7 @@ class TestCmdFilter(unittest.TestCase):
                     "a0000000000000000000000000000000000000000000000004":
                     TestCmdFilter.__annotations_for_single_image([0, 4]),
                 },
-                "type": mirpb.ObjectType.OT_DET_BOX,
+                "type": mirpb.ObjectType.OT_DET,
             },
             'image_cks': {
                 'a0000000000000000000000000000000000000000000000000': {

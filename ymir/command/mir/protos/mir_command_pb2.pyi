@@ -218,10 +218,10 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_CLASS = ObjectType.V(1)
     """Classification with class id, not implemented."""
 
-    OT_DET_BOX = ObjectType.V(2)
+    OT_DET = ObjectType.V(2)
     """Detection w. bounding box."""
 
-    OT_SEG = ObjectType.V(3)
+    OT_SEM_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
     OT_INS_SEG = ObjectType.V(4)
@@ -234,10 +234,10 @@ OT_UNKNOWN = ObjectType.V(0)
 OT_CLASS = ObjectType.V(1)
 """Classification with class id, not implemented."""
 
-OT_DET_BOX = ObjectType.V(2)
+OT_DET = ObjectType.V(2)
 """Detection w. bounding box."""
 
-OT_SEG = ObjectType.V(3)
+OT_SEM_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
 
 OT_INS_SEG = ObjectType.V(4)
@@ -256,13 +256,13 @@ class _ObjectSubTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
     OST_NOTSET = ObjectSubType.V(0)
     OST_SEG_MASK = ObjectSubType.V(30)
-    """OT_SEG sub types"""
+    """OT_SEM_SEG sub types"""
 
     OST_SEG_POLYGON = ObjectSubType.V(31)
 
 OST_NOTSET = ObjectSubType.V(0)
 OST_SEG_MASK = ObjectSubType.V(30)
-"""OT_SEG sub types"""
+"""OT_SEM_SEG sub types"""
 
 OST_SEG_POLYGON = ObjectSubType.V(31)
 global___ObjectSubType = ObjectSubType

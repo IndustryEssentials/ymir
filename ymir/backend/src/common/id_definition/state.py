@@ -39,8 +39,8 @@ class ResultState(IntEnum):
 class ObjectType(IntEnum):
     unknown = mir_cmd_pb.OT_UNKNOWN
     classification = mir_cmd_pb.OT_CLASS
-    object_detect = mir_cmd_pb.OT_DET_BOX
-    segmentation = mir_cmd_pb.OT_SEG
+    object_detect = mir_cmd_pb.OT_DET
+    segmentation = mir_cmd_pb.OT_SEM_SEG
     instance_segmentation = 4
 
 

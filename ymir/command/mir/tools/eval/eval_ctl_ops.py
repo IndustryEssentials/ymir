@@ -15,7 +15,7 @@ def evaluate_datasets(
     gt_mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
         mir_root=mir_root, mir_branch=gt_rev_tid.rev, mir_task_id=gt_rev_tid.tid, ms=mirpb.MirStorage.MIR_ANNOTATIONS)
     ground_truth = gt_mir_annotations.ground_truth
-    if ground_truth.type in {mirpb.ObjectType.OT_SEG, mirpb.ObjectType.OT_INS_SEG}:
+    if ground_truth.type in {mirpb.ObjectType.OT_SEM_SEG, mirpb.ObjectType.OT_INS_SEG}:
         assets_metadata = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
                                                                             mir_branch=gt_rev_tid.rev,
                                                                             mir_task_id=gt_rev_tid.tid,

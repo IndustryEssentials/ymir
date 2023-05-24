@@ -58,7 +58,7 @@ def _update_model_110_200(model_info_path: str) -> None:
         'task_context': task_context_dict,
         'stages': model_stage_dict,
         'best_stage_name': best_stage_name,
-        'object_type': mirpb.ObjectType.OT_DET_BOX,
+        'object_type': mirpb.ObjectType.OT_DET,
         'package_version': '2.0.0',
     }
 
