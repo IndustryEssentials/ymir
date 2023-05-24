@@ -415,12 +415,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
           </Form.Item>
         </Form>
       </div>
-      <FormatDetailModal
-        title={t('dataset.add.form.tip.format.detail')}
-        visible={formatDetailModal}
-        objectType={project.type}
-        onCancel={() => setFormatDetailModal(false)}
-      />
+      <FormatDetailModal title={t('dataset.add.form.tip.format.detail')} visible={formatDetailModal} onCancel={() => setFormatDetailModal(false)} />
     </Card>
   )
 }
