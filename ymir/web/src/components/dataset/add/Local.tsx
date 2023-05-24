@@ -1,18 +1,21 @@
-import { FC, useState } from 'react'
-import Uploader from '@/components/form/uploader'
+import { FC, useEffect, useState } from 'react'
+import { useSelector } from 'umi'
 import { Types } from './AddTypes'
-import { Button } from 'antd'
+import { Button, Form } from 'antd'
 import useRequest from '@/hooks/useRequest'
 import { ImportingItem } from '@/constants'
-import { useSelector } from 'umi'
+import t from '@/utils/t'
+import Uploader from '@/components/form/uploader'
+import Tip from './Tip'
 
 const Local: FC = () => {
   const [key, setKey] = useState<number>()
   const [items, setItems] = useState<ImportingItem[]>([])
   const max = useSelector(({ dataset }) => dataset.importing.max)
   const { run: addImportingList } = useRequest('dataset/addImportingList', { loading: false })
+
   return (
-    <>
+    <Form.Item label={t('dataset.add.form.upload.btn')}>
       <Uploader
         key={key}
         max={1024}
@@ -33,6 +36,7 @@ const Local: FC = () => {
             .filter<ImportingItem>((item): item is ImportingItem => !!item)
           setItems(items)
         }}
+        info={<Tip type={Types.LOCAL} />}
       ></Uploader>
       <Button
         type="primary"
@@ -43,7 +47,7 @@ const Local: FC = () => {
       >
         Add to List
       </Button>
-    </>
+    </Form.Item>
   )
 }
 

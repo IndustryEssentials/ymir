@@ -239,14 +239,10 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
       : t('common.empty.keywords')
   }
 
-  function showFormatDetail() {
-    setFormatDetailModal(true)
-  }
-
   const structureTip = t('dataset.add.form.tip.structure', {
     br: <br />,
     pic: <img src={samplePic} />,
-    detail: <Button onClick={showFormatDetail}>{t('dataset.add.form.tip.format.detail')}</Button>,
+    detail: <Button onClick={() => setFormatDetailModal(true)}>{t('dataset.add.form.tip.format.detail')}</Button>,
   })
 
   const renderTip = (type: string, params = {}) =>

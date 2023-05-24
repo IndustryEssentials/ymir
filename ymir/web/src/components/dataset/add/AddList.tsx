@@ -4,33 +4,66 @@ import { Button, Table, TableColumnsType } from 'antd'
 import { FC, useCallback } from 'react'
 import { useParams, useSelector } from 'umi'
 import t from '@/utils/t'
+import EditCell from '@/components/form/EditCell'
+import StrategyRadio from './StrategyRadio'
+import { getTypeLabel } from './AddTypes'
 
 const AddList: FC = () => {
   const params = useParams<{ id: string }>()
   const pid = Number(params.id)
   const { items: list } = useSelector(({ dataset }) => dataset.importing)
   const { run: batchImport } = useRequest('task/batchAdd')
-  const { run: remove } = useRequest<null, [(number | undefined)[]]>('dataset/removeImporting')
+  const { run: remove } = useRequest<null, [(number | undefined)[]]>('dataset/removeImporting', { loading: false })
+  const { run: updateImportingItem } = useRequest('dataset/updateImportingItem', { loading: false })
   const columns: TableColumnsType<ImportingItem> = [
     {
-      title: 'Type',
+      title: t('dataset.add.form.type.label'),
       dataIndex: 'type',
       width: 200,
+      render(type) {
+        return t(getTypeLabel(type))
+      },
     },
     {
-      title: 'Name',
+      title: t('dataset.add.form.name.label'),
       dataIndex: 'name',
       width: 300,
+      render(name, item) {
+        return (
+          <EditCell
+            value={name}
+            onChange={(updatedName) => {
+              updateImportingItem({
+                ...item,
+                name: updatedName,
+              })
+            }}
+            validate={(value) => {
+              return true
+            }}
+          />
+        )
+      },
     },
     {
       title: 'Source(url/path/file name/dataset name)',
       dataIndex: 'sourceName',
     },
     {
-      title: 'Annotations',
+      title: t('dataset.add.form.label.label'),
       dataIndex: 'strategy',
-      render: () => {
-        return <>all/none/ignore</>
+      render: (strategy, item) => {
+        return (
+          <StrategyRadio
+            type={item.type}
+            onChange={({ target }) => {
+              updateImportingItem({
+                ...item,
+                strategy: target.value,
+              })
+            }}
+          />
+        )
       },
     },
     {

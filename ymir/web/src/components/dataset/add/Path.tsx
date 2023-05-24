@@ -4,6 +4,7 @@ import { Types } from './AddTypes'
 import Inputs from './Inputs'
 import { useSelector } from 'umi'
 import useRequest from '@/hooks/useRequest'
+import Tip from './Tip'
 
 const Path: FC = () => {
   const max = useSelector(({ dataset }) => dataset.importing.max)
@@ -29,13 +30,7 @@ const Path: FC = () => {
           message: t('dataset.add.form.path.placeholder'),
         },
       ]}
-      tip={
-        <p>
-          {
-            //renderTip('path')
-          }
-        </p>
-      }
+      tip={<Tip type={Types.PATH} />}
     />
   )
 }

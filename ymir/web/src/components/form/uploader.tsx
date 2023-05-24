@@ -1,5 +1,5 @@
 import { Button, ButtonProps, message, Upload } from 'antd'
-import { useState, useEffect, FC } from 'react'
+import { useState, useEffect, FC, ReactNode } from 'react'
 import ImgCrop from 'antd-img-crop'
 
 import { CloudUploadOutlined } from '@ant-design/icons'
@@ -16,7 +16,7 @@ type Props = Omit<UploadProps, 'fileList'> & {
   format?: string
   label?: string
   max?: number
-  info?: string
+  info?: ReactNode
   crop?: boolean
   btnProps?: ButtonProps
 }

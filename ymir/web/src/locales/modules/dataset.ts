@@ -105,7 +105,7 @@ const dataset = {
   },
   'dataset.add.form.path.placeholder': { cn: '请输入路径', en: 'Please input path on server' },
   'dataset.add.form.upload.btn': { cn: '上传文件', en: 'Upload' },
-  'dataset.add.form.upload.tip': {
+  'dataset.add.form.local.tip': {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
       3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，格式不符的图片将不会导入，标注文件格式为{format}。{br}

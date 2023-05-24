@@ -6,6 +6,12 @@ export enum Types {
   PATH = 5,
 }
 
-export function isType(type: Types) {
-  return type === Types.COPY
+const typesLabel = {
+  [Types.LOCAL]: 'local',
+  [Types.NET]: 'net',
+  [Types.PATH]: 'path',
+  [Types.COPY]: 'copy',
+  [Types.INTERNAL]: 'internal',
 }
+
+export const getTypeLabel = (type: Types, prefix: boolean = true) => `${prefix ? 'dataset.add.types.' : ''}${typesLabel[type]}`

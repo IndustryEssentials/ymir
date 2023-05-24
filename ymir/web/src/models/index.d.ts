@@ -50,6 +50,7 @@ interface DatasetState {
   importing: {
     items: ImportingItem[]
     max: number
+    formatVisible?: boolean
   }
 }
 

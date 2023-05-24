@@ -5,6 +5,7 @@ import { Types } from './AddTypes'
 import Inputs from './Inputs'
 import { useSelector } from 'umi'
 import useRequest from '@/hooks/useRequest'
+import Tip from './Tip'
 
 const Net: FC = () => {
   const max = useSelector(({ dataset }) => dataset.importing.max)
@@ -31,7 +32,7 @@ const Net: FC = () => {
         },
         { validator: urlValidator },
       ]}
-      tip={<p>hello</p>}
+      tip={<Tip type={Types.NET} />}
     />
   )
 }

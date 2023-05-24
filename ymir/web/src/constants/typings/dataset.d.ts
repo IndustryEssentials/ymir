@@ -1,4 +1,5 @@
 import { Types } from '@/components/dataset/add/AddTypes'
+import { IMPORTSTRATEGY } from '../dataset'
 import { Classes, ClassesCount } from './class'
 import { Group, Result } from './common'
 
@@ -74,6 +75,7 @@ type ImportingItem = {
   name: string
   source: string
   sourceName: string
+  strategy?: IMPORTSTRATEGY
 }
 
 export {

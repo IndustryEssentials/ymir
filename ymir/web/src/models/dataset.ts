@@ -448,6 +448,12 @@ const DatasetModal: DatasetStore = {
       const updatedList = items.filter((item, index) => !indexs.includes(index))
       yield put({ type: 'updateImportingList', payload: updatedList })
     }),
+    updateImportingItem: createEffect<ImportingItem>(function* ({ payload: item }, { put, select }) {
+      const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
+      const updatedList = items.map((old) => (old.index === item.index ? item : old))
+      console.log('updatedList:', updatedList, item)
+      yield put({ type: 'updateImportingList', payload: updatedList })
+    }),
     updateImportingList: createEffect<ImportingItem[]>(function* ({ payload: items }, { put }) {
       const updatedMax = ImportingMaxCount - items.length
       yield put({
@@ -457,6 +463,11 @@ const DatasetModal: DatasetStore = {
           max: updatedMax,
         },
       })
+    }),
+    showFormatDetail: createEffect<boolean>(function* ({ payload: visible }, { put, select }) {
+      // const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
+
+      yield put({ type: 'UpdateImporting', payload: { formatVisible: visible } })
     }),
   },
   reducers: {
