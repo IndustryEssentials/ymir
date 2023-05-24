@@ -12,7 +12,9 @@ import SubmitBtn from './SubmitBtn'
 import { Button } from 'antd'
 import useRequest from '@/hooks/useRequest'
 import { ImportingItem } from '@/constants'
-import { useSelector } from 'umi'
+import t from '@/utils/t'
+import Uploader from '@/components/form/uploader'
+import Tip from './Tip'
 
 const Local: FC = () => {
   const [form] = Form.useForm()
