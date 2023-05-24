@@ -76,13 +76,13 @@ def sub_task_id(task_id: str, offset: int) -> str:
     return task_id[0] + str(offset) + task_id[2:]
 
 
-def annotation_format_str(format: mir_cmd_pb.ExportFormat) -> str:
+def annotation_format_str(format: mir_cmd_pb.ImportExportFormat) -> str:
     format_enum_dict = {
-        mir_cmd_pb.ExportFormat.EF_NO_ANNOTATIONS: 'none',
-        mir_cmd_pb.ExportFormat.EF_VOC_XML: 'det-voc',
-        mir_cmd_pb.ExportFormat.EF_ARK_TXT: 'det-ark',
-        mir_cmd_pb.ExportFormat.EF_LS_JSON: 'det-ls-json',
-        mir_cmd_pb.ExportFormat.EF_COCO_JSON: 'seg-coco',
+        mir_cmd_pb.ImportExportFormat.IEF_NO_ANNOTATIONS: 'none',
+        mir_cmd_pb.ImportExportFormat.IEF_VOC_XML: 'det-voc',
+        mir_cmd_pb.ImportExportFormat.IEF_ARK_TXT: 'det-ark',
+        mir_cmd_pb.ImportExportFormat.IEF_LS_JSON: 'det-ls-json',
+        mir_cmd_pb.ImportExportFormat.IEF_COCO_JSON: 'seg-coco',
     }
     return format_enum_dict[format]
 

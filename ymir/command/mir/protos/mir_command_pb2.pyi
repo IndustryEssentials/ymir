@@ -268,24 +268,24 @@ OST_SEG_POLYGON = ObjectSubType.V(31)
 global___ObjectSubType = ObjectSubType
 
 
-class ExportFormat(_ExportFormat, metaclass=_ExportFormatEnumTypeWrapper):
+class ImportExportFormat(_ImportExportFormat, metaclass=_ImportExportFormatEnumTypeWrapper):
     pass
-class _ExportFormat:
+class _ImportExportFormat:
     V = typing.NewType('V', builtins.int)
-class _ExportFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ExportFormat.V], builtins.type):
+class _ImportExportFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ImportExportFormat.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    EF_NO_ANNOTATIONS = ExportFormat.V(0)
-    EF_VOC_XML = ExportFormat.V(1)
-    EF_ARK_TXT = ExportFormat.V(2)
-    EF_LS_JSON = ExportFormat.V(3)
-    EF_COCO_JSON = ExportFormat.V(4)
+    IEF_NO_ANNOTATIONS = ImportExportFormat.V(0)
+    IEF_VOC_XML = ImportExportFormat.V(1)
+    IEF_ARK_TXT = ImportExportFormat.V(2)
+    IEF_LS_JSON = ImportExportFormat.V(3)
+    IEF_COCO_JSON = ImportExportFormat.V(4)
 
-EF_NO_ANNOTATIONS = ExportFormat.V(0)
-EF_VOC_XML = ExportFormat.V(1)
-EF_ARK_TXT = ExportFormat.V(2)
-EF_LS_JSON = ExportFormat.V(3)
-EF_COCO_JSON = ExportFormat.V(4)
-global___ExportFormat = ExportFormat
+IEF_NO_ANNOTATIONS = ImportExportFormat.V(0)
+IEF_VOC_XML = ImportExportFormat.V(1)
+IEF_ARK_TXT = ImportExportFormat.V(2)
+IEF_LS_JSON = ImportExportFormat.V(3)
+IEF_COCO_JSON = ImportExportFormat.V(4)
+global___ImportExportFormat = ImportExportFormat
 
 
 class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
@@ -1587,7 +1587,7 @@ class ExportConfig(google.protobuf.message.Message):
 
     media_location: typing.Text = ...
     need_sub_folder: builtins.bool = ...
-    anno_format: global___ExportFormat.V = ...
+    anno_format: global___ImportExportFormat.V = ...
     """Annotation config."""
 
     gt_dir: typing.Text = ...
@@ -1605,7 +1605,7 @@ class ExportConfig(google.protobuf.message.Message):
         asset_index_prefix : typing.Text = ...,
         media_location : typing.Text = ...,
         need_sub_folder : builtins.bool = ...,
-        anno_format : global___ExportFormat.V = ...,
+        anno_format : global___ImportExportFormat.V = ...,
         gt_dir : typing.Text = ...,
         gt_index_file : typing.Text = ...,
         gt_index_prefix : typing.Text = ...,

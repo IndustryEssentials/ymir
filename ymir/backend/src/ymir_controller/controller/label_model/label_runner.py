@@ -39,8 +39,8 @@ def get_mir_export_fmt(label_tool: str, object_type: int) -> str:
             mir_cmd_pb.ObjectType.OT_INS_SEG,
             mir_cmd_pb.ObjectType.OT_MULTI_MODAL,
     }:
-        return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_COCO_JSON)
-    return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
+        return utils.annotation_format_str(mir_cmd_pb.ImportExportFormat.IEF_COCO_JSON)
+    return utils.annotation_format_str(mir_cmd_pb.ImportExportFormat.IEF_LS_JSON)
 
 
 def fix_exported_coco_annotation_image_path(dirname: str) -> None:
@@ -84,7 +84,7 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
     annotation_dir = gt_dir or pred_dir
     if (
         annotation_dir is not None
-        and format_str == utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_COCO_JSON)
+        and format_str == utils.annotation_format_str(mir_cmd_pb.ImportExportFormat.IEF_COCO_JSON)
     ):
         fix_exported_coco_annotation_image_path(annotation_dir)
 
