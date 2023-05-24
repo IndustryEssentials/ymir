@@ -35,10 +35,8 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.ImportExportFormat.V":
         # compatible with legacy format.
         "voc": mirpb.ImportExportFormat.IEF_VOC_XML,
         "ark": mirpb.ImportExportFormat.IEF_ARK_TXT,
-        "ls_json": mirpb.ImportExportFormat.IEF_LS_JSON,
         "det-voc": mirpb.ImportExportFormat.IEF_VOC_XML,
         "det-ark": mirpb.ImportExportFormat.IEF_ARK_TXT,
-        "det-ls-json": mirpb.ImportExportFormat.IEF_LS_JSON,
         "seg-coco": mirpb.ImportExportFormat.IEF_COCO_JSON,
     }
     return _anno_dict.get(anno_format_str.lower(), mirpb.ImportExportFormat.IEF_NO_ANNOTATIONS)

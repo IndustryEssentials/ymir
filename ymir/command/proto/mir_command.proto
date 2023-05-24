@@ -147,8 +147,9 @@ enum ImportExportFormat {
     IEF_NO_ANNOTATIONS = 0;
     IEF_VOC_XML = 1;
     IEF_ARK_TXT = 2;
-    IEF_LS_JSON = 3;
     IEF_COCO_JSON = 4;
+
+    reserved 3;
 }
 
 message SingleTaskAnnotations {

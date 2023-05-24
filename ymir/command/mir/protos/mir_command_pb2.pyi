@@ -277,13 +277,11 @@ class _ImportExportFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrap
     IEF_NO_ANNOTATIONS = ImportExportFormat.V(0)
     IEF_VOC_XML = ImportExportFormat.V(1)
     IEF_ARK_TXT = ImportExportFormat.V(2)
-    IEF_LS_JSON = ImportExportFormat.V(3)
     IEF_COCO_JSON = ImportExportFormat.V(4)
 
 IEF_NO_ANNOTATIONS = ImportExportFormat.V(0)
 IEF_VOC_XML = ImportExportFormat.V(1)
 IEF_ARK_TXT = ImportExportFormat.V(2)
-IEF_LS_JSON = ImportExportFormat.V(3)
 IEF_COCO_JSON = ImportExportFormat.V(4)
 global___ImportExportFormat = ImportExportFormat
 

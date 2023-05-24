@@ -5,7 +5,6 @@ import json
 import os
 import shutil
 from typing import Dict, List, Optional, Protocol, TextIO, Tuple, Union
-import uuid
 import xml.etree.ElementTree as ElementTree
 
 from mir.protos import mir_command_pb2 as mirpb
@@ -29,7 +28,6 @@ def _anno_file_ext(anno_format: "mirpb.ImportExportFormat.V") -> str:
     _anno_ext_map = {
         mirpb.ImportExportFormat.IEF_ARK_TXT: 'txt',
         mirpb.ImportExportFormat.IEF_VOC_XML: 'xml',
-        mirpb.ImportExportFormat.IEF_LS_JSON: 'json',
         mirpb.ImportExportFormat.IEF_COCO_JSON: 'json',
     }
     return _anno_ext_map.get(anno_format, "unknown")
@@ -55,7 +53,6 @@ def _task_annotations_output_func(
     _format_func_map: Dict["mirpb.ImportExportFormat.V", _SingleTaskAnnotationCallable] = {
         mirpb.ImportExportFormat.IEF_ARK_TXT: _single_task_annotations_to_ark,
         mirpb.ImportExportFormat.IEF_VOC_XML: _single_task_annotations_to_voc,
-        mirpb.ImportExportFormat.IEF_LS_JSON: _single_task_annotations_to_ls,
         mirpb.ImportExportFormat.IEF_COCO_JSON: _single_task_annotations_to_coco,
     }
     if anno_format not in _format_func_map:
@@ -435,62 +432,6 @@ def _single_image_annotations_to_voc(attributes: mirpb.MetadataAttributes,
         af.write(ElementTree.tostring(element=annotation_node, encoding='unicode'))
 
 
-def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttributes,
-                                             image_annotations: mirpb.SingleImageAnnotations,
-                                             image_cks: Optional[mirpb.SingleImageCks],
-                                             class_ids_mapping: Optional[Dict[int, int]],
-                                             cls_id_mgr: Optional[UserLabels], asset_filename: str,
-                                             anno_dst_file: str) -> None:
-    if not cls_id_mgr:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid cls_id_mgr.")
-
-    annotations = image_annotations.boxes
-
-    out_type = "predictions"  # out_type: annotation type - "annotations" or "predictions"
-    to_name = 'image'  # to_name: object name from Label Studio labeling config
-    from_name = 'label'  # control tag name from Label Studio labeling config
-    task: Dict = {
-        out_type: [{
-            "result": [],
-            "ground_truth": False,
-        }],
-        "data": {
-            "image": asset_filename
-        }
-    }
-
-    for annotation in annotations:
-        if class_ids_mapping and annotation.class_id not in class_ids_mapping:
-            continue
-
-        bbox_x, bbox_y = float(annotation.box.x), float(annotation.box.y)
-        bbox_width, bbox_height = float(annotation.box.w), float(annotation.box.h)
-        img_width, img_height = attributes.width, attributes.height
-        item = {
-            "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
-            "type": "rectanglelabels",
-            "value": {
-                # Units of image annotations in label studio is percentage of image width/height.
-                # https://labelstud.io/guide/predictions.html#Units-of-image-annotations
-                "x": bbox_x / img_width * 100,
-                "y": bbox_y / img_height * 100,
-                "width": bbox_width / img_width * 100,
-                "height": bbox_height / img_height * 100,
-                "rotation": 0,
-                "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
-            },
-            "to_name": to_name,
-            "from_name": from_name,
-            "image_rotation": 0,
-            "original_width": img_width,
-            "original_height": img_height
-        }
-        task[out_type][0]['result'].append(item)
-
-    with open(anno_dst_file, 'w') as af:
-        af.write(json.dumps(task))
-
-
 # single task annotations export functions
 def _single_task_annotations_to_separated_any(
     mir_metadatas: mirpb.MirMetadatas,
@@ -527,8 +468,6 @@ def _single_task_annotations_to_separated_any(
 
 _single_task_annotations_to_voc: _SingleTaskAnnotationCallable = partial(
     _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_voc)
-_single_task_annotations_to_ls: _SingleTaskAnnotationCallable = partial(
-    _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_det_ls_json)
 _single_task_annotations_to_ark: _SingleTaskAnnotationCallable = partial(
     _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_det_ark)
 
