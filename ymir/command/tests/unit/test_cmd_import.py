@@ -73,7 +73,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = gen_folder
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
-        args.anno_type = 'det-box'
+        args.anno_type = 'det'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -143,7 +143,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = gen_folder
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
-        args.anno_type = 'det-box'
+        args.anno_type = 'det'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -174,7 +174,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = os.path.join(self._storage_root, 'gen')
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'
-        args.anno_type = 'seg'
+        args.anno_type = 'sem-seg'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -199,7 +199,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = os.path.join(self._storage_root, 'gen')
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'
-        args.anno_type = 'seg'
+        args.anno_type = 'sem-seg'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -226,7 +226,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = os.path.join(self._storage_root, 'gen')
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'
-        args.anno_type = 'seg'
+        args.anno_type = 'sem-seg'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)

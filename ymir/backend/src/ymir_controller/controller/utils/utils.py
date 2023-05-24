@@ -89,8 +89,8 @@ def annotation_format_str(format: mir_cmd_pb.ExportFormat) -> str:
 
 def object_type_str(object_type: mir_cmd_pb.ObjectType) -> str:
     format_enum_dict = {
-        mir_cmd_pb.ObjectType.OT_DET_BOX: 'det-box',
-        mir_cmd_pb.ObjectType.OT_SEG: 'seg',
+        mir_cmd_pb.ObjectType.OT_DET_BOX: 'det',
+        mir_cmd_pb.ObjectType.OT_SEG: 'sem-seg',
         mir_cmd_pb.ObjectType.OT_INS_SEG: 'ins-seg',
         mir_cmd_pb.ObjectType.OT_MULTI_MODAL: 'multi-modal',
         mir_cmd_pb.ObjectType.OT_NO_ANNOS: 'no-annos',

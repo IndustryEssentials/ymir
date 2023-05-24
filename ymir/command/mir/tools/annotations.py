@@ -46,8 +46,8 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
 
 def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":
     _anno_dict: Dict[str, "mirpb.ObjectType.V"] = {
-        "det-box": mirpb.ObjectType.OT_DET_BOX,
-        "seg": mirpb.ObjectType.OT_SEG,
+        "det": mirpb.ObjectType.OT_DET_BOX,
+        "sem-seg": mirpb.ObjectType.OT_SEG,
         "ins-seg": mirpb.ObjectType.OT_INS_SEG,
         "multi-modal": mirpb.ObjectType.OT_MULTI_MODAL,
         "no-annos": mirpb.ObjectType.OT_NO_ANNOS,
