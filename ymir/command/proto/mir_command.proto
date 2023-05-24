@@ -138,7 +138,7 @@ enum ObjectType {
 enum ObjectSubType {
     OST_NOTSET = 0;
 
-    //OT_SEM_SEG sub types
+    //OT_SEM_SEG & OT_INS_SEG sub types
     OST_SEG_MASK = 30;
     OST_SEG_POLYGON = 31;
 }

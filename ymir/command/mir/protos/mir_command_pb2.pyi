@@ -256,13 +256,13 @@ class _ObjectSubTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
     OST_NOTSET = ObjectSubType.V(0)
     OST_SEG_MASK = ObjectSubType.V(30)
-    """OT_SEM_SEG sub types"""
+    """OT_SEM_SEG & OT_INS_SEG sub types"""
 
     OST_SEG_POLYGON = ObjectSubType.V(31)
 
 OST_NOTSET = ObjectSubType.V(0)
 OST_SEG_MASK = ObjectSubType.V(30)
-"""OT_SEM_SEG sub types"""
+"""OT_SEM_SEG & OT_INS_SEG sub types"""
 
 OST_SEG_POLYGON = ObjectSubType.V(31)
 global___ObjectSubType = ObjectSubType

@@ -573,7 +573,7 @@ type ObjectSubType int32
 
 const (
 	ObjectSubType_OST_NOTSET ObjectSubType = 0
-	//OT_SEM_SEG sub types
+	//OT_SEM_SEG & OT_INS_SEG sub types
 	ObjectSubType_OST_SEG_MASK    ObjectSubType = 30
 	ObjectSubType_OST_SEG_POLYGON ObjectSubType = 31
 )
