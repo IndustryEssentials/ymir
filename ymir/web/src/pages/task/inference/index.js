@@ -9,6 +9,7 @@ import { HIDDENMODULES } from '@/constants/common'
 import { string2Array } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES, getConfig } from '@/constants/image'
+import { isMultiModal } from '@/constants/objectType'
 import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
@@ -147,7 +148,7 @@ function Inference({ ...func }) {
     const config = {
       ...values.hyperparam?.reduce((prev, { key, value }) => (key && value ? { ...prev, [key]: value } : prev), {}),
       ...(values.live || {}),
-      prompt,
+      prompt: prompt.join(';'),
     }
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
@@ -260,7 +261,7 @@ function Inference({ ...func }) {
                 onChange={imageChange}
               />
             </Form.Item>
-            <ObjectTypeSelector />
+            {isMultiModal(project.type) ? <ObjectTypeSelector /> : null}
             <OpenpaiForm form={form} openpai={openpai} />
             <Form.Item tooltip={t('tip.task.filter.igpucount')} label={t('task.gpu.count')}>
               <Form.Item
