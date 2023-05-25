@@ -22,6 +22,7 @@ import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
 import DockerConfigForm from '@/components/form/items/dockerConfig'
 import Desc from '@/components/form/desc'
 import Dataset from '@/components/form/option/Dataset'
+import ObjectTypeSelector from '@/components/form/InferObjectTypeSelector'
 
 import commonStyles from '../common.less'
 import styles from './index.less'
@@ -255,6 +256,7 @@ function Inference({ ...func }) {
                 onChange={imageChange}
               />
             </Form.Item>
+            <ObjectTypeSelector />
             <OpenpaiForm form={form} openpai={openpai} />
             <Form.Item tooltip={t('tip.task.filter.igpucount')} label={t('task.gpu.count')}>
               <Form.Item
