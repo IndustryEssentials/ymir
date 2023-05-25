@@ -40,8 +40,8 @@ class ObjectType(IntEnum):
     unknown = mir_cmd_pb.OT_UNKNOWN
     classification = mir_cmd_pb.OT_CLASS
     object_detect = mir_cmd_pb.OT_DET
-    segmentation = mir_cmd_pb.OT_SEM_SEG
-    instance_segmentation = 4
+    semantic_segmentation = mir_cmd_pb.OT_SEM_SEG
+    instance_segmentation = mir_cmd_pb.OT_INS_SEG
 
 
 class AnnotationType(IntEnum):
