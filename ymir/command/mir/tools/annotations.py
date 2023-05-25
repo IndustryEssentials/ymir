@@ -30,16 +30,16 @@ class MergeStrategy(str, enum.Enum):
     GUEST = 'guest'
 
 
-def parse_anno_format(anno_format_str: str) -> "mirpb.ImportExportFormat.V":
-    _anno_dict: Dict[str, mirpb.ImportExportFormat.V] = {
+def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
+    _anno_dict: Dict[str, mirpb.AnnoFormat.V] = {
         # compatible with legacy format.
-        "voc": mirpb.ImportExportFormat.IEF_VOC_XML,
-        "ark": mirpb.ImportExportFormat.IEF_ARK_TXT,
-        "det-voc": mirpb.ImportExportFormat.IEF_VOC_XML,
-        "det-ark": mirpb.ImportExportFormat.IEF_ARK_TXT,
-        "seg-coco": mirpb.ImportExportFormat.IEF_COCO_JSON,
+        "voc": mirpb.AnnoFormat.AF_VOC_XML,
+        "ark": mirpb.AnnoFormat.AF_ARK_TXT,
+        "det-voc": mirpb.AnnoFormat.AF_VOC_XML,
+        "det-ark": mirpb.AnnoFormat.AF_ARK_TXT,
+        "seg-coco": mirpb.AnnoFormat.AF_COCO_JSON,
     }
-    return _anno_dict.get(anno_format_str.lower(), mirpb.ImportExportFormat.IEF_NO_ANNOS)
+    return _anno_dict.get(anno_format_str.lower(), mirpb.AnnoFormat.AF_NO_ANNOS)
 
 
 def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":

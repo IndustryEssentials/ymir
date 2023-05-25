@@ -268,22 +268,22 @@ OST_SEG_POLYGON = ObjectSubType.V(31)
 global___ObjectSubType = ObjectSubType
 
 
-class ImportExportFormat(_ImportExportFormat, metaclass=_ImportExportFormatEnumTypeWrapper):
+class AnnoFormat(_AnnoFormat, metaclass=_AnnoFormatEnumTypeWrapper):
     pass
-class _ImportExportFormat:
+class _AnnoFormat:
     V = typing.NewType('V', builtins.int)
-class _ImportExportFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ImportExportFormat.V], builtins.type):
+class _AnnoFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AnnoFormat.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    IEF_NO_ANNOS = ImportExportFormat.V(0)
-    IEF_VOC_XML = ImportExportFormat.V(1)
-    IEF_ARK_TXT = ImportExportFormat.V(2)
-    IEF_COCO_JSON = ImportExportFormat.V(4)
+    AF_NO_ANNOS = AnnoFormat.V(0)
+    AF_VOC_XML = AnnoFormat.V(1)
+    AF_ARK_TXT = AnnoFormat.V(2)
+    AF_COCO_JSON = AnnoFormat.V(4)
 
-IEF_NO_ANNOS = ImportExportFormat.V(0)
-IEF_VOC_XML = ImportExportFormat.V(1)
-IEF_ARK_TXT = ImportExportFormat.V(2)
-IEF_COCO_JSON = ImportExportFormat.V(4)
-global___ImportExportFormat = ImportExportFormat
+AF_NO_ANNOS = AnnoFormat.V(0)
+AF_VOC_XML = AnnoFormat.V(1)
+AF_ARK_TXT = AnnoFormat.V(2)
+AF_COCO_JSON = AnnoFormat.V(4)
+global___AnnoFormat = AnnoFormat
 
 
 class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
@@ -1585,7 +1585,7 @@ class ExportConfig(google.protobuf.message.Message):
 
     media_location: typing.Text = ...
     need_sub_folder: builtins.bool = ...
-    anno_format: global___ImportExportFormat.V = ...
+    anno_format: global___AnnoFormat.V = ...
     """Annotation config."""
 
     gt_dir: typing.Text = ...
@@ -1603,7 +1603,7 @@ class ExportConfig(google.protobuf.message.Message):
         asset_index_prefix : typing.Text = ...,
         media_location : typing.Text = ...,
         need_sub_folder : builtins.bool = ...,
-        anno_format : global___ImportExportFormat.V = ...,
+        anno_format : global___AnnoFormat.V = ...,
         gt_dir : typing.Text = ...,
         gt_index_file : typing.Text = ...,
         gt_index_prefix : typing.Text = ...,

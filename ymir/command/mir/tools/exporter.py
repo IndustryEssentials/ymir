@@ -24,11 +24,11 @@ def _asset_file_ext(asset_format: "mirpb.AssetType.V") -> str:
     return _asset_ext_map.get(asset_format, "unknown")
 
 
-def _anno_file_ext(anno_format: "mirpb.ImportExportFormat.V") -> str:
+def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
     _anno_ext_map = {
-        mirpb.ImportExportFormat.IEF_ARK_TXT: 'txt',
-        mirpb.ImportExportFormat.IEF_VOC_XML: 'xml',
-        mirpb.ImportExportFormat.IEF_COCO_JSON: 'json',
+        mirpb.AnnoFormat.AF_ARK_TXT: 'txt',
+        mirpb.AnnoFormat.AF_VOC_XML: 'xml',
+        mirpb.AnnoFormat.AF_COCO_JSON: 'json',
     }
     return _anno_ext_map.get(anno_format, "unknown")
 
@@ -48,12 +48,12 @@ class _SingleImageAnnotationCallable(Protocol):
 
 
 def _task_annotations_output_func(
-    anno_format: "mirpb.ImportExportFormat.V"
+    anno_format: "mirpb.AnnoFormat.V"
 ) -> _SingleTaskAnnotationCallable:
-    _format_func_map: Dict["mirpb.ImportExportFormat.V", _SingleTaskAnnotationCallable] = {
-        mirpb.ImportExportFormat.IEF_ARK_TXT: _single_task_annotations_to_ark,
-        mirpb.ImportExportFormat.IEF_VOC_XML: _single_task_annotations_to_voc,
-        mirpb.ImportExportFormat.IEF_COCO_JSON: _single_task_annotations_to_coco,
+    _format_func_map: Dict["mirpb.AnnoFormat.V", _SingleTaskAnnotationCallable] = {
+        mirpb.AnnoFormat.AF_ARK_TXT: _single_task_annotations_to_ark,
+        mirpb.AnnoFormat.AF_VOC_XML: _single_task_annotations_to_voc,
+        mirpb.AnnoFormat.AF_COCO_JSON: _single_task_annotations_to_coco,
     }
     if anno_format not in _format_func_map:
         raise NotImplementedError(f"unknown anno_format: {anno_format}")
@@ -68,9 +68,9 @@ def parse_asset_format(asset_format_str: str) -> "mirpb.AssetFormat.V":
     return _asset_dict.get(asset_format_str.lower(), mirpb.AssetFormat.AF_UNKNOWN)
 
 
-def parse_export_type(type_str: str) -> Tuple["mirpb.ImportExportFormat.V", "mirpb.AssetFormat.V"]:
+def parse_export_type(type_str: str) -> Tuple["mirpb.AnnoFormat.V", "mirpb.AssetFormat.V"]:
     if not type_str:
-        return (mirpb.ImportExportFormat.IEF_VOC_XML, mirpb.AssetFormat.AF_RAW)
+        return (mirpb.AnnoFormat.AF_VOC_XML, mirpb.AssetFormat.AF_RAW)
 
     anno_str, asset_str = type_str.split(':')
     return (annotations.parse_anno_format(anno_str), parse_asset_format(asset_str))
@@ -197,7 +197,7 @@ def _export_mirdatas_to_raw(
             shutil.copyfile(asset_src_file, asset_abs_file)
         index_asset_f.write(f"{asset_idx_file}\n")
 
-    if ec.anno_format != mirpb.ImportExportFormat.IEF_NO_ANNOS and mir_annotations:
+    if ec.anno_format != mirpb.AnnoFormat.AF_NO_ANNOS and mir_annotations:
         # export annotations
         _output_func = _task_annotations_output_func(ec.anno_format)
         if ec.pred_dir:
@@ -229,7 +229,7 @@ def _export_mirdatas_to_raw(
                                                        file_ext=_asset_file_ext(attributes.asset_type),
                                                        need_sub_folder=ec.need_sub_folder)
             if index_gt_f:
-                if ec.anno_format == mirpb.ImportExportFormat.IEF_COCO_JSON:
+                if ec.anno_format == mirpb.AnnoFormat.AF_COCO_JSON:
                     _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
                                                             idx_prefix=ec.gt_index_prefix,
                                                             file_name='coco-annotations',
@@ -247,7 +247,7 @@ def _export_mirdatas_to_raw(
                 if ec.tvt_index_dir:
                     index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
             if index_pred_f:
-                if ec.anno_format == mirpb.ImportExportFormat.IEF_COCO_JSON:
+                if ec.anno_format == mirpb.AnnoFormat.AF_COCO_JSON:
                     _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
                                                               idx_prefix=ec.pred_index_prefix,
                                                               file_name='coco-annotations',

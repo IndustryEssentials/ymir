@@ -59,7 +59,7 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
                                        label_storage_file=label_storage_file,
                                        in_dataset_id=dataset_id,
                                        annotation_format=utils.annotation_format_str(
-                                           mir_cmd_pb.ImportExportFormat.IEF_COCO_JSON),
+                                           mir_cmd_pb.AnnoFormat.AF_COCO_JSON),
                                        asset_dir=input_asset_dir,
                                        pred_dir=pred_dir,
                                        gt_dir=gt_dir,

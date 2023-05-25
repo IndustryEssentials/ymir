@@ -155,7 +155,7 @@ class CmdMining(base.BaseCommand):
                                 asset_index_file=work_index_file,
                                 media_location=media_location,
                                 need_sub_folder=True,
-                                anno_format=mirpb.ImportExportFormat.IEF_NO_ANNOS,)
+                                anno_format=mirpb.AnnoFormat.AF_NO_ANNOS,)
         export_code = exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,
             ec=ec,
