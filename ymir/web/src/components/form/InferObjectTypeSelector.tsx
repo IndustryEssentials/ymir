@@ -2,7 +2,7 @@ import { Form, Radio, RadioGroupProps } from 'antd'
 import { FC } from 'react'
 import t from '@/utils/t'
 
-enum Types {
+export enum Types {
   All,
   TrainingTarget,
 }

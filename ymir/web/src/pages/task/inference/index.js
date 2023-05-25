@@ -10,6 +10,7 @@ import { string2Array } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES, getConfig } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
 import { randomNumber } from '@/utils/number'
@@ -22,7 +23,7 @@ import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
 import DockerConfigForm from '@/components/form/items/dockerConfig'
 import Desc from '@/components/form/desc'
 import Dataset from '@/components/form/option/Dataset'
-import ObjectTypeSelector from '@/components/form/InferObjectTypeSelector'
+import ObjectTypeSelector, { Types } from '@/components/form/InferObjectTypeSelector'
 
 import commonStyles from '../common.less'
 import styles from './index.less'
@@ -49,6 +50,7 @@ function Inference({ ...func }) {
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
   const [showConfig, setShowConfig] = useState(false)
+  const { runAsync: getAllKeywords } = useRequest('keyword/getAllKeywords', { loading: false })
 
   useEffect(() => {
     getSysInfo()
@@ -141,9 +143,11 @@ function Inference({ ...func }) {
   }
 
   const onFinish = async (values) => {
+    const prompt = values.objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : selectedModel.keywords
     const config = {
       ...values.hyperparam?.reduce((prev, { key, value }) => (key && value ? { ...prev, [key]: value } : prev), {}),
       ...(values.live || {}),
+      prompt,
     }
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0

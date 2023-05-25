@@ -421,6 +421,9 @@ const task = {
   'task.panel.settings.advanced': { en: 'Advanced Settings', cn: '高级设置' },
   'task.train.keywords.disabled.tip': { en: 'Training dataset required', cn: '请先选择训练集' },
   'task.train.validation.disabled.tip': { en: 'Training target required', cn: '请先选择训练目标' },
+  'task.infer.objectType.label': { en: 'Detection Object', cn: '检测目标' },
+  'task.infer.objectType.all': { en: 'Detect All Classes', cn: '检测所有目标' },
+  'task.infer.objectType.trainingTarget': { en: 'Detect Training Classes', cn: '检测训练目标' },
 }
 
 export default task
