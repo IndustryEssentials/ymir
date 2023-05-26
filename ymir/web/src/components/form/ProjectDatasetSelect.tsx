@@ -13,13 +13,13 @@ export type DataNodeType = {
   loading?: boolean
   children?: DataNodeType[]
 }
-type Props = CascaderProps<DataNodeType> & {}
+type Props = CascaderProps<DataNodeType>
 
 const ProjectDatasetSelect: FC<Props> = (props) => {
   const [options, setOptions] = useState<DataNodeType[]>([])
   const projects = useSelector(({ project }) => project.list.items)
   const { run: getProjects } = useRequest('project/getProjects', { cacheKey: 'getAllProjects', loading: false })
-  const { runAsync: getDatasets } = useRequest<Dataset[], [{ id: number; force?: boolean }]>('project/queryAllDatasets', {
+  const { runAsync: getDatasets } = useRequest<Dataset[], [{ id: number; force?: boolean }]>('dataset/queryAllDatasets', {
     cacheKey: 'getAllDatasets',
     loading: false,
   })
@@ -40,7 +40,7 @@ const ProjectDatasetSelect: FC<Props> = (props) => {
   }, [projects])
 
   function fetchProjects() {
-    getProjects()
+    getProjects({ limit: 10000 })
   }
 
   const loadData: Props['loadData'] = async (selected) => {

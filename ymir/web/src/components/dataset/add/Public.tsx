@@ -29,6 +29,9 @@ const Public: FC<Props> = ({ selected }) => {
         addImportingList(items)
         form.resetFields()
       }}
+      onFinishFailed={(err) => {
+        console.log('finish failed: ', err)
+      }}
     >
       <Form.Item
         label={t('dataset.add.form.internal.label')}
@@ -47,7 +50,6 @@ const Public: FC<Props> = ({ selected }) => {
           mode="multiple"
           onChange={(value, options) => {
             if (Array.isArray(options)) {
-              console.log('value, option:', value, options)
               const items: ImportingItem[] = options?.map(({ dataset }) => ({
                 type: Types.INTERNAL,
                 name: dataset.name,

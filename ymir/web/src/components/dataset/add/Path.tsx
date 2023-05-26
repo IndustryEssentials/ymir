@@ -19,7 +19,7 @@ const Path: FC = () => {
           .map((path) => ({
             type: Types.PATH,
             name: path,
-            source: path,
+            source: `/ymir-sharing/${path}`,
             sourceName: path,
           }))
         addImportingList(items)

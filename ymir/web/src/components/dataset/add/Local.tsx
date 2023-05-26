@@ -16,19 +16,28 @@ const Local: FC = () => {
   const { run: addImportingList } = useRequest('dataset/addImportingList', { loading: false })
 
   return (
-    <Form form={form} {...formLayout}>
-      <Form.Item label={t('dataset.add.form.upload.btn')}>
+    <Form
+      form={form}
+      {...formLayout}
+      onFinish={() => {
+        addImportingList(items)
+        form.resetFields()
+      }}
+      onFinishFailed={(err) => {
+        console.log('finish failed: ', err)
+      }}
+    >
+      <Form.Item required label={t('dataset.add.form.upload.btn')}>
         <Uploader
           max={1024}
           maxCount={max}
           onChange={({ fileList }) => {
-            console.log('fileList:', fileList)
             const items = fileList
               .map((file) => {
                 return file.url
                   ? {
                       type: Types.LOCAL,
-                      name: file.name,
+                      name: file.name.replace(/\.zip$/i, ''),
                       source: file.url,
                       sourceName: file.name,
                     }
@@ -41,13 +50,7 @@ const Local: FC = () => {
         ></Uploader>
       </Form.Item>
       <Form.Item>
-        <Button
-          type="primary"
-          onClick={() => {
-            addImportingList(items)
-            form.resetFields()
-          }}
-        >
+        <Button type="primary" htmlType="submit">
           Add to List
         </Button>
       </Form.Item>

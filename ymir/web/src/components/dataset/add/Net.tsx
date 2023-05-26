@@ -19,7 +19,7 @@ const Net: FC = () => {
           .filter((item) => !!item)
           .map((url) => ({
             type: Types.NET,
-            name: url,
+            name: url.replace(/^.+\/([^\/]+)\.zip$/, '$1'),
             source: url,
             sourceName: url,
           }))

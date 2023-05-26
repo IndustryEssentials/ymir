@@ -1,4 +1,4 @@
-import { Button, Form, FormItemProps, Input, message } from 'antd'
+import { Button, Col, Form, FormItemProps, Input, message, Row } from 'antd'
 import { FC, ReactNode } from 'react'
 import t from '@/utils/t'
 import { AddIcon, DeleteIcon } from '@/components/common/Icons'
@@ -27,19 +27,26 @@ const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
           message.warning('Exceed Maximium Count')
         }
       }}
+      onFinishFailed={(err) => {
+        console.log('finish failed: ', err)
+      }}
     >
       <Form.List name={name} initialValue={['']}>
         {(fields, { add, remove }) => (
           <>
-            <Form.Item label={t(`dataset.add.form.${name}.label`)}>
+            <Form.Item required label={t(`dataset.add.form.${name}.label`)}>
               {fields.map((field, index) => (
-                <div key={field.key}>
-                  <Form.Item {...field} rules={rules}>
-                    <Input placeholder={t(`dataset.add.form.${name}.placeholder`)} max={512} allowClear />
-                  </Form.Item>
-                  {(!max || fields.length < max) && index === fields.length - 1 ? <AddIcon onClick={() => add()} /> : null}
-                  {index > 0 ? <DeleteIcon onClick={() => remove(field.name)} /> : null}
-                </div>
+                <Row key={field.key}>
+                  <Col flex={1}>
+                    <Form.Item {...field} rules={rules}>
+                      <Input placeholder={t(`dataset.add.form.${name}.placeholder`)} max={512} allowClear />
+                    </Form.Item>
+                  </Col>
+                  <Col style={{ paddingLeft: '20px' }} flex={'100px'}>
+                    {(!max || fields.length < max) && index === fields.length - 1 ? <AddIcon onClick={() => add()} /> : null}
+                    {index > 0 ? <DeleteIcon onClick={() => remove(field.name)} /> : null}
+                  </Col>
+                </Row>
               ))}
               {tip}
             </Form.Item>
