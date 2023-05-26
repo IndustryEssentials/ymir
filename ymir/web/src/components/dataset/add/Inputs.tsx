@@ -2,6 +2,7 @@ import { Button, Form, FormItemProps, Input, message } from 'antd'
 import { FC, ReactNode } from 'react'
 import t from '@/utils/t'
 import { AddIcon, DeleteIcon } from '@/components/common/Icons'
+import { formLayout } from '@/config/antd'
 
 type Props = {
   name: string
@@ -17,6 +18,7 @@ const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
     <Form
       name={`${name}Form`}
       form={form}
+      {...formLayout}
       onFinish={(values) => {
         if (max > 0) {
           confirm(values[name])

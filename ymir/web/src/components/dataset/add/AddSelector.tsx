@@ -9,12 +9,14 @@ import s from '../add.less'
 import t from '@/utils/t'
 import { useSelector } from 'umi'
 import Copy from './Copy'
+import Public from './Public'
+import { formLayout } from '@/config/antd'
 
 type Props = {}
 const Selectors = {
   [Types.LOCAL]: Local,
   [Types.COPY]: Copy,
-  [Types.INTERNAL]: Local,
+  [Types.INTERNAL]: Public,
   [Types.NET]: Net,
   [Types.PATH]: Path,
 }
@@ -28,17 +30,18 @@ const AddSelector: FC<Props> = () => {
 
   return (
     <div className={s.selector}>
-      <Form>
-        <Form.Item label={t('dataset.add.form.type.label')}>
+      <Row className={s.type}>
+        <Col {...formLayout.labelCol}>{t('dataset.add.form.type.label')}</Col>
+        <Col {...formLayout.wrapperCol}>
           <TypeSelector
             onChange={(type) => {
               console.log('hello: type', type)
               setCurrent(type)
             }}
           />
-        </Form.Item>
-        {Selector ? <Selector /> : null}
-      </Form>
+        </Col>
+      </Row>
+      {Selector ? <Selector /> : null}
     </div>
   )
 }
