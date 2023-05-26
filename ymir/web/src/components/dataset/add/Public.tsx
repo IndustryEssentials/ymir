@@ -7,6 +7,7 @@ import DatasetOption from '@/components/form/option/Dataset'
 import { Types } from './AddTypes'
 import { List } from '@/models/typings/common'
 import { formLayout } from '@/config/antd'
+import SubmitBtn from './SubmitBtn'
 type Props = {
   selected?: number
 }
@@ -68,11 +69,7 @@ const Public: FC<Props> = ({ selected }) => {
         ></Select>
       </Form.Item>
 
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Add to List
-        </Button>
-      </Form.Item>
+      <SubmitBtn />
     </Form>
   )
 }

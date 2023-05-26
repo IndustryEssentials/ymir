@@ -4,10 +4,11 @@ import t from '@/utils/t'
 import { ImportSelectorProps } from '.'
 import { useParams } from 'umi'
 import { Types } from './AddTypes'
-import { Button, Form } from 'antd'
+import { Button, Cascader, Form } from 'antd'
 import { ImportingItem } from '@/constants'
 import useRequest from '@/hooks/useRequest'
 import { formLayout } from '@/config/antd'
+import SubmitBtn from './SubmitBtn'
 
 const Copy: FC = () => {
   const [form] = Form.useForm()
@@ -27,30 +28,29 @@ const Copy: FC = () => {
         console.log('finish failed: ', err)
       }}
     >
-      <Form.Item required label={t('dataset.add.form.copy.label')}>
+      <Form.Item required label={t('dataset.add.form.copy.label')} name="dataset">
         <ProjectDatasetSelect
-          multiple
-          onChange={(_, options) => {
-            if (Array.isArray(options)) {
-              const items: ImportingItem[] = (options as DataNodeType[][])?.map(([{ label }, { dataset }]) => ({
+          onChange={(_, option) => {
+            if (Array.isArray(option)) {
+              const label = option[0].label
+              const dataset = option[1].dataset
+              const item: ImportingItem = {
                 type: Types.COPY,
                 name: dataset?.name,
                 source: dataset?.id,
                 sourceName: `${label} ${dataset?.name}`,
-              }))
+              }
 
-              setItems(items)
+              setItems([item])
+            } else {
+              return false
             }
           }}
           placeholder={t('dataset.add.form.copy.placeholder')}
+          showCheckedStrategy={Cascader.SHOW_CHILD}
         />
       </Form.Item>
-
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Add to List
-        </Button>
-      </Form.Item>
+      <SubmitBtn />
     </Form>
   )
 }

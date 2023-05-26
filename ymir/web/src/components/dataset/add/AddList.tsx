@@ -72,7 +72,7 @@ const AddList: FC = () => {
       render: (_, { index }) => {
         return (
           <Button type="link" onClick={() => remove([index])}>
-            Delete
+            {t('common.del')}
           </Button>
         )
       },

@@ -8,9 +8,11 @@ import t from '@/utils/t'
 import Uploader from '@/components/form/uploader'
 import Tip from './Tip'
 import { formLayout } from '@/config/antd'
+import SubmitBtn from './SubmitBtn'
 
 const Local: FC = () => {
   const [form] = Form.useForm()
+  const [key, setKey] = useState(0)
   const [items, setItems] = useState<ImportingItem[]>([])
   const max = useSelector(({ dataset }) => dataset.importing.max)
   const { run: addImportingList } = useRequest('dataset/addImportingList', { loading: false })
@@ -18,10 +20,11 @@ const Local: FC = () => {
   return (
     <Form
       form={form}
+      key={key}
       {...formLayout}
       onFinish={() => {
         addImportingList(items)
-        form.resetFields()
+        setKey(Math.random())
       }}
       onFinishFailed={(err) => {
         console.log('finish failed: ', err)
@@ -49,11 +52,7 @@ const Local: FC = () => {
           info={<Tip type={Types.LOCAL} />}
         ></Uploader>
       </Form.Item>
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Add to List
-        </Button>
-      </Form.Item>
+      <SubmitBtn />
     </Form>
   )
 }

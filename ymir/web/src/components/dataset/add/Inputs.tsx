@@ -3,6 +3,7 @@ import { FC, ReactNode } from 'react'
 import t from '@/utils/t'
 import { AddIcon, DeleteIcon } from '@/components/common/Icons'
 import { formLayout } from '@/config/antd'
+import SubmitBtn from './SubmitBtn'
 
 type Props = {
   name: string
@@ -53,11 +54,7 @@ const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
           </>
         )}
       </Form.List>
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Add to List
-        </Button>
-      </Form.Item>
+      <SubmitBtn />
     </Form>
   )
 }

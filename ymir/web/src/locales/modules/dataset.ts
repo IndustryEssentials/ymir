@@ -72,6 +72,7 @@ const dataset = {
   },
   'dataset.add.form.name.required': { cn: '数据集名称为必填项', en: 'Dataset Name Required' },
   'dataset.add.form.name.placeholder': { cn: '请输入数据集名称，支持2-80个字符', en: 'Please input dataset name, 2 - 80 characters' },
+  'dataset.add.to.list': { cn: '添加到导入列表', en: 'Add to Importing List' },
   'dataset.add.form.type.label': { cn: '添加类型', en: 'Type' },
   'dataset.add.form.label.label': { cn: '标注', en: 'Labeling Status' },
   'dataset.add.form.newkw.label': { cn: ' ', en: ' ' },
