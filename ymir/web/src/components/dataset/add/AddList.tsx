@@ -82,13 +82,6 @@ const AddList: FC = () => {
   const batch = useCallback(() => {
     batchImport({ pid, items: list })
   }, [list])
-  return (
-    <>
-      <Table rowKey={(item) => item.index || 0} dataSource={list} columns={columns} pagination={false} />
-      <Button type="primary" onClick={batch}>
-        Batch Import
-      </Button>
-    </>
-  )
+  return <Table rowKey={(item) => item.index || 0} dataSource={list} columns={columns} pagination={false} />
 }
 export default AddList

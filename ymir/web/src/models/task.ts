@@ -2,7 +2,7 @@ import { stopTask, fusion, merge, filter, mine, train, label, infer, batchAdd } 
 import { createEffect, createReducersByState } from './_utils'
 import { MergeParams } from '@/services/task.d'
 import { TaskState, TaskStore } from '.'
-import { ImportItem } from '@/components/dataset/add/'
+import { ImportingItem } from '@/constants'
 import { Types } from '@/components/dataset/add/AddTypes'
 
 const state: TaskState = {}
@@ -109,7 +109,8 @@ const TaskModel: TaskStore = {
         return result
       }
     }),
-    batchAdd: createEffect<{ pid: number; items: ImportItem[] }>(function* ({ payload: { pid, items } }, { call }) {
+    batchAdd: createEffect<{ pid: number }>(function* ({ payload: { pid } }, { call, put, select }) {
+      const items: ImportingItem[] = yield select(({ dataset }) => dataset.importing.items)
       const params = items.map((item) => {
         const field = {
           [Types.LOCAL]: 'url',
@@ -125,6 +126,12 @@ const TaskModel: TaskStore = {
       })
       const { code, result } = yield call(batchAdd, pid, params)
       if (code === 0) {
+        yield put({
+          type: 'dataset/UpdateImportingList',
+          payload: {
+            items: [],
+          },
+        })
         return result
       }
     }),
