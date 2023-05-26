@@ -1,12 +1,16 @@
 import storage from '@/utils/storage'
-import { Task, ProgressTask } from '.'
+import { ProgressTask } from '.'
 import { TASKSTATES } from './task'
 
 type ResultStateType = {
   state: ResultStates
   progress: number
   taskState: TASKSTATES
-  task: Task
+  task: {
+    hash?: string
+    state: TASKSTATES
+    percent: number
+  }
   needReload?: boolean
 }
 
