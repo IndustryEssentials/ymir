@@ -37,31 +37,6 @@ const Public: FC<Props> = ({ selected }) => {
           }))}
         ></Select>
       </Form.Item>
-
-      {selected && newKeywords.length ? (
-        <Form.Item label={t('dataset.import.public.include')}>
-          <>
-            <h4>
-              {t('dataset.add.internal.newkeywords.label')}
-              <Button type="link" onClick={(e) => updateIgnoredKeywords(e, newKeywords, false)}>
-                {t('dataset.add.internal.ignore.all')}
-              </Button>
-            </h4>
-            <div>{renderKeywords(newKeywords)}</div>
-          </>
-          {ignoredKeywords.length ? (
-            <>
-              <h4>
-                {t('dataset.add.internal.ignorekeywords.label')}
-                <Button type="link" onClick={(e) => updateIgnoredKeywords(e, ignoredKeywords, true)}>
-                  {t('dataset.add.internal.add.all')}
-                </Button>
-              </h4>
-              <div>{renderKeywords(ignoredKeywords, true)}</div>
-            </>
-          ) : null}
-        </Form.Item>
-      ) : null}
     </>
   )
 }
