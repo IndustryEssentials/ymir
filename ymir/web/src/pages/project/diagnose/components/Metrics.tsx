@@ -180,12 +180,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
     setSelectedKeywords(values)
   }
 
-  function retry() {
-    setDiagnosis(undefined)
-    setDiagnosing(false)
-    setCk(false)
-  }
-
   function renderView() {
     if (!prediction || !dataset || !model) {
       return
@@ -297,11 +291,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
         </Col>
         <Col span={6}>
           <div className={s.formContainer}>
-            <div className={s.mask} hidden={!diagnosing}>
-              <Button style={{ marginBottom: 10 }} size="large" type="primary" onClick={() => retry()}>
-                <CompareIcon /> {t('model.diagnose.metrics.btn.retry')}
-              </Button>
-            </div>
             <Panel label={'Metrics'} toogleVisible={false}>
               <Form
                 className={s.form}
