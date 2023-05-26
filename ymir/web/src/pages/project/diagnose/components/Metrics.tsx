@@ -146,15 +146,19 @@ const Matrics: FC<Props> = ({ prediction }) => {
     })
   }, [selectedKeywords, kws])
 
-  const diagnose = useCallback(
-    (params: { [key: string]: any }) => {
-      if (!prediction) {
-        return
-      }
-      fetchDiagnosis({ ...params, pid: prediction?.projectId, predictionId: prediction?.id, curve: isDetection(prediction?.type), averageIou })
-    },
-    [prediction, averageIou],
-  )
+  useEffect(() => {
+    prediction && diagnose()
+  }, [prediction])
+
+  const diagnose = () => {
+    fetchDiagnosis({
+      pid: prediction.projectId,
+      predictionId: prediction.id,
+      curve: isDetection(prediction?.type),
+      averageIou: true,
+      confidence,
+    })
+  }
 
   function onFinishFailed(errorInfo: ValidateErrorEntity) {
     console.log('Failed:', errorInfo)
@@ -325,27 +329,10 @@ const Matrics: FC<Props> = ({ prediction }) => {
                 </Form.Item>
                 {!isSemantic(prediction?.type) ? (
                   <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">
-                    <InputNumber step={0.0005} min={0.0005} max={0.9995} />
+                    <InputNumber step={0.0005} min={0.0005} max={0.9995} readOnly />
                   </Form.Item>
                 ) : null}
-                <CKSelector prediction={prediction} />
-                {!isSemantic(prediction?.type) ? (
-                  <Form.Item label={t('model.diagnose.form.iou')}>
-                    <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
-                    {!averageIou ? (
-                      <Form.Item name="iou">
-                        <IouSlider />
-                      </Form.Item>
-                    ) : null}
-                  </Form.Item>
-                ) : null}
-                <Form.Item name="submitBtn">
-                  <div style={{ textAlign: 'center' }}>
-                    <Button type="primary" size="large" htmlType="submit">
-                      <CompareIcon /> {t('model.diagnose.metrics.btn.start')}
-                    </Button>
-                  </div>
-                </Form.Item>
+                {!isSemantic(prediction?.type) ? <Form.Item label={t('model.diagnose.form.iou')}>{renderIouOptionLabel('everage')}</Form.Item> : null}
               </Form>
             </Panel>
           </div>
