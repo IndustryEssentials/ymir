@@ -5,7 +5,6 @@ import json
 import os
 import shutil
 from typing import Dict, List, Optional, Protocol, TextIO, Tuple, Union
-import uuid
 import xml.etree.ElementTree as ElementTree
 
 from mir.protos import mir_command_pb2 as mirpb
@@ -25,12 +24,11 @@ def _asset_file_ext(asset_format: "mirpb.AssetType.V") -> str:
     return _asset_ext_map.get(asset_format, "unknown")
 
 
-def _anno_file_ext(anno_format: "mirpb.ExportFormat.V") -> str:
+def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
     _anno_ext_map = {
-        mirpb.ExportFormat.EF_ARK_TXT: 'txt',
-        mirpb.ExportFormat.EF_VOC_XML: 'xml',
-        mirpb.ExportFormat.EF_LS_JSON: 'json',
-        mirpb.ExportFormat.EF_COCO_JSON: 'json',
+        mirpb.AnnoFormat.AF_ARK_TXT: 'txt',
+        mirpb.AnnoFormat.AF_VOC_XML: 'xml',
+        mirpb.AnnoFormat.AF_COCO_JSON: 'json',
     }
     return _anno_ext_map.get(anno_format, "unknown")
 
@@ -50,13 +48,12 @@ class _SingleImageAnnotationCallable(Protocol):
 
 
 def _task_annotations_output_func(
-    anno_format: "mirpb.ExportFormat.V"
+    anno_format: "mirpb.AnnoFormat.V"
 ) -> _SingleTaskAnnotationCallable:
-    _format_func_map: Dict["mirpb.ExportFormat.V", _SingleTaskAnnotationCallable] = {
-        mirpb.ExportFormat.EF_ARK_TXT: _single_task_annotations_to_ark,
-        mirpb.ExportFormat.EF_VOC_XML: _single_task_annotations_to_voc,
-        mirpb.ExportFormat.EF_LS_JSON: _single_task_annotations_to_ls,
-        mirpb.ExportFormat.EF_COCO_JSON: _single_task_annotations_to_coco,
+    _format_func_map: Dict["mirpb.AnnoFormat.V", _SingleTaskAnnotationCallable] = {
+        mirpb.AnnoFormat.AF_ARK_TXT: _single_task_annotations_to_ark,
+        mirpb.AnnoFormat.AF_VOC_XML: _single_task_annotations_to_voc,
+        mirpb.AnnoFormat.AF_COCO_JSON: _single_task_annotations_to_coco,
     }
     if anno_format not in _format_func_map:
         raise NotImplementedError(f"unknown anno_format: {anno_format}")
@@ -71,9 +68,9 @@ def parse_asset_format(asset_format_str: str) -> "mirpb.AssetFormat.V":
     return _asset_dict.get(asset_format_str.lower(), mirpb.AssetFormat.AF_UNKNOWN)
 
 
-def parse_export_type(type_str: str) -> Tuple["mirpb.ExportFormat.V", "mirpb.AssetFormat.V"]:
+def parse_export_type(type_str: str) -> Tuple["mirpb.AnnoFormat.V", "mirpb.AssetFormat.V"]:
     if not type_str:
-        return (mirpb.ExportFormat.EF_VOC_XML, mirpb.AssetFormat.AF_RAW)
+        return (mirpb.AnnoFormat.AF_VOC_XML, mirpb.AssetFormat.AF_RAW)
 
     anno_str, asset_str = type_str.split(':')
     return (annotations.parse_anno_format(anno_str), parse_asset_format(asset_str))
@@ -200,7 +197,7 @@ def _export_mirdatas_to_raw(
             shutil.copyfile(asset_src_file, asset_abs_file)
         index_asset_f.write(f"{asset_idx_file}\n")
 
-    if ec.anno_format != mirpb.ExportFormat.EF_NO_ANNOTATIONS and mir_annotations:
+    if ec.anno_format != mirpb.AnnoFormat.AF_NO_ANNOS and mir_annotations:
         # export annotations
         _output_func = _task_annotations_output_func(ec.anno_format)
         if ec.pred_dir:
@@ -232,7 +229,7 @@ def _export_mirdatas_to_raw(
                                                        file_ext=_asset_file_ext(attributes.asset_type),
                                                        need_sub_folder=ec.need_sub_folder)
             if index_gt_f:
-                if ec.anno_format == mirpb.ExportFormat.EF_COCO_JSON:
+                if ec.anno_format == mirpb.AnnoFormat.AF_COCO_JSON:
                     _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
                                                             idx_prefix=ec.gt_index_prefix,
                                                             file_name='coco-annotations',
@@ -250,7 +247,7 @@ def _export_mirdatas_to_raw(
                 if ec.tvt_index_dir:
                     index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
             if index_pred_f:
-                if ec.anno_format == mirpb.ExportFormat.EF_COCO_JSON:
+                if ec.anno_format == mirpb.AnnoFormat.AF_COCO_JSON:
                     _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
                                                               idx_prefix=ec.pred_index_prefix,
                                                               file_name='coco-annotations',
@@ -435,62 +432,6 @@ def _single_image_annotations_to_voc(attributes: mirpb.MetadataAttributes,
         af.write(ElementTree.tostring(element=annotation_node, encoding='unicode'))
 
 
-def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttributes,
-                                             image_annotations: mirpb.SingleImageAnnotations,
-                                             image_cks: Optional[mirpb.SingleImageCks],
-                                             class_ids_mapping: Optional[Dict[int, int]],
-                                             cls_id_mgr: Optional[UserLabels], asset_filename: str,
-                                             anno_dst_file: str) -> None:
-    if not cls_id_mgr:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid cls_id_mgr.")
-
-    annotations = image_annotations.boxes
-
-    out_type = "predictions"  # out_type: annotation type - "annotations" or "predictions"
-    to_name = 'image'  # to_name: object name from Label Studio labeling config
-    from_name = 'label'  # control tag name from Label Studio labeling config
-    task: Dict = {
-        out_type: [{
-            "result": [],
-            "ground_truth": False,
-        }],
-        "data": {
-            "image": asset_filename
-        }
-    }
-
-    for annotation in annotations:
-        if class_ids_mapping and annotation.class_id not in class_ids_mapping:
-            continue
-
-        bbox_x, bbox_y = float(annotation.box.x), float(annotation.box.y)
-        bbox_width, bbox_height = float(annotation.box.w), float(annotation.box.h)
-        img_width, img_height = attributes.width, attributes.height
-        item = {
-            "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
-            "type": "rectanglelabels",
-            "value": {
-                # Units of image annotations in label studio is percentage of image width/height.
-                # https://labelstud.io/guide/predictions.html#Units-of-image-annotations
-                "x": bbox_x / img_width * 100,
-                "y": bbox_y / img_height * 100,
-                "width": bbox_width / img_width * 100,
-                "height": bbox_height / img_height * 100,
-                "rotation": 0,
-                "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
-            },
-            "to_name": to_name,
-            "from_name": from_name,
-            "image_rotation": 0,
-            "original_width": img_width,
-            "original_height": img_height
-        }
-        task[out_type][0]['result'].append(item)
-
-    with open(anno_dst_file, 'w') as af:
-        af.write(json.dumps(task))
-
-
 # single task annotations export functions
 def _single_task_annotations_to_separated_any(
     mir_metadatas: mirpb.MirMetadatas,
@@ -527,8 +468,6 @@ def _single_task_annotations_to_separated_any(
 
 _single_task_annotations_to_voc: _SingleTaskAnnotationCallable = partial(
     _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_voc)
-_single_task_annotations_to_ls: _SingleTaskAnnotationCallable = partial(
-    _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_det_ls_json)
 _single_task_annotations_to_ark: _SingleTaskAnnotationCallable = partial(
     _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_det_ark)
 

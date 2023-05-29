@@ -119,7 +119,7 @@ class TestToolsSegEval(unittest.TestCase):
         evaluate_config.conf_thr = 0
         evaluate_config.iou_thrs_interval = '0.5'
         evaluate_config.class_ids[:] = [1, 3]
-        evaluate_config.type = mirpb.ObjectType.OT_SEG
+        evaluate_config.type = mirpb.ObjectType.OT_SEM_SEG
 
         evaluation = eval_ops.evaluate_with_pb(prediction=mir_annotations.prediction,
                                                ground_truth=mir_annotations.ground_truth,
@@ -172,7 +172,7 @@ class TestToolsSegEval(unittest.TestCase):
         evaluate_config.conf_thr = 0
         evaluate_config.iou_thrs_interval = ''
         evaluate_config.class_ids[:] = [1, 3]
-        evaluate_config.type = mirpb.ObjectType.OT_SEG
+        evaluate_config.type = mirpb.ObjectType.OT_SEM_SEG
 
         evaluation = eval_ops.evaluate_with_pb(prediction=mir_annotations.prediction,
                                                ground_truth=mir_annotations.ground_truth,

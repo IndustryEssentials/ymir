@@ -169,7 +169,7 @@ class CmdInfer(base.BaseCommand):
             task_annotations = mirpb.SingleTaskAnnotations()
             task_annotations.type = model_storage.object_type  # type: ignore
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
-                                   == mirpb.ObjectType.OT_DET_BOX else _process_infer_coco_result)
+                                   == mirpb.ObjectType.OT_DET else _process_infer_coco_result)
             process_result_func(task_annotations, work_dir_out, class_id_mgr)
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:

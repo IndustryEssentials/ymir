@@ -126,7 +126,7 @@ class TestInvokerTaskMining(unittest.TestCase):
             model_hash=model_hash,
             model_stage=model_stage,
             in_dataset_ids=in_dataset_ids,
-            object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
+            object_type=mir_cmd_pb.ObjectType.OT_DET,
             docker_image_config=json.dumps(mining_config),
         )
         print(MessageToDict(response))
@@ -135,13 +135,13 @@ class TestInvokerTaskMining(unittest.TestCase):
         with open(output_config, "r") as f:
             config = yaml.safe_load(f)
         mining_config['gpu_id'] = ''
-        mining_config['object_type'] = mir_cmd_pb.ObjectType.OT_DET_BOX
+        mining_config['object_type'] = mir_cmd_pb.ObjectType.OT_DET
         expected_config = {
             'executor_config': mining_config,
             'task_context': {
                 'available_gpu_id': '',
                 'server_runtime': 'runc',
-                'object_type': mir_cmd_pb.ObjectType.OT_DET_BOX
+                'object_type': mir_cmd_pb.ObjectType.OT_DET
             },
         }
         self.assertDictEqual(expected_config, config)

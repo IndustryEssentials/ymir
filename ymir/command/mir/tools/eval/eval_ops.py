@@ -81,8 +81,8 @@ def evaluate_with_pb(
 
 def _get_eval_model_function(anno_type: Any) -> Optional[ModuleType]:
     mapping = {
-        mirpb.ObjectType.OT_DET_BOX: det_eval_voc,
-        mirpb.ObjectType.OT_SEG: sem_seg_eval_mm,
+        mirpb.ObjectType.OT_DET: det_eval_voc,
+        mirpb.ObjectType.OT_SEM_SEG: sem_seg_eval_mm,
         mirpb.ObjectType.OT_INS_SEG: ins_seg_eval_coco,
         mirpb.ObjectType.OT_MULTI_MODAL: det_eval_voc,
     }

@@ -77,7 +77,7 @@ class TestTaskLabelingInvoker:
                                          user_id=user_name,
                                          repo_id=mir_repo_name,
                                          task_id=task_id,
-                                         object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
+                                         object_type=mir_cmd_pb.ObjectType.OT_DET,
                                          in_dataset_ids=in_dataset_ids,
                                          in_class_ids=in_class_ids,
                                          req_create_task=req_create_task)
@@ -94,7 +94,7 @@ class TestTaskLabelingInvoker:
                                          user_id=user_name,
                                          repo_id=mir_repo_name,
                                          task_id=task_id,
-                                         object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
+                                         object_type=mir_cmd_pb.ObjectType.OT_DET,
                                          in_dataset_ids=in_dataset_ids,
                                          in_class_ids=in_class_ids,
                                          req_create_task=req_create_task)

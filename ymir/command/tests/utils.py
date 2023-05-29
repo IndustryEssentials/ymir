@@ -130,14 +130,14 @@ def prepare_mir_branch(mir_root: str, assets_and_keywords: Dict[str, Tuple[List[
         class_ids_set.update(keywords_pair[0])
     pred = {
         'task_id': branch_name_and_task_id,
-        'type': mirpb.ObjectType.OT_DET_BOX,
+        'type': mirpb.ObjectType.OT_DET,
         "image_annotations": image_annotations,
         "eval_class_ids": list(class_ids_set),
         'task_class_ids': list(class_ids_set),
     }
     gt = {
         'task_id': branch_name_and_task_id,
-        'type': mirpb.ObjectType.OT_DET_BOX,
+        'type': mirpb.ObjectType.OT_DET,
         "image_annotations": image_annotations,
         'task_class_ids': list(class_ids_set),
     }

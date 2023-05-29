@@ -185,7 +185,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_pred = {
             'task_id': 'merge-task-id-s0',
-            'type': mirpb.ObjectType.OT_DET_BOX,
+            'type': mirpb.ObjectType.OT_DET,
             "image_annotations": {
                 "a0": test_utils.generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.IGNORED),
                 "a1": test_utils.generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
@@ -201,7 +201,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         expected_gt = {
             'task_id': 'merge-task-id-s0',
-            'type': mirpb.ObjectType.OT_DET_BOX,
+            'type': mirpb.ObjectType.OT_DET,
             "image_annotations": {
                 "a0": test_utils.generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
                 "a1": test_utils.generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
@@ -300,7 +300,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_pred = {
             'task_id': 'merge-task-id-h0',
-            'type': mirpb.ObjectType.OT_DET_BOX,
+            'type': mirpb.ObjectType.OT_DET,
             "image_annotations": {
                 "a0": test_utils.generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.IGNORED),
                 "a1": test_utils.generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
@@ -315,7 +315,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         expected_gt = {
             'task_id': 'merge-task-id-h0',
-            'type': mirpb.ObjectType.OT_DET_BOX,
+            'type': mirpb.ObjectType.OT_DET,
             "image_annotations": {
                 "a0": test_utils.generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
                 "a1": test_utils.generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
@@ -394,7 +394,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_pred = {
             'task_id': 'merge-task-id-g0',
-            'type': mirpb.ObjectType.OT_DET_BOX,
+            'type': mirpb.ObjectType.OT_DET,
             "image_annotations": {
                 "a1": test_utils.generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
                 "a2": test_utils.generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
@@ -409,7 +409,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         expected_gt = {
             'task_id': 'merge-task-id-g0',
-            'type': mirpb.ObjectType.OT_DET_BOX,
+            'type': mirpb.ObjectType.OT_DET,
             "image_annotations": {
                 "a1": test_utils.generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
                 "a2": test_utils.generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
@@ -485,7 +485,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_pred = {
             'task_id': 'merge-task-id-nth0',
-            'type': mirpb.ObjectType.OT_DET_BOX,
+            'type': mirpb.ObjectType.OT_DET,
             "image_annotations": {
                 "a1": test_utils.generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
                 "a2": test_utils.generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
@@ -496,7 +496,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         expected_gt = {
             'task_id': 'merge-task-id-nth0',
-            'type': mirpb.ObjectType.OT_DET_BOX,
+            'type': mirpb.ObjectType.OT_DET,
             "image_annotations": {
                 "a1": test_utils.generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
                 "a2": test_utils.generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
