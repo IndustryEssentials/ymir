@@ -236,7 +236,7 @@ const DatasetModal: DatasetStore = {
     createDataset: createEffect<YParams.DatasetCreateParams>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
       if (code === 0) {
-        // yield put.resolve({ type: 'clearCache' })
+        yield put({ type: 'keyword/UpdateReload', payload: true })
         return result
       }
     }),

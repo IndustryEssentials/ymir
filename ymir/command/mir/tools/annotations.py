@@ -30,24 +30,22 @@ class MergeStrategy(str, enum.Enum):
     GUEST = 'guest'
 
 
-def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
-    _anno_dict: Dict[str, mirpb.ExportFormat.V] = {
+def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
+    _anno_dict: Dict[str, mirpb.AnnoFormat.V] = {
         # compatible with legacy format.
-        "voc": mirpb.ExportFormat.EF_VOC_XML,
-        "ark": mirpb.ExportFormat.EF_ARK_TXT,
-        "ls_json": mirpb.ExportFormat.EF_LS_JSON,
-        "det-voc": mirpb.ExportFormat.EF_VOC_XML,
-        "det-ark": mirpb.ExportFormat.EF_ARK_TXT,
-        "det-ls-json": mirpb.ExportFormat.EF_LS_JSON,
-        "seg-coco": mirpb.ExportFormat.EF_COCO_JSON,
+        "voc": mirpb.AnnoFormat.AF_VOC_XML,
+        "ark": mirpb.AnnoFormat.AF_ARK_TXT,
+        "det-voc": mirpb.AnnoFormat.AF_VOC_XML,
+        "det-ark": mirpb.AnnoFormat.AF_ARK_TXT,
+        "seg-coco": mirpb.AnnoFormat.AF_COCO_JSON,
     }
-    return _anno_dict.get(anno_format_str.lower(), mirpb.ExportFormat.EF_NO_ANNOTATIONS)
+    return _anno_dict.get(anno_format_str.lower(), mirpb.AnnoFormat.AF_NO_ANNOS)
 
 
 def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":
     _anno_dict: Dict[str, "mirpb.ObjectType.V"] = {
-        "det-box": mirpb.ObjectType.OT_DET_BOX,
-        "seg": mirpb.ObjectType.OT_SEG,
+        "det": mirpb.ObjectType.OT_DET,
+        "sem-seg": mirpb.ObjectType.OT_SEM_SEG,
         "ins-seg": mirpb.ObjectType.OT_INS_SEG,
         "multi-modal": mirpb.ObjectType.OT_MULTI_MODAL,
         "no-annos": mirpb.ObjectType.OT_NO_ANNOS,
@@ -66,8 +64,8 @@ def anno_type_from_str(anno_type_str: str) -> "mirpb.AnnotationType.V":
 
 def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
     _func_dict: Dict["mirpb.ObjectType.V", Callable] = {
-        mirpb.ObjectType.OT_DET_BOX: _import_annotations_voc_xml,
-        mirpb.ObjectType.OT_SEG: import_annotations_coco_json,
+        mirpb.ObjectType.OT_DET: _import_annotations_voc_xml,
+        mirpb.ObjectType.OT_SEM_SEG: import_annotations_coco_json,
         mirpb.ObjectType.OT_INS_SEG: import_annotations_coco_json,
         mirpb.ObjectType.OT_MULTI_MODAL: import_annotations_coco_json,
         mirpb.ObjectType.OT_NO_ANNOS: _import_no_annotations,

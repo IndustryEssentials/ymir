@@ -1,17 +1,16 @@
+import { Classes } from '@/constants'
 import { getKeywords, updateKeyword, updateKeywords, getRecommendKeywords, checkDuplication } from '@/services/keyword'
-import { createEffect, createReducers } from './_utils'
+import { KeywordState, KeywordStore } from '.'
+import { createEffect, createReducersByState } from './_utils'
 
-const reducersList = [
-  { name: 'UpdateAllKeywords', field: 'allKeywords' },
-  { name: 'UpdateReload', field: 'reload' },
-]
+const state: KeywordState = {
+  allKeywords: [],
+  reload: true,
+}
 
-export default {
+const KeywordModel: KeywordStore = {
   namespace: 'keyword',
-  state: {
-    allKeywords: [],
-    reload: true,
-  },
+  state,
   effects: {
     getAllKeywords: createEffect(function* ({}, { put, select }) {
       const { reload, allKeywords } = yield select(({ keyword }) => keyword)
@@ -51,7 +50,7 @@ export default {
         return result
       }
     }),
-    checkDuplication: createEffect(function* ({ payload: keywords }, { call, put }) {
+    checkDuplication: createEffect<Classes>(function* ({ payload: keywords }, { call, put }) {
       const { code, result } = yield call(checkDuplication, keywords)
       if (code === 0) {
         const newer = keywords.filter((kw) => !result.includes(kw))
@@ -71,9 +70,11 @@ export default {
     getRecommendKeywords: createEffect(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(getRecommendKeywords, payload)
       if (code === 0) {
-        return result.map((item) => item.legend)
+        return result.map((item: { legend: string }) => item.legend)
       }
     }),
   },
-  reducers: createReducers(reducersList),
+  reducers: createReducersByState(state),
 }
+
+export default KeywordModel

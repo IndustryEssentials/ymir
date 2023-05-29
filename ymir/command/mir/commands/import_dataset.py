@@ -245,6 +245,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg', 'ins-seg', 'multi-modal', 'no-annos'],
+                                           choices=['det', 'sem-seg', 'ins-seg', 'multi-modal', 'no-annos'],
                                            help='annotations type\n')
     import_dataset_arg_parser.set_defaults(func=CmdImport)

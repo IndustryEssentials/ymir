@@ -76,21 +76,20 @@ def sub_task_id(task_id: str, offset: int) -> str:
     return task_id[0] + str(offset) + task_id[2:]
 
 
-def annotation_format_str(format: mir_cmd_pb.ExportFormat) -> str:
+def annotation_format_str(format: mir_cmd_pb.AnnoFormat) -> str:
     format_enum_dict = {
-        mir_cmd_pb.ExportFormat.EF_NO_ANNOTATIONS: 'none',
-        mir_cmd_pb.ExportFormat.EF_VOC_XML: 'det-voc',
-        mir_cmd_pb.ExportFormat.EF_ARK_TXT: 'det-ark',
-        mir_cmd_pb.ExportFormat.EF_LS_JSON: 'det-ls-json',
-        mir_cmd_pb.ExportFormat.EF_COCO_JSON: 'seg-coco',
+        mir_cmd_pb.AnnoFormat.AF_NO_ANNOS: 'none',
+        mir_cmd_pb.AnnoFormat.AF_VOC_XML: 'det-voc',
+        mir_cmd_pb.AnnoFormat.AF_ARK_TXT: 'det-ark',
+        mir_cmd_pb.AnnoFormat.AF_COCO_JSON: 'seg-coco',
     }
     return format_enum_dict[format]
 
 
 def object_type_str(object_type: mir_cmd_pb.ObjectType) -> str:
     format_enum_dict = {
-        mir_cmd_pb.ObjectType.OT_DET_BOX: 'det-box',
-        mir_cmd_pb.ObjectType.OT_SEG: 'seg',
+        mir_cmd_pb.ObjectType.OT_DET: 'det',
+        mir_cmd_pb.ObjectType.OT_SEM_SEG: 'sem-seg',
         mir_cmd_pb.ObjectType.OT_INS_SEG: 'ins-seg',
         mir_cmd_pb.ObjectType.OT_MULTI_MODAL: 'multi-modal',
         mir_cmd_pb.ObjectType.OT_NO_ANNOS: 'no-annos',

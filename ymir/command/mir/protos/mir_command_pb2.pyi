@@ -218,10 +218,10 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_CLASS = ObjectType.V(1)
     """Classification with class id, not implemented."""
 
-    OT_DET_BOX = ObjectType.V(2)
+    OT_DET = ObjectType.V(2)
     """Detection w. bounding box."""
 
-    OT_SEG = ObjectType.V(3)
+    OT_SEM_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
     OT_INS_SEG = ObjectType.V(4)
@@ -234,10 +234,10 @@ OT_UNKNOWN = ObjectType.V(0)
 OT_CLASS = ObjectType.V(1)
 """Classification with class id, not implemented."""
 
-OT_DET_BOX = ObjectType.V(2)
+OT_DET = ObjectType.V(2)
 """Detection w. bounding box."""
 
-OT_SEG = ObjectType.V(3)
+OT_SEM_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
 
 OT_INS_SEG = ObjectType.V(4)
@@ -256,36 +256,34 @@ class _ObjectSubTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
     OST_NOTSET = ObjectSubType.V(0)
     OST_SEG_MASK = ObjectSubType.V(30)
-    """OT_SEG sub types"""
+    """OT_SEM_SEG & OT_INS_SEG sub types"""
 
     OST_SEG_POLYGON = ObjectSubType.V(31)
 
 OST_NOTSET = ObjectSubType.V(0)
 OST_SEG_MASK = ObjectSubType.V(30)
-"""OT_SEG sub types"""
+"""OT_SEM_SEG & OT_INS_SEG sub types"""
 
 OST_SEG_POLYGON = ObjectSubType.V(31)
 global___ObjectSubType = ObjectSubType
 
 
-class ExportFormat(_ExportFormat, metaclass=_ExportFormatEnumTypeWrapper):
+class AnnoFormat(_AnnoFormat, metaclass=_AnnoFormatEnumTypeWrapper):
     pass
-class _ExportFormat:
+class _AnnoFormat:
     V = typing.NewType('V', builtins.int)
-class _ExportFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ExportFormat.V], builtins.type):
+class _AnnoFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AnnoFormat.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    EF_NO_ANNOTATIONS = ExportFormat.V(0)
-    EF_VOC_XML = ExportFormat.V(1)
-    EF_ARK_TXT = ExportFormat.V(2)
-    EF_LS_JSON = ExportFormat.V(3)
-    EF_COCO_JSON = ExportFormat.V(4)
+    AF_NO_ANNOS = AnnoFormat.V(0)
+    AF_VOC_XML = AnnoFormat.V(1)
+    AF_ARK_TXT = AnnoFormat.V(2)
+    AF_COCO_JSON = AnnoFormat.V(4)
 
-EF_NO_ANNOTATIONS = ExportFormat.V(0)
-EF_VOC_XML = ExportFormat.V(1)
-EF_ARK_TXT = ExportFormat.V(2)
-EF_LS_JSON = ExportFormat.V(3)
-EF_COCO_JSON = ExportFormat.V(4)
-global___ExportFormat = ExportFormat
+AF_NO_ANNOS = AnnoFormat.V(0)
+AF_VOC_XML = AnnoFormat.V(1)
+AF_ARK_TXT = AnnoFormat.V(2)
+AF_COCO_JSON = AnnoFormat.V(4)
+global___AnnoFormat = AnnoFormat
 
 
 class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
@@ -1587,7 +1585,7 @@ class ExportConfig(google.protobuf.message.Message):
 
     media_location: typing.Text = ...
     need_sub_folder: builtins.bool = ...
-    anno_format: global___ExportFormat.V = ...
+    anno_format: global___AnnoFormat.V = ...
     """Annotation config."""
 
     gt_dir: typing.Text = ...
@@ -1605,7 +1603,7 @@ class ExportConfig(google.protobuf.message.Message):
         asset_index_prefix : typing.Text = ...,
         media_location : typing.Text = ...,
         need_sub_folder : builtins.bool = ...,
-        anno_format : global___ExportFormat.V = ...,
+        anno_format : global___AnnoFormat.V = ...,
         gt_dir : typing.Text = ...,
         gt_index_file : typing.Text = ...,
         gt_index_prefix : typing.Text = ...,

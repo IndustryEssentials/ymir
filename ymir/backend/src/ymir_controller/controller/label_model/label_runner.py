@@ -29,20 +29,6 @@ def prepare_label_dir(working_dir: str, task_id: str) -> Tuple[str, str, str, st
     return input_asset_dir, export_path, monitor_file_path, export_work_dir, import_work_dir
 
 
-def get_mir_export_fmt(label_tool: str, object_type: int) -> str:
-    """
-    ad hoc
-    labelfree uses coco for segmentation dataset, LS for detection dataset
-    """
-    if object_type in {
-            mir_cmd_pb.ObjectType.OT_SEG,
-            mir_cmd_pb.ObjectType.OT_INS_SEG,
-            mir_cmd_pb.ObjectType.OT_MULTI_MODAL,
-    }:
-        return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_COCO_JSON)
-    return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
-
-
 def fix_exported_coco_annotation_image_path(dirname: str) -> None:
     """
     fix image filename in mir exported coco-annotations.json
@@ -62,8 +48,6 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
                         media_location: str, export_work_dir: str, keywords: List[str],
                         annotation_type: Optional[int], object_type: int) -> None:
     # trigger ymir export, so that we can get pictures from ymir
-    format_str = get_mir_export_fmt(label_task_config.LABEL_TOOL, object_type)
-
     gt_dir: Optional[str] = None
     pred_dir: Optional[str] = None
     if annotation_type == mir_cmd_pb.AnnotationType.AT_GT:
@@ -74,7 +58,8 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
     TaskExportingInvoker.exporting_cmd(repo_root=repo_root,
                                        label_storage_file=label_storage_file,
                                        in_dataset_id=dataset_id,
-                                       annotation_format=format_str,
+                                       annotation_format=utils.annotation_format_str(
+                                           mir_cmd_pb.AnnoFormat.AF_COCO_JSON),
                                        asset_dir=input_asset_dir,
                                        pred_dir=pred_dir,
                                        gt_dir=gt_dir,
@@ -82,10 +67,7 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
                                        work_dir=export_work_dir,
                                        keywords=keywords)
     annotation_dir = gt_dir or pred_dir
-    if (
-        annotation_dir is not None
-        and format_str == utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_COCO_JSON)
-    ):
+    if annotation_dir is not None:
         fix_exported_coco_annotation_image_path(annotation_dir)
 
 
