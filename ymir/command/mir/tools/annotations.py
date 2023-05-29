@@ -55,6 +55,9 @@ def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":
 
 
 def parse_anno_type_format(anno_type_format_str: str) -> Tuple["mirpb.ObjectType.V", "mirpb.AnnoFormat.V"]:
+    if anno_type_format_str.lower() == 'none':
+        anno_type_format_str = 'no-annos:none'
+
     obj_type_str, anno_fmt_str = anno_type_format_str.split(':')
     return (parse_object_type(obj_type_str), parse_anno_format(anno_fmt_str))
 
