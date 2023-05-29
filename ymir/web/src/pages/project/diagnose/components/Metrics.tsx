@@ -69,8 +69,9 @@ const Matrics: FC<Props> = ({ prediction }) => {
   const [tabs, setTabs] = useState<TabType[]>([])
   const { state } = useLocation<{ mid: number }>()
   const [form] = Form.useForm()
-  const [averageIou, setaverageIou] = useState(false)
+  const [averageIou, setaverageIou] = useState(true)
   const [confidence, setConfidence] = useState(0.3)
+  const [confidenceChanged, setConfidenceChanged] = useState(false)
   const [selectedMetric, setSelectedMetric] = useState<TabIdType>('ap')
   const [prRate, setPrRate] = useState<[number, number]>([0.8, 0.95])
   const [keywords, setKeywords] = useState<string[]>([])
@@ -158,6 +159,7 @@ const Matrics: FC<Props> = ({ prediction }) => {
       averageIou: true,
       confidence,
     })
+    setConfidenceChanged(false)
   }
 
   function onFinishFailed(errorInfo: ValidateErrorEntity) {
@@ -318,10 +320,24 @@ const Matrics: FC<Props> = ({ prediction }) => {
                 </Form.Item>
                 {!isSemantic(prediction?.type) ? (
                   <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">
-                    <InputNumber step={0.0005} min={0.0005} max={0.9995} readOnly />
+                    <InputNumber
+                      step={0.0005}
+                      min={0.0005}
+                      max={0.9995}
+                      onChange={(value) => {
+                        setConfidence(value)
+                        setConfidenceChanged(true)
+                      }}
+                    />
                   </Form.Item>
                 ) : null}
-                {!isSemantic(prediction?.type) ? <Form.Item label={t('model.diagnose.form.iou')}>{renderIouOptionLabel('everage')}</Form.Item> : null}
+                {!isSemantic(prediction?.type) ? (
+                  <Form.Item style={{ textAlign: 'center' }}>
+                    <Button htmlType="submit" type="primary" disabled={!confidenceChanged} onClick={() => diagnose()}>
+                      <CompareIcon /> {t('model.diagnose.metrics.btn.retry')}
+                    </Button>
+                  </Form.Item>
+                ) : null}
               </Form>
             </Panel>
           </div>
