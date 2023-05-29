@@ -206,7 +206,8 @@ class LabelFree(LabelBase):
 
     def create_export_task(self, project_id: int, object_type: int) -> None:
         url_path = "/api/v1/export"
-        payload = {"project_id": project_id, "export_type": 4, "export_image": False}
+        export_type = 4  # use COCO JSON for all kinds of label projects
+        payload = {"project_id": project_id, "export_type": export_type, "export_image": False}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
             export_task_id = json.loads(resp)["data"]["task_id"]
