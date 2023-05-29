@@ -59,7 +59,9 @@ class LabelFree(LabelBase):
         mapping = {
             mir_cmd_pb.ObjectType.OT_DET: LabelFreeProjectType.detection,
             mir_cmd_pb.ObjectType.OT_SEM_SEG: LabelFreeProjectType.semantic_segmentation,
-            mir_cmd_pb.ObjectType.OT_INS_SEG: LabelFreeProjectType.instance_segmentation
+            mir_cmd_pb.ObjectType.OT_INS_SEG: LabelFreeProjectType.instance_segmentation,
+            # FIXME: ad hoc, ymir only supports detection + multimodal for now
+            mir_cmd_pb.ObjectType.OT_MULTI_MODAL: LabelFreeProjectType.detection,
         }
         return mapping[object_type].value
 
@@ -80,12 +82,14 @@ class LabelFree(LabelBase):
             label_config=label_config,
             expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
             project_type=self.map_object_type_to_label_free_project_type(object_type),
+            multimodal=(object_type == mir_cmd_pb.ObjectType.OT_MULTI_MODAL),
         )
         resp = self._requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp).get("id")
         if not isinstance(project_id, int):
             raise ValueError(f"LabelFree return wrong id: {project_id} from {url_path}")
 
+        logging.info(f"[label] created LabelFree project({project_id}) with payload: {data}")
         return project_id
 
     def set_import_storage(self, project_id: int, import_path: str, use_pre_annotation: bool = False) -> int:
@@ -202,7 +206,7 @@ class LabelFree(LabelBase):
 
     def create_export_task(self, project_id: int, object_type: int) -> None:
         url_path = "/api/v1/export"
-        export_type = 1 if object_type == mir_cmd_pb.ObjectType.OT_DET else 4
+        export_type = 4  # use COCO JSON for all kinds of label projects
         payload = {"project_id": project_id, "export_type": export_type, "export_image": False}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
