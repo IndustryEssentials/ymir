@@ -10,7 +10,7 @@ type Root = {
   prediction: PredictionState
   model: ModelState
   image: ImageState
-  keyword: LabelState
+  keyword: KeywordState
   project: ProjectState
   socket: SocketState
   asset: AssetState
@@ -83,7 +83,7 @@ interface ImageState {
   official?: Image
 }
 
-type LabelState = {
+type KeywordState = {
   allKeywords: ClassObject[]
   reload: boolean
 }
@@ -102,6 +102,7 @@ type MessageStore = StoreType<'message', MessageState>
 type CommonStore = StoreType<'common', CommonState>
 type IterationStore = StoreType<'iteration', IterationState>
 type UserStore = StoreType<'user', UserState>
+type KeywordStore = StoreType<'keyword', KeywordState>
 
 export {
   PredictionStore,
@@ -122,6 +123,8 @@ export {
   IterationState,
   UserState,
   UserStore,
+  KeywordState,
+  KeywordStore,
 }
 
 export default Root
