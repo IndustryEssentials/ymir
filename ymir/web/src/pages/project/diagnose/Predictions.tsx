@@ -33,13 +33,18 @@ const Predictions: React.FC = () => {
   const cacheDatasets = useSelector((state) => state.dataset.dataset)
   const cacheModels = useSelector((state) => state.model.model)
   const progressTasks = useSelector(({ socket }) => socket.tasks)
+  const disableDiagnose = (pred: Prediction) => {
+    const exceedAssetCount = pred.assetCount > INFER_DATASET_MAX_COUNT
+    const exceedTrainingClasses = (pred.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT
+    const invalidGt = !pred.gt?.keywords.length
+    return !validState(pred.state) || exceedAssetCount || exceedTrainingClasses || invalidGt
+  }
   const actions = (record: Prediction): YComponents.Action[] => [
     {
       key: 'diagnose',
       label: t('common.action.diagnose'),
       onclick: () => popupModal(record),
-      disabled:
-        !validState(record.state) || record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT,
+      disabled: disableDiagnose(record),
       icon: <DiagnosisIcon />,
     },
     {
