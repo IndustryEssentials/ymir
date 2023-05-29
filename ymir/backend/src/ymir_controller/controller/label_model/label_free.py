@@ -206,8 +206,7 @@ class LabelFree(LabelBase):
 
     def create_export_task(self, project_id: int, object_type: int) -> None:
         url_path = "/api/v1/export"
-        export_type = 1 if object_type == mir_cmd_pb.ObjectType.OT_DET else 4
-        payload = {"project_id": project_id, "export_type": export_type, "export_image": False}
+        payload = {"project_id": project_id, "export_type": 4, "export_image": False}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
             export_task_id = json.loads(resp)["data"]["task_id"]
