@@ -72,7 +72,7 @@ class TestToolsDetEval(unittest.TestCase):
 
         annotations_dict = {
             'prediction': {
-                'type': mirpb.ObjectType.OT_DET_BOX,
+                'type': mirpb.ObjectType.OT_DET,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -178,7 +178,7 @@ class TestToolsDetEval(unittest.TestCase):
                 },
             },
             'ground_truth': {
-                'type': mirpb.ObjectType.OT_DET_BOX,
+                'type': mirpb.ObjectType.OT_DET,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -392,7 +392,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'task_id': 'a',
                 'eval_class_ids': [],
                 'executor_config': '',
-                'type': 'OT_DET_BOX',
+                'type': 'OT_DET',
             },
             'prediction': {
                 'image_annotations': {
@@ -562,7 +562,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'task_id': 'a',
                 'eval_class_ids': [0, 1, 2, 3],
                 'executor_config': '',
-                'type': 'OT_DET_BOX',
+                'type': 'OT_DET',
                 'task_class_ids': [0, 1, 2, 3],
             },
             'image_cks': {

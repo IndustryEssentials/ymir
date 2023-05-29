@@ -33,7 +33,7 @@ class CmdInspectImageInvoker(BaseMirControllerInvoker):
         response.docker_image_enable_livecode = bool(manifest_config.get("enable_livecode", False))
         response.docker_image_is_official = bool(manifest_config.get("is_official", False))
 
-        manifest_object_types = manifest_config.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX)
+        manifest_object_types = manifest_config.get("object_type", mir_cmd_pb.ObjectType.OT_DET)
         object_type_and_dirs: List[Tuple[int, str]] = []  # 1st: object_type, 2nd: template root dir
         if isinstance(manifest_object_types, list):
             object_type_and_dirs.extend([(x,

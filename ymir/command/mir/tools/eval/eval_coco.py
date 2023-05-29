@@ -70,7 +70,7 @@ class MirCoco:
                 if conf_thr is not None and annotation.score < conf_thr:
                     continue
 
-                if single_task_annotations.type == mirpb.OT_DET_BOX:
+                if single_task_annotations.type == mirpb.OT_DET:
                     area = annotation.box.w * annotation.box.h
                 else:
                     area = annotation.mask_area
@@ -536,7 +536,7 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
 
     params = Params()
     params.confThr = config.conf_thr
-    params.iouType = 'bbox' if config.type == mirpb.ObjectType.OT_DET_BOX else 'segm'
+    params.iouType = 'bbox' if config.type == mirpb.ObjectType.OT_DET else 'segm'
     if config.iou_thrs_interval != "-1":
         params.iouThrs = eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve

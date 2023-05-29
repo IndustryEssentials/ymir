@@ -96,7 +96,7 @@ class TestCmdInfer(unittest.TestCase):
                                             },
                                             stages={model_stage.stage_name: model_stage},
                                             best_stage_name=model_stage.stage_name,
-                                            object_type=mirpb.ObjectType.OT_DET_BOX,
+                                            object_type=mirpb.ObjectType.OT_DET,
                                             package_version=YMIR_MODEL_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
@@ -114,7 +114,7 @@ class TestCmdInfer(unittest.TestCase):
         # shutil.copyfile(src=os.path.join(test_assets_root, 'infer-template.yaml'), dst=self._config_file)
         with open(os.path.join(test_assets_root, 'infer-template.yaml'), 'r') as f:
             executor_config = yaml.safe_load(f)
-        task_context = {"object_type": mirpb.ObjectType.OT_DET_BOX}
+        task_context = {"object_type": mirpb.ObjectType.OT_DET}
         with open(self._config_file, 'w') as f:
             yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config,
                             mir_settings.TASK_CONTEXT_KEY: task_context}, f, allow_unicode=True)
@@ -199,6 +199,6 @@ class TestCmdInfer(unittest.TestCase):
         with open(os.path.join(fake_args.work_dir, 'out', 'prediction.mir'), 'rb') as f:
             prediction = mirpb.SingleTaskAnnotations()
             prediction.ParseFromString(f.read())
-            self.assertEqual(prediction.type, mirpb.ObjectType.OT_DET_BOX)
+            self.assertEqual(prediction.type, mirpb.ObjectType.OT_DET)
             self.assertEqual(len(prediction.image_annotations), 1)
             self.assertEqual(len(prediction.image_annotations['2007_000032.jpg'].boxes), 1)

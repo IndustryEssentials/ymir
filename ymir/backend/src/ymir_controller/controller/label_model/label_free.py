@@ -57,8 +57,8 @@ class LabelFree(LabelBase):
     @staticmethod
     def map_object_type_to_label_free_project_type(object_type: int) -> int:
         mapping = {
-            mir_cmd_pb.ObjectType.OT_DET_BOX: LabelFreeProjectType.detection,
-            mir_cmd_pb.ObjectType.OT_SEG: LabelFreeProjectType.semantic_segmentation,
+            mir_cmd_pb.ObjectType.OT_DET: LabelFreeProjectType.detection,
+            mir_cmd_pb.ObjectType.OT_SEM_SEG: LabelFreeProjectType.semantic_segmentation,
             mir_cmd_pb.ObjectType.OT_INS_SEG: LabelFreeProjectType.instance_segmentation
         }
         return mapping[object_type].value
@@ -183,7 +183,7 @@ class LabelFree(LabelBase):
         export_url = self.get_export_url(project_id, export_task_id)
         content = self._requests.get(export_url)
         self.unzip_annotation_files(BytesIO(content), des_path)
-        if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
+        if object_type == mir_cmd_pb.ObjectType.OT_DET:
             self._move_voc_annotations_to(des_path)
         else:
             self._move_coco_annotations_to(des_path)
@@ -202,7 +202,7 @@ class LabelFree(LabelBase):
 
     def create_export_task(self, project_id: int, object_type: int) -> None:
         url_path = "/api/v1/export"
-        export_type = 1 if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX else 4
+        export_type = 1 if object_type == mir_cmd_pb.ObjectType.OT_DET else 4
         payload = {"project_id": project_id, "export_type": export_type, "export_image": False}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:

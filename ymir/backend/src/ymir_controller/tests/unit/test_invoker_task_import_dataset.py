@@ -94,7 +94,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
                                          sandbox_root=self._sandbox_root,
                                          assets_config=assets_config,
                                          req_type=backend_pb2.TASK_CREATE,
-                                         object_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
+                                         object_type=mir_cmd_pb.ObjectType.OT_DET,
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
@@ -109,7 +109,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
             f"mir import --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} --src-revs master "
             f"--gen-dir {self._storage_root} -w {working_dir} "
             f"--user-label-file {test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
-            f"--anno-type det-box --asset-path {self._storage_root} "
+            f"--anno-type det --asset-path {self._storage_root} "
             f"--pred-dir {self._storage_root} --gt-dir {self._storage_root} --unknown-types-strategy add")
         mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
                                                          repo_id=self._mir_repo_name,

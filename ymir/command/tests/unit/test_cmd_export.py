@@ -166,7 +166,7 @@ class TestCmdExport(unittest.TestCase):
                         }],
                     },
                 },
-                'type': mirpb.ObjectType.OT_DET_BOX,
+                'type': mirpb.ObjectType.OT_DET,
             },
             'ground_truth': {
                 'type': mirpb.ObjectType.OT_NO_ANNOS,

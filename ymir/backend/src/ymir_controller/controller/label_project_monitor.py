@@ -62,7 +62,7 @@ def generate_label_index_file(input_asset_dir: Path, annotation_dir: Path, objec
     """
     filter assets paths against related annotation files
     """
-    if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
+    if object_type == mir_cmd_pb.ObjectType.OT_DET:
         labelled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
     else:
         with open(annotation_dir / "coco-annotations.json") as f:
@@ -100,7 +100,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
 
     if state == LogState.DONE:
         # For remove some special tasks. Delete the task after labeling will save file
-        object_type = int(project_info.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
+        object_type = int(project_info.get("object_type", mir_cmd_pb.ObjectType.OT_DET))
         des_annotation_path = project_info["des_annotation_path"]
         remove_json_file(des_annotation_path)
         try:
