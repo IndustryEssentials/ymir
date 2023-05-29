@@ -127,10 +127,8 @@ const TaskModel: TaskStore = {
       const { code, result } = yield call(batchAdd, pid, params)
       if (code === 0) {
         yield put({
-          type: 'dataset/UpdateImportingList',
-          payload: {
-            items: [],
-          },
+          type: 'dataset/updateImportingList',
+          payload: [],
         })
         return result
       }
