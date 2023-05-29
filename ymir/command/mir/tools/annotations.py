@@ -32,12 +32,13 @@ class MergeStrategy(str, enum.Enum):
 
 def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
     _anno_dict: Dict[str, mirpb.AnnoFormat.V] = {
-        # compatible with legacy format.
         "voc": mirpb.AnnoFormat.AF_VOC_XML,
         "ark": mirpb.AnnoFormat.AF_ARK_TXT,
+        "coco": mirpb.AnnoFormat.AF_COCO_JSON,
         "det-voc": mirpb.AnnoFormat.AF_VOC_XML,
         "det-ark": mirpb.AnnoFormat.AF_ARK_TXT,
         "seg-coco": mirpb.AnnoFormat.AF_COCO_JSON,
+        "none": mirpb.AnnoFormat.AF_NO_ANNOS,
     }
     return _anno_dict.get(anno_format_str.lower(), mirpb.AnnoFormat.AF_NO_ANNOS)
 
@@ -53,6 +54,11 @@ def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":
     return _anno_dict.get(object_type_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
 
+def parse_anno_type_format(anno_type_format_str: str) -> Tuple["mirpb.ObjectType.V", "mirpb.AnnoFormat.V"]:
+    obj_type_str, anno_fmt_str = anno_type_format_str.split(':')
+    return (parse_object_type(obj_type_str), parse_anno_format(anno_fmt_str))
+
+
 def anno_type_from_str(anno_type_str: str) -> "mirpb.AnnotationType.V":
     enum_dict = {
         'pred': mirpb.AnnotationType.AT_PRED,
@@ -62,17 +68,15 @@ def anno_type_from_str(anno_type_str: str) -> "mirpb.AnnotationType.V":
     return enum_dict.get(anno_type_str.lower(), mirpb.AnnotationType.AT_ANY)
 
 
-def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
-    _func_dict: Dict["mirpb.ObjectType.V", Callable] = {
-        mirpb.ObjectType.OT_DET: _import_annotations_voc_xml,
-        mirpb.ObjectType.OT_SEM_SEG: import_annotations_coco_json,
-        mirpb.ObjectType.OT_INS_SEG: import_annotations_coco_json,
-        mirpb.ObjectType.OT_MULTI_MODAL: import_annotations_coco_json,
-        mirpb.ObjectType.OT_NO_ANNOS: _import_no_annotations,
+def _annotation_parse_func(anno_fmt: "mirpb.AnnoFormat.V") -> Callable:
+    _func_dict: Dict["mirpb.AnnoFormat.V", Callable] = {
+        mirpb.AnnoFormat.AF_VOC_XML: _import_annotations_voc_xml,
+        mirpb.AnnoFormat.AF_COCO_JSON: import_annotations_coco_json,
+        mirpb.AnnoFormat.AF_NO_ANNOS: _import_no_annotations,
     }
-    if anno_type not in _func_dict:
+    if anno_fmt not in _func_dict:
         raise NotImplementedError()
-    return _func_dict[anno_type]
+    return _func_dict[anno_fmt]
 
 
 def _annotation_signature(annotation: mirpb.ObjectAnnotation, asset_id: str) -> str:
@@ -157,7 +161,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str,
                        prediction_dir_path: Optional[str], groundtruth_dir_path: Optional[str],
                        file_name_to_asset_ids: Dict[str, str], unknown_types_strategy: UnknownTypesStrategy,
-                       anno_type: "mirpb.ObjectType.V", phase: str) -> Dict[str, int]:
+                       anno_type: "mirpb.ObjectType.V", anno_fmt: "mirpb.AnnoFormat.V", phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict
@@ -168,7 +172,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         logging.info(f"wrting prediction in {prediction_dir_path}")
 
         mir_annotation.prediction.type = anno_type
-        _annotation_parse_func(anno_type)(
+        _annotation_parse_func(anno_fmt)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=prediction_dir_path,
@@ -191,7 +195,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
 
         mir_annotation.ground_truth.type = anno_type
-        _annotation_parse_func(anno_type)(
+        _annotation_parse_func(anno_fmt)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=groundtruth_dir_path,

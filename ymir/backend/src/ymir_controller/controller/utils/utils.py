@@ -79,9 +79,9 @@ def sub_task_id(task_id: str, offset: int) -> str:
 def annotation_format_str(format: mir_cmd_pb.AnnoFormat) -> str:
     format_enum_dict = {
         mir_cmd_pb.AnnoFormat.AF_NO_ANNOS: 'none',
-        mir_cmd_pb.AnnoFormat.AF_VOC_XML: 'det-voc',
-        mir_cmd_pb.AnnoFormat.AF_ARK_TXT: 'det-ark',
-        mir_cmd_pb.AnnoFormat.AF_COCO_JSON: 'seg-coco',
+        mir_cmd_pb.AnnoFormat.AF_VOC_XML: 'voc',
+        mir_cmd_pb.AnnoFormat.AF_ARK_TXT: 'ark',
+        mir_cmd_pb.AnnoFormat.AF_COCO_JSON: 'coco',
     }
     return format_enum_dict[format]
 
@@ -95,6 +95,17 @@ def object_type_str(object_type: mir_cmd_pb.ObjectType) -> str:
         mir_cmd_pb.ObjectType.OT_NO_ANNOS: 'no-annos',
     }
     return format_enum_dict[object_type]
+
+
+def default_anno_fmt_for_obj_type(object_type: mir_cmd_pb.ObjectType) -> mir_cmd_pb.AnnoFormat:
+    mapping = {
+        mir_cmd_pb.ObjectType.OT_DET: mir_cmd_pb.AnnoFormat.AF_VOC_XML,
+        mir_cmd_pb.ObjectType.OT_SEM_SEG: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+        mir_cmd_pb.ObjectType.OT_INS_SEG: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+        mir_cmd_pb.ObjectType.OT_MULTI_MODAL: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+        mir_cmd_pb.ObjectType.OT_NO_ANNOS: mir_cmd_pb.AnnoFormat.AF_NO_ANNOS,
+    }
+    return mapping[object_type]
 
 
 def annotation_type_str(annotation_type: mir_cmd_pb.AnnotationType) -> str:
