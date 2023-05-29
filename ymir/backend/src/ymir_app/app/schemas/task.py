@@ -410,6 +410,7 @@ class TaskInternal(TaskInDBBase):
             TaskType.data_fusion,
             TaskType.filter,
             TaskType.merge,
+            TaskType.exclude_data,
         ]:
             return ResultType.dataset
         else:
