@@ -225,6 +225,7 @@ const dataset = {
     en: 'It is recommended to add images containing {values} classes greater than {boundingLabel} of the maxium to increase the balance of the object density.',
   },
   'dataset.unfold.all': { cn: '全部展开', en: 'Unfold All Versions' },
+  'dataset.add.batch.success': { cn: '{count}个数据集添加任务创建成功', en: '{count} datasets add tasks created' },
 }
 
 export default dataset

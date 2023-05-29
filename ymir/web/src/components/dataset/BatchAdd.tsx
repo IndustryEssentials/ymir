@@ -1,4 +1,4 @@
-import { Button, Card, Form, Space } from 'antd'
+import { Button, Card, Form, message, Space } from 'antd'
 import { FC, useEffect } from 'react'
 import t from '@/utils/t'
 import AddList from './add/AddList'
@@ -15,11 +15,18 @@ const BatchAdd: FC = () => {
   const history = useHistory()
   const visible = useSelector(({ dataset }) => dataset.importing.formatVisible)
   const { run: showFormatDetail } = useRequest<null, [boolean]>('dataset/showFormatDetail', { loading: false })
-  const { data: results, run: batch } = useRequest<Task, [{ pid: string }]>('task/batchAdd')
+  const { data: results, run: batch } = useRequest<(Task | null)[], [{ pid: string }]>('task/batchAdd')
 
   useEffect(() => {
-    // todo, turn to dataset list
     results && history.push(`/home/project/${id}/dataset`)
+    if (results?.length) {
+      const validResults = results.filter((tru) => tru).map((task) => task)
+      if (validResults.length) {
+        message.info(t('dataset.add.batch.success', { count: validResults.length }))
+      } else {
+        message.info(t('dataset.add.failure'))
+      }
+    }
   }, [results])
 
   return (
