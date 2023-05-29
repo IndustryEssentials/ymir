@@ -325,7 +325,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
               </Form>
             </Panel>
           </div>
-          {model && diagnosing ? <DefaultStages models={[model]} /> : null}
         </Col>
       </Row>
     </div>
