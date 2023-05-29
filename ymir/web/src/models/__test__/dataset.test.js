@@ -334,10 +334,11 @@ describe('models: dataset', () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    const end = generator.next()
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -468,10 +469,10 @@ describe('models: dataset', () => {
     const pid = 63343
     const creator = {
       type: 'getValidDatasetsCount',
-      payload: pid
+      payload: pid,
     }
     const total = 3
-    const result = {items: products(total), total }
+    const result = { items: products(total), total }
     const generator = saga(creator, { put })
     generator.next()
     generator.next(result)
@@ -485,10 +486,10 @@ describe('models: dataset', () => {
     const pid = 63343
     const creator = {
       type: 'getTrainingDatasetCount',
-      payload: pid
+      payload: pid,
     }
     const total = 4
-    const result = {items: products(total), total }
+    const result = { items: products(total), total }
     const generator = saga(creator, { put })
     generator.next()
     generator.next(result)
