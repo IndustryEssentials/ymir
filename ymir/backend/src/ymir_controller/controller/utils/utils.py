@@ -97,17 +97,6 @@ def object_type_str(object_type: mir_cmd_pb.ObjectType) -> str:
     return format_enum_dict[object_type]
 
 
-def default_anno_fmt_for_obj_type(object_type: mir_cmd_pb.ObjectType) -> mir_cmd_pb.AnnoFormat:
-    mapping = {
-        mir_cmd_pb.ObjectType.OT_DET: mir_cmd_pb.AnnoFormat.AF_VOC_XML,
-        mir_cmd_pb.ObjectType.OT_SEM_SEG: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
-        mir_cmd_pb.ObjectType.OT_INS_SEG: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
-        mir_cmd_pb.ObjectType.OT_MULTI_MODAL: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
-        mir_cmd_pb.ObjectType.OT_NO_ANNOS: mir_cmd_pb.AnnoFormat.AF_NO_ANNOS,
-    }
-    return mapping[object_type]
-
-
 def annotation_type_str(annotation_type: mir_cmd_pb.AnnotationType) -> str:
     enum_str_map = {
         mir_cmd_pb.AnnotationType.AT_GT: 'gt',

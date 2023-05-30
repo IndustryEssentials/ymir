@@ -50,7 +50,7 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
             work_dir=subtask_workdir,
             unknown_types_strategy=import_dataset_request.unknown_types_strategy,
             object_type=request.object_type,
-            anno_fmt=utils.default_anno_fmt_for_obj_type(request.object_type))
+            anno_fmt=import_dataset_request.anno_format)
 
         if import_dataset_request.clean_dirs:
             logging.info("trying to clean all data dirs.")
