@@ -248,6 +248,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
         '--anno-type-fmt', '--anno-type',
         dest='anno_type_fmt',
         required=True,
-        choices=['det:voc', 'det:coco', 'sem-seg:coco', 'ins-seg:coco', 'multi-modal:coco', 'no-annos:none', 'none'],
+        choices=['det:voc', 'det:coco', 'sem-seg:coco', 'ins-seg:coco', 'multi-modal:coco', 'no-annos:none',
+                 'sem-seg', 'ins-seg', 'multi-modal', 'no-annos'],
         help='anno_type:anno_format\n')
     import_dataset_arg_parser.set_defaults(func=CmdImport)

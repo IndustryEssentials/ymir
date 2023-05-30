@@ -55,11 +55,16 @@ def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":
 
 
 def parse_anno_type_format(anno_type_format_str: str) -> Tuple["mirpb.ObjectType.V", "mirpb.AnnoFormat.V"]:
-    if anno_type_format_str.lower() == 'none':
-        anno_type_format_str = 'no-annos:none'
+    components = anno_type_format_str.split(':')
+    if len(components) == 1:
+        obj_type = parse_object_type(components[0])
+        return (obj_type, mirpb.AnnoFormat.AF_NO_ANNOS
+                if obj_type == mirpb.ObjectType.OT_NO_ANNOS else mirpb.AnnoFormat.AF_COCO_JSON)
+    elif len(components) == 2:
+        return (parse_object_type(components[0]), parse_anno_format(components[1]))
 
-    obj_type_str, anno_fmt_str = anno_type_format_str.split(':')
-    return (parse_object_type(obj_type_str), parse_anno_format(anno_fmt_str))
+    raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                          error_message=f"Invalid obj_type:anno_fmt str: {anno_type_format_str}")
 
 
 def anno_type_from_str(anno_type_str: str) -> "mirpb.AnnotationType.V":
