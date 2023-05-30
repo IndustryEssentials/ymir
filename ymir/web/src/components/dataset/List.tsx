@@ -684,7 +684,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
       <Row className="actions">
         <Col flex={1}>
           <Space>
-            <AddButton className={!datasetAdded ? 'wave' : ''} />
+            <AddButton className={!datasetAdded ? 'scale' : ''} />
             {renderMultipleActions}
           </Space>
         </Col>
