@@ -43,7 +43,7 @@ interface DatasetState {
   versions: IdMap<Dataset[]>
   dataset: IdMap<Dataset>
   allDatasets: { [pid: number]: Dataset[] }
-  publicDatasets: Dataset[]
+  publicDatasets: List<Dataset>
   query: YParams.DatasetsQuery
   validDatasetCount: number
   trainingDatasetCount: number

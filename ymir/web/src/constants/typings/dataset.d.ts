@@ -76,6 +76,7 @@ type ImportingItem = {
   source: string
   sourceName: string
   strategy?: IMPORTSTRATEGY
+  classes?: string[]
 }
 
 export {

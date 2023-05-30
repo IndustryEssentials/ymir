@@ -124,6 +124,13 @@ const TaskModel: TaskStore = {
           [field]: item.source,
         }
       })
+      const newClasses = [...new Set(items.reduce<string[]>((prev, { classes = [] }) => [...prev, ...classes], []))]
+      if (newClasses.length) {
+        yield put.resolve({
+          type: 'keyword/updateKeywords',
+          payload: { keywords: newClasses.map((cls) => ({ name: cls })) },
+        })
+      }
       const { code, result } = yield call(batchAdd, pid, params)
       if (code === 0) {
         yield put({
