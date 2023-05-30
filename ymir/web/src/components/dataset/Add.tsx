@@ -62,7 +62,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
   const [ignoredKeywords, setIgnoredKeywords] = useState<string[]>([])
   const { data: { newer } = {}, run: checkKeywords } = useRequest<{ newer: string[] }>('keyword/checkDuplication')
   const [addResult, newDataset] = useFetch('dataset/createDataset')
-  const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<List<DatasetType>>('dataset/getInternalDataset')
+  const { data: publicDatasets = [], run: getPublicDatasets } = useRequest<DatasetType[]>('dataset/getInternalDataset')
   const { runAsync: addKeywords } = useRequest<{}, [{ keywords: string[]; dry_run?: boolean }]>('keyword/addKeywords')
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
   const [defaultName, setDefaultName] = useState('')

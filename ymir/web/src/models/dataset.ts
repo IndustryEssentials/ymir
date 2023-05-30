@@ -26,7 +26,7 @@ import { Backend, Dataset, ImportingItem, ProgressTask } from '@/constants'
 
 const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
 
-const initState = {
+const initState: DatasetState = {
   query: { ...initQuery },
   datasets: {},
   versions: {},
@@ -297,12 +297,12 @@ const DatasetModal: DatasetStore = {
       const { code, result } = yield call(getInternalDataset, payload)
       if (code === 0) {
         const dss = (result as List<Backend>).items.map((item) => transferDataset(item))
-        const ds = { items: dss, total: result.total }
+        const ds = dss
         yield put({
           type: 'UpdatePublicDatasets',
-          payload: ds,
+          payload: dss,
         })
-        return ds
+        return dss
       }
     }),
     updateDatasets: createEffect<{ [key: string]: ProgressTask }>(function* ({ payload }, { put, select }) {

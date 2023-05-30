@@ -108,14 +108,18 @@ describe('models: dataset', () => {
     expect(result).toEqual(expected)
   })
 
-  it('effects: UpdateImporting', () => {
+  it('effects: updateImportingList', () => {
     const list = [1, 2, 34, 65]
-    const expected = { items: list, max: 6 }
-    const action = {
-      payload: expected,
+    const creator = {
+      type: 'updateImporting',
+      payload: list,
     }
-    const { importing } = dataset.effects.UpdateImporting(state, action)
-    expect(importing).toEqual(expected)
+    const saga = dataset.effects.updateImportingList
+    const generator = saga(creator, { put, select })
+    generator.next()
+    const end = generator.next()
+    console.log('end:', end)
+    expect(end.done).toBe(true)
   })
 
   it('effects: getDatasetGroups', () => {
@@ -467,7 +471,7 @@ describe('models: dataset', () => {
       payload: {},
     }
     const recieved = [1, 3, 4, 5, 6].map((id) => ds(id))
-    const expected = { items: recieved.map((item) => transferDataset(item)), total: recieved.length }
+    const expected = recieved.map((item) => transferDataset(item))
 
     const generator = saga(creator, { put, call })
     generator.next()
