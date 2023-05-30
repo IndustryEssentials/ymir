@@ -71,6 +71,7 @@ describe('models: dataset', () => {
   const gid = 534234
   const items = products(4)
   const datasets = { items, total: items.length }
+  const importing = { items: [1, 2, 3, 6], max: 6 }
   normalReducer(dataset, 'UpdateDatasets', { [916]: datasets }, { [916]: datasets }, 'datasets', {})
   normalReducer(dataset, 'UpdateVersions', { [gid]: items }, { [gid]: items }, 'versions', {})
   normalReducer(dataset, 'UpdateDataset', { [gid]: product(534) }, { [gid]: product(534) }, 'dataset', {})
@@ -78,6 +79,7 @@ describe('models: dataset', () => {
   normalReducer(dataset, 'UpdateQuery', { limit: 20 }, { limit: 20 }, 'query', {})
   normalReducer(dataset, 'UpdateTrainingDatasetCount', 15, 15, 'trainingDatasetCount', 0)
   normalReducer(dataset, 'UpdateValidDatasetCount', 18, 18, 'validDatasetCount', 0)
+  normalReducer(dataset, 'UpdateImporting', importing, importing, 'importing', { items: [], max: 10 })
 
   it('reducers: CLEAR_ALL', () => {
     const state = {
@@ -94,12 +96,26 @@ describe('models: dataset', () => {
       publicDatasets: [],
       trainingDatasetCount: 0,
       validDatasetCount: 0,
+      importing: {
+        items: [],
+        max: 10,
+      },
     }
     const action = {
       payload: null,
     }
     const result = dataset.reducers.CLEAR_ALL(state, action)
     expect(result).toEqual(expected)
+  })
+
+  it('effects: UpdateImporting', () => {
+    const list = [1, 2, 34, 65]
+    const expected = { items: list, max: 6 }
+    const action = {
+      payload: expected,
+    }
+    const { importing } = dataset.effects.UpdateImporting(state, action)
+    expect(importing).toEqual(expected)
   })
 
   it('effects: getDatasetGroups', () => {
