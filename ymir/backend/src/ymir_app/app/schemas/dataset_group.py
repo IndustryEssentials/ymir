@@ -61,3 +61,7 @@ class DatasetGroupNames(BaseModel):
 
 class DatasetGroupNamesWithProject(DatasetGroupNames):
     project_id: int
+
+
+class DatasetGroupNamesOut(Common):
+    result: DatasetGroupNames

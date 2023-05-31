@@ -51,7 +51,7 @@ def create_dataset_group(
     return {"result": dataset_group}
 
 
-@router.post("/check_names", response_model=schemas.dataset_group.DatasetGroupNames)
+@router.post("/check_names", response_model=schemas.dataset_group.DatasetGroupNamesOut)
 def check_duplicated_dataset_group_names(
     *,
     db: Session = Depends(deps.get_db),
