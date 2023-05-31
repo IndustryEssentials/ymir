@@ -127,7 +127,6 @@ const ImageModel: ImageStore = {
       return list
     }),
     getOfficialImage: createEffect<boolean>(function* ({ payload: force }, { put, select }) {
-      console.log('force:', force)
       const { official } = select(({ image }) => image)
       if (!force && official) {
         return official
