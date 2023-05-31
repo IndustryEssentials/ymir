@@ -200,17 +200,15 @@ no training data found
 
 * `pretrained_model_params`: 预训练模型文件的路径列表，如果留空，则从头开始训练，如果非空，则从这个列表中找到镜像支持的模型文件，并在此模型的基础上继续训练
 
-* `export_format`: 希望 ymir 向此镜像提供的数据格式，由 `标注格式` 与 `图像格式` 两部分组成，中间用英文冒号分隔，例如 `det-voc:raw` 表示导出原始图像，以及 voc 格式的检测标注，如果此项留空或者不存在，则只导出图像，不导出标注
+* `export_format`: 希望 ymir 向此镜像提供的数据格式，由 `标注格式` 与 `图像格式` 两部分组成，中间用英文冒号分隔，例如 `voc:raw` 表示导出原始图像，以及 voc 格式的检测标注，如果此项留空或者不存在，则只导出图像，不导出标注
 
     * `标注格式` 可取以下值：
 
-        * `det-voc`: 导出 voc 格式的检测标注
+        * `voc`: 导出 voc 格式的检测标注
 
-        * `det-ark`: 导出 csv 格式的检测标注（class id, x, y, w, h, annotation quality, rotate angle）
+        * `ark`: 导出 csv 格式的检测标注（class id, x, y, w, h, annotation quality, rotate angle）
 
-        * `det-ls-json`: 导出适合 LabelStudio 使用的检测标注
-
-        * `seg-coco`: 导出 coco json 格式的检测及分割标注
+        * `coco`: 导出 coco json 格式的检测及分割标注
 
     * `图像格式` 目前只能指定为 `raw`
 

@@ -99,6 +99,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .all()
         )
 
+    def get_multi_by_project_and_names(self, db: Session, *, project_id: int, names: List[str]) -> List[ModelType]:
+        if len(names) == 0:
+            return []
+        return (
+            db.query(self.model)
+            .filter(
+                self.model.project_id == project_id,  # type: ignore
+                self.model.name.in_(names),  # type: ignore
+            )
+            .all()
+        )
+
     def get_multi_by_iteration(self, db: Session, *, iteration_id: int) -> List[ModelType]:
         return (
             db.query(self.model)
