@@ -161,7 +161,7 @@ export function updateVersion(id: ModelId, description = '') {
  * @export
  * @param {YParams.ModelVerifyParams} { projectId, modelStage, urls, image, config }
  */
-export function verify({ projectId, modelStage, urls, image, config }: YParams.ModelVerifyParams) {
+export function verify({ projectId, modelStage = [], urls, image, config }: YParams.ModelVerifyParams) {
   const [model, stage] = modelStage
   return request.post(`/inferences/`, {
     project_id: projectId,
