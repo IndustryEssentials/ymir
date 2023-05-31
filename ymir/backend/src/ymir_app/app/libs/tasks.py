@@ -169,7 +169,6 @@ class TaskResult:
         task_in_db: models.Task,
     ):
         self.db = db
-        self.task_in_db = task_in_db
         self.task = schemas.TaskInternal.from_orm(task_in_db)
 
         self.result_type = ResultType(self.task.result_type)
@@ -177,14 +176,8 @@ class TaskResult:
         self.project_id = self.task.project_id
         self.task_hash = self.task.hash
         self.controller = ControllerClient()
-        self.viz = VizClient()
-        self.viz.initialize(
-            user_id=self.user_id,
-            project_id=self.project_id,
-        )
+        self.viz = VizClient(user_id=self.user_id, project_id=self.project_id)
         self.cache = CacheClient(user_id=self.user_id)
-
-        self._result: Optional[Dict] = None
 
     @cached_property
     def user_labels(self) -> Dict:

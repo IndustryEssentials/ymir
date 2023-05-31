@@ -118,3 +118,18 @@ IterationStepTemplates = [
     IterationStepTemplate("prepare_training", TaskType.data_fusion),
     IterationStepTemplate("training", TaskType.training),
 ]
+ResultTypeMapping = {
+    TaskType.training: ResultType.model,
+    TaskType.copy_model: ResultType.model,
+    TaskType.import_model: ResultType.model,
+    TaskType.dataset_infer: ResultType.prediction,
+    TaskType.pull_image: ResultType.docker_image,
+    TaskType.mining: ResultType.dataset,
+    TaskType.label: ResultType.dataset,
+    TaskType.import_data: ResultType.dataset,
+    TaskType.copy_data: ResultType.dataset,
+    TaskType.data_fusion: ResultType.dataset,
+    TaskType.filter: ResultType.dataset,
+    TaskType.merge: ResultType.dataset,
+    TaskType.exclude_data: ResultType.dataset,
+}
