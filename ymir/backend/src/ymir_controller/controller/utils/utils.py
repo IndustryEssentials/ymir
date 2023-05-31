@@ -79,9 +79,9 @@ def sub_task_id(task_id: str, offset: int) -> str:
 def annotation_format_str(format: mir_cmd_pb.AnnoFormat) -> str:
     format_enum_dict = {
         mir_cmd_pb.AnnoFormat.AF_NO_ANNOS: 'none',
-        mir_cmd_pb.AnnoFormat.AF_VOC_XML: 'det-voc',
-        mir_cmd_pb.AnnoFormat.AF_ARK_TXT: 'det-ark',
-        mir_cmd_pb.AnnoFormat.AF_COCO_JSON: 'seg-coco',
+        mir_cmd_pb.AnnoFormat.AF_VOC_XML: 'voc',
+        mir_cmd_pb.AnnoFormat.AF_ARK_TXT: 'ark',
+        mir_cmd_pb.AnnoFormat.AF_COCO_JSON: 'coco',
     }
     return format_enum_dict[format]
 

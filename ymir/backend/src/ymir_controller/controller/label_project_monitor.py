@@ -33,7 +33,8 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
         media_location=media_location,
         work_dir=import_work_dir,
         unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
-        object_type=object_type)
+        object_type=object_type,
+        anno_fmt=mir_cmd_pb.AnnoFormat.AF_COCO_JSON)
     if import_response.code != CTLResponseCode.CTR_OK:
         return import_response
     # caution: here assumes that repo_root is composed by: sandbox_root + user_id + repo_id
@@ -62,12 +63,9 @@ def generate_label_index_file(input_asset_dir: Path, annotation_dir: Path, objec
     """
     filter assets paths against related annotation files
     """
-    if object_type == mir_cmd_pb.ObjectType.OT_DET:
-        labelled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
-    else:
-        with open(annotation_dir / "coco-annotations.json") as f:
-            coco = json.load(f)
-        labelled_assets_hashes = [Path(i["file_name"]).stem for i in coco["images"]]
+    with open(annotation_dir / "coco-annotations.json") as f:
+        coco = json.load(f)
+    labelled_assets_hashes = [Path(i["file_name"]).stem for i in coco["images"]]
 
     input_asset_paths = list(iter_asset_dir(input_asset_dir))
     output_file = input_asset_dir / "label_index.tsv"
