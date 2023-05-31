@@ -52,7 +52,7 @@ const routeTitle = withPrefix({
   'project.iteration.add.title': { cn: '迭代设置', en: 'Iteration Settings' },
   'project.iteration.title': { cn: '迭代详情', en: 'Project Iteration' },
   'user.title': { cn: '个人中心', en: 'User' },
-  'llmm.inference.title': { cn: '多模态大模型推理', en: 'LLMM Inference' },
+  'llmm.inference.title': { cn: 'Grounded-SAM应用', en: 'Grounded-SAM APP' },
 })
 
 export default routeTitle

@@ -36,7 +36,7 @@ const breadcrumbs = {
   'breadcrumbs.project.initmodel': { cn: '初始模型准备', en: 'Initial Model Setting' },
   'breadcrumbs.project.trash': { cn: '回收站', en: 'Trash' },
   'breadcrumbs.project.search': { cn: '搜索', en: 'Search' },
-  'breadcrumbs.llmm.infer.title': { cn: '多模态大模型应用', en: 'LLMM Application' },
+  'breadcrumbs.llmm.infer.title': { cn: 'Grounded-SAM应用', en: 'Grounded-SAM APP' },
 }
 
 export default breadcrumbs
