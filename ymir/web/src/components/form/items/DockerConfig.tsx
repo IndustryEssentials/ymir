@@ -20,9 +20,9 @@ function getArrayConfig(config: ConfigType = {}) {
 }
 
 const DockerConfigForm: FC<{
-  show: boolean
   form: FormInstance
   seniorConfig: ConfigType
+  show?: boolean
   name?: string
 }> = ({ show, form, seniorConfig, name = 'hyperparam' }) => {
   const [visible, setVisible] = useState(false)
@@ -33,7 +33,7 @@ const DockerConfigForm: FC<{
 
   useEffect(() => form.setFieldsValue({ [name]: config }), [config])
 
-  useEffect(() => setVisible(show), [show])
+  useEffect(() => setVisible(!!show), [show])
 
   async function validHyperParams(rule: any, value: string) {
     const params = hyperParams.map(({ key }) => key).filter((item) => item && item.trim() && item === value)
