@@ -1,10 +1,15 @@
-import { useEffect, useState } from 'react'
-import { Col, Form, Input, InputNumber, Row, Space } from 'antd'
+import { FC, useEffect, useState } from 'react'
+import { Col, Form, FormInstance, Input, InputNumber, Row, Space } from 'antd'
 import Panel from '@/components/form/panel'
 import t from '@/utils/t'
 import s from './form.less'
 import { AddTwoIcon, AddDelTwoIcon } from '@/components/common/Icons'
-function getArrayConfig(config = {}) {
+
+type ValueType = string | number | boolean | null
+type ConfigType = {
+  [key: string]: ValueType
+}
+function getArrayConfig(config: ConfigType = {}) {
   const excludes = ['gpu_count', 'task_id']
   return Object.keys(config)
     .filter((key) => !excludes.includes(key))
@@ -14,10 +19,15 @@ function getArrayConfig(config = {}) {
     }))
 }
 
-const DockerConfigForm = ({ show, form, seniorConfig, name = 'hyperparam' }) => {
+const DockerConfigForm: FC<{
+  show: boolean
+  form: FormInstance
+  seniorConfig: ConfigType
+  name?: string
+}> = ({ show, form, seniorConfig, name = 'hyperparam' }) => {
   const [visible, setVisible] = useState(false)
-  const [config, setConfig] = useState([])
-  const hyperParams = Form.useWatch('hyperparam', form)
+  const [config, setConfig] = useState<{ [key: string]: ValueType }[]>([])
+  const hyperParams: { [key: string]: string }[] = Form.useWatch('hyperparam', form)
 
   useEffect(() => setConfig(getArrayConfig(seniorConfig)), [seniorConfig])
 
@@ -25,7 +35,7 @@ const DockerConfigForm = ({ show, form, seniorConfig, name = 'hyperparam' }) => 
 
   useEffect(() => setVisible(show), [show])
 
-  async function validHyperParams(rule, value) {
+  async function validHyperParams(rule: any, value: string) {
     const params = hyperParams.map(({ key }) => key).filter((item) => item && item.trim() && item === value)
     if (params.length > 1) {
       return Promise.reject(t('task.validator.same.param'))
@@ -55,12 +65,12 @@ const DockerConfigForm = ({ show, form, seniorConfig, name = 'hyperparam' }) => 
                 {fields.map((field) => (
                   <Row key={field.key} gutter={20}>
                     <Col flex={'240px'}>
-                      <Form.Item {...field} name={[field.name, 'key']} fieldKey={[field.fieldKey, 'key']} rules={[{ validator: validHyperParams }]}>
+                      <Form.Item {...field} name={[field.name, 'key']} rules={[{ validator: validHyperParams }]}>
                         <Input disabled={field.name < config.length} allowClear maxLength={50} />
                       </Form.Item>
                     </Col>
                     <Col flex={1}>
-                      <Form.Item {...field} name={[field.name, 'value']} fieldKey={[field.fieldKey, 'value']}>
+                      <Form.Item {...field} name={[field.name, 'value']}>
                         {config[field.name] && typeof config[field.name].value === 'number' ? (
                           <InputNumber maxLength={20} style={{ minWidth: '100%' }} />
                         ) : (
