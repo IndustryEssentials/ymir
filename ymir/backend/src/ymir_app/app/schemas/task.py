@@ -16,6 +16,7 @@ from app.constants.state import (
     ResultType,
     TaskState,
     TaskType,
+    ResultTypeMapping,
 )
 from app.schemas.common import (
     Common,
@@ -396,25 +397,7 @@ class TaskInternal(TaskInDBBase):
     @validator("result_type", pre=True, always=True)
     def gen_result_type(cls, v: Any, values: Any) -> Optional[ResultType]:
         task_type = values["type"]
-        if task_type in [TaskType.training, TaskType.copy_model, TaskType.import_model]:
-            return ResultType.model
-        elif task_type == TaskType.dataset_infer:
-            return ResultType.prediction
-        elif task_type == TaskType.pull_image:
-            return ResultType.docker_image
-        elif task_type in [
-            TaskType.mining,
-            TaskType.label,
-            TaskType.import_data,
-            TaskType.copy_data,
-            TaskType.data_fusion,
-            TaskType.filter,
-            TaskType.merge,
-            TaskType.exclude_data,
-        ]:
-            return ResultType.dataset
-        else:
-            return ResultType.no_result
+        return ResultTypeMapping.get(task_type, ResultType.no_result)
 
     class Config:
         use_enum_values = True
