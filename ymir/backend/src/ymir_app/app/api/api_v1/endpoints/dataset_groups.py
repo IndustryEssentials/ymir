@@ -51,16 +51,21 @@ def create_dataset_group(
     return {"result": dataset_group}
 
 
-@router.post("/check_names", response_model=schemas.DatasetGroupOut)
+@router.post("/check_names", response_model=schemas.common.BoolResult)
 def check_duplicated_dataset_group_names(
     *,
     db: Session = Depends(deps.get_db),
     current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
-    obj_in: schemas.DatasetGroupCreate,
+    in_group_names: schemas.dataset_group.DatasetGroupNames,
 ) -> Any:
     """
     Check if given dataset_group names exist in the same project
     """
+    project_id, names = in_group_names.project_id, in_group_names.names
+    if len(set(names)) < len(names):
+        return {"result": False}
+    duplicated = crud.dataset_group.get_multi_by_project_and_names(db, project_id=project_id, names=names)
+    return {"result": bool(duplicated)}
 
 
 @router.get(

@@ -53,3 +53,8 @@ class DatasetGroupsOut(Common):
 
 class DatasetGroupPaginationOut(Common):
     result: DatasetGroupPagination
+
+
+class DatasetGroupNames(BaseModel):
+    project_id: int
+    names: List[str]
