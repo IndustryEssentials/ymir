@@ -8,7 +8,7 @@ import Polygon from './Polygon'
 import BoundingBox from './BoundingBox'
 
 import styles from '../common.less'
-import { Annotation } from '@/constants'
+import { Annotation, BoundingBox as BoundingBoxType, Mask as MaskType, Polygon as PolygonType } from '@/constants'
 
 export type Asset = {
   annotations: Annotation[]
@@ -55,15 +55,21 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     setRatio(clientWidth / iw)
   }
 
-  function renderAnnotation(annotation: Annotation) {
-    switch (annotation.type) {
-      case AnnotationType.BoundingBox:
-        return <BoundingBox key={annotation.id} annotation={annotation} ratio={ratio} />
-      case AnnotationType.Polygon:
-        return <Polygon key={annotation.id} annotation={annotation} ratio={ratio} />
-      case AnnotationType.Mask:
-        return <Mask key={annotation.id} annotation={annotation} ratio={ratio} />
-    }
+  const Annotations: FC<{ annotations: Annotation[] }> = ({ annotations }) => {
+    const filterAts = (fType: AnnotationType) => annotations.filter(({ type }) => fType === type)
+    const bbA = filterAts(AnnotationType.BoundingBox) as BoundingBoxType[]
+    const pgA = filterAts(AnnotationType.Polygon) as PolygonType[]
+    const maA = filterAts(AnnotationType.Mask) as MaskType[]
+
+    return (
+      <>
+        {bbA.map((anno) => (
+          <BoundingBox key={anno.id} annotation={anno} ratio={ratio} simple={true} />
+        ))}
+        <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} simple={true} />
+        <Mask annotations={maA} width={asset.width} height={asset.height} ratio={ratio} simple={true} />
+      </>
+    )
   }
 
   const imgLoad = (e: SyntheticEvent) => {
@@ -85,7 +91,7 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
         <img ref={img} src={asset?.url} style={imgWidth ? { width: imgWidth } : undefined} className={styles.assetImg} onLoad={imgLoad} />
       </div>
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
-        {annotations.map(renderAnnotation)}
+        <Annotations annotations={annotations} />
       </div>
     </div>
   )

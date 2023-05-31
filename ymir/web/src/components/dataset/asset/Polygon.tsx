@@ -1,19 +1,16 @@
 import { FC, useEffect, useRef, useState } from 'react'
-import { renderPolygon } from './_helper'
-import { Polygon as PolygonType } from '@/constants'
+import { renderPolygons } from './_helper'
 type Props = {
-  annotation: PolygonType
+  annotations: PolygonType[]
   ratio?: number
   simple?: boolean
+  width?: number
+  height?: number
 }
 
-const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {
+const Polygon: FC<Props> = ({ annotations, ratio = 1, width, height }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [canvas, setCanvas] = useState<HTMLCanvasElement>()
-  const [{ width, height }, setRect] = useState({
-    width: 0,
-    height: 0,
-  })
   useEffect(() => {
     if (canvasRef.current) {
       setCanvas(canvasRef.current)
@@ -21,20 +18,10 @@ const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {
   }, [canvasRef.current])
 
   useEffect(() => {
-    if (annotation.polygon?.length && canvas) {
-      renderPolygon(canvas, annotation.polygon, annotation.color)
+    if (annotations.length && canvas && width && height) {
+      renderPolygons(canvas, annotations)
     }
-  }, [annotation.polygon, canvas, width, height])
-
-  useEffect(() => {
-    if (!annotation) {
-      return
-    }
-    setRect({
-      width: annotation.width,
-      height: annotation.height,
-    })
-  }, [annotation])
+  }, [annotations, canvas, width, height])
 
   return (
     <canvas

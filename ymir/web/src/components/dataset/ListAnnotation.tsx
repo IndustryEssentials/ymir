@@ -9,7 +9,7 @@ import BoundingBox from './asset/BoundingBox'
 
 import styles from './common.less'
 import { useDebounceEffect } from 'ahooks'
-import { Annotation, Asset } from '@/constants'
+import { Annotation, Asset, BoundingBox as BoundingBoxType, Polygon as PolygonType, Mask as MaskType } from '@/constants'
 
 type Props = {
   asset: Asset
@@ -50,22 +50,28 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
 
   window.addEventListener('resize', () => imgContainer.current && calClientWidth())
 
-  function renderAnnotation(annotation: Annotation) {
-    switch (annotation.type) {
-      case AnnotationType.BoundingBox:
-        return <BoundingBox key={annotation.id} annotation={annotation} ratio={ratio} simple={true} />
-      case AnnotationType.Polygon:
-        return <Polygon key={annotation.id} annotation={annotation} ratio={ratio} simple={true} />
-      case AnnotationType.Mask:
-        return <Mask key={annotation.id} annotation={annotation} ratio={ratio} simple={true} />
-    }
+  const Annotations: FC<{ annotations: Annotation[] }> = ({ annotations }) => {
+    const filterAts = (fType: AnnotationType) => annotations.filter(({ type }) => fType === type)
+    const bbA = filterAts(AnnotationType.BoundingBox) as BoundingBoxType[]
+    const pgA = filterAts(AnnotationType.Polygon) as PolygonType[]
+    const maA = filterAts(AnnotationType.Mask) as MaskType[]
+
+    return (
+      <>
+        {bbA.map((anno) => (
+          <BoundingBox key={anno.id} annotation={anno} ratio={ratio} simple={true} />
+        ))}
+        <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} simple={true} />
+        <Mask annotations={maA} width={asset.width} height={asset.height} ratio={ratio} simple={true} />
+      </>
+    )
   }
 
   return (
     <div className={styles.ic_container} ref={imgContainer} key={asset.hash}>
       <img ref={img} style={{ visibility: hideAsset ? 'hidden' : 'visible' }} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
-        {annotations.map(renderAnnotation)}
+        <Annotations annotations={annotations} />
       </div>
     </div>
   )

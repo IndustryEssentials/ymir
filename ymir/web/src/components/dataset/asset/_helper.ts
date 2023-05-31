@@ -29,17 +29,21 @@ function mask2Uint8Array(mask: number[][], len: number, color?: string) {
   return dataWithColor
 }
 
-export function renderPolygon(canvas: HTMLCanvasElement, points: Polygon['polygon'], color?: string) {
+export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[]) {
   const ctx = canvas.getContext('2d')
-  if (!ctx) {
+  if (!ctx || !annotations.length) {
     return
   }
-  ctx.beginPath()
+  const { color } = annotations[0]
   ctx.fillStyle = getColor(color).hexa()
-  ctx.strokeStyle = getColor('black').hexa()
-  ctx.moveTo(points[0].x, points[0].y)
+  ctx.strokeStyle = getColor('gray').hexa()
   ctx.lineWidth = 1
-  points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
+  ctx.beginPath()
+  annotations.forEach((annotation) => {
+    const { polygon: points } = annotation
+    ctx.moveTo(points[0].x, points[0].y)
+    points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
+  })
   ctx.fill()
 }
 
