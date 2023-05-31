@@ -28,9 +28,9 @@ const inference: FC<Props> = ({}) => {
   const Content = dynmicContent()
 
   useEffect(() => {
-    const type = history.location.state.type as TabKey
+    const type = history.location.state?.type as TabKey | undefined
     setActive(type || TabKey.Single)
-  }, [history.location.state.type])
+  }, [history.location.state?.type])
 
   return (
     <div>
