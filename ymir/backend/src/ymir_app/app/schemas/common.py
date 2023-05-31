@@ -13,10 +13,6 @@ class Common(BaseModel):
     message: str = "success"
 
 
-class BoolResult(Common):
-    result: bool
-
-
 class DateTimeModelMixin(BaseModel):
     create_datetime: datetime = None  # type: ignore
     update_datetime: datetime = None  # type: ignore
