@@ -1,8 +1,5 @@
-import glob
 import json
 import logging
-import os
-import shutil
 import zipfile
 from enum import IntEnum
 from io import BytesIO
@@ -162,13 +159,6 @@ class LabelFree(LabelBase):
         self._requests.put(url_path=url_path, params={"delete_unlabeled_task": True})
 
     @staticmethod
-    def _move_voc_annotations_to(des_path: str) -> None:
-        voc_files = glob.glob(f"{des_path}/**/*.xml")
-        for voc_file in voc_files:
-            base_name = os.path.basename(voc_file)
-            shutil.move(voc_file, os.path.join(des_path, base_name))
-
-    @staticmethod
     def _move_coco_annotations_to(des_path: str) -> None:
         """
         Convert result.json (Label Studio default filename) to coco-annotations.json (YMIR required filename)
@@ -187,10 +177,7 @@ class LabelFree(LabelBase):
         export_url = self.get_export_url(project_id, export_task_id)
         content = self._requests.get(export_url)
         self.unzip_annotation_files(BytesIO(content), des_path)
-        if object_type == mir_cmd_pb.ObjectType.OT_DET:
-            self._move_voc_annotations_to(des_path)
-        else:
-            self._move_coco_annotations_to(des_path)
+        self._move_coco_annotations_to(des_path)
         logging.info(f"success save label result from labelfree to {des_path}")
 
     def get_export_task(self, project_id: int, object_type: int) -> str:

@@ -85,6 +85,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         import_dataset_request.pred_dir = self._storage_root
         import_dataset_request.gt_dir = self._storage_root
         import_dataset_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
+        import_dataset_request.anno_format = mir_cmd_pb.AnnoFormat.AF_VOC_XML
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportData
         req_create_task.no_task_monitor = True
@@ -109,7 +110,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
             f"mir import --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} --src-revs master "
             f"--gen-dir {self._storage_root} -w {working_dir} "
             f"--user-label-file {test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
-            f"--anno-type det --asset-path {self._storage_root} "
+            f"--anno-type-fmt det:voc --asset-path {self._storage_root} "
             f"--pred-dir {self._storage_root} --gt-dir {self._storage_root} --unknown-types-strategy add")
         mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
                                                          repo_id=self._mir_repo_name,
