@@ -242,7 +242,7 @@ export function mine({ openpai, description, projectId, datasetId, modelStage, t
  * @export
  * @param {InferenceParams} { name, projectId, datasets, stages = [], config, image, openpai, description }
  */
-export function infer({ name, projectId, dataset, stage: [model, mstage], config, image, openpai, description }: InferenceParams) {
+export function infer({ name, projectId, dataset, stage: [model, mstage] = [], config, image, openpai, description }: InferenceParams) {
   const params = {
     name,
     type: TASKTYPES.INFERENCE,
