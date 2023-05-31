@@ -131,14 +131,15 @@ class MiningParameterBase(TaskParameterBase):
 
 
 class MiningParameter(MiningParameterBase):
+    task_type: Literal["mining"]
     top_k: Optional[int]
     generate_annotations: Optional[bool] = False
-    task_type: Literal["mining"]
 
 
 class InferParameter(MiningParameterBase):
+    task_type: Literal["dataset_infer"]
     generate_annotations: Optional[bool] = True
-    task_type: Literal["infer"]
+    unknown_types_strategy: Optional[bool] = False
 
 
 class FusionParameterBase(TaskParameterBase, IterationContext):
