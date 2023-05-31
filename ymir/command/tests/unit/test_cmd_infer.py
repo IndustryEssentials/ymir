@@ -197,8 +197,8 @@ class TestCmdInfer(unittest.TestCase):
 
         # checkout prediction.mir
         with open(os.path.join(fake_args.work_dir, 'out', 'prediction.mir'), 'rb') as f:
-            prediction = mirpb.SingleTaskAnnotations()
-            prediction.ParseFromString(f.read())
-            self.assertEqual(prediction.type, mirpb.ObjectType.OT_DET)
-            self.assertEqual(len(prediction.image_annotations), 1)
-            self.assertEqual(len(prediction.image_annotations['2007_000032.jpg'].boxes), 1)
+            infer_result = mirpb.InferResultAnnotations()
+            infer_result.ParseFromString(f.read())
+            self.assertEqual(infer_result.prediction.type, mirpb.ObjectType.OT_DET)
+            self.assertEqual(len(infer_result.prediction.image_annotations), 1)
+            self.assertEqual(len(infer_result.prediction.image_annotations['2007_000032.jpg'].boxes), 1)

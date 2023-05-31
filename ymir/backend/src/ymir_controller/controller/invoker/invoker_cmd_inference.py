@@ -76,19 +76,27 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             executor=self._request.singleton_op,
         )
 
-        prediction_pb_path = os.path.join(self._work_dir, "out", "prediction.mir")
-        if not os.path.isfile(prediction_pb_path):
+        infer_result_pb_path = os.path.join(self._work_dir, "out", "prediction.mir")
+        if not os.path.isfile(infer_result_pb_path):
             return utils.make_general_response(CTLResponseCode.RUN_COMMAND_ERROR,
-                                               f"Inference result not found: {prediction_pb_path}")
-        prediction = mir_cmd_pb.SingleTaskAnnotations()
-        with open(prediction_pb_path, 'rb') as f:
-            prediction.ParseFromString(f.read())
+                                               f"Inference result not found: {infer_result_pb_path}")
+        infer_result = mir_cmd_pb.InferResultAnnotations()
+        with open(infer_result_pb_path, 'rb') as f:
+            infer_result.ParseFromString(f.read())
+        prediction = infer_result.prediction
+        unknown_prediction = infer_result.unknown_types_prediction
+
+        # add prediction with unknown types
+        for asset_id, sia in unknown_prediction.image_annotations.items():
+            for anno in sia.boxes:
+                anno.index = len(prediction.image_annotations[asset_id].boxes)
+                prediction.image_annotations[asset_id].boxes.append(anno)
 
         resp = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         for asset_id, sia in prediction.image_annotations.items():
             resp.objects.image_annotations[asset_id].CopyFrom(sia)
 
-        os.remove(prediction_pb_path)
+        os.remove(infer_result_pb_path)
 
         return resp
 

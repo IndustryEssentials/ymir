@@ -157,8 +157,11 @@ message TaskReqTraining {
 }
 
 message TaskReqMining {
-    int32 top_k = 1;  // > 0, will keep all if set to 0.
+    // > 0, will keep all if set to 0.
+    int32 top_k = 1;
     bool generate_annotations = 2;
+    // add or ignore
+    UnknownTypesStrategy unknown_types_strategy = 3;
 }
 
 message TaskReqImportDataset {
@@ -171,7 +174,7 @@ message TaskReqImportDataset {
     //  for coco: coco-annotations.json in that dir
     string pred_dir = 2;
     string gt_dir = 3;
-    // strategy for unknown class types: stop, ignore or add
+    // stop, add or ignore
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
     mir.command.AnnoFormat anno_format = 8;

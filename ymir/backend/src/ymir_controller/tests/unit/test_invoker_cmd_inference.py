@@ -99,6 +99,7 @@ class TestInvokerCMDInference(unittest.TestCase):
         }
         prediction = mir_cmd_pb.SingleTaskAnnotations()
         json_format.ParseDict(prediction_dict, prediction)
+        infer_result = mir_cmd_pb.InferResultAnnotations(prediction=prediction)
 
         # Store inference data.
         working_dir = os.path.join(self._sandbox_root, "work_dir",
@@ -106,7 +107,7 @@ class TestInvokerCMDInference(unittest.TestCase):
         output_filename = os.path.join(working_dir, "out", "prediction.mir")
         os.makedirs(os.path.join(working_dir, "out"), exist_ok=True)
         with open(output_filename, 'wb') as f:
-            f.write(prediction.SerializeToString())
+            f.write(infer_result.SerializeToString())
 
         # store user labels.
         with open(os.path.join(self._user_root, 'labels.yaml'), 'w') as f:

@@ -166,14 +166,15 @@ class CmdInfer(base.BaseCommand):
         if run_infer:
             # result files -> task_annotations and save
             class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-            task_annotations = mirpb.SingleTaskAnnotations()
-            task_annotations.type = model_storage.object_type  # type: ignore
+            infer_result = mirpb.InferResultAnnotations()
+            infer_result.prediction.type = model_storage.object_type  # type: ignore
+            infer_result.unknown_types_prediction.type = model_storage.object_type  # type: ignore
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET else _process_infer_coco_result)
-            process_result_func(task_annotations, work_dir_out, class_id_mgr)
+            process_result_func(infer_result, work_dir_out, class_id_mgr)
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
-                m_f.write(task_annotations.SerializeToString())
+                m_f.write(infer_result.SerializeToString())
 
         # remove models
         shutil.rmtree(os.path.join(work_dir_in, 'models'))
@@ -228,7 +229,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
                               needs_new_commit=False)
 
 
-def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
+def _process_infer_detbox_result(infer_result: mirpb.InferResultAnnotations, work_dir_out: str,
                                  class_id_mgr: class_ids.UserLabels) -> None:
     infer_result_file = os.path.join(work_dir_out, 'infer-result.json')
     with open(infer_result_file, 'r') as f:
@@ -247,37 +248,41 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             logging.error(f"invalid annotations: {annotations}")
             continue
 
-        single_image_annotations = mirpb.SingleImageAnnotations()
-        idx = 0
+        image_annotations = mirpb.SingleImageAnnotations()
+        unknown_type_image_annotations = mirpb.SingleImageAnnotations()
         for annotation_dict in annotations:
             class_name = annotation_dict['class_name']
             class_id = class_id_mgr.id_and_main_name_for_name(name=class_name)[0]
-            # ignore unknown class ids
-            if class_id < 0:
-                unknown_class_id_annos_cnt += 1
-                continue
+
             if 'score' not in annotation_dict:
                 no_score_annos_cnt += 1
                 continue
 
             annotation = mirpb.ObjectAnnotation()
-            annotation.index = idx
             json_format.ParseDict(annotation_dict['box'], annotation.box)
             annotation.class_id = class_id
             annotation.class_name = class_name
             annotation.score = float(annotation_dict['score'])
-            single_image_annotations.boxes.append(annotation)
-            idx += 1
+            if class_id >= 0:
+                annotation.index = len(image_annotations.boxes)
+                image_annotations.boxes.append(annotation)
+            else:
+                annotation.index = len(unknown_type_image_annotations.boxes)
+                unknown_type_image_annotations.boxes.append(annotation)
+                unknown_class_id_annos_cnt += 1
 
-        # task_annotations.image_annotations key: image file base name
-        if valid_image_annotation(single_image_annotations):
-            task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
+        # image_annotations key: image file base name
+        if valid_image_annotation(image_annotations):
+            infer_result.prediction.image_annotations[os.path.basename(asset_name)].CopyFrom(image_annotations)
+        if valid_image_annotation(unknown_type_image_annotations):
+            infer_result.unknown_types_prediction.image_annotations[os.path.basename(asset_name)].CopyFrom(
+                unknown_type_image_annotations)
 
     logging.info(f"count of objects with unknown class ids: {unknown_class_id_annos_cnt}")
     logging.info(f"count of objects without score: {no_score_annos_cnt}")
 
 
-def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
+def _process_infer_coco_result(infer_result: mirpb.InferResultAnnotations, work_dir_out: str,
                                class_id_mgr: class_ids.UserLabels) -> None:
     coco_json_filename = 'infer-result.json'
 
@@ -295,7 +300,8 @@ def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, wo
                                  class_type_manager=class_id_mgr,
                                  unknown_types_strategy=UnknownTypesStrategy.IGNORE,
                                  accu_new_class_names={},
-                                 image_annotations=task_annotations,
+                                 image_annotations=infer_result.prediction,
+                                 unknown_type_annotations=infer_result.unknown_types_prediction,
                                  coco_json_filename=coco_json_filename)
 
 

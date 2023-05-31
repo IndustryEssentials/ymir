@@ -6,7 +6,7 @@ import unittest
 from unittest import mock
 
 import yaml
-from google.protobuf.json_format import MessageToDict, ParseDict
+from google.protobuf.json_format import ParseDict
 
 import tests.utils as test_utils
 from controller.utils import utils
@@ -90,7 +90,8 @@ class TestInvokerTaskMining(unittest.TestCase):
         mine_task_req = backend_pb2.TaskReqMining()
         mine_task_req.top_k = top_k
         in_dataset_ids = [self._guest_id1, self._guest_id2]
-        mine_task_req.generate_annotations = False
+        mine_task_req.generate_annotations = True
+        mine_task_req.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
 
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeMining
@@ -129,7 +130,6 @@ class TestInvokerTaskMining(unittest.TestCase):
             object_type=mir_cmd_pb.ObjectType.OT_DET,
             docker_image_config=json.dumps(mining_config),
         )
-        print(MessageToDict(response))
 
         output_config = os.path.join(working_dir_0, 'task_config.yaml')
         with open(output_config, "r") as f:
@@ -153,7 +153,7 @@ class TestInvokerTaskMining(unittest.TestCase):
                       f"-w {working_dir_0} --model-location {self._storage_root} --media-location {self._storage_root} "
                       f"--model-hash {model_hash}@{model_stage} --src-revs {self._guest_id1};{self._guest_id2} -s host "
                       f"--asset-cache-dir {asset_cache_dir} --task-config-file {output_config} --executor mining_image "
-                      f"--executant-name {self._task_id} --topk {top_k}")
+                      f"--executant-name {self._task_id} --topk {top_k} --add-prediction --unknown-types-strategy add")
         mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
                                                          repo_id=self._mir_repo_name,
                                                          task_id=self._task_id)

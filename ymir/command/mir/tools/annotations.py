@@ -89,8 +89,8 @@ def _annotation_parse_func(anno_fmt: "mirpb.AnnoFormat.V") -> Callable:
 
 def _annotation_signature(annotation: mirpb.ObjectAnnotation, asset_id: str) -> str:
     return (
-        f"{asset_id}-{annotation.class_id}-{annotation.box.x}-{annotation.box.y}-{annotation.box.w}-{annotation.box.h}"
-        f"-{annotation.box.rotate_angle}")
+        f"{asset_id}-{annotation.class_name}-{annotation.box.x}-{annotation.box.y}-{annotation.box.w}"
+        f"-{annotation.box.h}-{annotation.box.rotate_angle}")
 
 
 def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
@@ -124,8 +124,8 @@ def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
     return annotation
 
 
-def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[int, int],
-                                    class_type_manager: class_ids.UserLabels) -> Optional[mirpb.ObjectAnnotation]:
+def _coco_object_dict_to_annotation(
+        anno_dict: dict, category_id_to_cid_names: Dict[int, Tuple[int, str]]) -> Optional[mirpb.ObjectAnnotation]:
     if 'bbox' not in anno_dict or len(anno_dict['bbox']) != 4:
         return None
 
@@ -153,8 +153,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     obj_anno.mask_area = int(anno_dict['area'])
 
     obj_anno.iscrowd = anno_dict.get('iscrowd', 0)
-    obj_anno.class_id = category_id_to_cids[anno_dict['category_id']]
-    obj_anno.class_name = class_type_manager.main_name_for_id(obj_anno.class_id)
+    obj_anno.class_id, obj_anno.class_name = category_id_to_cid_names[anno_dict['category_id']]
 
     # ymir defined
     obj_anno.cm = mirpb.ConfusionMatrixType.NotSet
@@ -302,6 +301,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations,
+                                 unknown_type_annotations: mirpb.SingleTaskAnnotations = None,
                                  coco_json_filename: str = COCO_JSON_NAME) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
 
@@ -349,34 +349,31 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
 
         image_id_to_hashes[v['id']] = file_name_to_asset_ids[filename]
 
-    # categories_list -> category_id_to_cids (key: coco category id, value: ymir class id)
-    category_id_to_cids: Dict[int, int] = {}
+    # categories_list -> category_id_to_cid_names (key: coco category id, value: ymir class id and class name)
+    category_id_to_cid_names: Dict[int, Tuple[int, str]] = {}
     for v in categories_list:
         if v['id'] in duplicated_category_ids:
             continue
 
         name = v['name']
         cid, _ = class_type_manager.id_and_main_name_for_name(name)
-        if cid >= 0:
-            category_id_to_cids[v['id']] = cid
-        else:
+        if cid < 0:
             accu_new_class_names[name] = 0
             if add_if_not_found:
-                cid, _ = class_type_manager.add_main_name(name)
-                category_id_to_cids[v['id']] = cid
+                cid, name = class_type_manager.add_main_name(name)
+        category_id_to_cid_names[v['id']] = (cid, name)
 
     known_signatures = set()
     for anno_dict in annotations_list:
-        if anno_dict['category_id'] not in category_id_to_cids:
-            unknown_category_ids_cnt += 1
-            continue
         if anno_dict['image_id'] not in image_id_to_hashes:
             unknown_image_objects_cnt += 1
             continue
+        if anno_dict['category_id'] not in category_id_to_cid_names:
+            unknown_category_ids_cnt += 1
+            continue
 
         obj_anno = _coco_object_dict_to_annotation(anno_dict=anno_dict,
-                                                   category_id_to_cids=category_id_to_cids,
-                                                   class_type_manager=class_type_manager)
+                                                   category_id_to_cid_names=category_id_to_cid_names)
         if not obj_anno:
             error_format_objects_cnt += 1
             continue
@@ -390,10 +387,14 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
             logging.warning(f"[import error]: Found duplicated annotation for asset hash: {asset_hash}")
             duplicate_count += 1
             continue
-
-        obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
-        image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
         known_signatures.add(signature)
+
+        if obj_anno.class_id >= 0:
+            obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
+            image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
+        elif unknown_type_annotations:
+            obj_anno.index = len(unknown_type_annotations.image_annotations[asset_hash].boxes)
+            unknown_type_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
 
     if duplicated_image_ids:
         logging.warning(f"[import error]: Duplicated image ids: {duplicated_image_ids}")

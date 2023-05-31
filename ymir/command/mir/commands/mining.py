@@ -3,14 +3,15 @@ import json
 import logging
 import os
 from subprocess import CalledProcessError
-from typing import Optional, Set
+from typing import Dict, Optional, Set
 
 from mir.commands import base, infer
 from mir.commands.merge import merge_with_pb
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import models, revs_parser
-from mir.tools.annotations import filter_mirdatas_by_asset_ids, valid_image_annotation, MergeStrategy
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, valid_image_annotation
+from mir.tools.annotations import MergeStrategy, UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -47,7 +48,8 @@ class CmdMining(base.BaseCommand):
                                        add_prediction=self.args.add_prediction,
                                        executor=self.args.executor,
                                        executant_name=self.args.executant_name,
-                                       run_as_root=self.args.run_as_root)
+                                       run_as_root=self.args.run_as_root,
+                                       unknown_types_strategy=UnknownTypesStrategy(self.args.unknown_types_strategy))
 
     @staticmethod
     @command_run_in_out
@@ -65,6 +67,7 @@ class CmdMining(base.BaseCommand):
                       executor: str,
                       executant_name: str,
                       run_as_root: bool,
+                      unknown_types_strategy: UnknownTypesStrategy,
                       topk: int = None,
                       add_prediction: bool = False) -> int:
         """
@@ -197,15 +200,16 @@ class CmdMining(base.BaseCommand):
                                   dst_rev=dst_typ_rev_tid.rev_tid,
                                   return_code=return_code,
                                   return_msg=return_msg,
-                                  executor=executor)
+                                  executor=executor,
+                                  new_types_added=(unknown_types_strategy == UnknownTypesStrategy.ADD))
         if return_code != MirCode.RC_OK:
             raise MirContainerError(task)
 
-        _process_results(mir_root=mir_root,
-                         label_storage_file=label_storage_file,
+        _process_results(label_storage_file=label_storage_file,
                          export_out=work_out_path,
                          topk=topk,
                          add_prediction=add_prediction,
+                         unknown_types_strategy=unknown_types_strategy,
                          model_storage=model_storage,
                          mir_metadatas=mir_metadatas,
                          mir_annotations=mir_annotations)
@@ -225,8 +229,9 @@ class CmdMining(base.BaseCommand):
 
 
 # protected: post process
-def _process_results(mir_root: str, label_storage_file: str, export_out: str,
+def _process_results(label_storage_file: str, export_out: str,
                      topk: Optional[int], add_prediction: bool,
+                     unknown_types_strategy: UnknownTypesStrategy,
                      model_storage: models.ModelStorage, mir_metadatas: mirpb.MirMetadatas,
                      mir_annotations: mirpb.MirAnnotations) -> None:
     # step 1: build topk results:
@@ -248,28 +253,54 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
 
         cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
 
-        infer_result_prediction = mirpb.SingleTaskAnnotations()
+        infer_result = mirpb.InferResultAnnotations()
         with open(os.path.join(export_out, 'prediction.mir'), 'rb') as f:
-            infer_result_prediction.ParseFromString(f.read())
+            infer_result.ParseFromString(f.read())
 
         # filter and convert
         #   filter: we need only asset ids in asset_ids_set
         #   convert: cmd infer packs infer_result_prediction.image_annotations with file base name as key
         #       so we need to convert all keys to asset hash (in cmd mining, the image's main name)
-        for file_name in infer_result_prediction.image_annotations:
-            if not valid_image_annotation(infer_result_prediction.image_annotations[file_name]):
+        for file_name in infer_result.prediction.image_annotations:
+            if not valid_image_annotation(infer_result.prediction.image_annotations[file_name]):
                 continue
             asset_id = os.path.splitext(file_name)[0]
-            if asset_id in asset_ids_set:
-                prediction.image_annotations[asset_id].CopyFrom(
-                    infer_result_prediction.image_annotations[file_name])
+            if asset_id not in asset_ids_set:
+                continue
+            prediction.image_annotations[asset_id].CopyFrom(infer_result.prediction.image_annotations[file_name])
+
+        # if necessary:
+        #   1. for all obj annos in unknown_types_prediction, add their class names to user labels.yaml
+        #   2. add them to prediction
+        unknown_prediction = mirpb.SingleTaskAnnotations()
+        if unknown_types_strategy != UnknownTypesStrategy.IGNORE:
+            unknown_prediction = infer_result.unknown_types_prediction
+        if unknown_types_strategy == UnknownTypesStrategy.STOP and len(unknown_prediction.image_annotations) > 0:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_TYPES,
+                                  error_message='Found unknown types when infer dataset')
+
+        cname_to_cids_cache: Dict[str, int] = {}  # class id cache for class name
+        for file_name, sia in unknown_prediction.image_annotations.items():
+            if not valid_image_annotation(unknown_prediction.image_annotations[file_name]):
+                continue
+            asset_id = os.path.splitext(file_name)[0]
+            if asset_id not in asset_ids_set:
+                continue
+            for obj_anno in sia.boxes:
+                if obj_anno.class_name in cname_to_cids_cache:
+                    obj_anno.class_id = cname_to_cids_cache[obj_anno.class_name]
+                else:
+                    obj_anno.class_id, _ = cls_id_mgr.add_main_name(obj_anno.class_name)
+                    cname_to_cids_cache[obj_anno.class_name] = obj_anno.class_id
+                obj_anno.index = len(prediction.image_annotations[asset_id].boxes)
+                prediction.image_annotations[asset_id].boxes.append(obj_anno)
 
         # pred type and meta
         prediction.eval_class_ids[:] = set(
             cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
         prediction.executor_config = json.dumps(model_storage.executor_config)
         prediction.model.CopyFrom(model_storage.get_model_meta())
-        prediction.type = infer_result_prediction.type
+        prediction.type = infer_result.prediction.type
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
@@ -380,4 +411,12 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest="run_as_root",
                                    action='store_true',
                                    help="run executor as root user")
+    mining_arg_parser.add_argument('--unknown-types-strategy',
+                                   dest='unknown_types_strategy',
+                                   required=False,
+                                   choices=['ignore', 'add'],
+                                   default='ignore',
+                                   help='strategy for unknown class types in annotation files\n'
+                                   'ignore: ignore unknown class type names\n'
+                                   'add: add unknown class types names to labels.yaml')
     mining_arg_parser.set_defaults(func=CmdMining)
