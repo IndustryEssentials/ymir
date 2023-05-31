@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react'
-import { Col, Form, FormInstance, Input, InputNumber, Row, Space } from 'antd'
+import { Col, Form, FormInstance, FormItemProps, Input, InputNumber, Row, Space } from 'antd'
 import Panel from '@/components/form/panel'
 import t from '@/utils/t'
 import s from './form.less'
@@ -10,7 +10,7 @@ type ConfigType = {
   [key: string]: ValueType
 }
 function getArrayConfig(config: ConfigType = {}) {
-  const excludes = ['gpu_count', 'task_id']
+  const excludes = ['gpu_count', 'task_id', 'text_prompt']
   return Object.keys(config)
     .filter((key) => !excludes.includes(key))
     .map((key) => ({
@@ -24,7 +24,8 @@ const DockerConfigForm: FC<{
   seniorConfig: ConfigType
   show?: boolean
   name?: string
-}> = ({ show, form, seniorConfig, name = 'hyperparam' }) => {
+  itemProps?: FormItemProps
+}> = ({ show, form, seniorConfig, name = 'hyperparam', itemProps = { wrapperCol: { offset: 8, span: 12 } } }) => {
   const [visible, setVisible] = useState(false)
   const [config, setConfig] = useState<{ [key: string]: ValueType }[]>([])
   const hyperParams: { [key: string]: string }[] = Form.useWatch('hyperparam', form)
@@ -52,19 +53,19 @@ const DockerConfigForm: FC<{
 
   return config.length ? (
     <Panel label={renderTitle} visible={visible} setVisible={setVisible}>
-      <Form.Item wrapperCol={{ offset: 8, span: 12 }} rules={[{ validator: validHyperParams }]}>
+      <Form.Item {...itemProps} rules={[{ validator: validHyperParams }]}>
         <Form.List name={name}>
           {(fields, { add, remove }) => (
             <>
               <div className={s.paramContainer} hidden={!visible}>
                 <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                  <Col flex={'240px'}>{t('common.key')}</Col>
+                  <Col span={10}>{t('common.key')}</Col>
                   <Col flex={1}>{t('common.value')}</Col>
                   <Col flex={'60px'}>{t('common.action')}</Col>
                 </Row>
                 {fields.map((field) => (
-                  <Row key={field.key} gutter={20}>
-                    <Col flex={'240px'}>
+                  <Row key={field.key} gutter={20} wrap={false}>
+                    <Col span={10}>
                       <Form.Item {...field} name={[field.name, 'key']} rules={[{ validator: validHyperParams }]}>
                         <Input disabled={field.name < config.length} allowClear maxLength={50} />
                       </Form.Item>
