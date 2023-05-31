@@ -1,24 +1,22 @@
 import { getImage, getImages, delImage, createImage, updateImage, relateImage } from '@/services/image'
-import { STATES, transferImage } from '@/constants/image'
-import { createEffect, createReducers } from './_utils'
+import { STATES, transferImage, TYPES } from '@/constants/image'
+import { createEffect, createReducers, createReducersByState } from './_utils'
 import { EditImage, Image as CreateImageParams, QueryParams } from '@/services/typings/image.d'
 import { ObjectType } from '@/constants/objectType'
-import { ImageStore } from '.'
+import LLMM from '@/constants/llmm'
+import { ImageState, ImageStore } from '.'
 import { Image } from '@/constants'
 
-const reducers = [
-  { name: 'UpdateImage', field: 'image' },
-  { name: 'UpdateTotal', field: 'total' },
-  { name: 'UpdateOfficial', field: 'official' },
-]
+const state: ImageState = {
+  image: {},
+  total: 0,
+  official: undefined,
+  groundedSAM: undefined,
+}
 
 const ImageModel: ImageStore = {
   namespace: 'image',
-  state: {
-    image: {},
-    total: 0,
-    official: undefined,
-  },
+  state,
   effects: {
     getImages: createEffect<QueryParams>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(getImages, payload)
@@ -146,8 +144,35 @@ const ImageModel: ImageStore = {
         return image
       }
     }),
+    getGroundedSAMImage: createEffect(function* ({}, { put, select }) {
+      const { groundedSAM } = select(({ image }) => image)
+      console.log('groundedSAM:', groundedSAM)
+      if (groundedSAM) {
+        return groundedSAM
+      }
+      const images = yield put.resolve({
+        type: 'getImages',
+        payload: {
+          url: LLMM.GroundedSAMImageUrl,
+          state: STATES.VALID,
+        },
+      })
+      if (images?.items?.length) {
+        const image = images.items[0]
+        console.log('get image:', image)
+        yield put({
+          type: 'UpdateGroundedSAM',
+          payload: image,
+        })
+        return image
+      }
+    }),
+    haveGroundedSAMImage: createEffect(function* ({}, { put, select }) {
+      const { groundedSAM } = select(({ image }) => image)
+      return LLMM.GroundedSAMImageUrl === groundedSAM?.url
+    }),
   },
-  reducers: createReducers(reducers),
+  reducers: createReducersByState(state),
 }
 
 export default ImageModel
