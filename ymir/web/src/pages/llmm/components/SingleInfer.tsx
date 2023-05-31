@@ -1,7 +1,7 @@
 import { FC, useState, useEffect } from 'react'
-import { useHistory, useParams, useSelector } from 'umi'
+import { useParams, useSelector } from 'umi'
 import t from '@/utils/t'
-import { Button, Card, Col, Descriptions, Form, Input, InputNumber, Row, Slider, Tag } from 'antd'
+import { Button, Col, Form, InputNumber, Row, Slider } from 'antd'
 import { Annotation, Project } from '@/constants'
 import AssetAnnotation, { Asset } from '@/components/dataset/asset/AssetAnnotations'
 import { isSemantic, ObjectType } from '@/constants/objectType'
@@ -9,9 +9,8 @@ import useRequest from '@/hooks/useRequest'
 
 import styles from '../inference.less'
 import ImgDef from '@/assets/img_def.png'
-import { NavDatasetIcon, NoXlmxIcon, SearchEyeIcon } from '@/components/common/Icons'
-import { UpOutlined, DownOutlined } from '@ant-design/icons'
-import Uploader, { UploadFile } from '@/components/form/uploader'
+import { NoXlmxIcon } from '@/components/common/Icons'
+import Uploader from '@/components/form/uploader'
 import { generateDatasetColors } from '@/constants/asset'
 import DockerConfigForm from '@/components/form/items/DockerConfig'
 import { getConfig, TYPES } from '@/constants/image'
@@ -25,7 +24,6 @@ const SingleInfer: FC<Props> = ({}) => {
   const pid = Number(params.id)
   const [virtualAsset, setVirtualAsset] = useState<Asset>()
   const IMGSIZELIMIT = 10
-  const history = useHistory()
   const [confidence, setConfidence] = useState(20)
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([])
@@ -36,10 +34,6 @@ const SingleInfer: FC<Props> = ({}) => {
   const { data: project, run: getProject } = useRequest<Project, [{ id: number }]>('project/getProject', {
     cacheKey: 'getProject',
     loading: false,
-  })
-  useRequest('image/getGroundedSAMImage', {
-    loading: false,
-    manual: false,
   })
 
   const renderUploader = (
@@ -139,7 +133,7 @@ const SingleInfer: FC<Props> = ({}) => {
       <Col span={6} className={`${styles.asset_info} scrollbar`}>
         <Form form={form} className={styles.asset_form}>
           <PromptInput />
-          <DockerConfigForm form={form} itemProps={{ wrapperCol: { span: 24 } }} seniorConfig={seniorConfig} />
+          <DockerConfigForm form={form} show={true} itemProps={{ wrapperCol: { span: 24 } }} seniorConfig={seniorConfig} />
         </Form>
         <div>
           <Button

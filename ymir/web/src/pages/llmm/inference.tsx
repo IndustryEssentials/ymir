@@ -6,6 +6,7 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import DatasetInfer from './components/DatasetInfer'
 import SingleInfer from './components/SingleInfer'
 import TabKey from './components/TabKey'
+import useRequest from '@/hooks/useRequest'
 type Props = {}
 
 const dynmicContent = () => {
@@ -26,6 +27,10 @@ const inference: FC<Props> = ({}) => {
     { key: TabKey.Dataset, tab: t('llmm.tabs.dataset') },
   ]
   const Content = dynmicContent()
+  useRequest('image/getGroundedSAMImage', {
+    loading: false,
+    manual: false,
+  })
 
   useEffect(() => {
     const type = history.location.state?.type as TabKey | undefined
