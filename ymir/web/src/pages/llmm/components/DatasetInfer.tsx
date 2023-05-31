@@ -84,35 +84,33 @@ const DatasetInfer: FC<Props> = ({}) => {
   )
 
   return (
-    <Card title={t('breadcrumbs.task.inference')}>
-      <Form {...formLayout} form={form} name="inferenceForm" onFinish={onFinish} onFinishFailed={onFinishFailed}>
-        <Form.Item
-          label={t('task.inference.form.dataset.label')}
-          required
-          name="dataset"
-          rules={[{ required: true, message: t('task.inference.form.dataset.required') }]}
-        >
-          <DatasetSelect pid={pid} filters={testSetFilters} renderLabel={renderLabel} placeholder={t('task.inference.form.dataset.placeholder')} />
-        </Form.Item>
-        <PromptInput />
-        <DockerConfigForm form={form} show={true} seniorConfig={seniorConfig} />
+    <Form {...formLayout} form={form} name="inferenceForm" onFinish={onFinish} onFinishFailed={onFinishFailed}>
+      <Form.Item
+        label={t('task.inference.form.dataset.label')}
+        required
+        name="dataset"
+        rules={[{ required: true, message: t('task.inference.form.dataset.required') }]}
+      >
+        <DatasetSelect pid={pid} filters={testSetFilters} renderLabel={renderLabel} placeholder={t('task.inference.form.dataset.placeholder')} />
+      </Form.Item>
+      <PromptInput />
+      <DockerConfigForm form={form} show={true} seniorConfig={seniorConfig} />
 
-        <Form.Item wrapperCol={{ offset: 8 }}>
-          <Space size={20}>
-            <Form.Item name="submitBtn" noStyle>
-              <Button type="primary" size="large" htmlType="submit">
-                {t('common.action.inference')}
-              </Button>
-            </Form.Item>
-            <Form.Item name="backBtn" noStyle>
-              <Button size="large" onClick={() => history.goBack()}>
-                {t('task.btn.back')}
-              </Button>
-            </Form.Item>
-          </Space>
-        </Form.Item>
-      </Form>
-    </Card>
+      <Form.Item wrapperCol={{ offset: 8 }}>
+        <Space size={20}>
+          <Form.Item name="submitBtn" noStyle>
+            <Button type="primary" size="large" htmlType="submit">
+              {t('common.action.inference')}
+            </Button>
+          </Form.Item>
+          <Form.Item name="backBtn" noStyle>
+            <Button size="large" onClick={() => history.goBack()}>
+              {t('task.btn.back')}
+            </Button>
+          </Form.Item>
+        </Space>
+      </Form.Item>
+    </Form>
   )
 }
 export default DatasetInfer
