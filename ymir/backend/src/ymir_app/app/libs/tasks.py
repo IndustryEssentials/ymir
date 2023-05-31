@@ -75,7 +75,13 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
 
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
     iterations_getter = partial(crud.iteration.get_multi_by_project, db)
-    datasets_getter = partial(ensure_datasets_are_ready, db, user_id=user_id)
+    if task_in.type == TaskType.copy_data:
+        # FIXME
+        #  adhoc override dataset owner checking
+        #  because anyone can copy datasets of user 1 (so called public datasets)
+        datasets_getter = partial(ensure_datasets_are_ready, db)
+    else:
+        datasets_getter = partial(ensure_datasets_are_ready, db, user_id=user_id)
     model_stages_getter = partial(crud.model_stage.get_multi_by_user_and_ids, db, user_id=user_id)
     labels_getter = partial(keywords_to_class_ids, user_labels)
     docker_image_getter = partial(crud.docker_image.get, db)
