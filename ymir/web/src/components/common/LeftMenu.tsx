@@ -25,12 +25,14 @@ import {
   VectorIcon,
   BookIcon,
   DeleteIcon,
+  MydatasetIcon,
 } from '@/components/common/Icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
 import type { IconProps } from './icons/IconProps'
 import useRequest from '@/hooks/useRequest'
 import SampleProjectTip from './SampleProjectTip'
 import { Project } from '@/constants'
+import { isMultiModal } from '@/constants/objectType'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -89,7 +91,7 @@ function LeftMenu() {
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
               getItem(t('model.diagnose'), `/home/project/${id}/prediction`, DiagnosisIcon),
               getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon, undefined, undefined, !trainingDatasetCount),
-              true ? getItem(t('breadcrumbs.llmm.infer.title'), `/home/project/${id}/llmm/inference`, DeleteIcon) : null,
+              isMultiModal(project?.type) ? getItem(t('breadcrumbs.llmm.infer.title'), `/home/project/${id}/llmm/inference`, MydatasetIcon) : null,
               getItem(t('common.trash.list'), `/home/project/${id}/trash`, DeleteIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),
             ])
