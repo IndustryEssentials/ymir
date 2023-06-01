@@ -404,10 +404,10 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
             logging.warning(f"[import error]: Found duplicated annotation for asset hash: {asset_hash}")
             duplicate_count += 1
             continue
+        known_signatures.add(signature)
 
         obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
-        known_signatures.add(signature)
 
     if duplicated_image_ids:
         logging.warning(f"[import error]: Duplicated image ids: {duplicated_image_ids}")

@@ -257,16 +257,18 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
                 continue
 
             annotation: Any = mirpb.ObjectAnnotation()
-            annotation.index = len(single_image_annotations.boxes)
             json_format.ParseDict(annotation_dict['box'], annotation.box)
             annotation.class_name = annotation_dict['class_name']
             annotation.score = float(annotation_dict['score'])
+
             is_new_type = handle_obj_anno_class(obj_anno=annotation,
                                                 cls_mgr=class_id_mgr,
                                                 unknown_types_strategy=unknown_types_strategy)
             if is_new_type and unknown_types_strategy == UnknownTypesStrategy.IGNORE:
                 unknown_class_id_annos_cnt += 1
                 continue
+
+            annotation.index = len(single_image_annotations.boxes)
             single_image_annotations.boxes.append(annotation)
 
         # task_annotations.image_annotations key: image file base name
