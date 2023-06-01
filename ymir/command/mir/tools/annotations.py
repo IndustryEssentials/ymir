@@ -167,6 +167,23 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     return obj_anno
 
 
+def handle_obj_anno_class(obj_anno: mirpb.ObjectAnnotation, cls_mgr: class_ids.UserLabels,
+                          unknown_types_strategy: UnknownTypesStrategy) -> Optional[mirpb.ObjectAnnotation]:
+    obj_anno.class_id, obj_anno.class_name = cls_mgr.id_and_main_name_for_name(obj_anno.class_name)
+    # known class names: return
+    if obj_anno.class_id >= 0:
+        return obj_anno
+    # unknown class names: ignore
+    if unknown_types_strategy == UnknownTypesStrategy.IGNORE:
+        return None
+    elif unknown_types_strategy == UnknownTypesStrategy.ADD:
+        obj_anno.class_id, obj_anno.class_name = cls_mgr.add_main_name(obj_anno.class_name)
+        return obj_anno
+    elif unknown_types_strategy == UnknownTypesStrategy.KEEP:
+        return obj_anno
+    return None
+
+
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str,
                        prediction_dir_path: Optional[str], groundtruth_dir_path: Optional[str],
                        file_name_to_asset_ids: Dict[str, str], unknown_types_strategy: UnknownTypesStrategy,
@@ -231,6 +248,9 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    if unknown_types_strategy == UnknownTypesStrategy.KEEP:
+        raise NotImplementedError("_import_annotations_voc_xml not support UnknownTypesStrategy.KEEP")
+
     zero_size_count = 0
     duplicate_count = 0
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)

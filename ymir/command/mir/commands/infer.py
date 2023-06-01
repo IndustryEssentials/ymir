@@ -14,7 +14,8 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
-from mir.tools.annotations import import_annotations_coco_json, valid_image_annotation, UnknownTypesStrategy
+from mir.tools.annotations import handle_obj_anno_class, import_annotations_coco_json, valid_image_annotation
+from mir.tools.annotations import UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -250,26 +251,23 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             continue
 
         single_image_annotations = mirpb.SingleImageAnnotations()
-        idx = 0
         for annotation_dict in annotations:
-            class_name = annotation_dict['class_name']
-            class_id = class_id_mgr.id_and_main_name_for_name(name=class_name)[0]
-            # ignore unknown class ids
-            if class_id < 0:
-                unknown_class_id_annos_cnt += 1
-                continue
             if 'score' not in annotation_dict:
                 no_score_annos_cnt += 1
                 continue
 
-            annotation = mirpb.ObjectAnnotation()
-            annotation.index = idx
+            annotation: Any = mirpb.ObjectAnnotation()
+            annotation.index = len(single_image_annotations.boxes)
             json_format.ParseDict(annotation_dict['box'], annotation.box)
-            annotation.class_id = class_id
-            annotation.class_name = class_name
+            annotation.class_name = annotation_dict['class_name']
             annotation.score = float(annotation_dict['score'])
+            annotation = handle_obj_anno_class(obj_anno=annotation,
+                                               cls_mgr=class_id_mgr,
+                                               unknown_types_strategy=unknown_types_strategy)
+            if not annotation:
+                unknown_class_id_annos_cnt += 1
+                continue
             single_image_annotations.boxes.append(annotation)
-            idx += 1
 
         # task_annotations.image_annotations key: image file base name
         if valid_image_annotation(single_image_annotations):
