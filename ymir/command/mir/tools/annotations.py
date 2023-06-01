@@ -169,7 +169,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict,
 def handle_obj_anno_class(obj_anno: mirpb.ObjectAnnotation, cls_mgr: class_ids.UserLabels,
                           unknown_types_strategy: UnknownTypesStrategy) -> bool:
     """
-    Returns: has new class (type)
+    Returns: has new class names (just added or ignored)
     """
     obj_anno.class_id, obj_anno.class_name = cls_mgr.id_and_main_name_for_name(obj_anno.class_name)
     # known class names: return
@@ -177,9 +177,8 @@ def handle_obj_anno_class(obj_anno: mirpb.ObjectAnnotation, cls_mgr: class_ids.U
         return False
 
     # has unknown class names
-    elif unknown_types_strategy == UnknownTypesStrategy.ADD:
+    if unknown_types_strategy == UnknownTypesStrategy.ADD:
         obj_anno.class_id, obj_anno.class_name = cls_mgr.add_main_name(obj_anno.class_name)
-
     return True
 
 
