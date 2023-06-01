@@ -75,7 +75,13 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
 
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
     iterations_getter = partial(crud.iteration.get_multi_by_project, db)
-    datasets_getter = partial(ensure_datasets_are_ready, db, user_id=user_id)
+    if task_in.type == TaskType.copy_data:
+        # FIXME
+        #  adhoc override dataset owner checking
+        #  because anyone can copy datasets of user 1 (so called public datasets)
+        datasets_getter = partial(ensure_datasets_are_ready, db)
+    else:
+        datasets_getter = partial(ensure_datasets_are_ready, db, user_id=user_id)
     model_stages_getter = partial(crud.model_stage.get_multi_by_user_and_ids, db, user_id=user_id)
     labels_getter = partial(keywords_to_class_ids, user_labels)
     docker_image_getter = partial(crud.docker_image.get, db)
@@ -163,7 +169,6 @@ class TaskResult:
         task_in_db: models.Task,
     ):
         self.db = db
-        self.task_in_db = task_in_db
         self.task = schemas.TaskInternal.from_orm(task_in_db)
 
         self.result_type = ResultType(self.task.result_type)
@@ -171,14 +176,8 @@ class TaskResult:
         self.project_id = self.task.project_id
         self.task_hash = self.task.hash
         self.controller = ControllerClient()
-        self.viz = VizClient()
-        self.viz.initialize(
-            user_id=self.user_id,
-            project_id=self.project_id,
-        )
+        self.viz = VizClient(user_id=self.user_id, project_id=self.project_id)
         self.cache = CacheClient(user_id=self.user_id)
-
-        self._result: Optional[Dict] = None
 
     @cached_property
     def user_labels(self) -> Dict:
