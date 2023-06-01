@@ -45,11 +45,11 @@ const DatasetInfer: FC<Props> = ({}) => {
     result && history.replace(`/home/project/${pid}/prediction`)
   }, [result])
 
-  const onFinish = async ({ hyperparam, dataset, prompt }: any) => {
+  const onFinish = async ({ hyperparam, dataset, prompt, gpu_count = 1 }: any) => {
     if (!image) {
       return
     }
-    const config = transHyperParams(hyperparam, prompt)
+    const config = transHyperParams(hyperparam, prompt, gpu_count)
 
     const params = {
       dataset,

@@ -16,6 +16,7 @@ import DockerConfigForm from '@/components/form/items/DockerConfig'
 import { getConfig, TYPES } from '@/constants/image'
 import PromptInput from './PromptInput'
 import { transHyperParams } from './_utils'
+import GPUCount from '@/components/form/items/GPUCount'
 
 type Props = {}
 
@@ -90,8 +91,8 @@ const SingleInfer: FC<Props> = ({}) => {
     form
       .validateFields()
       .then(() => {
-        const { hyperparam, prompt } = form.getFieldsValue()
-        const config = transHyperParams(hyperparam, prompt)
+        const { hyperparam, prompt, gpu_count } = form.getFieldsValue()
+        const config = transHyperParams(hyperparam, prompt, gpu_count)
 
         verify({ projectId: pid, urls: [virtualAsset?.url], modelStage: [1, 1], image: image?.id, config })
       })
@@ -133,6 +134,7 @@ const SingleInfer: FC<Props> = ({}) => {
       <Col span={6} className={`${styles.asset_info} scrollbar`}>
         <Form form={form} className={styles.asset_form}>
           <PromptInput />
+          <GPUCount form={form} min={1} />
           <DockerConfigForm form={form} show={true} itemProps={{ wrapperCol: { span: 24 } }} seniorConfig={seniorConfig} />
         </Form>
         <div>
