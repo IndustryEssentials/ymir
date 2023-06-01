@@ -104,7 +104,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
             mining_cmd.append('--add-prediction')
             mining_cmd.extend([
                 '--unknown-types-strategy',
-                backend_pb2_utils.unknown_types_strategy_str_from_enum(unknown_types_strategy).value
+                backend_pb2_utils.unknown_types_strategy_str_from_enum(unknown_types_strategy)
             ])
 
         return utils.run_command(mining_cmd)

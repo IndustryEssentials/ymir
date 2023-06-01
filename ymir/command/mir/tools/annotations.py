@@ -22,6 +22,7 @@ class UnknownTypesStrategy(str, enum.Enum):
     STOP = 'stop'
     IGNORE = 'ignore'
     ADD = 'add'
+    KEEP = 'keep'
 
 
 class MergeStrategy(str, enum.Enum):

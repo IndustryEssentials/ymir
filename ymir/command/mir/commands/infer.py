@@ -72,7 +72,8 @@ class CmdInfer(base.BaseCommand):
                       run_as_root: bool,
                       task_id: str = f"default-infer-{time.time()}",
                       run_infer: bool = False,
-                      run_mining: bool = False) -> int:
+                      run_mining: bool = False,
+                      unknown_types_strategy: UnknownTypesStrategy = UnknownTypesStrategy.KEEP) -> int:
         """run infer command
 
         This function can be called from cmd infer, or as part of minig cmd
@@ -170,7 +171,7 @@ class CmdInfer(base.BaseCommand):
             task_annotations.type = model_storage.object_type  # type: ignore
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET else _process_infer_coco_result)
-            process_result_func(task_annotations, work_dir_out, class_id_mgr)
+            process_result_func(task_annotations, work_dir_out, class_id_mgr, unknown_types_strategy)
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
                 m_f.write(task_annotations.SerializeToString())
@@ -229,7 +230,8 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
 
 
 def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
-                                 class_id_mgr: class_ids.UserLabels) -> None:
+                                 class_id_mgr: class_ids.UserLabels,
+                                 unknown_types_strategy: UnknownTypesStrategy) -> None:
     infer_result_file = os.path.join(work_dir_out, 'infer-result.json')
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
@@ -278,7 +280,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
 
 
 def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
-                               class_id_mgr: class_ids.UserLabels) -> None:
+                               class_id_mgr: class_ids.UserLabels,
+                               unknown_types_strategy: UnknownTypesStrategy) -> None:
     coco_json_filename = 'infer-result.json'
 
     with open(os.path.join(work_dir_out, coco_json_filename), 'r') as f:
@@ -293,7 +296,7 @@ def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, wo
                                  mir_annotation=mirpb.MirAnnotations(),
                                  annotations_dir_path=work_dir_out,
                                  class_type_manager=class_id_mgr,
-                                 unknown_types_strategy=UnknownTypesStrategy.IGNORE,
+                                 unknown_types_strategy=unknown_types_strategy,
                                  accu_new_class_names={},
                                  image_annotations=task_annotations,
                                  coco_json_filename=coco_json_filename)
