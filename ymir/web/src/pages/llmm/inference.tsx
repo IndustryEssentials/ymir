@@ -24,7 +24,7 @@ const inference: FC<Props> = ({}) => {
   const [active, setActive] = useState<TabKey>(TabKey.Single)
   const tabs = [
     { key: TabKey.Single, tab: t('llmm.tabs.single') },
-    { key: TabKey.Dataset, tab: t('llmm.tabs.dataset') },
+    // { key: TabKey.Dataset, tab: t('llmm.tabs.dataset') },
   ]
   const Content = dynmicContent()
   useRequest('image/getGroundedSAMImage', {

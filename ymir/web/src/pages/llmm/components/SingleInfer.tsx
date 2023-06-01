@@ -88,13 +88,16 @@ const SingleInfer: FC<Props> = ({}) => {
   }, [pid])
 
   const infer = () => {
+    if (!image) {
+      return
+    }
     form
       .validateFields()
       .then(() => {
         const { hyperparam, prompt, gpu_count } = form.getFieldsValue()
         const config = transHyperParams(hyperparam, prompt, gpu_count)
 
-        verify({ projectId: pid, urls: [virtualAsset?.url], modelStage: [1, 1], image: image?.id, config })
+        verify({ projectId: pid, urls: [virtualAsset?.url], image: image?.url, config })
       })
       .catch((err) => {})
   }
