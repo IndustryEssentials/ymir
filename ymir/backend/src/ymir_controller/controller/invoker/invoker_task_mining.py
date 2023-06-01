@@ -5,7 +5,7 @@ from common_utils.labels import UserLabels
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import revs, utils
 from id_definition.error_codes import CTLResponseCode
-from proto import backend_pb2
+from proto import backend_pb2, backend_pb2_utils
 
 
 class TaskMiningInvoker(TaskBaseInvoker):
@@ -66,7 +66,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          in_dataset_ids=request.in_dataset_ids,
                                          executor=mining_image,
                                          executant_name=executant_name,
-                                         generate_annotations=mining_request.generate_annotations)
+                                         generate_annotations=mining_request.generate_annotations,
+                                         unknown_types_strategy=mining_request.unknown_types_strategy)
 
         return mining_response
 
@@ -88,6 +89,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         executor: str,
         executant_name: str,
         generate_annotations: bool,
+        unknown_types_strategy: backend_pb2.UnknownTypesStrategy,
     ) -> backend_pb2.GeneralResp:
         mining_cmd = [
             utils.mir_executable(), 'mining', '--root', repo_root, '--user-label-file', label_storage_file, '--dst-rev',
@@ -100,5 +102,9 @@ class TaskMiningInvoker(TaskBaseInvoker):
             mining_cmd.extend(['--topk', str(top_k)])
         if generate_annotations:
             mining_cmd.append('--add-prediction')
+            mining_cmd.extend([
+                '--unknown-types-strategy',
+                backend_pb2_utils.unknown_types_strategy_str_from_enum(unknown_types_strategy).value
+            ])
 
         return utils.run_command(mining_cmd)
