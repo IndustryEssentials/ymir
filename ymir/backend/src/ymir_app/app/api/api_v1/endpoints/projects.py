@@ -18,7 +18,7 @@ from app.config import settings
 from app.constants.state import ResultState, RunningStates, TaskType, ObjectType
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient
-from app.libs.projects import setup_sample_project_in_background
+from app.libs.projects import setup_sample_project_in_background, bind_model_to_multimodal_project
 from app.libs.labels import ensure_labels_exist
 from app.libs.metrics import send_project_metrics
 from common_utils.labels import UserLabels
@@ -78,7 +78,7 @@ def create_sample_project(
         training_keywords=settings.SAMPLE_PROJECT_KEYWORDS,
         chunk_size=2,
         is_example=True,
-        recommended_docker_image_id=sample_docker_image.id if sample_docker_image else None
+        recommended_docker_image_id=sample_docker_image.id if sample_docker_image else None,
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
     project_task_hash = gen_task_id(current_user.id, project.id)
@@ -153,18 +153,17 @@ def create_project(
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
+    if project_in.object_type == ObjectType.multi_modal:
+        bind_model_to_multimodal_project(db, controller_client, project.id, current_user.id)
+
     if project_in.enable_iteration:
-        # 3.create task info
+        # 3. create init dataset group and dataset
         task = crud.task.create_placeholder(
             db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
         )
-
-        # 3.create dataset group to build dataset info
         dataset_name = f"{project_in.name}_training_dataset"
         dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id)
         dataset_group = crud.dataset_group.create_with_user_id(db, user_id=current_user.id, obj_in=dataset_paras)
-
-        # 4.create init dataset
         dataset_in = schemas.DatasetCreate(
             name=dataset_name,
             hash=task_id,
@@ -178,7 +177,7 @@ def create_project(
         )
         initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
 
-        # 5.update project info
+        # 4. update project info
         project = crud.project.update_resources(
             db,
             project_id=project.id,

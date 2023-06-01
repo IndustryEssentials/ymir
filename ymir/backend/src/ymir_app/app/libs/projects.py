@@ -58,6 +58,7 @@ def setup_model_and_group(
     input_url: Optional[str] = None,
     task_type: TaskType = TaskType.import_model,
     result_state: Optional[ResultState] = ResultState.processing,
+    is_visible: bool = True,
 ) -> models.Model:
     task = crud.task.create_placeholder(
         db=db,
@@ -79,6 +80,7 @@ def setup_model_and_group(
         project_id=project_id,
         user_id=user_id,
         task_id=task.id,
+        is_visible=is_visible,
     )
     model = crud.model.create_with_version(db=db, obj_in=model_in)
     if input_url:
@@ -150,4 +152,24 @@ def setup_sample_project_in_background(
             mining_dataset_id=mining_dataset.id,
             initial_model_id=model.id,
         ),
+    )
+
+
+def bind_model_to_multimodal_project(
+    db: Session,
+    controller_client: ControllerClient,
+    project_id: int,
+    user_id: int,
+) -> None:
+    model = setup_model_and_group(
+        db=db,
+        controller_client=controller_client,
+        group_name="multimodal_model",
+        project_id=project_id,
+        user_id=user_id,
+        input_url=settings.SAMPLE_PROJECT_MODEL_URL,
+        is_visible=False,
+    )
+    crud.project.update_resources(
+        db, project_id=project_id, project_update=schemas.ProjectUpdate(recommended_model_id=model.id)
     )

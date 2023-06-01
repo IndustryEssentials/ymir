@@ -55,6 +55,7 @@ class Project(Base):
     user_id = Column(Integer, index=True, nullable=False)
 
     recommended_docker_image_id = Column(Integer)
+    recommended_model_id = Column(Integer)
 
     training_dataset_group = relationship(
         "DatasetGroup",

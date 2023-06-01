@@ -30,6 +30,7 @@ class ProjectBase(BaseModel):
 
     is_example: Optional[bool] = False
     recommended_docker_image_id: Optional[int]
+    recommended_model_id: Optional[int]
 
     object_type: ObjectType = ObjectType.object_detect
     candidate_training_dataset_id: Optional[int]
@@ -64,6 +65,7 @@ class ProjectUpdate(BaseModel):
     candidate_training_dataset_id: Optional[int]
 
     training_keywords: Optional[List[str]]
+    recommended_model_id: Optional[int]
 
     class Config:
         use_enum_values = True

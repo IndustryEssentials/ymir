@@ -57,6 +57,7 @@ class ModelCreate(ModelBase):
     task_id: int
     user_id: int
     description: Optional[str]
+    is_visible: Optional[bool]
 
 
 class ModelUpdate(BaseModel):
