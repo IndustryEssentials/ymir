@@ -1,5 +1,5 @@
 import { FC, ReactNode, useEffect, useState } from 'react'
-import { Menu, Layout, MenuProps, MenuItemProps } from 'antd'
+import { Menu, Layout, MenuProps, MenuItemProps, Modal, message } from 'antd'
 import { useHistory, useLocation, withRouter, useSelector, useParams } from 'umi'
 import t from '@/utils/t'
 import { getDeployUrl, getPublicImageUrl } from '@/constants/common'
@@ -31,8 +31,9 @@ import IterationIcon from '@/components/icon/Xiangmudiedai'
 import type { IconProps } from './icons/IconProps'
 import useRequest from '@/hooks/useRequest'
 import SampleProjectTip from './SampleProjectTip'
-import { Project } from '@/constants'
+import { Image, Project } from '@/constants'
 import { isMultiModal } from '@/constants/objectType'
+import LLMM from '@/constants/llmm'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -64,6 +65,11 @@ function LeftMenu() {
   const { run: getTrainingDatasetCount } = useRequest<null, [number]>('dataset/getTrainingDatasetCount', {
     loading: false,
   })
+  const { data: gsImage } = useRequest<Image>('image/getGroundedSAMImage', {
+    loading: false,
+    manual: false,
+  })
+  const { runAsync: createGroundedSAMImage } = useRequest('image/createGroundedSAMImage')
 
   useEffect(() => {
     project?.id && getTrainingDatasetCount(project.id)
@@ -134,6 +140,18 @@ function LeftMenu() {
     const outer = /^outer\//.test(key)
     if (!outer) {
       setDefaultKeys([key])
+      if (key.includes('/llmm/infer') && gsImage?.url !== LLMM.GroundedSAMImageUrl) {
+        return Modal.confirm({
+          title: 'Add Grounded SAM Image',
+          content: <>Need download Grounded SAM docker image for inference, import or not?</>,
+          onOk: async () => {
+            const result = await createGroundedSAMImage()
+            if (result) {
+              message.success('Grounded SAM docker image is importing, please wait.')
+            }
+          },
+        })
+      }
       history.push(key)
     }
   }

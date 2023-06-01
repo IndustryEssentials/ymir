@@ -146,7 +146,6 @@ const ImageModel: ImageStore = {
     }),
     getGroundedSAMImage: createEffect(function* ({}, { put, select }) {
       const { groundedSAM } = select(({ image }) => image)
-      console.log('groundedSAM:', groundedSAM)
       if (groundedSAM) {
         return groundedSAM
       }
@@ -159,7 +158,6 @@ const ImageModel: ImageStore = {
       })
       if (images?.items?.length) {
         const image = images.items[0]
-        console.log('get image:', image)
         yield put({
           type: 'UpdateGroundedSAM',
           payload: image,
@@ -170,6 +168,15 @@ const ImageModel: ImageStore = {
     haveGroundedSAMImage: createEffect(function* ({}, { put, select }) {
       const { groundedSAM } = select(({ image }) => image)
       return LLMM.GroundedSAMImageUrl === groundedSAM?.url
+    }),
+    createGroundedSAMImage: createEffect(function* ({}, { put }) {
+      return yield put.resolve({
+        type: 'createImage',
+        payload: {
+          name: 'Grounded SAM',
+          url: LLMM.GroundedSAMImageUrl,
+        },
+      })
     }),
   },
   reducers: createReducersByState(state),
