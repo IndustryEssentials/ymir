@@ -318,10 +318,13 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
         logging.warning(f"[import error]: Count of duplicate objects: {duplicate_count}")
 
 
-def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
-                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
+def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
+                                 mir_annotation: mirpb.MirAnnotations,
+                                 annotations_dir_path: str,
+                                 class_type_manager: class_ids.UserLabels,
+                                 unknown_types_strategy: UnknownTypesStrategy,
                                  image_annotations: mirpb.SingleTaskAnnotations,
+                                 accu_new_class_names: Dict[str, int] = defaultdict(int),
                                  coco_json_filename: str = COCO_JSON_NAME) -> None:
     coco_file_path = os.path.join(annotations_dir_path, coco_json_filename)
     try:

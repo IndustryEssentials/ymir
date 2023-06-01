@@ -295,7 +295,6 @@ def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, wo
                                  annotations_dir_path=work_dir_out,
                                  class_type_manager=class_id_mgr,
                                  unknown_types_strategy=unknown_types_strategy,
-                                 accu_new_class_names={},
                                  image_annotations=task_annotations,
                                  coco_json_filename=coco_json_filename)
 
