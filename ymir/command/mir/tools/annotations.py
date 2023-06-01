@@ -167,20 +167,20 @@ def _coco_object_dict_to_annotation(anno_dict: dict,
 
 
 def handle_obj_anno_class(obj_anno: mirpb.ObjectAnnotation, cls_mgr: class_ids.UserLabels,
-                          unknown_types_strategy: UnknownTypesStrategy) -> Optional[mirpb.ObjectAnnotation]:
+                          unknown_types_strategy: UnknownTypesStrategy) -> bool:
+    """
+    Returns: has new class (type)
+    """
     obj_anno.class_id, obj_anno.class_name = cls_mgr.id_and_main_name_for_name(obj_anno.class_name)
     # known class names: return
     if obj_anno.class_id >= 0:
-        return obj_anno
-    # unknown class names: ignore
-    if unknown_types_strategy == UnknownTypesStrategy.IGNORE:
-        return None
+        return False
+
+    # has unknown class names
     elif unknown_types_strategy == UnknownTypesStrategy.ADD:
         obj_anno.class_id, obj_anno.class_name = cls_mgr.add_main_name(obj_anno.class_name)
-        return obj_anno
-    elif unknown_types_strategy == UnknownTypesStrategy.KEEP:
-        return obj_anno
-    return None
+
+    return True
 
 
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str,
@@ -324,7 +324,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
                                  class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy,
                                  image_annotations: mirpb.SingleTaskAnnotations,
-                                 accu_new_class_names: Dict[str, int] = defaultdict(int),
+                                 accu_new_class_names: defaultdict = defaultdict(int),
                                  coco_json_filename: str = COCO_JSON_NAME) -> None:
     coco_file_path = os.path.join(annotations_dir_path, coco_json_filename)
     try:
@@ -392,10 +392,11 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
         if obj_anno.box.w <= 0 or obj_anno.box.h <= 0:
             zero_size_count += 1
             continue
-        obj_anno = handle_obj_anno_class(obj_anno=obj_anno, cls_mgr=class_type_manager,
-                                         unknown_types_strategy=unknown_types_strategy)
-        if not obj_anno:
-            accu_new_class_names[category_id_to_names[anno_dict['category_id']]] += 1
+        is_new_type = handle_obj_anno_class(obj_anno=obj_anno,
+                                            cls_mgr=class_type_manager,
+                                            unknown_types_strategy=unknown_types_strategy)
+        if is_new_type and unknown_types_strategy == UnknownTypesStrategy.IGNORE:
+            accu_new_class_names[obj_anno.class_name] += 1
             continue
 
         asset_hash = image_id_to_hashes[anno_dict['image_id']]
