@@ -149,8 +149,9 @@ class ControllerRequest:
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_image_config"]
-        request.model_hash = args["typed_models"][0]["hash"]
-        request.model_stage = args["typed_models"][0]["stage_name"]
+        if args.get("typed_models"):
+            request.model_hash = args["typed_models"][0]["hash"]
+            request.model_stage = args["typed_models"][0]["stage_name"]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
