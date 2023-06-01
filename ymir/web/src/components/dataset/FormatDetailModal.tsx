@@ -1,12 +1,12 @@
 import { Card, Modal, ModalProps } from 'antd'
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import XMLViewer from 'react-xml-viewer'
 import JsonViewer from 'react-json-view'
-import { ObjectType } from '@/constants/project'
+import { isDetection } from '@/constants/project'
+import { useParams, useSelector } from 'umi'
+import { Project } from '@/constants'
 
-interface Props extends ModalProps {
-  objectType: number
-}
+type Props = ModalProps
 
 enum ObjectTypes {
   voc = 'xml',
@@ -103,12 +103,18 @@ const contents = {
   [ObjectTypes.coco]: <JsonViewer src={cocoJson} name={false} />,
 }
 
-const FormatDetailModal: FC<Props> = ({ objectType, ...props }) => {
-  const isDetection = objectType === ObjectType.ObjectDetection
-  const [active, setActive] = useState<ObjectTypes>(isDetection ? ObjectTypes.voc : ObjectTypes.coco)
+const FormatDetailModal: FC<Props> = ({ ...props }) => {
+  const { id } = useParams<{ id: string }>()
+  const project: Project | undefined = useSelector(({ project }) => project.projects[id])
+  const [active, setActive] = useState<ObjectTypes>(ObjectTypes.voc)
   const vocTab = { tab: '*.xml', key: ObjectTypes.voc }
   const cocoTab = { tab: 'coco-annotations.json', key: ObjectTypes.coco }
-  const tabs = [!isDetection ? cocoTab : vocTab]
+  const [tabs, setTabs] = useState([vocTab])
+
+  useEffect(() => {
+    setActive(isDetection(project.type) ? ObjectTypes.voc : ObjectTypes.coco)
+    setTabs(isDetection(project?.type) ? [vocTab] : [cocoTab])
+  }, [project?.type])
   return (
     <Modal width={'80%'} style={{ top: 40 }} {...props} footer={null}>
       <Card tabList={tabs} activeTabKey={active} onTabChange={(value) => setActive(value as ObjectTypes)}>

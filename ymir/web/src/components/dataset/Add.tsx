@@ -11,7 +11,7 @@ import { ObjectType } from '@/constants/project'
 
 import { urlValidator } from '@/components/form/validators'
 import Uploader, { UploadFile } from '@/components/form/uploader'
-import ProjectDatasetSelect from '@/components/form/ProjectDatasetSelect'
+import ProjectDatasetSelect, { DataNodeType } from '@/components/form/ProjectDatasetSelect'
 import Desc from '@/components/form/desc'
 import DatasetName from '@/components/form/items/DatasetName'
 import FormatDetailModal from '@/components/dataset/FormatDetailModal'
@@ -62,7 +62,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
   const [ignoredKeywords, setIgnoredKeywords] = useState<string[]>([])
   const { data: { newer } = {}, run: checkKeywords } = useRequest<{ newer: string[] }>('keyword/checkDuplication')
   const [addResult, newDataset] = useFetch('dataset/createDataset')
-  const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<List<DatasetType>>('dataset/getInternalDataset')
+  const { data: publicDatasets = [], run: getPublicDatasets } = useRequest<DatasetType[]>('dataset/getInternalDataset')
   const { runAsync: addKeywords } = useRequest<{}, [{ keywords: string[]; dry_run?: boolean }]>('keyword/addKeywords')
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
   const [defaultName, setDefaultName] = useState('')
@@ -215,12 +215,6 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
     setDefaultName(filename)
   }
 
-  function setCopyDefaultName(value: number, option: DatasetOptionType[]) {
-    const dataset = option[1] ? option[1].dataset : null
-    const label = dataset ? `${dataset.name}` : ''
-    setDefaultName(label)
-  }
-
   function addDefaultName(name = '') {
     if (!nameChangedByUser) {
       form.setFieldsValue({ name })
@@ -245,14 +239,10 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
       : t('common.empty.keywords')
   }
 
-  function showFormatDetail() {
-    setFormatDetailModal(true)
-  }
-
   const structureTip = t('dataset.add.form.tip.structure', {
     br: <br />,
     pic: <img src={samplePic} />,
-    detail: <Button onClick={showFormatDetail}>{t('dataset.add.form.tip.format.detail')}</Button>,
+    detail: <Button onClick={() => setFormatDetailModal(true)}>{t('dataset.add.form.tip.format.detail')}</Button>,
   })
 
   const renderTip = (type: string, params = {}) =>
@@ -343,7 +333,14 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
                 },
               ]}
             >
-              <ProjectDatasetSelect pid={pid} onChange={setCopyDefaultName} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
+              <ProjectDatasetSelect
+                onChange={(_, option) => {
+                  const dataset = option[1] ? option[1].dataset : null
+                  const label = dataset ? `${dataset.name}` : ''
+                  setDefaultName(label)
+                }}
+                placeholder={t('dataset.add.form.copy.placeholder')}
+              ></ProjectDatasetSelect>
             </Form.Item>
           ) : null}
           {!isType(Types.INTERNAL) ? (
@@ -384,9 +381,10 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
           {isType(Types.LOCAL) ? (
             <Form.Item label={t('dataset.add.form.upload.btn')} required>
               <Uploader
-                onChange={(files, result) => {
-                  setFile(result)
-                  setFileDefaultName(files)
+                onChange={({ fileList }) => {
+                  const file = fileList[0]
+                  setFile(file.url || '')
+                  setFileDefaultName(fileList)
                 }}
                 max={1024}
                 onRemove={() => setFile('')}
@@ -417,12 +415,7 @@ const Add: FC<Props> = ({ id, from, stepKey, back, ...props }) => {
           </Form.Item>
         </Form>
       </div>
-      <FormatDetailModal
-        title={t('dataset.add.form.tip.format.detail')}
-        visible={formatDetailModal}
-        objectType={project.type}
-        onCancel={() => setFormatDetailModal(false)}
-      />
+      <FormatDetailModal title={t('dataset.add.form.tip.format.detail')} visible={formatDetailModal} onCancel={() => setFormatDetailModal(false)} />
     </Card>
   )
 }

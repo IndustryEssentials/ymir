@@ -1,4 +1,4 @@
-import { Asset, ClassObject, Dataset, Image, Iteration, Message, Prediction, ProgressTask, Project, Task, User, Model } from '@/constants'
+import { Asset, ClassObject, Dataset, Image, Iteration, Message, Prediction, ProgressTask, Project, Task, User, Model, ImportingItem } from '@/constants'
 import { Socket } from 'socket.io-client'
 import { Loading } from 'umi'
 import { IdMap, List, StoreType } from './typings/common.d'
@@ -17,11 +17,14 @@ type Root = {
   loading: Loading
   common: CommonState
   message: MessageState
+  task: TaskState
 }
 
 interface CommonState {
   loading: boolean
 }
+
+interface TaskState {}
 
 interface UserState {
   user: User
@@ -44,6 +47,11 @@ interface DatasetState {
   query: YParams.DatasetsQuery
   validDatasetCount: number
   trainingDatasetCount: number
+  importing: {
+    items: ImportingItem[]
+    max: number
+    formatVisible?: boolean
+  }
 }
 
 interface PredictionState {
@@ -99,6 +107,7 @@ type SocketStore = StoreType<'socket', SocketState>
 type ImageStore = StoreType<'image', ImageState>
 type DatasetStore = StoreType<'dataset', DatasetState>
 type MessageStore = StoreType<'message', MessageState>
+type TaskStore = StoreType<'task', TaskState>
 type CommonStore = StoreType<'common', CommonState>
 type IterationStore = StoreType<'iteration', IterationState>
 type UserStore = StoreType<'user', UserState>
@@ -123,6 +132,8 @@ export {
   IterationState,
   UserState,
   UserStore,
+  TaskState,
+  TaskStore,
   KeywordState,
   KeywordStore,
 }

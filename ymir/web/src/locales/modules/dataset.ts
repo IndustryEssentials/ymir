@@ -72,6 +72,7 @@ const dataset = {
   },
   'dataset.add.form.name.required': { cn: '数据集名称为必填项', en: 'Dataset Name Required' },
   'dataset.add.form.name.placeholder': { cn: '请输入数据集名称，支持2-80个字符', en: 'Please input dataset name, 2 - 80 characters' },
+  'dataset.add.to.list': { cn: '添加到导入列表', en: 'Add to Importing List' },
   'dataset.add.form.type.label': { cn: '添加类型', en: 'Type' },
   'dataset.add.form.label.label': { cn: '标注', en: 'Labeling Status' },
   'dataset.add.form.newkw.label': { cn: ' ', en: ' ' },
@@ -105,7 +106,7 @@ const dataset = {
   },
   'dataset.add.form.path.placeholder': { cn: '请输入路径', en: 'Please input path on server' },
   'dataset.add.form.upload.btn': { cn: '上传文件', en: 'Upload' },
-  'dataset.add.form.upload.tip': {
+  'dataset.add.form.local.tip': {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
       3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，格式不符的图片将不会导入，标注文件格式为{format}。{br}
@@ -224,6 +225,7 @@ const dataset = {
     en: 'It is recommended to add images containing {values} classes greater than {boundingLabel} of the maxium to increase the balance of the object density.',
   },
   'dataset.unfold.all': { cn: '全部展开', en: 'Unfold All Versions' },
+  'dataset.add.batch.success': { cn: '{count}个数据集添加任务创建成功', en: '{count} datasets add tasks created' },
 }
 
 export default dataset

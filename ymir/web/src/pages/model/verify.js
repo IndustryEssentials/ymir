@@ -97,8 +97,8 @@ function Verify() {
     setConfig(configObj.config)
   }
 
-  function urlChange(files, url) {
-    setVirtualAsset({ url: files.length ? url : '' })
+  function urlChange({ fileList }) {
+    setVirtualAsset({ url: fileList.length ? fileList[0].url : '' })
     setAnnotations([])
   }
 

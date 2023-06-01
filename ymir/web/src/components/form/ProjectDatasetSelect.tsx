@@ -1,19 +1,28 @@
-import { Cascader, Col, Row, Select } from "antd"
-import { connect } from "dva"
-import { useEffect, useState } from "react"
+import { Cascader, CascaderProps } from 'antd'
+import { FC, ReactNode, useEffect, useState } from 'react'
 
-import Dataset from "@/components/form/option/Dataset"
+import DatasetOption from '@/components/form/option/Dataset'
+import { useSelector } from 'umi'
+import { Dataset } from '@/constants'
+import useRequest from '@/hooks/useRequest'
+export type DataNodeType = {
+  label: ReactNode
+  value: number
+  dataset?: Dataset
+  isLeaf?: boolean
+  loading?: boolean
+  children?: DataNodeType[]
+}
+type Props = CascaderProps<DataNodeType>
 
-const ProjectDatasetSelect = ({
-  pid,
-  value,
-  projects = [],
-  onChange = () => {},
-  getProjects,
-  getDatasets,
-  ...resProps
-}) => {
-  const [options, setOptions] = useState([])
+const ProjectDatasetSelect: FC<Props> = (props) => {
+  const [options, setOptions] = useState<DataNodeType[]>([])
+  const projects = useSelector(({ project }) => project.list.items)
+  const { run: getProjects } = useRequest('project/getProjects', { cacheKey: 'getAllProjects', loading: false })
+  const { runAsync: getDatasets } = useRequest<Dataset[], [{ id: number; force?: boolean }]>('dataset/queryAllDatasets', {
+    cacheKey: 'getAllDatasets',
+    loading: false,
+  })
 
   useEffect(() => {
     fetchProjects()
@@ -30,27 +39,24 @@ const ProjectDatasetSelect = ({
     setOptions(opts)
   }, [projects])
 
-  useEffect(() => {
-    if (projects.length === 1) {
-      value = projects[0].id
-    }
-  }, [projects])
-
   function fetchProjects() {
-    getProjects()
+    getProjects({ limit: 10000 })
   }
 
-  async function loadData(selected) {
+  const loadData: Props['loadData'] = async (selected) => {
     const target = selected[selected.length - 1]
+    if (!target.value) {
+      return
+    }
     target.loading = true
-    const result = await getDatasets(target.value, true)
+    const result = await getDatasets({ id: Number(target.value), force: true })
 
     target.loading = false
     if (result) {
       target.children =
         result.map((dataset) => {
           return {
-            label: <Dataset dataset={dataset} />,
+            label: <DatasetOption dataset={dataset} />,
             value: dataset.id,
             dataset: dataset,
             isLeaf: true,
@@ -60,37 +66,7 @@ const ProjectDatasetSelect = ({
     }
   }
 
-  return (
-    <Cascader
-      value={value}
-      options={options}
-      {...resProps}
-      loadData={loadData}
-      onChange={onChange}
-      allowClear
-    ></Cascader>
-  )
+  return <Cascader<DataNodeType> allowClear {...props} options={options} loadData={loadData}></Cascader>
 }
 
-const props = (state) => {
-  return {
-    projects: state.project.list.items,
-  }
-}
-const actions = (dispatch) => {
-  return {
-    getProjects() {
-      return dispatch({
-        type: "project/getProjects",
-        payload: { limit: 10000 },
-      })
-    },
-    getDatasets(pid, force) {
-      return dispatch({
-        type: "dataset/queryAllDatasets",
-        payload: { pid, force },
-      })
-    },
-  }
-}
-export default connect(props, actions)(ProjectDatasetSelect)
+export default ProjectDatasetSelect

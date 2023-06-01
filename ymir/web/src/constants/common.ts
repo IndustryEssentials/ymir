@@ -153,3 +153,5 @@ export const getLabelToolUrl = () => {
   const token = storage.get('access_token')
   return `${base}?token=${token}`
 }
+
+export const ImportingMaxCount = 10

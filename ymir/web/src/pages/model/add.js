@@ -132,8 +132,8 @@ const Add = () => {
             {isType(TYPES.LOCAL) ? (
               <Form.Item label={t('model.add.form.upload.btn')} name="path" required>
                 <Uploader
-                  onChange={(files, result) => {
-                    setPath(result)
+                  onChange={({ fileList }) => {
+                    setPath(fileList[0] ? fileList[0].url : '')
                   }}
                   max={1024}
                   format="all"
