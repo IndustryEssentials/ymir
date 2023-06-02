@@ -201,7 +201,9 @@ class CmdMining(base.BaseCommand):
                                   dst_rev=dst_typ_rev_tid.rev_tid,
                                   return_code=return_code,
                                   return_msg=return_msg,
-                                  executor=executor)
+                                  executor=executor,
+                                  new_types_added=(add_prediction
+                                                   and unknown_types_strategy == UnknownTypesStrategy.ADD))
         if return_code != MirCode.RC_OK:
             raise MirContainerError(task)
 

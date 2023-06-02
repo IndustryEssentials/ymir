@@ -133,17 +133,11 @@ class CmdInfer(base.BaseCommand):
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        class_names = model_storage.class_names
-        if not class_names:
-            raise MirRuntimeError(
-                error_code=MirCode.RC_CMD_INVALID_MODEL,
-                error_message=f"empty class names in model: {model_storage.model_hash}@{model_storage.stage_name}")
-
         model_names = model_storage.stages[model_storage.stage_name].files
         prepare_config_file(
             config=config,
             dst_config_file=work_config_file,
-            class_names=class_names,
+            class_names=model_storage.class_names,
             task_id=task_id,
             model_params_path=[os.path.join('/in/models', model_storage.stage_name, name) for name in model_names],
             run_infer=run_infer,
