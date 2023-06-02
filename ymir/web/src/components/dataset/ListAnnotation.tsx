@@ -26,6 +26,19 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
   const [imgWidth, setImgWidth] = useState(100)
   const [ratio, setRatio] = useState(1)
 
+  const [bbA, setBbA] = useState<BoundingBoxType[]>([])
+  const [pgA, setPgA] = useState<PolygonType[]>([])
+  const [maA, setMaA] = useState<MaskType[]>([])
+
+  useEffect(() => {
+    if (!annotations?.length) {
+      return
+    }
+    setBbA(filterAts(AnnotationType.BoundingBox) as BoundingBoxType[])
+    setPgA(filterAts(AnnotationType.Polygon) as PolygonType[])
+    setMaA(filterAts(AnnotationType.Mask) as MaskType[])
+  }, [annotations])
+
   useDebounceEffect(
     () => {
       if (!asset) {
@@ -50,28 +63,15 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
 
   window.addEventListener('resize', () => imgContainer.current && calClientWidth())
 
-  const Annotations: FC<{ annotations: Annotation[] }> = ({ annotations }) => {
-    const filterAts = (fType: AnnotationType) => annotations.filter(({ type }) => fType === type)
-    const bbA = filterAts(AnnotationType.BoundingBox) as BoundingBoxType[]
-    const pgA = filterAts(AnnotationType.Polygon) as PolygonType[]
-    const maA = filterAts(AnnotationType.Mask) as MaskType[]
-
-    return (
-      <>
-        {bbA.map((anno) => (
-          <BoundingBox key={anno.id} annotation={anno} ratio={ratio} simple={true} />
-        ))}
-        <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} simple={true} />
-        <Mask annotations={maA} width={asset.width} height={asset.height} ratio={ratio} simple={true} />
-      </>
-    )
-  }
+  const filterAts = (fType: AnnotationType) => annotations?.filter(({ type }) => fType === type)
 
   return (
-    <div className={styles.ic_container} ref={imgContainer} key={asset.hash}>
+    <div className={styles.ic_container} ref={imgContainer}>
       <img ref={img} style={{ visibility: hideAsset ? 'hidden' : 'visible' }} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
-        <Annotations annotations={annotations} />
+        {bbA.length ? bbA.map((anno) => <BoundingBox key={anno.id} annotation={anno} ratio={ratio} simple={true} />) : null}
+        {pgA.length ? <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} simple={true} /> : null}
+        {maA.length ? <Mask annotations={maA} width={asset.width} height={asset.height} ratio={ratio} simple={true} /> : null}
       </div>
     </div>
   )
