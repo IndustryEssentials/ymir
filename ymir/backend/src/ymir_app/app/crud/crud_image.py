@@ -46,10 +46,10 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         else:
             return query.all(), query.count()
 
-    def get_inference_docker_image(self, db: Session, url: str) -> Optional[DockerImage]:
+    def get_inference_docker_image(self, db: Session, id: int) -> Optional[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
         query = query.filter(DockerImage.configs.any(DockerImageConfig.type == int(DockerImageType.infer)))
-        return query.filter(self.model.url == url).first()  # type: ignore
+        return query.filter(self.model.id == id).first()  # type: ignore
 
     def get_official_docker_images(self, db: Session) -> List[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))

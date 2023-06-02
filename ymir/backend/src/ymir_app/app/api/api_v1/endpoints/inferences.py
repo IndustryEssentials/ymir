@@ -1,5 +1,6 @@
+import os
 import json
-from typing import Any, Dict, Generator
+from typing import Any, Dict, Generator, Tuple
 
 from fastapi import APIRouter, Depends
 from fastapi.logger import logger
@@ -16,7 +17,7 @@ from app.api.errors.errors import (
     ProjectNotFound,
 )
 from app.config import settings
-from app.utils.files import FailedToDownload, save_files
+from app.utils.files import FailedToDownload, save_file, save_files
 from app.utils.ymir_controller import ControllerClient
 
 router = APIRouter()
@@ -33,12 +34,18 @@ def call_inference(
     """
     Call Inference
     """
-    model_stage = crud.model_stage.get(db, id=inference_in.model_stage_id)
-    if not model_stage:
-        logger.error("Failed to find model stage id: %s", inference_in.model_stage_id)
-        raise ModelStageNotFound()
+    if inference_in.model_stage_id:
+        model_stage = crud.model_stage.get(db, id=inference_in.model_stage_id)
+        if not model_stage:
+            logger.error("Failed to find model stage id: %s", inference_in.model_stage_id)
+            raise ModelStageNotFound()
+        model_hash, model_stage_name = model_stage.model.hash, model_stage.name
+    else:
+        # FIXME
+        #  adhoc use pre-defined multimodal model
+        model_hash, model_stage_name = adhoc_prepare_multimodal_model()
 
-    docker_image = crud.docker_image.get_inference_docker_image(db, url=inference_in.docker_image)
+    docker_image = crud.docker_image.get_inference_docker_image(db, id=inference_in.docker_image_id)
     if not docker_image:
         logger.error("Failed to find inference model")
         raise InvalidInferenceConfig()
@@ -58,8 +65,8 @@ def call_inference(
             current_user.id,
             project.id,
             project.object_type,
-            model_stage.model.hash,
-            model_stage.name,
+            model_hash,
+            model_stage_name,
             asset_dir,
             docker_image.url,
             json.dumps(inference_in.docker_image_config),
@@ -87,3 +94,11 @@ def extract_inference_annotations(resp: Dict, *, filename_mapping: Dict) -> Gene
             "image_url": filename_mapping[filename],
             "annotations": annotations,
         }
+
+
+def adhoc_prepare_multimodal_model() -> Tuple[str, str]:
+    model_hash, model_stage_name = settings.MULTIMODAL_MODEL_HASH, "default"
+    if settings.MODELS_PATH and not os.path.isfile(f"{settings.MODELS_PATH}/{model_hash}"):
+        save_file(f"http://web/{model_hash}", settings.MODELS_PATH, keep=True)
+        logger.info(f"downloaded pre-defined multimodal model {model_hash}")
+    return model_hash, model_stage_name
