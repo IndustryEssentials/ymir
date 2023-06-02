@@ -277,17 +277,16 @@ message Task {
     int32 return_code = 8;
     string return_msg = 9;
     Evaluation evaluation = 10;
-    /// (for import task): new types for cmd import, key: class name, value: asset count
-    map<string, int32> new_types = 11;
-    /// (for import task): reason for new types, True: added, False: ignored
+    // (for import and mining task): new types added or not
     bool new_types_added = 12;
+    repeated string new_types = 13;
 
     string serialized_executor_config = 103;
     string src_revs = 104;
     string dst_rev = 105;
     string executor = 106;
 
-    reserved 4, 7, 100, 101, 102;
+    reserved 4, 7, 11, 100, 101, 102;
 };
 
 message ModelMeta {

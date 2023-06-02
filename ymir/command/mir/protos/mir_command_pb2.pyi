@@ -918,19 +918,6 @@ global___MirTasks = MirTasks
 
 class Task(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    class NewTypesEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text = ...
-        value: builtins.int = ...
-        def __init__(self,
-            *,
-            key : typing.Text = ...,
-            value : builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     TYPE_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
     TASK_ID_FIELD_NUMBER: builtins.int
@@ -939,8 +926,8 @@ class Task(google.protobuf.message.Message):
     RETURN_CODE_FIELD_NUMBER: builtins.int
     RETURN_MSG_FIELD_NUMBER: builtins.int
     EVALUATION_FIELD_NUMBER: builtins.int
-    NEW_TYPES_FIELD_NUMBER: builtins.int
     NEW_TYPES_ADDED_FIELD_NUMBER: builtins.int
+    NEW_TYPES_FIELD_NUMBER: builtins.int
     SERIALIZED_EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
     SRC_REVS_FIELD_NUMBER: builtins.int
     DST_REV_FIELD_NUMBER: builtins.int
@@ -965,13 +952,11 @@ class Task(google.protobuf.message.Message):
     return_msg: typing.Text = ...
     @property
     def evaluation(self) -> global___Evaluation: ...
-    @property
-    def new_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """/ (for import task): new types for cmd import, key: class name, value: asset count"""
-        pass
     new_types_added: builtins.bool = ...
-    """/ (for import task): reason for new types, True: added, False: ignored"""
+    """(for import and mining task): new types added or not"""
 
+    @property
+    def new_types(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
     serialized_executor_config: typing.Text = ...
     src_revs: typing.Text = ...
     dst_rev: typing.Text = ...
@@ -986,8 +971,8 @@ class Task(google.protobuf.message.Message):
         return_code : builtins.int = ...,
         return_msg : typing.Text = ...,
         evaluation : typing.Optional[global___Evaluation] = ...,
-        new_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         new_types_added : builtins.bool = ...,
+        new_types : typing.Optional[typing.Iterable[typing.Text]] = ...,
         serialized_executor_config : typing.Text = ...,
         src_revs : typing.Text = ...,
         dst_rev : typing.Text = ...,
