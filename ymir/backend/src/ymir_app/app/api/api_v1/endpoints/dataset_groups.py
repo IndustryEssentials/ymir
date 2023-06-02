@@ -63,7 +63,7 @@ def check_duplicated_dataset_group_names(
     """
     project_id, names = in_group_names.project_id, in_group_names.names
     duplicated_groups = crud.dataset_group.get_multi_by_project_and_names(db, project_id=project_id, names=names)
-    duplicated_names = [group.name for group in duplicated_groups]
+    duplicated_names = [group.name for group in duplicated_groups if group.is_visible]
     return {"result": {"names": duplicated_names}}
 
 
