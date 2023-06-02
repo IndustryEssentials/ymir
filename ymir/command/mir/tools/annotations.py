@@ -97,6 +97,8 @@ def _annotation_signature(annotation: mirpb.ObjectAnnotation, asset_id: str) -> 
 def _voc_object_dict_to_annotation(object_dict: dict) -> mirpb.ObjectAnnotation:
     # Fill shared fields.
     annotation = mirpb.ObjectAnnotation()
+    annotation.cm = mirpb.ConfusionMatrixType.NotSet
+    annotation.det_link_id = -1
     annotation.class_name = object_dict['name']
     annotation.score = float(object_dict.get('confidence', '-1.0'))
     annotation.anno_quality = float(object_dict.get('box_quality', '-1.0'))
