@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 from operator import attrgetter
+from uuid import uuid4
 
 from typing_extensions import Annotated
 
@@ -41,7 +42,7 @@ from id_definition.task_id import TaskId, gen_repo_hash, gen_user_hash
 
 
 class TaskBase(BaseModel):
-    name: str = ""
+    name: str = Field(default_factory=lambda: uuid4().hex)
     type: TaskType
     project_id: int
 
