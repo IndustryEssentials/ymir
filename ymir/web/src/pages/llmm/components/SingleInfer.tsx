@@ -97,7 +97,7 @@ const SingleInfer: FC<Props> = ({}) => {
         const { hyperparam, prompt, gpu_count } = form.getFieldsValue()
         const config = transHyperParams(hyperparam, prompt, gpu_count)
 
-        verify({ projectId: pid, urls: [virtualAsset?.url], image: image?.url, config })
+        verify({ projectId: pid, urls: [virtualAsset?.url], image: image?.id, config })
       })
       .catch((err) => {})
   }

@@ -79,7 +79,7 @@ declare namespace YParams {
   interface ModelVerifyParams {
     projectId: number
     urls: string[]
-    image: string
+    image: number
     config: { [key: string]: any }
     modelStage?: number[]
   }
