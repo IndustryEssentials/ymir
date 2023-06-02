@@ -1,5 +1,7 @@
 import { FC, useEffect, useRef, useState } from 'react'
 import { renderPolygons } from './_helper'
+import { Polygon as PolygonType } from '@/constants'
+
 type Props = {
   annotations: PolygonType[]
   ratio?: number
