@@ -116,7 +116,7 @@ class Settings(BaseSettings):
     INIT_OFFICIAL_DOCKER_IMAGE: bool = True
 
     # Ad Hoc multimodal model hash
-    MULTIMODAL_MODEL_HASH: str = "ded2c4dd42b909126ead1862006f6ea80086b1eb"
+    MULTIMODAL_MODEL_HASH: str = "7c356ad5fcf5b71d7d080b278b6fcdbe814d4472"
 
 
 settings = Settings(_env_file=".env")  # type: ignore
