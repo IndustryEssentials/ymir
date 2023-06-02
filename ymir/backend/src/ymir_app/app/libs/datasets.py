@@ -103,7 +103,9 @@ def _import_dataset(
         raise FailedtoCreateDataset()
 
 
-def ensure_datasets_are_ready(db: Session, user_id: Optional[int], dataset_ids: List[int]) -> List[models.Dataset]:
+def ensure_datasets_are_ready(
+    db: Session, *, user_id: Optional[int] = None, dataset_ids: List[int]
+) -> List[models.Dataset]:
     dataset_ids = list(set(dataset_ids))
     if user_id:
         datasets = crud.dataset.get_multi_by_user_and_ids(db, user_id=user_id, ids=dataset_ids)
