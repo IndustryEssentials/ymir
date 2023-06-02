@@ -14,7 +14,8 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
-from mir.tools.annotations import import_annotations_coco_json, valid_image_annotation, UnknownTypesStrategy
+from mir.tools.annotations import handle_obj_anno_class, import_annotations_coco_json, valid_image_annotation
+from mir.tools.annotations import UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -72,7 +73,8 @@ class CmdInfer(base.BaseCommand):
                       run_as_root: bool,
                       task_id: str = f"default-infer-{time.time()}",
                       run_infer: bool = False,
-                      run_mining: bool = False) -> int:
+                      run_mining: bool = False,
+                      unknown_types_strategy: UnknownTypesStrategy = UnknownTypesStrategy.KEEP) -> int:
         """run infer command
 
         This function can be called from cmd infer, or as part of minig cmd
@@ -170,7 +172,7 @@ class CmdInfer(base.BaseCommand):
             task_annotations.type = model_storage.object_type  # type: ignore
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET else _process_infer_coco_result)
-            process_result_func(task_annotations, work_dir_out, class_id_mgr)
+            process_result_func(task_annotations, work_dir_out, class_id_mgr, unknown_types_strategy)
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
                 m_f.write(task_annotations.SerializeToString())
@@ -229,7 +231,8 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
 
 
 def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
-                                 class_id_mgr: class_ids.UserLabels) -> None:
+                                 class_id_mgr: class_ids.UserLabels,
+                                 unknown_types_strategy: UnknownTypesStrategy) -> None:
     infer_result_file = os.path.join(work_dir_out, 'infer-result.json')
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
@@ -248,26 +251,25 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             continue
 
         single_image_annotations = mirpb.SingleImageAnnotations()
-        idx = 0
         for annotation_dict in annotations:
-            class_name = annotation_dict['class_name']
-            class_id = class_id_mgr.id_and_main_name_for_name(name=class_name)[0]
-            # ignore unknown class ids
-            if class_id < 0:
-                unknown_class_id_annos_cnt += 1
-                continue
             if 'score' not in annotation_dict:
                 no_score_annos_cnt += 1
                 continue
 
-            annotation = mirpb.ObjectAnnotation()
-            annotation.index = idx
+            annotation: Any = mirpb.ObjectAnnotation()
             json_format.ParseDict(annotation_dict['box'], annotation.box)
-            annotation.class_id = class_id
-            annotation.class_name = class_name
+            annotation.class_name = annotation_dict['class_name']
             annotation.score = float(annotation_dict['score'])
+
+            is_new_type = handle_obj_anno_class(obj_anno=annotation,
+                                                cls_mgr=class_id_mgr,
+                                                unknown_types_strategy=unknown_types_strategy)
+            if is_new_type and unknown_types_strategy == UnknownTypesStrategy.IGNORE:
+                unknown_class_id_annos_cnt += 1
+                continue
+
+            annotation.index = len(single_image_annotations.boxes)
             single_image_annotations.boxes.append(annotation)
-            idx += 1
 
         # task_annotations.image_annotations key: image file base name
         if valid_image_annotation(single_image_annotations):
@@ -278,7 +280,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
 
 
 def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
-                               class_id_mgr: class_ids.UserLabels) -> None:
+                               class_id_mgr: class_ids.UserLabels,
+                               unknown_types_strategy: UnknownTypesStrategy) -> None:
     coco_json_filename = 'infer-result.json'
 
     with open(os.path.join(work_dir_out, coco_json_filename), 'r') as f:
@@ -293,8 +296,7 @@ def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, wo
                                  mir_annotation=mirpb.MirAnnotations(),
                                  annotations_dir_path=work_dir_out,
                                  class_type_manager=class_id_mgr,
-                                 unknown_types_strategy=UnknownTypesStrategy.IGNORE,
-                                 accu_new_class_names={},
+                                 unknown_types_strategy=unknown_types_strategy,
                                  image_annotations=task_annotations,
                                  coco_json_filename=coco_json_filename)
 
