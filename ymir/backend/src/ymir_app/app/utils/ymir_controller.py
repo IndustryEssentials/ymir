@@ -36,6 +36,15 @@ class ExtraRequestType(enum.IntEnum):
     get_cmd_version = 606
 
 
+ANNO_FORMAT_MAPPING = {
+    mir_cmd_pb.ObjectType.OT_NO_ANNOS: mir_cmd_pb.AnnoFormat.AF_NO_ANNOS,
+    mir_cmd_pb.ObjectType.OT_DET: mir_cmd_pb.AnnoFormat.AF_VOC_XML,
+    mir_cmd_pb.ObjectType.OT_SEM_SEG: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+    mir_cmd_pb.ObjectType.OT_INS_SEG: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+    mir_cmd_pb.ObjectType.OT_MULTI_MODAL: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+}
+
+
 MERGE_STRATEGY_MAPPING = {
     MergeStrategy.stop_upon_conflict: mirsvrpb.MergeStrategy.STOP,
     MergeStrategy.prefer_newest: mirsvrpb.MergeStrategy.HOST,
@@ -155,6 +164,7 @@ class ControllerRequest:
             request.object_type = mir_cmd_pb.ObjectType.OT_NO_ANNOS
         else:
             request.object_type = args["object_type"]
+        import_dataset_request.anno_format = ANNO_FORMAT_MAPPING[request.object_type]
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
