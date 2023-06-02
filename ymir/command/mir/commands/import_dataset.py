@@ -116,15 +116,16 @@ class CmdImport(base.BaseCommand):
                                                              anno_fmt=anno_fmt,
                                                              phase='import.others')
 
-        logging.info(f"pred / gt import unknown result: {dict(unknown_class_names)}")
+        logging.info(f"pred / gt import unknown result: {unknown_class_names}")
 
         # create and write tasks
         task = mir_storage_ops.create_task_record(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
             message=f"importing {index_file}-{pred_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
-            new_types=unknown_class_names,
-            new_types_added=(unknown_types_strategy == annotations.UnknownTypesStrategy.ADD),
+            new_types=list(unknown_class_names),
+            new_types_added=(unknown_types_strategy == annotations.UnknownTypesStrategy.ADD
+                             and len(unknown_class_names) > 0),
             src_revs=src_revs,
             dst_rev=dst_rev,
         )

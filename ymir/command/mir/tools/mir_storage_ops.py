@@ -331,7 +331,7 @@ class MirStorageOps():
 def create_task_record(task_type: 'mirpb.TaskType.V',
                        task_id: str,
                        message: str,
-                       new_types: Dict[str, int] = {},
+                       new_types: List[str] = [],
                        new_types_added: bool = False,
                        return_code: int = 0,
                        return_msg: str = '',

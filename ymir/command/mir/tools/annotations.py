@@ -94,12 +94,10 @@ def _annotation_signature(annotation: mirpb.ObjectAnnotation, asset_id: str) -> 
         f"-{annotation.box.h}-{annotation.box.rotate_angle}")
 
 
-def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
-                                   class_type_manager: class_ids.UserLabels) -> mirpb.ObjectAnnotation:
+def _voc_object_dict_to_annotation(object_dict: dict) -> mirpb.ObjectAnnotation:
     # Fill shared fields.
     annotation = mirpb.ObjectAnnotation()
-    annotation.class_id = cid
-    annotation.class_name = class_type_manager.main_name_for_id(cid)
+    annotation.class_name = object_dict['name']
     annotation.score = float(object_dict.get('confidence', '-1.0'))
     annotation.anno_quality = float(object_dict.get('box_quality', '-1.0'))
     tags = object_dict.get('tags', {})  # tags could be None
@@ -251,7 +249,6 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
 
     zero_size_count = 0
     duplicate_count = 0
-    add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
     for filename, asset_hash in file_name_to_asset_ids.items():
         # for each asset, import it's annotations
         annotation_file = os.path.join(annotations_dir_path, os.path.splitext(filename)[0] + '.xml')
@@ -277,37 +274,29 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
             # when there's only ONE object node in xml, it will be parsed to a dict, not a list
             objects = [objects]
 
-        anno_idx = 0
         known_signatures = set()
         for object_dict in objects:
-            cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
-
-            # check if seen this class_name.
-            if new_type_name not in accu_new_class_names:
-                # for unseen class_name, only care about negative cid.
-                if cid < 0:
-                    if add_if_not_found:
-                        cid, _ = class_type_manager.add_main_name(main_name=new_type_name)
-                    accu_new_class_names.add(new_type_name)
-
-            if cid >= 0:
-                annotation = _voc_object_dict_to_annotation(object_dict=object_dict,
-                                                            cid=cid,
-                                                            class_type_manager=class_type_manager)
-                if annotation.box.w <= 0 or annotation.box.h <= 0:
-                    zero_size_count += 1
+            annotation = _voc_object_dict_to_annotation(object_dict=object_dict)
+            if annotation.box.w <= 0 or annotation.box.h <= 0:
+                zero_size_count += 1
+                continue
+            is_new_type = handle_obj_anno_class(obj_anno=annotation,
+                                                cls_mgr=class_type_manager,
+                                                unknown_types_strategy=unknown_types_strategy)
+            if is_new_type:
+                accu_new_class_names.add(annotation.class_name)
+                if unknown_types_strategy == UnknownTypesStrategy.IGNORE:
                     continue
 
-                signature = _annotation_signature(annotation, asset_hash)
-                if signature in known_signatures:
-                    logging.warning(f"[import error]: Found duplicated annotation for asset hash: {asset_hash}")
-                    duplicate_count += 1
-                    continue
+            signature = _annotation_signature(annotation, asset_hash)
+            if signature in known_signatures:
+                logging.warning(f"[import error]: Found duplicated annotation for asset hash: {asset_hash}")
+                duplicate_count += 1
+                continue
+            known_signatures.add(signature)
 
-                annotation.index = anno_idx
-                image_annotations.image_annotations[asset_hash].boxes.append(annotation)
-                anno_idx += 1
-                known_signatures.add(signature)
+            annotation.index = len(image_annotations.image_annotations[asset_hash].boxes)
+            image_annotations.image_annotations[asset_hash].boxes.append(annotation)
 
     if zero_size_count:
         logging.warning(f"[import error]: Count of zero size objects: {zero_size_count}")
