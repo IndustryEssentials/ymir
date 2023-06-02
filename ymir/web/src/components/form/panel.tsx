@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react'
+import { FC, ReactNode, useEffect, useState } from 'react'
 import { Col, Row } from 'antd'
 import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/Icons'
 import s from './panel.less'
@@ -8,7 +8,7 @@ export type Props = {
   setVisible?: (visible: boolean) => void
   toogleVisible?: boolean
   hasHeader?: boolean
-  label?: string
+  label?: ReactNode
   bg?: boolean
 }
 const Panel: FC<Props> = ({ hasHeader = true, toogleVisible = true, visible, setVisible = () => {}, label = '', bg = true, children }) => {

@@ -1,10 +1,9 @@
 export interface LangItem {
-  [key: string]: string,
+  [key: string]: string
 }
 
 export interface LangItems {
   [key: string]: {
-    [key: string]: string,
-  },
+    [key: string]: string
+  }
 }
-

@@ -91,7 +91,7 @@ function Verify() {
   function imageChange(value, option = {}) {
     const { image, objectType } = option
     if (image) {
-      setImage(image.url)
+      setImage(image.id)
     }
     const configObj = getConfig(image, TYPES.INFERENCE, objectType)
     setConfig(configObj.config)

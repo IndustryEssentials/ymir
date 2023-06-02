@@ -242,7 +242,7 @@ export function mine({ openpai, description, projectId, datasetId, modelStage, t
  * @export
  * @param {InferenceParams} { name, projectId, datasets, stages = [], config, image, openpai, description }
  */
-export function infer({ name, projectId, dataset, stage: [model, mstage], config, image, openpai, description }: InferenceParams) {
+export function infer({ name, projectId, dataset, stage: [model, mstage] = [], config, image, openpai, description }: InferenceParams) {
   const params = {
     name,
     type: TASKTYPES.INFERENCE,
@@ -250,7 +250,7 @@ export function infer({ name, projectId, dataset, stage: [model, mstage], config
     result_description: description,
     docker_image_config: { ...config, openpai_enable: openpai },
     parameters: {
-      task_type: 'infer',
+      task_type: 'dataset_infer',
       model_id: model,
       model_stage_id: mstage,
       dataset_id: dataset,
