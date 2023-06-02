@@ -89,6 +89,7 @@ interface ImageState {
   image: IdMap<Image>
   total: number
   official?: Image
+  groundedSAM?: Image
 }
 
 type KeywordState = {

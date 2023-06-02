@@ -74,8 +74,8 @@ function toBoundingBox(annotation: BoundingBox): BoundingBox {
 }
 
 function toMask(annotation: Mask): Mask {
-  const { mask, height } = annotation
-  if (!mask || !height) {
+  const { mask, height, decodeMask: decoded } = annotation
+  if (!mask || !height || decoded) {
     return annotation
   }
   const decodeMask = decode(mask, height)
