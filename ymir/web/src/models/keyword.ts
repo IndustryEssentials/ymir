@@ -19,7 +19,7 @@ const KeywordModel: KeywordStore = {
       }
       const result = yield put.resolve({
         type: 'getKeywords',
-        payload: { limit: 10000 },
+        payload: { limit: 100000 },
       })
       if (result) {
         const { items } = result
