@@ -168,7 +168,7 @@ export function verify({ projectId, modelStage = [], urls, image, config }: YPar
     model_id: model,
     model_stage_id: stage,
     image_urls: urls,
-    docker_image: image,
+    docker_image_id: image,
     docker_image_config: config,
   })
 }
