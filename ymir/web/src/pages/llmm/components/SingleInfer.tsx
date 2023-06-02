@@ -23,7 +23,7 @@ type Props = {}
 const SingleInfer: FC<Props> = ({}) => {
   const params = useParams<{ id: string }>()
   const pid = Number(params.id)
-  const [virtualAsset, setVirtualAsset] = useState<Asset>()
+  const [virtualAsset, setVirtualAsset] = useState<Asset>({ annotations: [] })
   const IMGSIZELIMIT = 10
   const [confidence, setConfidence] = useState(20)
   const [annotations, setAnnotations] = useState<Annotation[]>([])
