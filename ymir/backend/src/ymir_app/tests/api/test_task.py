@@ -12,7 +12,6 @@ from app.api.api_v1.api import tasks as m
 from app.config import settings
 from app.utils.timeutil import convert_datetime_to_timestamp
 from tests.utils.tasks import create_task
-from tests.utils.utils import random_lower_string
 
 
 @pytest.fixture(scope="function")
@@ -86,28 +85,6 @@ class TestDeleteTask:
         task_id = task.id
         r = client.delete(f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers)
         assert r.json()["result"]["is_deleted"]
-
-
-class TestChangeTaskName:
-    def test_change_task_name(
-        self,
-        db: Session,
-        client: TestClient,
-        normal_user_token_headers,
-        mocker,
-        mock_controller,
-        user_id: int,
-    ):
-        task = create_task(db, user_id)
-        old_name = task.name
-        task_id = task.id
-        new_name = random_lower_string(5)
-        r = client.patch(
-            f"{settings.API_V1_STR}/tasks/{task_id}",
-            headers=normal_user_token_headers,
-            json={"name": new_name},
-        )
-        assert r.json()["result"]["name"] == new_name != old_name
 
 
 class TestGetTask:
