@@ -48,16 +48,20 @@ export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[]
   showMore && drawBoxs(ctx, annotations)
 }
 
-export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: number, height: number, color?: string, showMore?: boolean) {
+export function renderMask(canvas: HTMLCanvasElement, annotation: Mask, showMore?: boolean) {
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return
   }
-  const image = mask2Image(mask, width, height, color)
+  const { width, height, color, decodeMask } = annotation
+  if (!decodeMask) {
+    return
+  }
+  const image = mask2Image(decodeMask, width, height, color)
 
   image && ctx.putImageData(image, 0, 0)
 
-  showMore && drawBoxs(ctx, annotations)
+  showMore && drawBoxs(ctx, [annotation])
 }
 
 function drawBoxs(ctx: CanvasRenderingContext2D, annotations: Annotation[]) {

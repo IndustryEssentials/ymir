@@ -1,16 +1,16 @@
 import { Mask as MaskType } from '@/constants'
 import { FC, useEffect, useRef, useState } from 'react'
-import { renderMasks } from './_helper'
+import { renderMask } from './_helper'
 
 type Props = {
-  annotations: MaskType[]
+  annotation: MaskType
   ratio?: number
   simple?: boolean
   width?: number
   height?: number
 }
 
-const Mask: FC<Props> = ({ annotations, ratio = 1, width, height, simple }) => {
+const Mask: FC<Props> = ({ annotation, ratio = 1, width, height, simple }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [canvas, setCanvas] = useState<HTMLCanvasElement>()
 
@@ -21,10 +21,10 @@ const Mask: FC<Props> = ({ annotations, ratio = 1, width, height, simple }) => {
   }, [canvasRef.current])
 
   useEffect(() => {
-    if (annotations.length && canvas && width && height) {
-      renderMasks(canvas, annotations, !simple)
+    if (annotation && canvas && width && height) {
+      renderMask(canvas, annotation, !simple)
     }
-  }, [annotations, canvas, width, height])
+  }, [annotation, canvas, width, height])
 
   return (
     <canvas

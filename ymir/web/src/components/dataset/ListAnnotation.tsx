@@ -71,7 +71,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
         {bbA.length ? bbA.map((anno) => <BoundingBox key={anno.id} annotation={anno} ratio={ratio} simple={true} />) : null}
         {pgA.length ? <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} simple={true} /> : null}
-        {maA.length ? <Mask annotations={maA} width={asset.width} height={asset.height} ratio={ratio} simple={true} /> : null}
+        {maA.length ? maA.map((anno) => <Mask key={anno.id} annotation={anno} width={asset.width} height={asset.height} ratio={ratio} simple={true} />) : null}
       </div>
     </div>
   )
