@@ -8,8 +8,15 @@ import Polygon from './Polygon'
 import BoundingBox from './BoundingBox'
 
 import styles from '../common.less'
-import { Annotation, Asset } from '@/constants'
+import { Annotation } from '@/constants'
 
+export type Asset = {
+  annotations: Annotation[]
+  hash?: string
+  url?: string
+  width?: number
+  height?: number
+}
 type Props = {
   asset: Asset
 }

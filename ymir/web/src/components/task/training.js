@@ -16,7 +16,7 @@ import ModelSelect from '@/components/form/modelSelect'
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
-import DockerConfigForm from '@/components/form/items/dockerConfig'
+import DockerConfigForm from '@/components/form/items/DockerConfig'
 import OpenpaiForm from '@/components/form/items/openpai'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
@@ -154,7 +154,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
         setLiveInitialValues(config)
       }
       setTimeout(() => {
-        setConfig(config)}, 800)
+        setConfig(config)
+      }, 800)
       setTestSet(validation_dataset_id)
       setTrainSet(dataset_id)
       setSelectedKeywords(keywords)
@@ -190,7 +191,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom }) {
   }
 
   function imageChange(_, option) {
-    if(!option) {
+    if (!option) {
       setConfig({})
     }
     const { image, objectType } = option
