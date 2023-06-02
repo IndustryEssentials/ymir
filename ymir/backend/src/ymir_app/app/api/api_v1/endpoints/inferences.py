@@ -80,11 +80,7 @@ def call_inference(
     except KeyError:
         logger.exception("Invalid inference result format: %s", resp)
         raise InvalidInferenceResultFormat()
-    result = {
-        "model_stage_id": inference_in.model_stage_id,
-        "annotations": annotations,
-    }
-    return {"result": result}
+    return {"result": {"annotations": annotations}}
 
 
 def extract_inference_annotations(resp: Dict, *, filename_mapping: Dict) -> Generator:

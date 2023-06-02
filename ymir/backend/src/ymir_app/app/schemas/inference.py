@@ -57,7 +57,6 @@ class Annotation(BaseModel):
 
 
 class InferenceResult(BaseModel):
-    model_stage_id: Optional[int]
     annotations: List[Annotation]
 
 
