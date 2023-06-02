@@ -122,7 +122,7 @@ function getType(annotation: Backend) {
   return annotation?.mask ? AnnotationType.Mask : annotation?.polygon?.length ? AnnotationType.Polygon : AnnotationType.BoundingBox
 }
 
-function generateDatasetColors(keywords: Array<string> = []): {
+export function generateDatasetColors(keywords: Array<string> = []): {
   [name: string]: string
 } {
   const KeywordColor = ['green', 'red', 'cyan', 'blue', 'yellow', 'purple', 'magenta', 'orange', 'gold']
