@@ -10,7 +10,7 @@ type Props = {
   height?: number
 }
 
-const Mask: FC<Props> = ({ annotations, ratio = 1, width, height }) => {
+const Mask: FC<Props> = ({ annotations, ratio = 1, width, height, simple }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [canvas, setCanvas] = useState<HTMLCanvasElement>()
 
@@ -22,7 +22,7 @@ const Mask: FC<Props> = ({ annotations, ratio = 1, width, height }) => {
 
   useEffect(() => {
     if (annotations.length && canvas && width && height) {
-      renderMasks(canvas, annotations)
+      renderMasks(canvas, annotations, !simple)
     }
   }, [annotations, canvas, width, height])
 

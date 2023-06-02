@@ -10,7 +10,7 @@ type Props = {
   height?: number
 }
 
-const Polygon: FC<Props> = ({ annotations, ratio = 1, width, height }) => {
+const Polygon: FC<Props> = ({ annotations, ratio = 1, width, height, simple }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [canvas, setCanvas] = useState<HTMLCanvasElement>()
   useEffect(() => {
@@ -21,7 +21,7 @@ const Polygon: FC<Props> = ({ annotations, ratio = 1, width, height }) => {
 
   useEffect(() => {
     if (annotations.length && canvas && width && height) {
-      renderPolygons(canvas, annotations)
+      renderPolygons(canvas, annotations, !simple)
     }
   }, [annotations, canvas, width, height])
 

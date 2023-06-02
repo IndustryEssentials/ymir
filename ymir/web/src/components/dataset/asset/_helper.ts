@@ -29,7 +29,7 @@ function mask2Uint8Array(mask: number[][], len: number, color?: string) {
   return dataWithColor
 }
 
-export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[]) {
+export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[], showMore?: boolean) {
   const ctx = canvas.getContext('2d')
   if (!ctx || !annotations.length) {
     return
@@ -45,9 +45,10 @@ export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[]
     points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
   })
   ctx.fill()
+  showMore && drawBoxs(ctx, annotations)
 }
 
-export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: number, height: number, color?: string) {
+export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: number, height: number, color?: string, showMore?: boolean) {
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return
@@ -55,6 +56,19 @@ export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: n
   const image = mask2Image(mask, width, height, color)
 
   image && ctx.putImageData(image, 0, 0)
+
+  showMore && drawBoxs(ctx, annotations)
+}
+
+function drawBoxs(ctx: CanvasRenderingContext2D, annotations: Annotation[]) {
+  ctx.strokeStyle = getColor('green').hexa()
+  ctx.lineWidth = 4
+  ctx.font = 'bold 20px Arial'
+  ctx.fillStyle = 'green'
+  annotations.forEach(({ box, keyword }) => {
+    ctx.strokeRect(box.x, box.y, box.w, box.h)
+    ctx.fillText(keyword, box.x, box.y)
+  })
 }
 
 export function transferAnnotations(annotations: Annotation[] = []) {

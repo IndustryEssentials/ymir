@@ -35,6 +35,7 @@ interface AnnotationBase {
   score?: number
   gt?: boolean
   cm: number
+  box: Bbox
   tags?: CustomClass
 }
 
@@ -54,15 +55,15 @@ type Annotation = Matable<AnnotationMaps>
 type SegAnnotation = Matable<Omit<AnnotationMaps, AnnotationType.BoundingBox>>
 type DetAnnotation = Matable<Pick<AnnotationMaps, AnnotationType.BoundingBox>>
 
+type Bbox = {
+  x: number
+  y: number
+  w: number
+  h: number
+  rotate_angle?: number
+}
 interface BoundingBox extends AnnotationBase {
   type: AnnotationType.BoundingBox
-  box: {
-    x: number
-    y: number
-    w: number
-    h: number
-    rotate_angle?: number
-  }
 }
 
 interface Polygon extends AnnotationBase {
@@ -74,7 +75,6 @@ interface Mask extends AnnotationBase {
   type: AnnotationType.Mask
   mask: string
   decodeMask?: number[][]
-  rect?: [x: number, y: number, width: number, height: number]
 }
 
 export { Asset, AnnotationBase, Annotation, SegAnnotation, DetAnnotation, BoundingBox, Polygon, Mask }

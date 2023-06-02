@@ -64,10 +64,10 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     return (
       <>
         {bbA.map((anno) => (
-          <BoundingBox key={anno.id} annotation={anno} ratio={ratio} simple={true} />
+          <BoundingBox key={anno.id} annotation={anno} ratio={ratio} />
         ))}
-        <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} simple={true} />
-        <Mask annotations={maA} width={asset.width} height={asset.height} ratio={ratio} simple={true} />
+        <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} />
+        <Mask annotations={maA} width={asset.width} height={asset.height} ratio={ratio} />
       </>
     )
   }
