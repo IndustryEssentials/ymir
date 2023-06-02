@@ -29,7 +29,7 @@ function mask2Uint8Array(mask: number[][], len: number, color?: string) {
   return dataWithColor
 }
 
-export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[], showMore?: boolean) {
+export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[], showMore?: boolean, ratio?: number) {
   const ctx = canvas.getContext('2d')
   if (!ctx || !annotations.length) {
     return
@@ -45,10 +45,10 @@ export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[]
     points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
   })
   ctx.fill()
-  showMore && drawBoxs(ctx, annotations)
+  showMore && drawBoxs(ctx, annotations, ratio)
 }
 
-export function renderMask(canvas: HTMLCanvasElement, annotation: Mask, showMore?: boolean) {
+export function renderMask(canvas: HTMLCanvasElement, annotation: Mask, showMore?: boolean, ratio?: number) {
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return
@@ -61,17 +61,26 @@ export function renderMask(canvas: HTMLCanvasElement, annotation: Mask, showMore
 
   image && ctx.putImageData(image, 0, 0)
 
-  showMore && drawBoxs(ctx, [annotation])
+  showMore && drawBoxs(ctx, [annotation], ratio)
 }
 
-function drawBoxs(ctx: CanvasRenderingContext2D, annotations: Annotation[]) {
-  ctx.strokeStyle = getColor('green').hexa()
-  ctx.lineWidth = 4
-  ctx.font = 'bold 20px Arial'
-  ctx.fillStyle = 'green'
-  annotations.forEach(({ box, keyword }) => {
+function drawBoxs(ctx: CanvasRenderingContext2D, annotations: Annotation[], ratio: number = 1) {
+  const { color } = annotations[0]
+  const lw = 1 / ratio
+  const th = 16 * lw
+  const padding = lw * 4
+  const mainColor = getColor(color).hexa()
+  ctx.strokeStyle = mainColor
+  ctx.lineWidth = 1 / ratio
+  ctx.font = `${th}px Microsoft Yahei`
+  annotations.forEach(({ box, keyword, score }) => {
     ctx.strokeRect(box.x, box.y, box.w, box.h)
-    ctx.fillText(keyword, box.x, box.y)
+    const text = `${keyword} ${score || ''}`
+    const tw = ctx.measureText(text).width
+    ctx.fillStyle = getColor(color, 0.6).hexa()
+    ctx.fillRect(box.x, box.y - th - padding * 2, tw + 8, th + padding * 2)
+    ctx.fillStyle = 'white'
+    ctx.fillText(text, box.x + padding, box.y - padding)
   })
 }
 

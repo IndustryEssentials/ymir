@@ -22,7 +22,7 @@ const Mask: FC<Props> = ({ annotation, ratio = 1, width, height, simple }) => {
 
   useEffect(() => {
     if (annotation && canvas && width && height) {
-      renderMask(canvas, annotation, !simple)
+      renderMask(canvas, annotation, !simple, ratio)
     }
   }, [annotation, canvas, width, height])
 

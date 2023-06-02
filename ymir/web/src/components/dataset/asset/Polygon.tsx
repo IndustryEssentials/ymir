@@ -21,7 +21,7 @@ const Polygon: FC<Props> = ({ annotations, ratio = 1, width, height, simple }) =
 
   useEffect(() => {
     if (annotations.length && canvas && width && height) {
-      renderPolygons(canvas, annotations, !simple)
+      renderPolygons(canvas, annotations, !simple, ratio)
     }
   }, [annotations, canvas, width, height])
 
