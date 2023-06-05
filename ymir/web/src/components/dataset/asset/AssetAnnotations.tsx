@@ -8,7 +8,7 @@ import Polygon from './Polygon'
 import BoundingBox from './BoundingBox'
 
 import styles from '../common.less'
-import { Annotation } from '@/constants'
+import { Annotation, BoundingBox as BoundingBoxType, Mask as MaskType, Polygon as PolygonType } from '@/constants'
 
 export type Asset = {
   annotations: Annotation[]
@@ -28,6 +28,19 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
   const [width, setWidth] = useState(0)
   const [imgWidth, setImgWidth] = useState(0)
   const [ratio, setRatio] = useState(1)
+
+  const [bbA, setBbA] = useState<BoundingBoxType[]>([])
+  const [pgA, setPgA] = useState<PolygonType[]>([])
+  const [maA, setMaA] = useState<MaskType[]>([])
+
+  useEffect(() => {
+    if (!annotations?.length) {
+      return
+    }
+    setBbA(filterAts(AnnotationType.BoundingBox) as BoundingBoxType[])
+    setPgA(filterAts(AnnotationType.Polygon) as PolygonType[])
+    setMaA(filterAts(AnnotationType.Mask) as MaskType[])
+  }, [annotations])
 
   useEffect(() => {
     if (!asset) {
@@ -55,17 +68,6 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     setRatio(clientWidth / iw)
   }
 
-  function renderAnnotation(annotation: Annotation) {
-    switch (annotation.type) {
-      case AnnotationType.BoundingBox:
-        return <BoundingBox key={annotation.id} annotation={annotation} ratio={ratio} />
-      case AnnotationType.Polygon:
-        return <Polygon key={annotation.id} annotation={annotation} ratio={ratio} />
-      case AnnotationType.Mask:
-        return <Mask key={annotation.id} annotation={annotation} ratio={ratio} />
-    }
-  }
-
   const imgLoad = (e: SyntheticEvent) => {
     if (img.current && img.current.naturalWidth) {
       const { naturalWidth } = img.current
@@ -79,13 +81,17 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     }
   })
 
+  const filterAts = (fType: AnnotationType) => annotations?.filter(({ type }) => fType === type)
+
   return (
     <div className={styles.anno_panel} ref={imgContainer} key={asset?.hash}>
       <div className={styles.img_container}>
         <img ref={img} src={asset?.url} style={imgWidth ? { width: imgWidth } : undefined} className={styles.assetImg} onLoad={imgLoad} />
       </div>
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
-        {annotations.map(renderAnnotation)}
+        {bbA.length ? bbA.map((anno) => <BoundingBox key={anno.id} annotation={anno} ratio={ratio} />) : null}
+        {pgA.length ? <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} /> : null}
+        {maA.length ? maA.map((anno) => <Mask key={anno.id} annotation={anno} width={asset.width} height={asset.height} ratio={ratio} />) : null}
       </div>
     </div>
   )
