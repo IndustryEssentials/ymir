@@ -2,16 +2,17 @@ import type { DefaultOptionType } from 'antd/lib/select'
 import type { FC, ReactNode } from 'react'
 
 import { useEffect, useState } from 'react'
-import { Col, ConfigProvider, Row, Select, SelectProps } from 'antd'
-import { useSelector } from 'umi'
+import { Button, Col, ConfigProvider, Divider, Row, Select, SelectProps, Space } from 'antd'
+import { useHistory, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 import EmptyState from '@/components/empty/Dataset'
 import Dataset from '@/components/form/option/Dataset'
 import { Dataset as DatasetType } from '@/constants'
+import AddButton from '../dataset/AddButton'
 
-interface Props extends SelectProps {
+interface Props extends Omit<SelectProps, 'options'> {
   pid: number
   filter?: number[]
   allowEmpty?: boolean
@@ -39,6 +40,7 @@ const DatasetSelect: FC<Props> = ({
   changeByUser,
   ...resProps
 }) => {
+  const history = useHistory()
   const datasets = useSelector(({ dataset }) => dataset.allDatasets[pid])
   const [options, setOptions] = useState<DefaultOptionType[]>([])
   const { run: getDatasets } = useRequest('dataset/queryAllDatasets', {
@@ -116,13 +118,24 @@ const DatasetSelect: FC<Props> = ({
       <Select
         value={val}
         placeholder={t('task.train.form.training.datasets.placeholder')}
-        onChange={onChange}
         showArrow
         allowClear
         showSearch
+        {...resProps}
+        onChange={onChange}
         options={options}
         filterOption={(input, option) => option?.dataset?.name?.toLowerCase()?.indexOf(input.toLowerCase()) >= 0}
-        {...resProps}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {options.length ? (
+              <>
+                <Divider style={{ margin: '8px 0' }} />
+                <AddButton type="link" block />
+              </>
+            ) : null}
+          </>
+        )}
       ></Select>
     </ConfigProvider>
   )

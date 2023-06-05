@@ -17,11 +17,6 @@ const Tip: FC<Props> = ({ type }) => {
   const [sampleZip, setSampleZip] = useState('/sample_dataset.zip')
   const [samplePic, setSamplePic] = useState(DetSamplePic)
   const project = useSelector(({ project }) => project.projects[id])
-  const structureTip = t('dataset.add.form.tip.structure', {
-    br: <br />,
-    pic: <img src={samplePic} />,
-    detail: <Button onClick={() => showFormatDetail(true)}>{t('dataset.add.form.tip.format.detail')}</Button>,
-  })
   const label = getTypeLabel(type, false)
   const [config, setConfig] = useState<{ [key: string]: any }>({
     br: <br />,
@@ -39,7 +34,6 @@ const Tip: FC<Props> = ({ type }) => {
     id && getProject({ id })
   }, [id])
   useEffect(() => {
-    console.log('project:', project, isDetection(project?.type))
     !isDetection(project?.type) && (setSamplePic(SegSamplePic), setSampleZip('/sample_dataset_seg.zip'))
   }, [project?.type])
 
@@ -52,11 +46,6 @@ const Tip: FC<Props> = ({ type }) => {
     const conf = {
       ...config,
       structure: structureTip,
-      // sample: (
-      //   <a target="_blank" href={sampleZip}>
-      //     Sample.zip
-      //   </a>
-      // ),
       format: isDetection(project?.type) ? 'Pascal VOC' : 'Coco',
     }
     if (type === Types.LOCAL) {
