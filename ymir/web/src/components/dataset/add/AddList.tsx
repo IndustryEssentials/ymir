@@ -42,7 +42,7 @@ const AddList: FC = () => {
       },
     },
     {
-      title: 'Source(url/path/file name/dataset name)',
+      title: t('dataset.add.form.source.label'),
       dataIndex: 'sourceName',
     },
     {
