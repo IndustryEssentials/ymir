@@ -590,7 +590,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     hideRef.current?.hide([version])
   }
 
-  const hideOk = (result: Result[]) => {
+  const hideOk = (result: { groupId: number }[]) => {
     result.forEach((item) => item?.groupId && fetchVersions(item?.groupId, true))
     fetchDatasets()
     setSelectedVersions({ selected: [], versions: {} })

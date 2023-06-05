@@ -18,9 +18,7 @@ const AddList: FC = () => {
       title: t('dataset.add.form.type.label'),
       dataIndex: 'type',
       width: 200,
-      render(type) {
-        return t(getTypeLabel(type))
-      },
+      render: (type) => t(getTypeLabel(type)),
     },
     {
       title: t('dataset.add.form.name.label'),

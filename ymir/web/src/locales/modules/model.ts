@@ -56,6 +56,7 @@ const model = {
   'model.verify.upload.info': { cn: '支持jpg, png, bmp格式, 图片大小 < {size}M', en: 'Support *.jpg, *.png, *.bmp, size < {size}M' },
   'model.verify.confidence': { cn: '置信度', en: 'Confidence' },
   'model.verify.upload.label': { cn: '上传图片', en: 'Upload Image' },
+  'model.verify.upload.again.label': { cn: '重新上传图片', en: 'Upload Another Image' },
   'model.verify.model.info.title': { cn: '模型信息', en: 'Model Info.' },
   'model.verify.model.param.title': { cn: '参数调整', en: 'Parameter Adjustment' },
   'model.verify.model.param.fold': { cn: '点击收起', en: 'Fold' },
