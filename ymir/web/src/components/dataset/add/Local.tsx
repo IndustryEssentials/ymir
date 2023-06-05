@@ -7,7 +7,7 @@ import { formLayout } from '@/config/antd'
 import SubmitBtn from './SubmitBtn'
 import { ImportingItem } from '@/constants'
 import t from '@/utils/t'
-import Uploader from '@/components/form/uploader'
+import Uploader, { UploadFile } from '@/components/form/uploader'
 import Tip from './Tip'
 
 const Local: FC = () => {
@@ -47,13 +47,13 @@ const Local: FC = () => {
                     }
                   : undefined
               })
-              .filter<ImportingItem>((item): item is ImportingItem => !!item)
+              .filter((item) => !!item) as ImportingItem[]
             setItems(items)
           }}
           info={<Tip type={Types.LOCAL} />}
         ></Uploader>
       </Form.Item>
-      <SubmitBtn />
+      <SubmitBtn disabled={!items.length} />
     </Form>
   )
 }
