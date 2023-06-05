@@ -140,6 +140,8 @@ class ControllerRequest:
         if args.get("top_k"):
             mine_task_req.top_k = args["top_k"]
         mine_task_req.generate_annotations = args["generate_annotations"]
+        # FIXME: required by controller
+        mine_task_req.unknown_types_strategy = mirsvrpb.UnknownTypesStrategy.UTS_IGNORE
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeMining
