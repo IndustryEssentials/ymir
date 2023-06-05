@@ -29,28 +29,59 @@ function mask2Uint8Array(mask: number[][], len: number, color?: string) {
   return dataWithColor
 }
 
-export function renderPolygon(canvas: HTMLCanvasElement, points: Polygon['polygon'], color?: string) {
+export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[], showMore?: boolean, ratio?: number) {
   const ctx = canvas.getContext('2d')
-  if (!ctx) {
+  if (!ctx || !annotations.length) {
     return
   }
-  ctx.beginPath()
+  const { color } = annotations[0]
   ctx.fillStyle = getColor(color).hexa()
-  ctx.strokeStyle = getColor('black').hexa()
-  ctx.moveTo(points[0].x, points[0].y)
+  ctx.strokeStyle = getColor('gray').hexa()
   ctx.lineWidth = 1
-  points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
+  ctx.beginPath()
+  annotations.forEach((annotation) => {
+    const { polygon: points } = annotation
+    ctx.moveTo(points[0].x, points[0].y)
+    points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
+  })
   ctx.fill()
+  showMore && drawBoxs(ctx, annotations, ratio)
 }
 
-export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: number, height: number, color?: string) {
+export function renderMask(canvas: HTMLCanvasElement, annotation: Mask, showMore?: boolean, ratio?: number) {
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return
   }
-  const image = mask2Image(mask, width, height, color)
+  const { width, height, color, decodeMask } = annotation
+  if (!decodeMask) {
+    return
+  }
+  const image = mask2Image(decodeMask, width, height, color)
 
   image && ctx.putImageData(image, 0, 0)
+
+  showMore && drawBoxs(ctx, [annotation], ratio)
+}
+
+function drawBoxs(ctx: CanvasRenderingContext2D, annotations: Annotation[], ratio: number = 1) {
+  const { color } = annotations[0]
+  const lw = 1 / ratio
+  const th = 16 * lw
+  const padding = lw * 4
+  const mainColor = getColor(color).hexa()
+  ctx.strokeStyle = mainColor
+  ctx.lineWidth = 1 / ratio
+  ctx.font = `${th}px Microsoft Yahei`
+  annotations.forEach(({ box, keyword, score }) => {
+    ctx.strokeRect(box.x, box.y, box.w, box.h)
+    const text = `${keyword} ${score || ''}`
+    const tw = ctx.measureText(text).width
+    ctx.fillStyle = getColor(color, 0.6).hexa()
+    ctx.fillRect(box.x, box.y - th - padding * 2, tw + 8, th + padding * 2)
+    ctx.fillStyle = 'white'
+    ctx.fillText(text, box.x + padding, box.y - padding)
+  })
 }
 
 export function transferAnnotations(annotations: Annotation[] = []) {
