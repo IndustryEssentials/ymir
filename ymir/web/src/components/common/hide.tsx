@@ -10,6 +10,7 @@ type ResultType = 'dataset' | 'model' | 'prediction'
 type Target = {
   id: number
   projectId: number
+  groupId: number
   name: string
 }
 export type RefProps = {
