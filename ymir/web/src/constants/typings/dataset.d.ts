@@ -73,7 +73,7 @@ type ImportingItem = {
   index?: number
   type: Types
   name: string
-  source: string
+  source: string | number
   sourceName: string
   strategy?: IMPORTSTRATEGY
   classes?: string[]

@@ -14,7 +14,7 @@ type Props = {
 const Public: FC<Props> = ({ selected }) => {
   const [form] = Form.useForm()
   const [items, setItems] = useState<ImportingItem[]>([])
-  const { data: publicDatasets = [], run: getPublicDatasets } = useRequest<List<Dataset>>('dataset/getInternalDataset', {
+  const { data: publicDatasets = [], run: getPublicDatasets } = useRequest<Dataset[]>('dataset/getInternalDataset', {
     loading: false,
   })
   const { run: addImportingList } = useRequest<null, [ImportingItem[]]>('dataset/addImportingList', { loading: false })
@@ -29,6 +29,7 @@ const Public: FC<Props> = ({ selected }) => {
       onFinish={() => {
         addImportingList(items)
         form.resetFields()
+        setItems([])
       }}
       onFinishFailed={(err) => {
         console.log('finish failed: ', err)
@@ -69,7 +70,7 @@ const Public: FC<Props> = ({ selected }) => {
         ></Select>
       </Form.Item>
 
-      <SubmitBtn />
+      <SubmitBtn disabled={!items.length} />
     </Form>
   )
 }

@@ -50,7 +50,7 @@ const Copy: FC = () => {
           showCheckedStrategy={Cascader.SHOW_CHILD}
         />
       </Form.Item>
-      <SubmitBtn />
+      <SubmitBtn disabled={!items.length} />
     </Form>
   )
 }

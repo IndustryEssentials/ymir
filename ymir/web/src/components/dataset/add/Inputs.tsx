@@ -14,6 +14,7 @@ type Props = {
 }
 const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
   const [form] = Form.useForm()
+  const items = Form.useWatch(name, form)
 
   return (
     <Form
@@ -54,7 +55,7 @@ const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
           </>
         )}
       </Form.List>
-      <SubmitBtn />
+      <SubmitBtn disabled={!items?.filter((item: string) => !!item)?.length} />
     </Form>
   )
 }
