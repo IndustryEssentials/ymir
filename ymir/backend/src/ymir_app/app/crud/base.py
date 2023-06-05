@@ -196,20 +196,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .filter(
                 self.model.project_id == project_id,  # type: ignore
                 self.model.name == name,  # type: ignore
-                not_(self.model.is_deleted),  # type: ignore
             )
-            .one_or_none()
+            .all()
         )
-        return existing is not None
-
-    def is_duplicated_hash(self, db: Session, project_id: int, hash_: str) -> bool:
-        existing = (
-            db.query(self.model)
-            .filter(
-                self.model.project_id == project_id,  # type: ignore
-                self.model.hash == hash_,  # type: ignore
-                not_(self.model.is_deleted),  # type: ignore
-            )
-            .one_or_none()
-        )
-        return existing is not None
+        return any(group.is_visible for group in existing)  # type: ignore

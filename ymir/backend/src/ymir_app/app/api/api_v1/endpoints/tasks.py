@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
-    DuplicateTaskError,
     FailedToUpdateTaskStatusTemporally,
     NoTaskPermission,
     ObsoleteTaskStatus,
@@ -98,9 +97,6 @@ def create_task(
     Create task
     """
     logger.info("[create task] create task with payload: %s", jsonable_encoder(task_in))
-    if crud.task.is_duplicated_name_in_project(db, project_id=task_in.project_id, name=task_in.name):
-        raise DuplicateTaskError()
-
     task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
     logger.info("[create task] created task name: %s", task_in.name)
     return {"result": task_in_db}
@@ -152,30 +148,6 @@ def get_task(
     task = crud.task.get_by_user_and_id(db, user_id=current_user.id, id=task_id)
     if not task:
         raise TaskNotFound()
-    return {"result": task}
-
-
-@router.patch(
-    "/{task_id}",
-    response_model=schemas.TaskOut,
-    responses={404: {"description": "Task Not Found"}},
-)
-def update_task_name(
-    *,
-    db: Session = Depends(deps.get_db),
-    task_id: int = Path(..., example="12"),
-    task_in: schemas.TaskUpdate,
-    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Update task name
-    """
-    task = crud.task.get(db, id=task_id)
-    if not task:
-        raise TaskNotFound()
-    if crud.task.is_duplicated_name_in_project(db, project_id=task.project_id, name=task_in.name):
-        raise DuplicateTaskError()
-    task = crud.task.update(db, db_obj=task, obj_in=task_in)
     return {"result": task}
 
 

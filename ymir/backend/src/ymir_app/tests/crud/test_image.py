@@ -58,6 +58,6 @@ class TestGetInferenceImages:
         )
         crud.image_config.create(db, obj_in=image_config_in)
 
-        fetched_image = crud.docker_image.get_inference_docker_image(db, url=url)
+        fetched_image = crud.docker_image.get_inference_docker_image(db, id=created_image.id)
         assert fetched_image is not None
         assert created_image.hash == fetched_image.hash

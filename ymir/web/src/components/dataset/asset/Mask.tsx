@@ -6,15 +6,14 @@ type Props = {
   annotation: MaskType
   ratio?: number
   simple?: boolean
+  width?: number
+  height?: number
 }
 
-const Mask: FC<Props> = ({ annotation, ratio = 1 }) => {
+const Mask: FC<Props> = ({ annotation, ratio = 1, width, height, simple }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [canvas, setCanvas] = useState<HTMLCanvasElement>()
-  const [{ width, height }, setRect] = useState({
-    width: 0,
-    height: 0,
-  })
+
   useEffect(() => {
     if (canvasRef.current) {
       setCanvas(canvasRef.current)
@@ -22,21 +21,10 @@ const Mask: FC<Props> = ({ annotation, ratio = 1 }) => {
   }, [canvasRef.current])
 
   useEffect(() => {
-    if (annotation.decodeMask && canvas) {
-      const { decodeMask: mask, color } = annotation
-      renderMask(canvas, mask, width, height, color)
+    if (annotation && canvas && width && height) {
+      renderMask(canvas, annotation, !simple, ratio)
     }
-  }, [annotation.decodeMask, canvas, width, height])
-
-  useEffect(() => {
-    if (!annotation) {
-      return
-    }
-    setRect({
-      width: annotation.width,
-      height: annotation.height,
-    })
-  }, [annotation])
+  }, [annotation, canvas, width, height])
 
   return (
     <canvas

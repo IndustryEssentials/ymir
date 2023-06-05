@@ -3,12 +3,12 @@ import { useSelector } from 'umi'
 import { Types } from './AddTypes'
 import { Button, Form } from 'antd'
 import useRequest from '@/hooks/useRequest'
+import { formLayout } from '@/config/antd'
+import SubmitBtn from './SubmitBtn'
 import { ImportingItem } from '@/constants'
 import t from '@/utils/t'
 import Uploader from '@/components/form/uploader'
 import Tip from './Tip'
-import { formLayout } from '@/config/antd'
-import SubmitBtn from './SubmitBtn'
 
 const Local: FC = () => {
   const [form] = Form.useForm()
@@ -24,6 +24,7 @@ const Local: FC = () => {
       {...formLayout}
       onFinish={() => {
         addImportingList(items)
+        setItems([])
         setKey(Math.random())
       }}
       onFinishFailed={(err) => {
