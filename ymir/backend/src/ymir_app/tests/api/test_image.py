@@ -7,6 +7,7 @@ from app.api.errors.errors import error_codes
 from app.config import settings
 from app.constants.state import DockerImageType
 from tests.utils.utils import random_lower_string
+from tests.utils.images import create_docker_image_and_configs
 from app.libs import tasks
 
 
@@ -20,6 +21,19 @@ class TestListImages:
         result = r.json()["result"]
         assert result["total"] == len(result["items"])
         assert "is_shared" in result["items"][0]
+
+    def test_filter_by_object_type_and_image_type(self, db: Session, client: TestClient, admin_token_headers):
+        create_docker_image_and_configs(db, object_type=50, image_type=1)
+        create_docker_image_and_configs(db, object_type=50, image_type=2)
+        r = client.get(
+            f"{settings.API_V1_STR}/images/", headers=admin_token_headers, params={"object_type": 50, "type": 2}
+        )
+        result = r.json()["result"]
+        assert result["total"] == 1
+
+        r = client.get(f"{settings.API_V1_STR}/images/", headers=admin_token_headers, params={"object_type": 50})
+        result = r.json()["result"]
+        assert result["total"] == 2
 
 
 class TestUpdateImage:
@@ -60,7 +74,7 @@ class TestCreateImage:
         j = {"url": random_lower_string(), "name": random_lower_string()}
         mocker.patch.object(tasks, "ControllerClient", return_value=mocker.Mock())
         r = client.post(f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j)
-        assert "result_docker_image" in r.json()['result']
+        assert "result_docker_image" in r.json()["result"]
         assert r.ok
 
 
@@ -69,7 +83,7 @@ class TestDeleteImage:
         j = {"url": random_lower_string(), "name": random_lower_string()}
         mocker.patch.object(tasks, "ControllerClient", return_value=mocker.Mock())
         r = client.post(f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j)
-        i = r.json()['result']['result_docker_image']['id']
+        i = r.json()["result"]["result_docker_image"]["id"]
         r = client.delete(
             f"{settings.API_V1_STR}/images/{i}",
             headers=admin_token_headers,
