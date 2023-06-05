@@ -24,6 +24,7 @@ const Local: FC = () => {
       {...formLayout}
       onFinish={() => {
         addImportingList(items)
+        setItems([])
         setKey(Math.random())
       }}
       onFinishFailed={(err) => {

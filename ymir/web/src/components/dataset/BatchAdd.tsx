@@ -13,7 +13,7 @@ import { Task } from '@/constants'
 const BatchAdd: FC = () => {
   const { id } = useParams<{ id: string }>()
   const history = useHistory()
-  const visible = useSelector(({ dataset }) => dataset.importing.formatVisible)
+  const { formatVisible: visible, items } = useSelector(({ dataset }) => dataset.importing)
   const { run: showFormatDetail } = useRequest<null, [boolean]>('dataset/showFormatDetail', { loading: false })
   const { data: results, run: batch } = useRequest<(Task | null)[], [{ pid: string }]>('task/batchAdd')
 
@@ -37,7 +37,7 @@ const BatchAdd: FC = () => {
         <Form.Item wrapperCol={{ offset: 8 }}>
           <Space size={20}>
             <Form.Item name="submitBtn" noStyle>
-              <Button type="primary" size="large" onClick={() => batch({ pid: id })}>
+              <Button disabled={!items.length} type="primary" size="large" onClick={() => batch({ pid: id })}>
                 {t('common.action.import')}
               </Button>
             </Form.Item>

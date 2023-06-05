@@ -37,7 +37,7 @@ const DatasetInfer: FC<Props> = ({}) => {
     if (!image) {
       return
     }
-    const config = getConfig(image, TYPES.INFERENCE, ObjectType.InstanceSegmentation)
+    const config = getConfig(image, TYPES.INFERENCE, ObjectType.MultiModal)
     config && setSeniorConfig(config.config)
   }, [image])
 

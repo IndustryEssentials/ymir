@@ -46,9 +46,11 @@ const SingleInfer: FC<Props> = ({}) => {
         <Uploader
           key={'uploader'}
           // className={styles.btn}
-          onChange={(files, url: string) => {
-            setVirtualAsset({ annotations: [], url })
-            setAnnotations([])
+          onChange={({ file, fileList }) => {
+            if (fileList.length) {
+              setVirtualAsset({ annotations: [], url: fileList[0].url })
+              setAnnotations([])
+            }
           }}
           format="img"
           label={t('model.verify.upload.label')}
@@ -63,7 +65,7 @@ const SingleInfer: FC<Props> = ({}) => {
     if (!image) {
       return
     }
-    const config = getConfig(image, TYPES.INFERENCE, ObjectType.InstanceSegmentation)
+    const config = getConfig(image, TYPES.INFERENCE, ObjectType.MultiModal)
     config && setSeniorConfig(config.config)
   }, [image])
 
