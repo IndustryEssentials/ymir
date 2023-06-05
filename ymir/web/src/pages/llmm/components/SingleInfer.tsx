@@ -1,7 +1,7 @@
-import { FC, useState, useEffect } from 'react'
+import { FC, useState, useEffect, ReactNode } from 'react'
 import { useParams, useSelector } from 'umi'
 import t from '@/utils/t'
-import { Button, Col, Form, InputNumber, Row, Slider } from 'antd'
+import { Button, Col, Form, InputNumber, Row, Slider, Space } from 'antd'
 import { Annotation, Project } from '@/constants'
 import AssetAnnotation, { Asset } from '@/components/dataset/asset/AssetAnnotations'
 import { isSemantic, ObjectType } from '@/constants/objectType'
@@ -10,7 +10,7 @@ import useRequest from '@/hooks/useRequest'
 import styles from '../inference.less'
 import ImgDef from '@/assets/img_def.png'
 import { NoXlmxIcon } from '@/components/common/Icons'
-import Uploader from '@/components/form/uploader'
+import Uploader, { Props as UploaderProps } from '@/components/form/uploader'
 import { generateDatasetColors } from '@/constants/asset'
 import DockerConfigForm from '@/components/form/items/DockerConfig'
 import { getConfig, TYPES } from '@/constants/image'
@@ -37,26 +37,31 @@ const SingleInfer: FC<Props> = ({}) => {
     loading: false,
   })
 
+  const UploaderButton: FC<UploaderProps> = (props) => (
+    <Uploader
+      key={'uploader'}
+      label={t('model.verify.upload.label')}
+      {...props}
+      // className={styles.btn}
+      onChange={({ file, fileList }) => {
+        if (fileList.length) {
+          setVirtualAsset({ annotations: [], url: fileList[0].url })
+          setAnnotations([])
+        }
+      }}
+      format="img"
+      showUploadList={false}
+      max={IMGSIZELIMIT}
+    />
+  )
+
   const renderUploader = (
     <div className={styles.uploader}>
       <div className={styles.emptyImg}>
         <img src={ImgDef} />
         <p>{t('model.verify.upload.tip')}</p>
         <p>{t('model.verify.upload.info', { size: IMGSIZELIMIT })}</p>
-        <Uploader
-          key={'uploader'}
-          // className={styles.btn}
-          onChange={({ file, fileList }) => {
-            if (fileList.length) {
-              setVirtualAsset({ annotations: [], url: fileList[0].url })
-              setAnnotations([])
-            }
-          }}
-          format="img"
-          label={t('model.verify.upload.label')}
-          showUploadList={false}
-          max={IMGSIZELIMIT}
-        />
+        <UploaderButton />
       </div>
     </div>
   )
@@ -142,7 +147,8 @@ const SingleInfer: FC<Props> = ({}) => {
           <GPUCount form={form} min={1} />
           <DockerConfigForm form={form} show={true} itemProps={{ wrapperCol: { span: 24 } }} seniorConfig={seniorConfig} />
         </Form>
-        <div>
+        <Space>
+          {virtualAsset?.url ? <UploaderButton label={t('model.verify.upload.again.label')} btnProps={{ type: 'default', ghost: false }} /> : null}
           <Button
             type="primary"
             disabled={!virtualAsset?.url}
@@ -152,7 +158,7 @@ const SingleInfer: FC<Props> = ({}) => {
           >
             {t('breadcrumbs.model.verify')}
           </Button>
-        </div>
+        </Space>
       </Col>
     </Row>
   )

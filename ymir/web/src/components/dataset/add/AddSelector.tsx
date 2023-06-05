@@ -33,12 +33,7 @@ const AddSelector: FC<Props> = () => {
       <Row className={s.type}>
         <Col {...formLayout.labelCol}>{t('dataset.add.form.type.label')}</Col>
         <Col {...formLayout.wrapperCol}>
-          <TypeSelector
-            onChange={(type) => {
-              console.log('hello: type', type)
-              setCurrent(type)
-            }}
-          />
+          <TypeSelector onChange={(type) => setCurrent(type)} />
         </Col>
       </Row>
       {Selector ? <Selector /> : null}

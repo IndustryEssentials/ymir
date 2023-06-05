@@ -90,8 +90,8 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
       </div>
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
         {bbA.length ? bbA.map((anno) => <BoundingBox key={anno.id} annotation={anno} ratio={ratio} />) : null}
-        {pgA.length ? <Polygon annotations={pgA} width={asset.width} height={asset.height} ratio={ratio} /> : null}
-        {maA.length ? maA.map((anno) => <Mask key={anno.id} annotation={anno} width={asset.width} height={asset.height} ratio={ratio} />) : null}
+        {pgA.length ? <Polygon annotations={pgA} ratio={ratio} /> : null}
+        {maA.length ? maA.map((anno) => <Mask key={anno.id} annotation={anno} ratio={ratio} />) : null}
       </div>
     </div>
   )

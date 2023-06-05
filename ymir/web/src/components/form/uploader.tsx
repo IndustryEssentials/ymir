@@ -11,7 +11,7 @@ import { UploadProps, UploadFile } from 'antd/es/upload/interface'
 type UFile = UploadFile<ResponseType>
 export type { UploadFile, UFile }
 
-type Props = Omit<UploadProps, 'fileList'> & {
+export type Props = Omit<UploadProps, 'fileList'> & {
   value?: UFile[]
   format?: string
   label?: string
