@@ -19,7 +19,7 @@ const ProjectDatasetSelect: FC<Props> = (props) => {
   const [options, setOptions] = useState<DataNodeType[]>([])
   const projects = useSelector(({ project }) => project.list.items)
   const { run: getProjects } = useRequest('project/getProjects', { cacheKey: 'getAllProjects', loading: false })
-  const { runAsync: getDatasets } = useRequest<Dataset[], [{ id: number; force?: boolean }]>('dataset/queryAllDatasets', {
+  const { runAsync: getDatasets } = useRequest<Dataset[], [{ pid: number; force?: boolean }]>('dataset/queryAllDatasets', {
     cacheKey: 'getAllDatasets',
     loading: false,
   })
@@ -49,7 +49,7 @@ const ProjectDatasetSelect: FC<Props> = (props) => {
       return
     }
     target.loading = true
-    const result = await getDatasets({ id: Number(target.value), force: true })
+    const result = await getDatasets({ pid: Number(target.value), force: true })
 
     target.loading = false
     if (result) {
