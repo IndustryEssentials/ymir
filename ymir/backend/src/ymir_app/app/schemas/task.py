@@ -139,7 +139,7 @@ class MiningParameter(MiningParameterBase):
 
 class InferParameter(MiningParameterBase):
     generate_annotations: Optional[bool] = True
-    task_type: Literal["infer"]
+    task_type: Literal["dataset_infer"]
 
 
 class FusionParameterBase(TaskParameterBase, IterationContext):

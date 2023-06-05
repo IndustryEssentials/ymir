@@ -10,7 +10,7 @@ class TaskType(IntEnum):
     filter = mir_cmd_pb.TaskTypeFilter
     merge = mir_cmd_pb.TaskTypeMerge
     fusion = mir_cmd_pb.TaskTypeFusion
-    infer = mir_cmd_pb.TaskTypeDatasetInfer
+    dataset_infer = mir_cmd_pb.TaskTypeDatasetInfer
 
 
 class TaskState(IntEnum):
