@@ -9,9 +9,9 @@ INVALID_INFERENCE_RESULT_FLAG = -1
 
 
 class InferenceBase(BaseModel):
-    docker_image: str
+    docker_image_id: int
     project_id: int
-    model_stage_id: int
+    model_stage_id: Optional[int]
     image_urls: List[str]
     docker_image_config: Dict = Field(description="inference docker image runtime configuration")
 
@@ -57,7 +57,6 @@ class Annotation(BaseModel):
 
 
 class InferenceResult(BaseModel):
-    model_stage_id: int
     annotations: List[Annotation]
 
 
