@@ -123,7 +123,7 @@ const TaskModel: TaskStore = {
         return {
           dataset_group_name: item.name,
           [field]: item.source,
-          merge_strategy: item.strategy || IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD,
+          strategy: item.strategy || IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD,
         }
       })
       const newClasses = [...new Set(items.reduce<string[]>((prev, { classes = [] }) => [...prev, ...classes], []))]
