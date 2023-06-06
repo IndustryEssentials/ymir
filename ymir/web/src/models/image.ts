@@ -160,7 +160,6 @@ const ImageModel: ImageStore = {
         type: 'getImages',
         payload: {
           url: LLMM.GroundedSAMImageUrl,
-          state: STATES.VALID,
         },
       })
       if (images?.items?.length) {
