@@ -158,7 +158,7 @@ function LeftMenu() {
 
   return items.length ? (
     <Sider className="sidebar scrollbar">
-      <Menu items={items} mode="inline" defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys} />
+      <Menu items={items} mode="inline" defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys} inlineIndent={12} />
       <SampleProjectTip id={id} />
     </Sider>
   ) : null
