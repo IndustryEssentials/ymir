@@ -4,8 +4,9 @@ import { createEffect } from './_utils'
 import { history } from 'umi'
 import { Socket as SocketType } from 'socket.io-client'
 import { SocketStore } from '.'
-import { IdMap } from './typings/common.d'
-import { Backend, ProgressTask, User } from '@/constants'
+import { IdMap, List } from './typings/common.d'
+import { Backend, Image, ProgressTask, User } from '@/constants'
+
 history
 const pageMaps = [
   { path: '/home/project/\\d+/dataset', method: 'dataset/updateDatasets' },
@@ -56,6 +57,36 @@ const Socket: SocketStore = {
         payload,
       })
     }),
+    updateGroundedSamImage: createEffect<ProgressTask[]>(function* ({ payload: tasks }, { put, select }) {
+      const gsImage: Image | undefined = yield select(({ image }) => image.groundedSAM)
+      const imageTask = tasks.find(({ result_docker_image }) => result_docker_image?.id)
+      if (gsImage && imageTask && gsImage?.id === imageTask?.result_docker_image?.id) {
+        const image = { ...gsImage, state: imageTask.result_state }
+        yield put({
+          type: 'image/UpdateGroundedSAM',
+          payload: image,
+        })
+      }
+    }),
+    updateImageList: createEffect<ProgressTask[]>(function* ({ payload: tasks }, { put, select }) {
+      const { items, total }: List<Image> = yield select(({ image }) => image.images)
+      const imageTasks = tasks.filter(({ result_docker_image }) => result_docker_image?.id)
+      if (imageTasks.length) {
+        const images = items.map((image) => {
+          const imageTask = imageTasks.find((task) => task.result_docker_image?.id === image.id)
+          return imageTask
+            ? {
+                ...image,
+                state: imageTask.result_state,
+              }
+            : image
+        })
+        yield put({
+          type: 'image/UpdateImages',
+          payload: { items: images, total },
+        })
+      }
+    }),
   },
   reducers: {
     updateSocket(state, { payload }) {
@@ -75,8 +106,17 @@ const Socket: SocketStore = {
           .off()
           .on('update_taskstate', (data) => {
             pageMaps.forEach((page) => dispatch({ type: page.method, payload: data }))
+
+            const tasks: ProgressTask[] = Object.keys(data).map((hash) => ({
+              ...data[hash],
+              hash,
+              reload: !readyState(data[hash].result_state),
+            }))
             // cache socket valid data
             dispatch({ type: 'saveUpdatedTasks', payload: data })
+            // update data in socket model by dispatch effects
+            dispatch({ type: 'updateGroundedSamImage', payload: tasks })
+            dispatch({ type: 'updateImageList', payload: tasks })
           })
           .on('update_message', (data) => {
             dispatch({ type: 'asyncMessages', payload: data })
