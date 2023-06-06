@@ -108,7 +108,7 @@ type ProgressTask = {
   result_dataset?: { id: number }
   result_model?: { id: number }
   result_prediction?: { id: number }
-  result_image?: { id: number }
+  result_docker_image?: { id: number }
 }
 
 export { Task, ProgressTask, ParamsByType }
