@@ -145,7 +145,8 @@ class BaseMirControllerInvoker(ABC):
                                       output_config_file: str,
                                       object_type: "mir_cmd_pb.ObjectType.V",
                                       assets_config: Dict = {},
-                                      preprocess: Optional[str] = None) -> bool:
+                                      preprocess: Optional[str] = None,
+                                      lock_gpu: bool = True) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
         preprocess_config = yaml.safe_load(preprocess) if preprocess else None
         task_context: Dict[str, Any] = {}
@@ -192,7 +193,7 @@ class BaseMirControllerInvoker(ABC):
             task_context["available_gpu_id"] = executor_config["gpu_id"]
         else:
             # lock local gpus.
-            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
+            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=lock_gpu)
             if gpu_ids is None:
                 return False
             task_context["available_gpu_id"] = gpu_ids

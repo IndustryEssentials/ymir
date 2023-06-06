@@ -52,6 +52,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             object_type=self._request.object_type,
             output_config_file=output_config_file,
             assets_config=self._assets_config,
+            lock_gpu=False,
         )
         if not gpu_lock_ret:
             return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")
