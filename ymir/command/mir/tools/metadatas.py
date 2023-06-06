@@ -86,8 +86,9 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
         if idx > 0 and idx % 5000 == 0:
             PhaseLoggerCenter.update_phase(phase=phase, local_percent=(idx / sha1s_count))
 
-    logging.info(f"count of unknown format assets: {unknown_format_count}")
-    logging.info(f"count of zero size assets: {zero_size_count}")
-    logging.info(f"total assets imported: {len(mir_metadatas.attributes)}")
+    if unknown_format_count > 0:
+        logging.info(f"[import error]: Count of unknown format assets: {unknown_format_count}")
+    if zero_size_count > 0:
+        logging.info(f"[import error]: Count of zero size assets: {zero_size_count}")
 
     return MirCode.RC_OK

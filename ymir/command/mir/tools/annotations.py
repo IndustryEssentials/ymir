@@ -212,9 +212,6 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         _import_annotation_meta(class_type_manager=class_type_manager,
                                 annotations_dir_path=prediction_dir_path,
                                 task_annotations=mir_annotation.prediction)
-
-        logging.warning(
-            f"imported pred: {len(mir_annotation.prediction.image_annotations)} / {len(file_name_to_asset_ids)}")
     else:
         mir_annotation.prediction.type = mirpb.ObjectType.OT_NO_ANNOS
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
@@ -232,9 +229,6 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             accu_new_class_names=anno_import_result,
             image_annotations=mir_annotation.ground_truth,
         )
-
-        logging.warning(
-            f"imported gt: {len(mir_annotation.ground_truth.image_annotations)} / {len(file_name_to_asset_ids)}")
     else:
         mir_annotation.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOS
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
