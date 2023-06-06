@@ -153,7 +153,7 @@ function LeftMenu() {
           onOk: async () => {
             const result = await createGroundedSAMImage()
             if (result) {
-              message.success('llmm.groundedsam.image.add.success')
+              message.success(t('llmm.groundedsam.image.add.success'))
             }
           },
         })

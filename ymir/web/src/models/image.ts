@@ -6,6 +6,7 @@ import { ObjectType } from '@/constants/objectType'
 import LLMM from '@/constants/llmm'
 import { ImageState, ImageStore } from '.'
 import { Image } from '@/constants'
+import { List } from './typings/common'
 
 const state: ImageState = {
   image: {},
@@ -129,7 +130,7 @@ const ImageModel: ImageStore = {
       if (!force && official) {
         return official
       }
-      const images = yield put.resolve({
+      const images: List<Image> = yield put.resolve({
         type: 'getImages',
         payload: {
           official: true,
@@ -173,7 +174,7 @@ const ImageModel: ImageStore = {
       return yield put.resolve({
         type: 'createImage',
         payload: {
-          name: 'Grounded SAM',
+          name: 'Grounded-SAM',
           url: LLMM.GroundedSAMImageUrl,
         },
       })
