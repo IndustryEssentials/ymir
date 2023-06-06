@@ -91,7 +91,6 @@ class CmdImport(base.BaseCommand):
                                   error_message=f"invalid gt_abs: {gt_abs}")
 
         # Step 3: generate sha1 file and rename images.
-        # sha1 file to be written.
         file_name_to_asset_ids = _generate_sha_and_copy(index_file, gen_abs)
 
         # Step 4 import metadat and annotations:
@@ -110,7 +109,7 @@ class CmdImport(base.BaseCommand):
                                                              label_storage_file=label_storage_file,
                                                              prediction_dir_path=pred_abs,
                                                              groundtruth_dir_path=gt_abs,
-                                                             file_name_to_asset_ids=file_name_to_asset_ids,
+                                                             mir_metadatas=mir_metadatas,
                                                              unknown_types_strategy=unknown_types_strategy,
                                                              anno_type=obj_type,
                                                              anno_fmt=anno_fmt,

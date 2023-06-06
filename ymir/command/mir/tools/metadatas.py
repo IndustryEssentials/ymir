@@ -88,5 +88,6 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
 
     logging.info(f"count of unknown format assets: {unknown_format_count}")
     logging.info(f"count of zero size assets: {zero_size_count}")
+    logging.info(f"total assets imported: {len(mir_metadatas.attributes)}")
 
     return MirCode.RC_OK
