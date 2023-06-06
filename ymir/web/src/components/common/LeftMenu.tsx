@@ -1,11 +1,10 @@
 import { FC, ReactNode, useEffect, useState } from 'react'
-import { Menu, Layout, MenuProps, MenuItemProps, Modal, message } from 'antd'
-import { useHistory, useLocation, withRouter, useSelector, useParams } from 'umi'
+import { Menu, Layout, MenuProps, Modal, message } from 'antd'
+import { useHistory, useLocation, withRouter, useSelector } from 'umi'
 import t from '@/utils/t'
-import { getDeployUrl, getPublicImageUrl } from '@/constants/common'
+import { getDeployUrl, getPublicImageUrl, readyState } from '@/constants/common'
 import { isAdmin, isSuperAdmin } from '@/constants/user'
 import {
-  BarchartIcon,
   FlagIcon,
   GithubIcon,
   FileHistoryIcon,
@@ -20,7 +19,6 @@ import {
   DeviceSupportedIcon,
   MyAlgoIcon,
   StoreIcon,
-  BarChart2LineIcon,
   ProjectIcon,
   VectorIcon,
   BookIcon,
@@ -33,7 +31,6 @@ import useRequest from '@/hooks/useRequest'
 import SampleProjectTip from './SampleProjectTip'
 import { Image, Project } from '@/constants'
 import { isMultiModal } from '@/constants/objectType'
-import LLMM from '@/constants/llmm'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -63,11 +60,11 @@ function LeftMenu() {
   const [project, setProject] = useState<Project>()
   const { trainingDatasetCount, tasks } = useSelector(({ dataset, socket }) => ({ trainingDatasetCount: dataset.trainingDatasetCount, tasks: socket.tasks }))
   const { run: getTrainingDatasetCount } = useRequest<null, [number]>('dataset/getTrainingDatasetCount', {
+    cacheKey: 'getTrainingDatasetCount',
     loading: false,
   })
-  const { data: gsImage } = useRequest<Image>('image/getGroundedSAMImage', {
+  const { runAsync: getGroundedSAMImage } = useRequest<Image>('image/getGroundedSAMImage', {
     loading: false,
-    manual: false,
   })
   const { runAsync: createGroundedSAMImage } = useRequest('image/createGroundedSAMImage')
 
@@ -136,28 +133,42 @@ function LeftMenu() {
     ])
   }, [id, project, role, trainingDatasetCount])
 
-  const clickHandle: Handler = ({ key }) => {
+  const clickHandle: Handler = async ({ key }) => {
     const outer = /^outer\//.test(key)
     if (!outer) {
+      if (key.includes('/llmm/infer')) {
+        llmmInferHandle(key)
+        return
+      }
       setDefaultKeys([key])
-      if (key.includes('/llmm/infer') && gsImage?.url !== LLMM.GroundedSAMImageUrl) {
-        if (!isAdmin(role)) {
-          return Modal.info({
-            title: 'Grounded-SAM Image',
-            content: t('llmm.groundedsam.image.add.user.invalid'),
-          })
-        }
-        return Modal.confirm({
+      history.push(key)
+    }
+  }
+
+  const llmmInferHandle = async (key: string) => {
+    const gsImage = await getGroundedSAMImage()
+    if (!gsImage) {
+      if (!isAdmin(role)) {
+        return Modal.info({
           title: 'Grounded-SAM Image',
-          content: <>{t('llmm.groundedsam.image.add.tip')}</>,
-          onOk: async () => {
-            const result = await createGroundedSAMImage()
-            if (result) {
-              message.success('llmm.groundedsam.image.add.success')
-            }
-          },
+          content: t('llmm.groundedsam.image.add.user.invalid'),
         })
       }
+      return Modal.confirm({
+        title: 'Grounded-SAM Image',
+        content: <>{t('llmm.groundedsam.image.add.tip')}</>,
+        onOk: async () => {
+          const result = await createGroundedSAMImage()
+          if (result) {
+            message.success(t('llmm.groundedsam.image.add.success'))
+          }
+        },
+      })
+    } else {
+      if (readyState(gsImage.state)) {
+        return Modal.info({ content: t('llmm.groundedsam.image.add.success') })
+      }
+      setDefaultKeys([key])
       history.push(key)
     }
   }

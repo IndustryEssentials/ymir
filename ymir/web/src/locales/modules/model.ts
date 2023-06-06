@@ -124,6 +124,7 @@ const model = {
   'model.stage.metrics.primary.label.det': { en: 'mAP', cn: '精度均值(mAP)' },
   'model.stage.metrics.primary.label.seg': { en: 'mIoU', cn: '精度均值(mIoU)' },
   'model.stage.metrics.primary.label.ins': { en: 'maskAP', cn: '精度均值(maskAP)' },
+  'model.stage.metrics.primary.label.mul': { en: 'mAP', cn: '精度均值(mAP)' },
 }
 
 export default model

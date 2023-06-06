@@ -6,8 +6,10 @@ import { ObjectType } from '@/constants/objectType'
 import LLMM from '@/constants/llmm'
 import { ImageState, ImageStore } from '.'
 import { Image } from '@/constants'
+import { List } from './typings/common'
 
 const state: ImageState = {
+  images: { items: [], total: 0 },
   image: {},
   total: 0,
   official: undefined,
@@ -23,6 +25,11 @@ const ImageModel: ImageStore = {
       if (code === 0) {
         const { items, total } = result
         const images: Image[] = items.map(transferImage)
+        const list = { items: images, total }
+        yield put({
+          type: 'UpdateImages',
+          payload: list,
+        })
         yield put({
           type: 'UpdateImage',
           payload: images.reduce(
@@ -33,7 +40,7 @@ const ImageModel: ImageStore = {
             {},
           ),
         })
-        return { items: images, total }
+        return list
       }
     }),
     getImage: createEffect<{ id: number; force?: boolean }>(function* ({ payload }, { call, put, select }) {
@@ -125,11 +132,11 @@ const ImageModel: ImageStore = {
       return list
     }),
     getOfficialImage: createEffect<boolean>(function* ({ payload: force }, { put, select }) {
-      const { official } = select(({ image }) => image)
+      const { official } = yield select(({ image }) => image)
       if (!force && official) {
         return official
       }
-      const images = yield put.resolve({
+      const images: List<Image> = yield put.resolve({
         type: 'getImages',
         payload: {
           official: true,
@@ -145,7 +152,7 @@ const ImageModel: ImageStore = {
       }
     }),
     getGroundedSAMImage: createEffect(function* ({}, { put, select }) {
-      const { groundedSAM } = select(({ image }) => image)
+      const { groundedSAM } = yield select(({ image }) => image)
       if (groundedSAM) {
         return groundedSAM
       }
@@ -153,7 +160,6 @@ const ImageModel: ImageStore = {
         type: 'getImages',
         payload: {
           url: LLMM.GroundedSAMImageUrl,
-          state: STATES.VALID,
         },
       })
       if (images?.items?.length) {
@@ -166,14 +172,14 @@ const ImageModel: ImageStore = {
       }
     }),
     haveGroundedSAMImage: createEffect(function* ({}, { put, select }) {
-      const { groundedSAM } = select(({ image }) => image)
+      const { groundedSAM } = yield select(({ image }) => image)
       return LLMM.GroundedSAMImageUrl === groundedSAM?.url
     }),
     createGroundedSAMImage: createEffect(function* ({}, { put }) {
       return yield put.resolve({
         type: 'createImage',
         payload: {
-          name: 'Grounded SAM',
+          name: 'Grounded-SAM',
           url: LLMM.GroundedSAMImageUrl,
         },
       })
