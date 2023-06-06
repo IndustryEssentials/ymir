@@ -34,7 +34,7 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
   const [maA, setMaA] = useState<MaskType[]>([])
 
   useEffect(() => {
-    if (!annotations?.length) {
+    if (!annotations) {
       return
     }
     setBbA(filterAts(AnnotationType.BoundingBox) as BoundingBoxType[])

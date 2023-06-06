@@ -35,7 +35,7 @@ const AddList: FC = () => {
               })
             }}
             validate={(value) => {
-              return true
+              return !!value && value.length < 50
             }}
           />
         )

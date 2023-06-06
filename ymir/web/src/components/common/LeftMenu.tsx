@@ -3,7 +3,7 @@ import { Menu, Layout, MenuProps, MenuItemProps, Modal, message } from 'antd'
 import { useHistory, useLocation, withRouter, useSelector, useParams } from 'umi'
 import t from '@/utils/t'
 import { getDeployUrl, getPublicImageUrl } from '@/constants/common'
-import { isSuperAdmin } from '@/constants/user'
+import { isAdmin, isSuperAdmin } from '@/constants/user'
 import {
   BarchartIcon,
   FlagIcon,
@@ -141,13 +141,19 @@ function LeftMenu() {
     if (!outer) {
       setDefaultKeys([key])
       if (key.includes('/llmm/infer') && gsImage?.url !== LLMM.GroundedSAMImageUrl) {
+        if (!isAdmin(role)) {
+          return Modal.info({
+            title: 'Grounded-SAM Image',
+            content: t('llmm.groundedsam.image.add.user.invalid'),
+          })
+        }
         return Modal.confirm({
-          title: 'Add Grounded SAM Image',
-          content: <>Need download Grounded SAM docker image for inference, import or not?</>,
+          title: 'Grounded-SAM Image',
+          content: <>{t('llmm.groundedsam.image.add.tip')}</>,
           onOk: async () => {
             const result = await createGroundedSAMImage()
             if (result) {
-              message.success('Grounded SAM docker image is importing, please wait.')
+              message.success('llmm.groundedsam.image.add.success')
             }
           },
         })
@@ -158,7 +164,7 @@ function LeftMenu() {
 
   return items.length ? (
     <Sider className="sidebar scrollbar">
-      <Menu items={items} mode="inline" defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys} />
+      <Menu items={items} mode="inline" defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys} inlineIndent={12} />
       <SampleProjectTip id={id} />
     </Sider>
   ) : null

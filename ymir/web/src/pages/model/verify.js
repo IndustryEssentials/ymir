@@ -17,6 +17,7 @@ import Uploader from '@/components/form/uploader'
 import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
 import ImageSelect from '@/components/form/ImageSelect'
 import ObjectTypeSelector, { Types } from '@/components/form/InferObjectTypeSelector'
+import GPUCount from '@/components/form/items/GPUCount'
 
 import styles from './verify.less'
 import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/Icons'
@@ -154,6 +155,8 @@ function Verify() {
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => (key && value ? (config[key] = value) : null))
     const objectType = form.getFieldValue('objectType')
+    const gpuCount = form.getFieldValue('gpu_count')
+    config.gpu_count = gpuCount
     const prompt = objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : model.keywords
     config.prompt = prompt.join(';')
     // reinit annotations
@@ -269,6 +272,7 @@ function Verify() {
                   onChange={imageChange}
                 />
               </Form.Item>
+              <GPUCount form={form} min={isMultiModal(project?.type) ? 1 : 0} />
               {isMultiModal(project?.type) ? <ObjectTypeSelector /> : null}
               {seniorConfig.length ? (
                 <Card

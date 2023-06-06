@@ -25,7 +25,6 @@ const EditCell: FC<Props> = ({ value, onChange, validate }) => {
       onBlur={() => setEditing(false)}
       onChange={({ target }) => {
         const value = target.value
-        console.log('value:', value, validate(value))
         if (validate(value)) {
           onChange(value)
         }

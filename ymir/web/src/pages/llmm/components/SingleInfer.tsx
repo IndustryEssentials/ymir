@@ -156,7 +156,7 @@ const SingleInfer: FC<Props> = ({}) => {
             style={{ marginLeft: 20 }}
             onClick={() => infer()}
           >
-            {t('breadcrumbs.model.verify')}
+            {t('llmm.infer')}
           </Button>
         </Space>
       </Col>

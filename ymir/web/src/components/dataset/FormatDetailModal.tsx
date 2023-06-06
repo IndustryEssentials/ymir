@@ -112,7 +112,7 @@ const FormatDetailModal: FC<Props> = ({ ...props }) => {
   const [tabs, setTabs] = useState([vocTab])
 
   useEffect(() => {
-    setActive(isDetection(project.type) ? ObjectTypes.voc : ObjectTypes.coco)
+    setActive(isDetection(project?.type) ? ObjectTypes.voc : ObjectTypes.coco)
     setTabs(isDetection(project?.type) ? [vocTab] : [cocoTab])
   }, [project?.type])
   return (
