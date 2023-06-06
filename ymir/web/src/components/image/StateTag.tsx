@@ -25,7 +25,7 @@ const StateTag: React.FC<Props> = ({ state = states.READY, label, code }) => {
       {label ? t(`image.state.${tag.key}`) : null}
     </span>
   )
-  return tag.key === 'error' ? (
+  return tag.key === 'error' && code ? (
     <a href={getErrorCodeDocLink(code)} target="_blank" title={t(`error${code}`)}>
       {text}
     </a>
