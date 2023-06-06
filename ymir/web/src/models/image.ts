@@ -132,7 +132,7 @@ const ImageModel: ImageStore = {
       return list
     }),
     getOfficialImage: createEffect<boolean>(function* ({ payload: force }, { put, select }) {
-      const { official } = select(({ image }) => image)
+      const { official } = yield select(({ image }) => image)
       if (!force && official) {
         return official
       }
@@ -152,7 +152,7 @@ const ImageModel: ImageStore = {
       }
     }),
     getGroundedSAMImage: createEffect(function* ({}, { put, select }) {
-      const { groundedSAM } = select(({ image }) => image)
+      const { groundedSAM } = yield select(({ image }) => image)
       if (groundedSAM) {
         return groundedSAM
       }
@@ -172,7 +172,7 @@ const ImageModel: ImageStore = {
       }
     }),
     haveGroundedSAMImage: createEffect(function* ({}, { put, select }) {
-      const { groundedSAM } = select(({ image }) => image)
+      const { groundedSAM } = yield select(({ image }) => image)
       return LLMM.GroundedSAMImageUrl === groundedSAM?.url
     }),
     createGroundedSAMImage: createEffect(function* ({}, { put }) {
