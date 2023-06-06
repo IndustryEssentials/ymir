@@ -86,6 +86,7 @@ interface IterationState {
 }
 
 interface ImageState {
+  images: List<Image>
   image: IdMap<Image>
   total: number
   official?: Image

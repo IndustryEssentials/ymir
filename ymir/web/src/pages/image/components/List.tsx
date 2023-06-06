@@ -37,7 +37,8 @@ const ImageList: FC<{ filter: () => void }> = ({ filter }) => {
   const linkModalRef = useRef<RefProps>(null)
   const delRef = useRef<DelRefProps>(null)
   const role = useSelector(({ user }) => user.user.role)
-  const { data: remoteImages, run: getImages } = useRequest<ListType<Image>, [QueryParams]>('image/getImages')
+  const { images: remoteImages } = useSelector(({ image }) => image)
+  const { run: getImages } = useRequest<ListType<Image>, [QueryParams]>('image/getImages')
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -144,7 +145,7 @@ const ImageList: FC<{ filter: () => void }> = ({ filter }) => {
       const cls = getProjectTypeLabel(type)
       const label = getProjectTypeLabel(type, true)
       return type && cls ? (
-        <span key={type} className={`extraTag ${cls}`}>
+        <span key={`ot${type}`} className={`extraTag ${cls}`}>
           {t(label)}
         </span>
       ) : null
@@ -207,7 +208,7 @@ const ImageList: FC<{ filter: () => void }> = ({ filter }) => {
     )
 
     return (
-      <List.Item className={item.state ? 'success' : 'failure'} onClick={() => history.push(`/home/image/detail/${item.id}`)}>
+      <List.Item key={item.id} className={item.state ? 'success' : 'failure'} onClick={() => history.push(`/home/image/detail/${item.id}`)}>
         <List.Item.Meta title={title} description={desc}></List.Item.Meta>
       </List.Item>
     )

@@ -9,6 +9,7 @@ import { Image } from '@/constants'
 import { List } from './typings/common'
 
 const state: ImageState = {
+  images: { items: [], total: 0 },
   image: {},
   total: 0,
   official: undefined,
@@ -24,6 +25,11 @@ const ImageModel: ImageStore = {
       if (code === 0) {
         const { items, total } = result
         const images: Image[] = items.map(transferImage)
+        const list = { items: images, total }
+        yield put({
+          type: 'UpdateImages',
+          payload: list,
+        })
         yield put({
           type: 'UpdateImage',
           payload: images.reduce(
@@ -34,7 +40,7 @@ const ImageModel: ImageStore = {
             {},
           ),
         })
-        return { items: images, total }
+        return list
       }
     }),
     getImage: createEffect<{ id: number; force?: boolean }>(function* ({ payload }, { call, put, select }) {
