@@ -1,7 +1,6 @@
 import os
 import shutil
 
-import yaml
 from PIL import Image
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
@@ -14,19 +13,6 @@ from proto import backend_pb2
 class InferenceCMDInvoker(BaseMirControllerInvoker):
     def _need_work_dir(self) -> bool:
         return True
-
-    @classmethod
-    def gen_inference_config(cls, req_inference_config: str, task_context: dict,
-                             object_type: "mir_cmd_pb.ObjectType.V", work_dir: str) -> str:
-        executor_config = yaml.safe_load(req_inference_config)
-        executor_config["object_type"] = object_type
-        task_context["object_type"] = object_type
-
-        inference_config_file = os.path.join(work_dir, "inference_config.yaml")
-        with open(inference_config_file, "w") as f:
-            yaml.dump({'executor_config': executor_config, 'task_context': task_context}, f, allow_unicode=True)
-
-        return inference_config_file
 
     @classmethod
     def prepare_inference_assets(cls, asset_dir: str, dst_dir: str) -> str:
@@ -59,16 +45,22 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid _user_labels")
 
         index_file = self.prepare_inference_assets(asset_dir=self._request.asset_dir, dst_dir=self._work_dir)
-        config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
-                                                task_context={'server_runtime': self._assets_config['server_runtime']},
-                                                object_type=self._request.object_type,
-                                                work_dir=self._work_dir)
+        output_config_file = os.path.join(self._work_dir, "inference_config.yaml")
+        gpu_lock_ret = self.gen_executor_config_lock_gpus(
+            req_executor_config=self._request.docker_image_config,
+            class_names=[],
+            object_type=self._request.object_type,
+            output_config_file=output_config_file,
+            assets_config=self._assets_config,
+        )
+        if not gpu_lock_ret:
+            return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")
 
         self.inference_cmd(
             repo_root=self._repo_root,
             label_storage_file=self._label_storage_file,
             work_dir=self._work_dir,
-            config_file=config_file,
+            config_file=output_config_file,
             model_location=self._assets_config["modelskvlocation"],
             model_hash=self._request.model_hash,
             model_stage=self._request.model_stage,
