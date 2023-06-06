@@ -46,7 +46,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         index_file = self.prepare_inference_assets(asset_dir=self._request.asset_dir, dst_dir=self._work_dir)
         output_config_file = os.path.join(self._work_dir, "inference_config.yaml")
-        gpu_lock_ret = self.gen_executor_config_lock_gpus(
+        gpu_lock_ret = self.gen_executor_config_find_gpus(
             req_executor_config=self._request.docker_image_config,
             class_names=[],
             object_type=self._request.object_type,

@@ -140,7 +140,7 @@ class BaseMirControllerInvoker(ABC):
         return f"task id: {self._request.task_id} response: {MessageToString(response, as_one_line=True)}"
 
     @staticmethod
-    def gen_executor_config_lock_gpus(req_executor_config: str,
+    def gen_executor_config_find_gpus(req_executor_config: str,
                                       class_names: List,
                                       output_config_file: str,
                                       object_type: "mir_cmd_pb.ObjectType.V",
