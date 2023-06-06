@@ -4,7 +4,7 @@ import { Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Space, Tag,
 import { useLocation, useSelector } from 'umi'
 
 import t from '@/utils/t'
-import { ObjectType, isDetection, isSemantic } from '@/constants/objectType'
+import { ObjectType, isDetection, isSemantic, isSegmentation } from '@/constants/objectType'
 
 import Panel from '@/components/form/panel'
 import SingleMetircView from './SingleMetircView'
@@ -155,7 +155,7 @@ const Matrics: FC<Props> = ({ prediction }) => {
     fetchDiagnosis({
       pid: prediction.projectId,
       predictionId: prediction.id,
-      curve: isDetection(prediction?.type),
+      curve: !isSegmentation(prediction?.type),
       averageIou: true,
       confidence,
     })
