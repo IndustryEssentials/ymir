@@ -7,6 +7,7 @@ const llmm = {
     cn: '多模态大模型镜像能够预测模型训练目标之外的类别',
     en: "Multi-modal large-scale models can predict categories beyond the model's training targets",
   },
+  'llmm.infer': { cn: '检测', en: 'Detect' },
 }
 
 export default llmm
