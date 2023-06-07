@@ -37,7 +37,7 @@ const BatchAdd: FC = () => {
 
   return (
     <Card className={s.container} title={t('breadcrumbs.dataset.add')} extra={Btns}>
-      <AddList />
+      <AddList style={{ marginBottom: 20 }} />
       <AddSelector />
       <FormatDetailModal title={t('dataset.add.form.tip.format.detail')} visible={visible} onCancel={() => showFormatDetail(false)} />
     </Card>
