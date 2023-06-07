@@ -5,6 +5,7 @@ from PIL import Image
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import utils, checker
+from controller.utils.tasks_util import gen_executor_config_find_gpus
 from id_definition.error_codes import CTLResponseCode
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
@@ -46,7 +47,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         index_file = self.prepare_inference_assets(asset_dir=self._request.asset_dir, dst_dir=self._work_dir)
         output_config_file = os.path.join(self._work_dir, "inference_config.yaml")
-        gpu_lock_ret = self.gen_executor_config_find_gpus(
+        gpu_lock_ret = gen_executor_config_find_gpus(
             req_executor_config=self._request.docker_image_config,
             class_names=[],
             object_type=self._request.object_type,

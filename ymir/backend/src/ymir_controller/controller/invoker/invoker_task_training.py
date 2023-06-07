@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 from common_utils.labels import UserLabels
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import revs, utils
+from controller.utils.tasks_util import gen_executor_config_find_gpus
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -21,7 +22,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
         class_names = self._user_labels.main_name_for_ids(class_ids=list(request.in_class_ids))
-        gpu_lock_ret = self.gen_executor_config_find_gpus(
+        gpu_lock_ret = gen_executor_config_find_gpus(
             req_executor_config=request.docker_image_config,
             class_names=class_names,
             output_config_file=output_config_file,
