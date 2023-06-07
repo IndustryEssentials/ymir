@@ -155,7 +155,7 @@ const Matrics: FC<Props> = ({ prediction }) => {
     fetchDiagnosis({
       pid: prediction.projectId,
       predictionId: prediction.id,
-      curve: isDetection(prediction?.type),
+      curve: false,
       averageIou: true,
       confidence,
     })
