@@ -46,7 +46,7 @@ const Add: FC = () => {
   useEffect(() => {
     if (created || updated) {
       const pid = created?.id || id
-      message.success(t(`project.${isEdit ? 'update' : 'create'}.success`))
+      message.success({ content: t(`project.${isEdit ? 'update' : 'create'}.success`), key: 'success' })
       history.push(`/home/project/${pid}/dataset`)
     }
     if (created && isMultiModal(created.type)) {
@@ -55,7 +55,8 @@ const Add: FC = () => {
   }, [created, updated])
 
   useEffect(() => {
-    pulling && message.success(t('llmm.image.add.tip'))
+    console.log('pulling:', pulling)
+    pulling && message.success({ content: t('llmm.image.add.tip'), key: 'success' })
   }, [pulling])
 
   function initForm(project: Project) {
