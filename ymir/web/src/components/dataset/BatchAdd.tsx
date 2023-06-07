@@ -29,26 +29,16 @@ const BatchAdd: FC = () => {
     }
   }, [results])
 
+  const Btns = (
+    <Button disabled={!items.length} type="primary" size="large" onClick={() => batch({ pid: id })}>
+      {t('common.action.import')}
+    </Button>
+  )
+
   return (
-    <Card className={s.container} title={t('breadcrumbs.dataset.add')}>
+    <Card className={s.container} title={t('breadcrumbs.dataset.add')} extra={Btns}>
       <AddList />
       <AddSelector />
-      <Form>
-        <Form.Item wrapperCol={{ offset: 8 }}>
-          <Space size={20}>
-            <Form.Item name="submitBtn" noStyle>
-              <Button disabled={!items.length} type="primary" size="large" onClick={() => batch({ pid: id })}>
-                {t('common.action.import')}
-              </Button>
-            </Form.Item>
-            <Form.Item name="backBtn" noStyle>
-              <Button size="large" onClick={(e) => history.goBack()}>
-                {t('task.btn.back')}
-              </Button>
-            </Form.Item>
-          </Space>
-        </Form.Item>
-      </Form>
       <FormatDetailModal title={t('dataset.add.form.tip.format.detail')} visible={visible} onCancel={() => showFormatDetail(false)} />
     </Card>
   )
