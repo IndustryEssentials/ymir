@@ -8,12 +8,14 @@ import { Types } from './AddTypes'
 import { List } from '@/models/typings/common'
 import { formLayout } from '@/config/antd'
 import SubmitBtn from './SubmitBtn'
+import { useSelector } from 'umi'
 type Props = {
   selected?: number
 }
 const Public: FC<Props> = ({ selected }) => {
   const [form] = Form.useForm()
   const [items, setItems] = useState<ImportingItem[]>([])
+  const { max } = useSelector(({ dataset }) => dataset.importing)
   const { data: publicDatasets = [], run: getPublicDatasets } = useRequest<Dataset[]>('dataset/getInternalDataset', {
     loading: false,
   })
@@ -45,6 +47,7 @@ const Public: FC<Props> = ({ selected }) => {
             required: true,
             message: t('dataset.add.form.internal.required'),
           },
+          { max },
         ]}
       >
         <Select

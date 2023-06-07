@@ -2,7 +2,7 @@ import ProjectDatasetSelect, { DataNodeType } from '@/components/form/ProjectDat
 import { FC, useState, useEffect } from 'react'
 import t from '@/utils/t'
 import { ImportSelectorProps } from '.'
-import { useParams } from 'umi'
+import { useParams, useSelector } from 'umi'
 import { Types } from './AddTypes'
 import { Button, Cascader, Form } from 'antd'
 import { ImportingItem } from '@/constants'
@@ -13,6 +13,7 @@ import SubmitBtn from './SubmitBtn'
 const Copy: FC = () => {
   const [form] = Form.useForm()
   const [items, setItems] = useState<ImportingItem[]>([])
+  const { max } = useSelector(({ dataset }) => dataset.importing)
   const { run: addImportingList } = useRequest('dataset/addImportingList', { loading: false })
 
   useEffect(() => {}, [])
@@ -28,7 +29,7 @@ const Copy: FC = () => {
         console.log('finish failed: ', err)
       }}
     >
-      <Form.Item required label={t('dataset.add.form.copy.label')} name="dataset">
+      <Form.Item required label={t('dataset.add.form.copy.label')} name="dataset" rules={[{ required: true }, { max }]}>
         <ProjectDatasetSelect
           onChange={(_, option) => {
             if (Array.isArray(option)) {
