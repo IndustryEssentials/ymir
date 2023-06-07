@@ -27,11 +27,13 @@ const AddList: FC<Omit<TableProps<ImportingItem>, 'columns' | 'dataSource'>> = (
       render(name, item) {
         return (
           <EditCell
+            dup={item.dup}
             value={name}
             onChange={(updatedName) => {
               updateImportingItem({
                 ...item,
                 name: updatedName,
+                dup: false,
               })
             }}
             validate={(value) => {

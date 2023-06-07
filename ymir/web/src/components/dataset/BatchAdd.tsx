@@ -15,7 +15,7 @@ const BatchAdd: FC = () => {
   const history = useHistory()
   const { formatVisible: visible, items } = useSelector(({ dataset }) => dataset.importing)
   const { run: showFormatDetail } = useRequest<null, [boolean]>('dataset/showFormatDetail', { loading: false })
-  const { data: results, run: batch } = useRequest<(Task | null)[], [{ pid: string }]>('task/batchAdd')
+  const { data: results, run: batch } = useRequest<(Task | null)[], [{ pid: string }]>('dataset/batchAdd')
 
   useEffect(() => {
     results && history.push(`/home/project/${id}/dataset`)

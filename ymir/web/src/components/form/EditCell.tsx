@@ -4,9 +4,10 @@ type Props = {
   value: string
   onChange: (value: string) => void
   validate: (value: string) => boolean | void
+  dup?: boolean
 }
 
-const EditCell: FC<Props> = ({ value, onChange, validate }) => {
+const EditCell: FC<Props> = ({ value, onChange, validate, dup }) => {
   const [name, setName] = useState<string>()
   const [editing, setEditing] = useState(false)
   const inputRef = useRef<InputRef>(null)
@@ -18,22 +19,26 @@ const EditCell: FC<Props> = ({ value, onChange, validate }) => {
     }
   }, [editing])
 
-  return editing ? (
-    <Input
-      ref={inputRef}
-      value={name}
-      onBlur={() => setEditing(false)}
-      onChange={({ target }) => {
-        const value = target.value
-        if (validate(value)) {
-          onChange(value)
-        }
-        // setEditing(false)
-      }}
-    />
-  ) : (
-    <div onMouseEnter={() => setEditing(true)} style={{ cursor: 'pointer' }}>
-      {value}
+  return (
+    <div style={{ border: dup ? '1px solid red' : 'none' }}>
+      {editing ? (
+        <Input
+          ref={inputRef}
+          value={name}
+          onChange={({ target }) => setName(target.value)}
+          onBlur={({ target }) => {
+            const value = target.value
+            if (validate(value)) {
+              onChange(value)
+            }
+            setEditing(false)
+          }}
+        />
+      ) : (
+        <div onMouseEnter={() => setEditing(true)} style={{ cursor: 'pointer' }}>
+          {value}
+        </div>
+      )}
     </div>
   )
 }

@@ -14,8 +14,9 @@ import {
   getNegativeKeywords,
   updateVersion,
   checkDuplication,
+  checkDuplicateNames,
 } from '@/services/dataset'
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAnnotationsCount } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAnnotationsCount, IMPORTSTRATEGY } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates, ImportingMaxCount } from '@/constants/common'
 import { createEffect, createReducersByState } from './_utils'
 import { deepClone } from '@/utils/object'
@@ -23,6 +24,10 @@ import { TASKTYPES } from '@/constants/task'
 import { DatasetState, DatasetStore } from '.'
 import { List } from './typings/common.d'
 import { Backend, Dataset, ImportingItem, ProgressTask } from '@/constants'
+import { randomNumber } from '@/utils/number'
+import { Types } from '@/components/dataset/add/AddTypes'
+import { batchAdd } from '@/services/task'
+import { message } from 'antd'
 
 const initQuery = { name: '', type: '', time: 0, current: 1, offset: 0, limit: 20 }
 
@@ -439,9 +444,11 @@ const DatasetModal: DatasetStore = {
       return ids.map((id) => datasets[id]).filter((d) => d)
     }),
     addImportingList: createEffect<ImportingItem[]>(function* ({ payload: newItems }, { put, select }) {
-      const { items } = yield select(({ dataset }) => dataset.importing)
+      const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
+      const checkDuplicateName = (newName: string, list: ImportingItem[]) => list.find(({ name }) => name === newName)
       const updatedList = [...items, ...newItems]
-      yield put({ type: 'updateImportingList', payload: updatedList })
+      const list = updatedList.map((item) => (checkDuplicateName(item.name, updatedList) ? { ...item, name: item.name + '_' + randomNumber(3) } : item))
+      yield put({ type: 'updateImportingList', payload: list })
     }),
     removeImporting: createEffect<number[]>(function* ({ payload: indexs }, { put, select }) {
       const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
@@ -459,15 +466,65 @@ const DatasetModal: DatasetStore = {
       yield put({
         type: 'UpdateImporting',
         payload: {
-          items: items.map((item, index) => ({ ...item, index })),
+          items: items.map((item, index) => ({ ...item, name: item.name.trim(), index })),
           max: updatedMax,
         },
       })
     }),
     showFormatDetail: createEffect<boolean>(function* ({ payload: visible }, { put, select }) {
-      // const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
-
       yield put({ type: 'UpdateImporting', payload: { formatVisible: visible } })
+    }),
+    checkDuplicateNames: createEffect<{ pid: number; names: string[] }>(function* ({ payload: { pid, names } }, { put, call }) {
+      const { code, result } = yield call(checkDuplicateNames, pid, names)
+      if (code === 0) {
+        return result?.names || []
+      }
+    }),
+    batchAdd: createEffect<{ pid: number }>(function* ({ payload: { pid } }, { call, put, select }) {
+      const items: ImportingItem[] = yield select(({ dataset }) => dataset.importing.items)
+      if (items.length !== [...new Set(items.map((item) => item.name))].length) {
+        return message.error('duplicated name')
+      }
+      const duplicateChecked: string[] = yield put.resolve({
+        type: 'checkDuplicateNames',
+        payload: { pid, names: items.map((item) => item.name) },
+      })
+      if (duplicateChecked.length) {
+        yield put({
+          type: 'updateImportingList',
+          payload: items.map((item) => (duplicateChecked.includes(item.name) ? { ...item, dup: true } : item)),
+        })
+        return
+      }
+      const params = items.map((item) => {
+        const field = {
+          [Types.LOCAL]: 'url',
+          [Types.NET]: 'url',
+          [Types.COPY]: 'dataset_id',
+          [Types.INTERNAL]: 'dataset_id',
+          [Types.PATH]: 'path',
+        }[item.type]
+        return {
+          dataset_group_name: item.name,
+          [field]: item.source,
+          strategy: item.strategy || IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD,
+        }
+      })
+      const newClasses = [...new Set(items.reduce<string[]>((prev, { classes = [] }) => [...prev, ...classes], []))]
+      if (newClasses.length) {
+        yield put.resolve({
+          type: 'keyword/updateKeywords',
+          payload: { keywords: newClasses.map((cls) => ({ name: cls })) },
+        })
+      }
+      const { code, result } = yield call(batchAdd, pid, params)
+      if (code === 0) {
+        yield put({
+          type: 'updateImportingList',
+          payload: [],
+        })
+        return result
+      }
     }),
   },
   reducers: {
