@@ -1,10 +1,10 @@
 import argparse
 import logging
-from typing import Dict, List
+from typing import List
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage_ops
+from mir.tools import checker, revs_parser, mir_repo_utils, mir_storage_ops
 from mir.tools.annotations import map_and_filter_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
@@ -107,8 +107,7 @@ class CmdCopy(base.BaseCommand):
             task_type=mirpb.TaskType.TaskTypeCopyData,
             task_id=dst_typ_rev_tid.tid,
             message=f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}",
-            new_types={name: 0
-                       for name in unknown_class_names},
+            new_types={name: 1 for name in unknown_class_names},
             model_meta=orig_task.model,
             serialized_executor_config=orig_task.serialized_executor_config,
             executor=orig_task.executor,
@@ -124,45 +123,6 @@ class CmdCopy(base.BaseCommand):
                                                       task=task)
 
         return MirCode.RC_OK
-
-    @staticmethod
-    def _change_type_ids(
-        single_task_annotations: mirpb.SingleTaskAnnotations,
-        src_to_dst_ids: Dict[int, int],
-    ) -> None:
-        for single_image_annotations in single_task_annotations.image_annotations.values():
-            dst_image_annotations: List[mirpb.ObjectAnnotation] = []
-            for annotation in single_image_annotations.boxes:
-                dst_class_id = src_to_dst_ids[annotation.class_id]
-                if dst_class_id >= 0:
-                    annotation.class_id = dst_class_id
-                    dst_image_annotations.append(annotation)
-            del single_image_annotations.boxes[:]
-            single_image_annotations.boxes.extend(dst_image_annotations)
-
-        dst_eval_class_ids: List[int] = []
-        for src_class_id in single_task_annotations.eval_class_ids:
-            dst_class_id = src_to_dst_ids[src_class_id]
-            if dst_class_id >= 0:
-                dst_eval_class_ids.append(dst_class_id)
-        single_task_annotations.eval_class_ids[:] = dst_eval_class_ids
-
-    @staticmethod
-    def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.UserLabels, mir_context: mirpb.MirContext,
-                                     src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
-        all_src_class_ids = set(mir_context.pred_stats.class_ids_cnt.keys()) | set(
-            mir_context.gt_stats.class_ids_cnt.keys())
-        unknown_src_class_ids = {src_id for src_id in all_src_class_ids if src_to_dst_ids[src_id] == -1}
-        if not unknown_src_class_ids:
-            return {}
-
-        unknown_names_and_count: Dict[str, int] = {}
-        for src_id in unknown_src_class_ids:
-            name = src_class_id_mgr.main_name_for_id(src_id)
-            cnt_gt: int = mir_context.pred_stats.class_ids_cnt[src_id]
-            cnt_pred: int = mir_context.gt_stats.class_ids_cnt[src_id]
-            unknown_names_and_count[name] = cnt_gt + cnt_pred
-        return unknown_names_and_count
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:

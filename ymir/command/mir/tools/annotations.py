@@ -1,9 +1,9 @@
-from collections import defaultdict, Counter
+from collections import Counter
 import enum
 import json
 import logging
 import os
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Set, Tuple, Union
 
 from google.protobuf.internal.containers import MessageMap
 from google.protobuf.json_format import ParseDict
@@ -94,12 +94,11 @@ def _annotation_signature(annotation: mirpb.ObjectAnnotation, asset_id: str) -> 
         f"-{annotation.box.h}-{annotation.box.rotate_angle}")
 
 
-def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
-                                   class_type_manager: class_ids.UserLabels) -> mirpb.ObjectAnnotation:
+def _voc_object_dict_to_annotation(object_dict: dict, cid: int, cname: str) -> mirpb.ObjectAnnotation:
     # Fill shared fields.
     annotation = mirpb.ObjectAnnotation()
     annotation.class_id = cid
-    annotation.class_name = class_type_manager.main_name_for_id(cid)
+    annotation.class_name = cname
     annotation.score = float(object_dict.get('confidence', '-1.0'))
     annotation.anno_quality = float(object_dict.get('box_quality', '-1.0'))
     tags = object_dict.get('tags', {})  # tags could be None
@@ -166,27 +165,11 @@ def _coco_object_dict_to_annotation(anno_dict: dict,
     return obj_anno
 
 
-def handle_obj_anno_class(obj_anno: mirpb.ObjectAnnotation, cls_mgr: class_ids.UserLabels,
-                          unknown_types_strategy: UnknownTypesStrategy) -> bool:
-    """
-    Returns: has new class names (just added or ignored)
-    """
-    obj_anno.class_id, obj_anno.class_name = cls_mgr.id_and_main_name_for_name(obj_anno.class_name)
-    # known class names: return
-    if obj_anno.class_id >= 0:
-        return False
-
-    # has unknown class names
-    if unknown_types_strategy == UnknownTypesStrategy.ADD:
-        obj_anno.class_id, obj_anno.class_name = cls_mgr.add_main_name(obj_anno.class_name)
-    return True
-
-
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str,
                        prediction_dir_path: Optional[str], groundtruth_dir_path: Optional[str],
                        file_name_to_asset_ids: Dict[str, str], unknown_types_strategy: UnknownTypesStrategy,
-                       anno_type: "mirpb.ObjectType.V", anno_fmt: "mirpb.AnnoFormat.V", phase: str) -> Dict[str, int]:
-    anno_import_result: Dict[str, int] = defaultdict(int)
+                       anno_type: "mirpb.ObjectType.V", anno_fmt: "mirpb.AnnoFormat.V", phase: str) -> Set[str]:
+    accu_new_class_names: Set[str] = set()
 
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
@@ -202,7 +185,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             annotations_dir_path=prediction_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
-            accu_new_class_names=anno_import_result,
+            accu_new_class_names=accu_new_class_names,
             image_annotations=mir_annotation.prediction,
         )
         _import_annotation_meta(class_type_manager=class_type_manager,
@@ -222,43 +205,64 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             annotations_dir_path=groundtruth_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
-            accu_new_class_names=anno_import_result,
+            accu_new_class_names=accu_new_class_names,
             image_annotations=mir_annotation.ground_truth,
         )
     else:
         mir_annotation.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOS
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
-    if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_TYPES,
-                              error_message=f"{list(anno_import_result.keys())}")
-
-    return anno_import_result
+    return accu_new_class_names
 
 
-def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
-                                unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
-                                image_annotations: mirpb.SingleTaskAnnotations) -> None:
-    if unknown_types_strategy == UnknownTypesStrategy.KEEP:
-        raise NotImplementedError("_import_annotations_voc_xml not support UnknownTypesStrategy.KEEP")
-
-    zero_size_count = 0
-    duplicate_count = 0
-    add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
+def _iter_voc_annos_dict(file_name_to_asset_ids: Dict[str, str],
+                         annotations_dir_path: str) -> Generator[Tuple[str, dict], None, None]:
+    """
+    Walk through annotation files of file_name_to_asset_ids dict, yields annos_dict to each image parse from voc
+    """
     for filename, asset_hash in file_name_to_asset_ids.items():
-        # for each asset, import it's annotations
         annotation_file = os.path.join(annotations_dir_path, os.path.splitext(filename)[0] + '.xml')
         if not os.path.isfile(annotation_file):
             continue
-
         with open(annotation_file, 'r') as f:
             annos_xml_str = f.read()
         if not annos_xml_str:
             logging.error(f"[import error]: Cannot open annotation_file: {annotation_file}")
             continue
-
         annos_dict: dict = xmltodict.parse(annos_xml_str)['annotation']
+        yield (asset_hash, annos_dict)
+    return None
+
+
+def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+                                annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
+                                unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Set[str],
+                                image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    if unknown_types_strategy == UnknownTypesStrategy.KEEP:
+        raise NotImplementedError("_import_annotations_voc_xml not support UnknownTypesStrategy.KEEP")
+
+    # get all unknown types and add (or stop)
+    class_names: Set[str] = set()
+    for _, annos_dict in _iter_voc_annos_dict(file_name_to_asset_ids=file_name_to_asset_ids,
+                                              annotations_dir_path=annotations_dir_path):
+        objects: Union[List[dict], dict] = annos_dict.get('object', [])
+        if isinstance(objects, dict):
+            # when there's only ONE object node in xml, it will be parsed to a dict, not a list
+            objects = [objects]
+        class_names.update([obj['name'] for obj in objects if obj.get('name')])
+    _, unknown_class_names = class_type_manager.id_for_names(list(class_names))
+    if len(unknown_class_names) > 0:
+        if unknown_types_strategy == UnknownTypesStrategy.STOP:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_TYPES,
+                                  error_message=f"{unknown_class_names}")
+        if unknown_types_strategy == UnknownTypesStrategy.ADD:
+            class_type_manager.add_main_names(unknown_class_names)
+        accu_new_class_names.update(unknown_class_names)
+
+    zero_size_count = 0
+    duplicate_count = 0
+    for asset_hash, annos_dict in _iter_voc_annos_dict(file_name_to_asset_ids=file_name_to_asset_ids,
+                                                       annotations_dir_path=annotations_dir_path):
         # cks
         cks = annos_dict.get('cks', {})  # cks could be None
         if cks:
@@ -266,44 +270,35 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
         mir_annotation.image_cks[asset_hash].image_quality = float(annos_dict.get('image_quality', '-1.0'))
 
         # annotations and tags
-        objects: Union[List[dict], dict] = annos_dict.get('object', [])
+        objects = annos_dict.get('object', [])
         if isinstance(objects, dict):
             # when there's only ONE object node in xml, it will be parsed to a dict, not a list
             objects = [objects]
 
-        anno_idx = 0
         known_signatures = set()
         for object_dict in objects:
-            cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
+            cid, cname = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
+            # all class names are added (if strategy is ADD), and strategy KEEP is not supported here
+            # so cid < 0 here means ignored classes
+            if cid < 0 and unknown_types_strategy == UnknownTypesStrategy.IGNORE:
+                continue
 
-            # check if seen this class_name.
-            if new_type_name in accu_new_class_names:
-                accu_new_class_names[new_type_name] += 1
-            else:
-                # for unseen class_name, only care about negative cid.
-                if cid < 0:
-                    if add_if_not_found:
-                        cid, _ = class_type_manager.add_main_name(main_name=new_type_name)
-                    accu_new_class_names[new_type_name] = 0
+            annotation = _voc_object_dict_to_annotation(object_dict=object_dict,
+                                                        cid=cid,
+                                                        cname=cname)
+            if annotation.box.w <= 0 or annotation.box.h <= 0:
+                zero_size_count += 1
+                continue
 
-            if cid >= 0:
-                annotation = _voc_object_dict_to_annotation(object_dict=object_dict,
-                                                            cid=cid,
-                                                            class_type_manager=class_type_manager)
-                if annotation.box.w <= 0 or annotation.box.h <= 0:
-                    zero_size_count += 1
-                    continue
+            signature = _annotation_signature(annotation, asset_hash)
+            if signature in known_signatures:
+                logging.warning(f"[import error]: Found duplicated annotation for asset hash: {asset_hash}")
+                duplicate_count += 1
+                continue
+            known_signatures.add(signature)
 
-                signature = _annotation_signature(annotation, asset_hash)
-                if signature in known_signatures:
-                    logging.warning(f"[import error]: Found duplicated annotation for asset hash: {asset_hash}")
-                    duplicate_count += 1
-                    continue
-
-                annotation.index = anno_idx
-                image_annotations.image_annotations[asset_hash].boxes.append(annotation)
-                anno_idx += 1
-                known_signatures.add(signature)
+            annotation.index = len(image_annotations.image_annotations[asset_hash].boxes)
+            image_annotations.image_annotations[asset_hash].boxes.append(annotation)
 
     if zero_size_count:
         logging.warning(f"[import error]: Count of zero size objects: {zero_size_count}")
@@ -317,7 +312,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
                                  class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy,
                                  image_annotations: mirpb.SingleTaskAnnotations,
-                                 accu_new_class_names: defaultdict = defaultdict(int),
+                                 accu_new_class_names: Set[str] = set(),
                                  coco_json_filename: str = COCO_JSON_NAME) -> None:
     coco_file_path = os.path.join(annotations_dir_path, coco_json_filename)
     try:
@@ -363,10 +358,19 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
 
         image_id_to_hashes[v['id']] = file_name_to_asset_ids[filename]
 
+    # get all unknown types and add (or stop)
     category_id_to_names: Dict[int, str] = {
         cat['id']: cat['name']
         for cat in categories_list if cat['id'] not in duplicated_category_ids
     }
+    _, unknown_class_names = class_type_manager.id_for_names(list(category_id_to_names.values()))
+    if len(unknown_class_names) > 0:
+        if unknown_types_strategy == UnknownTypesStrategy.STOP:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_TYPES,
+                                  error_message=f"{unknown_class_names}")
+        if unknown_types_strategy == UnknownTypesStrategy.ADD:
+            class_type_manager.add_main_names(unknown_class_names)
+        accu_new_class_names.update(unknown_class_names)
 
     known_signatures = set()
     for anno_dict in annotations_list:
@@ -385,11 +389,8 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
         if obj_anno.box.w <= 0 or obj_anno.box.h <= 0:
             zero_size_count += 1
             continue
-        is_new_type = handle_obj_anno_class(obj_anno=obj_anno,
-                                            cls_mgr=class_type_manager,
-                                            unknown_types_strategy=unknown_types_strategy)
-        if is_new_type and unknown_types_strategy == UnknownTypesStrategy.IGNORE:
-            accu_new_class_names[obj_anno.class_name] += 1
+        obj_anno.class_id, obj_anno.class_name = class_type_manager.id_and_main_name_for_name(obj_anno.class_name)
+        if obj_anno.class_id < 0 and unknown_types_strategy == UnknownTypesStrategy.IGNORE:
             continue
 
         asset_hash = image_id_to_hashes[anno_dict['image_id']]
@@ -424,7 +425,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
 
 def _import_no_annotations(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
                            annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
-                           unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
+                           unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Set[str],
                            image_annotations: mirpb.SingleTaskAnnotations) -> None:
     logging.info("user choose to import no annotations")
 

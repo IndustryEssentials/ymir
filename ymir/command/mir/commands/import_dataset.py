@@ -105,27 +105,27 @@ class CmdImport(base.BaseCommand):
 
         obj_type, anno_fmt = annotations.parse_anno_type_format(anno_type_fmt)
         mir_annotation = mirpb.MirAnnotations()
-        unknown_class_names = annotations.import_annotations(mir_annotation=mir_annotation,
-                                                             label_storage_file=label_storage_file,
-                                                             prediction_dir_path=pred_abs,
-                                                             groundtruth_dir_path=gt_abs,
-                                                             file_name_to_asset_ids=file_name_to_asset_ids,
-                                                             unknown_types_strategy=unknown_types_strategy,
-                                                             anno_type=obj_type,
-                                                             anno_fmt=anno_fmt,
-                                                             phase='import.others')
+        new_class_names = annotations.import_annotations(mir_annotation=mir_annotation,
+                                                         label_storage_file=label_storage_file,
+                                                         prediction_dir_path=pred_abs,
+                                                         groundtruth_dir_path=gt_abs,
+                                                         file_name_to_asset_ids=file_name_to_asset_ids,
+                                                         unknown_types_strategy=unknown_types_strategy,
+                                                         anno_type=obj_type,
+                                                         anno_fmt=anno_fmt,
+                                                         phase='import.others')
 
         logging.info(f"Import done, images count: {len(mir_metadatas.attributes)}, "
                      f"with gt: {len(mir_annotation.ground_truth.image_annotations)}, "
                      f"with pred: {len(mir_annotation.prediction.image_annotations)}")
-        logging.info(f"pred / gt import unknown result: {dict(unknown_class_names)}")
+        logging.info(f"pred / gt new class names: {new_class_names}, strategy: {unknown_types_strategy}")
 
         # create and write tasks
         task = mir_storage_ops.create_task_record(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
             message=f"importing {index_file}-{pred_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
-            new_types=unknown_class_names,
+            new_types={name: 1 for name in new_class_names},
             new_types_added=(unknown_types_strategy == annotations.UnknownTypesStrategy.ADD),
             src_revs=src_revs,
             dst_rev=dst_rev,

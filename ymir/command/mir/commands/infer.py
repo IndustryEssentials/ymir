@@ -14,7 +14,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
-from mir.tools.annotations import handle_obj_anno_class, import_annotations_coco_json, valid_image_annotation
+from mir.tools.annotations import import_annotations_coco_json, valid_image_annotation
 from mir.tools.annotations import UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -254,11 +254,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             json_format.ParseDict(annotation_dict['box'], annotation.box)
             annotation.class_name = annotation_dict['class_name']
             annotation.score = float(annotation_dict['score'])
-
-            is_new_type = handle_obj_anno_class(obj_anno=annotation,
-                                                cls_mgr=class_id_mgr,
-                                                unknown_types_strategy=unknown_types_strategy)
-            if is_new_type and unknown_types_strategy == UnknownTypesStrategy.IGNORE:
+            annotation.class_id, annotation.class_name = class_id_mgr.id_and_main_name_for_name(annotation.class_name)
+            if annotation.class_id < 0 and unknown_types_strategy == UnknownTypesStrategy.IGNORE:
                 unknown_class_id_annos_cnt += 1
                 continue
 
