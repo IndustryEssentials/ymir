@@ -310,8 +310,8 @@ class TestCmdImport(unittest.TestCase):
     def _prepare_data(self):
         local_data_root = 'tests/assets'
 
-        # Copy img files.
-        img_files = ['2007_000032.jpg', '2007_000243.jpg']
+        # Copy img files, 2007_000243.xml represents for error format images
+        img_files = ['2007_000032.jpg', '2007_000243.jpg', '2007_000243.xml']
         with open(self._idx_file, 'w') as idx_f:
             for file in img_files:
                 src = os.path.join(local_data_root, file)

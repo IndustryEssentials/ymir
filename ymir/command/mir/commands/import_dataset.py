@@ -91,7 +91,6 @@ class CmdImport(base.BaseCommand):
                                   error_message=f"invalid gt_abs: {gt_abs}")
 
         # Step 3: generate sha1 file and rename images.
-        # sha1 file to be written.
         file_name_to_asset_ids = _generate_sha_and_copy(index_file, gen_abs)
 
         # Step 4 import metadat and annotations:
@@ -116,6 +115,9 @@ class CmdImport(base.BaseCommand):
                                                              anno_fmt=anno_fmt,
                                                              phase='import.others')
 
+        logging.info(f"Import done, images count: {len(mir_metadatas.attributes)}, "
+                     f"with gt: {len(mir_annotation.ground_truth.image_annotations)}, "
+                     f"with pred: {len(mir_annotation.prediction.image_annotations)}")
         logging.info(f"pred / gt import unknown result: {dict(unknown_class_names)}")
 
         # create and write tasks
