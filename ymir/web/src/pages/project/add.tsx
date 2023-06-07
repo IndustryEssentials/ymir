@@ -10,8 +10,10 @@ import DatasetSelect from '@/components/form/datasetSelect'
 import Panel from '@/components/form/panel'
 import ProjectTypes from '@/components/project/ProjectTypes'
 import useRequest from '@/hooks/useRequest'
-import { Dataset, Project } from '@/constants'
+import { Dataset, Project, Task } from '@/constants'
+import { Image } from '@/services/typings/image.d'
 import { CreateParams, UpdateParams } from '@/services/project'
+import LLMM from '@/constants/llmm'
 
 const { useForm } = Form
 
@@ -26,6 +28,9 @@ const Add: FC = () => {
   })
   const { data: created, run: createProject } = useRequest<Project, [CreateParams]>('project/createProject')
   const { data: updated, run: updateProject } = useRequest<Project, [UpdateParams]>('project/updateProject')
+  const { data: pulling, run: addMultiModalImage } = useRequest<Task, [Image]>('image/createImage', {
+    loading: false,
+  })
 
   useEffect(() => {
     setEdit(!!pid)
@@ -43,7 +48,17 @@ const Add: FC = () => {
       message.success(t(`project.${isEdit ? 'update' : 'create'}.success`))
       history.push(`/home/project/${pid}/dataset`)
     }
+    if (created) {
+      addMultiModalImage({
+        name: 'LLMM-GLIP',
+        url: LLMM.MultiModalImageUrl,
+      })
+    }
   }, [created, updated])
+
+  useEffect(() => {
+    pulling && message.success(t('llmm.image.add.tip'))
+  }, [pulling])
 
   function initForm(project: Project) {
     const { name, type, description, enableIteration, testingSets } = project

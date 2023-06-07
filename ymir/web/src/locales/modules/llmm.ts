@@ -14,6 +14,10 @@ const llmm = {
     cn: 'Grounded-SAM镜像未添加，请联系管理员添加',
     en: 'Grounded-SAM image is required, please contact to administrator to add.',
   },
+  'llmm.image.add.tip': {
+    en: 'The default image of the LLMM Project is being pulled, you can import data or perform other operations unrelated to the image first',
+    cn: '多模态大模型默认镜像正在拉取中，您可以先导入数据或其他不涉及到镜像的操作',
+  },
 }
 
 export default llmm
