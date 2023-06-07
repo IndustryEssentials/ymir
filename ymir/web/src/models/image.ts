@@ -176,11 +176,24 @@ const ImageModel: ImageStore = {
       return LLMM.GroundedSAMImageUrl === groundedSAM?.url
     }),
     createGroundedSAMImage: createEffect(function* ({}, { put }) {
-      return yield put.resolve({
+      return yield put({
         type: 'createImage',
         payload: {
           name: 'Grounded-SAM',
           url: LLMM.GroundedSAMImageUrl,
+        },
+      })
+    }),
+    createLLMMImage: createEffect(function* ({}, { put }) {
+      const { items } = yield put.resolve({ type: 'getImages', payload: { url: LLMM.MultiModalImageUrl } })
+      if (items?.length) {
+        return
+      }
+      return yield put({
+        type: 'createImage',
+        payload: {
+          name: 'LLMM-GLIP',
+          url: LLMM.MultiModalImageUrl,
         },
       })
     }),

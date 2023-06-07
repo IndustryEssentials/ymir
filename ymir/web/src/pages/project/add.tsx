@@ -29,7 +29,7 @@ const Add: FC = () => {
   })
   const { data: created, run: createProject } = useRequest<Project, [CreateParams]>('project/createProject')
   const { data: updated, run: updateProject } = useRequest<Project, [UpdateParams]>('project/updateProject')
-  const { data: pulling, run: addMultiModalImage } = useRequest<Task, [Image]>('image/createImage', {
+  const { data: pulling, run: createLLMMImage } = useRequest<Task>('image/createLLMMImage', {
     loading: false,
   })
 
@@ -50,10 +50,7 @@ const Add: FC = () => {
       history.push(`/home/project/${pid}/dataset`)
     }
     if (created && isMultiModal(created.type)) {
-      addMultiModalImage({
-        name: 'LLMM-GLIP',
-        url: LLMM.MultiModalImageUrl,
-      })
+      createLLMMImage()
     }
   }, [created, updated])
 
