@@ -14,6 +14,7 @@ import { Dataset, Project, Task } from '@/constants'
 import { Image } from '@/services/typings/image.d'
 import { CreateParams, UpdateParams } from '@/services/project'
 import LLMM from '@/constants/llmm'
+import { isMultiModal } from '@/constants/objectType'
 
 const { useForm } = Form
 
@@ -48,7 +49,7 @@ const Add: FC = () => {
       message.success(t(`project.${isEdit ? 'update' : 'create'}.success`))
       history.push(`/home/project/${pid}/dataset`)
     }
-    if (created) {
+    if (created && isMultiModal(created.type)) {
       addMultiModalImage({
         name: 'LLMM-GLIP',
         url: LLMM.MultiModalImageUrl,
