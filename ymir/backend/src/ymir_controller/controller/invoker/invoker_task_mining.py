@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 from common_utils.labels import UserLabels
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import revs, utils
+from controller.utils.tasks_util import gen_executor_config_find_gpus
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2, backend_pb2_utils
 
@@ -23,7 +24,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         # store executor config in task_0 work_dir
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
-        gpu_lock_ret = self.gen_executor_config_lock_gpus(
+        gpu_lock_ret = gen_executor_config_find_gpus(
             req_executor_config=request.docker_image_config,
             class_names=[],
             object_type=request.object_type,
