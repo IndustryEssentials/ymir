@@ -184,13 +184,9 @@ def handle_obj_anno_class(obj_anno: mirpb.ObjectAnnotation, cls_mgr: class_ids.U
 
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str,
                        prediction_dir_path: Optional[str], groundtruth_dir_path: Optional[str],
-                       mir_metadatas: mirpb.MirMetadatas, unknown_types_strategy: UnknownTypesStrategy,
+                       file_name_to_asset_ids: Dict[str, str], unknown_types_strategy: UnknownTypesStrategy,
                        anno_type: "mirpb.ObjectType.V", anno_fmt: "mirpb.AnnoFormat.V", phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
-    file_name_to_asset_ids: Dict[str, str] = {
-        attr.origin_filename: asset_id
-        for asset_id, attr in mir_metadatas.attributes.items()
-    }
 
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)

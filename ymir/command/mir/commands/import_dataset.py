@@ -109,7 +109,7 @@ class CmdImport(base.BaseCommand):
                                                              label_storage_file=label_storage_file,
                                                              prediction_dir_path=pred_abs,
                                                              groundtruth_dir_path=gt_abs,
-                                                             mir_metadatas=mir_metadatas,
+                                                             file_name_to_asset_ids=file_name_to_asset_ids,
                                                              unknown_types_strategy=unknown_types_strategy,
                                                              anno_type=obj_type,
                                                              anno_fmt=anno_fmt,

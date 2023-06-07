@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from PIL import Image, ImageFile, UnidentifiedImageError
-from typing import Dict
+from typing import Dict, Set
 from mir.tools import mir_storage
 
 from mir.tools.code import MirCode
@@ -65,6 +65,7 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
     zero_size_count = 0
 
     sha1s_count = len(file_name_to_asset_ids)
+    exclude_file_names: Set[str] = set()
     for idx, (file_name, asset_id) in enumerate(file_name_to_asset_ids.items()):
         metadata_attributes = mirpb.MetadataAttributes()
         metadata_attributes.timestamp.CopyFrom(timestamp)
@@ -75,9 +76,11 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
         _fill_type_shape_size_for_asset(hashed_asset_path, metadata_attributes)
         if metadata_attributes.asset_type == mirpb.AssetTypeUnknown:
             unknown_format_count += 1
+            exclude_file_names.add(file_name)
             continue
         if metadata_attributes.width <= 0 or metadata_attributes.height <= 0:
             zero_size_count += 1
+            exclude_file_names.add(file_name)
             continue
 
         metadata_attributes.origin_filename = file_name
@@ -85,6 +88,9 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
 
         if idx > 0 and idx % 5000 == 0:
             PhaseLoggerCenter.update_phase(phase=phase, local_percent=(idx / sha1s_count))
+
+    for file_name in exclude_file_names:
+        del file_name_to_asset_ids[file_name]
 
     if unknown_format_count > 0:
         logging.info(f"[import error]: Count of unknown format assets: {unknown_format_count}")
