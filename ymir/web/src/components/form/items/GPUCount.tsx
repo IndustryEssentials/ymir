@@ -21,7 +21,10 @@ const GPUCount: FC<Props> = ({ form, min = 0, name = 'gpu_count', tip }) => {
     sysInfo && setGpuCount(sysInfo.gpu_count)
   }, [sysInfo])
 
-  const validator = () => (Number(form.getFieldValue(name)) <= gpuCount ? Promise.resolve() : Promise.reject())
+  const validator = () => {
+    const input = Number(form.getFieldValue(name))
+    return input >= min && input <= gpuCount ? Promise.resolve() : Promise.reject()
+  }
 
   return (
     <Form.Item tooltip={tip} label={t('task.gpu.count')}>
@@ -32,7 +35,7 @@ const GPUCount: FC<Props> = ({ form, min = 0, name = 'gpu_count', tip }) => {
         rules={[
           {
             validator,
-            message: t('task.gpu.tip', { count: gpuCount }),
+            message: t('task.gpu.invalid', { min, max: gpuCount }),
           },
         ]}
       >
