@@ -64,10 +64,11 @@ const AddList: FC<Omit<TableProps<ImportingItem>, 'columns' | 'dataSource'>> = (
         ) : (
           <StrategyRadio
             type={item.type}
-            onChange={({ target }) => {
+            value={item.strategy}
+            onChange={(value) => {
               updateImportingItem({
                 ...item,
-                strategy: target.value,
+                strategy: value,
               })
             }}
           />
