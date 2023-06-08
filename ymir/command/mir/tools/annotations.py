@@ -171,10 +171,6 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
                        anno_type: "mirpb.ObjectType.V", anno_fmt: "mirpb.AnnoFormat.V", phase: str) -> Set[str]:
     accu_new_class_names: Set[str] = set()
 
-    # read type_id_name_dict and type_name_id_dict
-    class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-    logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
-
     if prediction_dir_path:
         logging.info(f"wrting prediction in {prediction_dir_path}")
 
@@ -183,12 +179,12 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=prediction_dir_path,
-            class_type_manager=class_type_manager,
+            label_storage_file=label_storage_file,
             unknown_types_strategy=unknown_types_strategy,
             accu_new_class_names=accu_new_class_names,
             image_annotations=mir_annotation.prediction,
         )
-        _import_annotation_meta(class_type_manager=class_type_manager,
+        _import_annotation_meta(label_storage_file=label_storage_file,
                                 annotations_dir_path=prediction_dir_path,
                                 task_annotations=mir_annotation.prediction)
     else:
@@ -203,7 +199,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=groundtruth_dir_path,
-            class_type_manager=class_type_manager,
+            label_storage_file=label_storage_file,
             unknown_types_strategy=unknown_types_strategy,
             accu_new_class_names=accu_new_class_names,
             image_annotations=mir_annotation.ground_truth,
@@ -235,7 +231,7 @@ def _iter_voc_annos_dict(file_name_to_asset_ids: Dict[str, str],
 
 
 def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
+                                annotations_dir_path: str, label_storage_file: str,
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Set[str],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
     if unknown_types_strategy == UnknownTypesStrategy.KEEP:
@@ -250,6 +246,7 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
             # when there's only ONE object node in xml, it will be parsed to a dict, not a list
             objects = [objects]
         class_names.update([obj['name'] for obj in objects if obj.get('name')])
+    class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     _, unknown_class_names = class_type_manager.id_for_names(list(class_names))
     if len(unknown_class_names) > 0:
         if unknown_types_strategy == UnknownTypesStrategy.STOP:
@@ -309,7 +306,7 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
 def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
                                  mir_annotation: mirpb.MirAnnotations,
                                  annotations_dir_path: str,
-                                 class_type_manager: class_ids.UserLabels,
+                                 label_storage_file: str,
                                  unknown_types_strategy: UnknownTypesStrategy,
                                  image_annotations: mirpb.SingleTaskAnnotations,
                                  accu_new_class_names: Set[str] = set(),
@@ -363,6 +360,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
         cat['id']: cat['name']
         for cat in categories_list if cat['id'] not in duplicated_category_ids
     }
+    class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     _, unknown_class_names = class_type_manager.id_for_names(list(category_id_to_names.values()))
     if len(unknown_class_names) > 0:
         if unknown_types_strategy == UnknownTypesStrategy.STOP:
@@ -424,13 +422,13 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str],
 
 
 def _import_no_annotations(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                           annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
+                           annotations_dir_path: str, label_storage_file: str,
                            unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Set[str],
                            image_annotations: mirpb.SingleTaskAnnotations) -> None:
     logging.info("user choose to import no annotations")
 
 
-def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
+def _import_annotation_meta(label_storage_file: str, annotations_dir_path: str,
                             task_annotations: mirpb.SingleTaskAnnotations) -> None:
     annotation_meta_path = os.path.join(annotations_dir_path, 'meta.yaml')
     if not os.path.isfile(annotation_meta_path):
@@ -450,6 +448,7 @@ def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotation
         ParseDict(annotation_meta_dict['model'], task_annotations.model)
 
     # eval_class_ids
+    class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     eval_class_names = annotation_meta_dict.get('eval_class_names') or task_annotations.model.class_names
     task_annotations.eval_class_ids[:] = set(
         class_type_manager.id_for_names(list(eval_class_names), drop_unknown_names=True)[0])

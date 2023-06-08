@@ -252,8 +252,6 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
         prediction = mir_annotations.prediction
         prediction.Clear()
 
-        cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-
         infer_result_prediction = mirpb.SingleTaskAnnotations()
         with open(os.path.join(export_out, 'prediction.mir'), 'rb') as f:
             infer_result_prediction.ParseFromString(f.read())
@@ -271,6 +269,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
                     infer_result_prediction.image_annotations[file_name])
 
         # pred type and meta
+        cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
         prediction.eval_class_ids[:] = set(
             cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
         prediction.executor_config = json.dumps(model_storage.executor_config)

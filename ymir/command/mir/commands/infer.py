@@ -161,12 +161,11 @@ class CmdInfer(base.BaseCommand):
 
         if run_infer:
             # result files -> task_annotations and save
-            class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
             task_annotations = mirpb.SingleTaskAnnotations()
             task_annotations.type = model_storage.object_type  # type: ignore
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET else _process_infer_coco_result)
-            process_result_func(task_annotations, work_dir_out, class_id_mgr, unknown_types_strategy)
+            process_result_func(task_annotations, work_dir_out, label_storage_file, unknown_types_strategy)
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
                 m_f.write(task_annotations.SerializeToString())
@@ -225,7 +224,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
 
 
 def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
-                                 class_id_mgr: class_ids.UserLabels,
+                                 label_storage_file: str,
                                  unknown_types_strategy: UnknownTypesStrategy) -> None:
     infer_result_file = os.path.join(work_dir_out, 'infer-result.json')
     with open(infer_result_file, 'r') as f:
@@ -238,6 +237,7 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
 
     unknown_class_id_annos_cnt = 0
     no_score_annos_cnt = 0
+    class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     for asset_name, annotations_dict in detections.items():
         annotations = annotations_dict.get('boxes') or annotations_dict.get('annotations')
         if not isinstance(annotations, list):
@@ -271,7 +271,7 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
 
 
 def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
-                               class_id_mgr: class_ids.UserLabels,
+                               label_storage_file: str,
                                unknown_types_strategy: UnknownTypesStrategy) -> None:
     coco_json_filename = 'infer-result.json'
 
@@ -286,7 +286,7 @@ def _process_infer_coco_result(task_annotations: mirpb.SingleTaskAnnotations, wo
     import_annotations_coco_json(file_name_to_asset_ids=file_name_to_asset_ids,
                                  mir_annotation=mirpb.MirAnnotations(),
                                  annotations_dir_path=work_dir_out,
-                                 class_type_manager=class_id_mgr,
+                                 label_storage_file=label_storage_file,
                                  unknown_types_strategy=unknown_types_strategy,
                                  image_annotations=task_annotations,
                                  coco_json_filename=coco_json_filename)
