@@ -544,6 +544,18 @@ const DatasetModal: DatasetStore = {
       return deepClone(initState)
     },
   },
+  subscriptions: {
+    clearImporting({ history, dispatch }) {
+      return history.listen((location) => {
+        if (!/\/project\/home\/project\/\d+\/dataset\/add/.test(location.pathname)) {
+          dispatch({
+            type: 'updateImportingList',
+            payload: [],
+          })
+        }
+      })
+    },
+  },
 }
 
 export default DatasetModal
