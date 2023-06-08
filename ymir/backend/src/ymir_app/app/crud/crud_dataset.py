@@ -109,7 +109,11 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         return dataset
 
     def create_with_version(self, db: Session, obj_in: DatasetCreate) -> Dataset:
-        stmt = select(func.max(Dataset.version_num)).where(Dataset.dataset_group_id == obj_in.dataset_group_id).with_for_update()
+        stmt = (
+            select(func.max(Dataset.version_num))
+            .where(Dataset.dataset_group_id == obj_in.dataset_group_id)
+            .with_for_update()
+        )
         max_version = db.execute(stmt).scalar() or 0
         version_num = int(max_version) + 1
 

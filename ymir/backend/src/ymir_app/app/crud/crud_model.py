@@ -76,7 +76,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         return query.offset(offset).limit(limit).all(), query.count()
 
     def create_with_version(self, db: Session, obj_in: ModelCreate) -> Model:
-        stmt = select(func.max(Model.version_num)).where(Model.model_group_id == obj_in.model_group_id).with_for_update()
+        stmt = (
+            select(func.max(Model.version_num)).where(Model.model_group_id == obj_in.model_group_id).with_for_update()
+        )
         max_version = db.execute(stmt).scalar() or 0
         version_num = int(max_version) + 1
 
