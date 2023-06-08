@@ -20,10 +20,14 @@ const Public: FC<Props> = ({ selected }) => {
     loading: false,
   })
   const { run: addImportingList } = useRequest<null, [ImportingItem[]]>('dataset/addImportingList', { loading: false })
+  const { run: setEditing } = useRequest<null, [boolean]>('dataset/updateImportingEditState', { loading: false })
 
   useEffect(() => {
     getPublicDatasets()
   }, [])
+
+  useEffect(() => setEditing(!!items.length), [items])
+
   return (
     <Form
       form={form}

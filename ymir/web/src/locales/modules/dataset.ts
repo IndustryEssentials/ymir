@@ -126,6 +126,14 @@ const dataset = {
     en: `1. Sample: https://www.examples.com/dataset.zip{br} 
       2. {structure}`,
   },
+  'dataset.add.editing.tip': {
+    cn: '有未添加到导入列表的数据集，是否只添加导入列表中的数据集？',
+    en: 'There are datasets that have not been added to the import list. Do you want to only add the datasets that are in the import list?',
+  },
+  'dataset.add.leave.page.prompt': {
+    cn: '数据集正在添加中，离开页面会导致未添加完成的数据丢失，确认要离开？',
+    en: 'The dataset is currently being added. If you leave the page, the incomplete dataset may be lost. Are you sure you want to leave?',
+  },
   'dataset.copy.form.dataset': { cn: '原数据集', en: 'Original Dataset' },
   'dataset.copy.form.desc.label': { cn: '备注', en: 'Description' },
   'dataset.copy.success.msg': { cn: '数据集正在复制，请稍等', en: 'Dataset copying' },

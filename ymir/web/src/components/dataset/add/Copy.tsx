@@ -15,8 +15,12 @@ const Copy: FC = () => {
   const [items, setItems] = useState<ImportingItem[]>([])
   const { max } = useSelector(({ dataset }) => dataset.importing)
   const { run: addImportingList } = useRequest('dataset/addImportingList', { loading: false })
+  const { run: setEditing } = useRequest<null, [boolean]>('dataset/updateImportingEditState', { loading: false })
 
-  useEffect(() => {}, [])
+  useEffect(() => {
+    setEditing(!!items.length)
+  }, [items])
+
   return (
     <Form
       form={form}

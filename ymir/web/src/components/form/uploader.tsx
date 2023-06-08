@@ -54,13 +54,15 @@ const Uploader: FC<Props> = ({
   }, [value])
 
   function onFileChange({ file, fileList }: { file: UFile; fileList: UFile[] }) {
-    const fileListWithUrl = fileList.slice(-maxCount).map((file) => ({
-      ...file,
-      url: file?.response?.result,
-    }))
-    setFiles(fileListWithUrl)
+    if (file.status !== 'uploading') {
+      const fileListWithUrl = fileList.slice(-maxCount).map((file) => ({
+        ...file,
+        url: file?.response?.result,
+      }))
+      setFiles(fileListWithUrl)
 
-    file.response?.result && onChange({ file, fileList: fileListWithUrl })
+      onChange({ file, fileList: fileListWithUrl })
+    }
   }
 
   function beforeUpload(file: UFile) {

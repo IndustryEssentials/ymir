@@ -1,9 +1,10 @@
 import { Button, Col, Form, FormItemProps, Input, message, Row } from 'antd'
-import { FC, ReactNode } from 'react'
+import { FC, ReactNode, useEffect } from 'react'
 import t from '@/utils/t'
 import { AddIcon, DeleteIcon } from '@/components/common/Icons'
 import { formLayout } from '@/config/antd'
 import SubmitBtn from './SubmitBtn'
+import useRequest from '@/hooks/useRequest'
 
 type Props = {
   name: string
@@ -11,10 +12,16 @@ type Props = {
   tip?: ReactNode
   confirm: (items: string[]) => void
   max?: number
+  change?: (editing?: boolean) => void
 }
 const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
   const [form] = Form.useForm()
   const items = Form.useWatch(name, form)
+  const { run: setEditing } = useRequest<null, [boolean]>('dataset/updateImportingEditState', { loading: false })
+
+  useEffect(() => {
+    setEditing(!(items.length === 1 && items[0].trim() === ''))
+  }, [items])
 
   return (
     <Form

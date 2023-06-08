@@ -477,6 +477,14 @@ const DatasetModal: DatasetStore = {
     showFormatDetail: createEffect<boolean>(function* ({ payload: visible }, { put, select }) {
       yield put({ type: 'UpdateImporting', payload: { formatVisible: visible } })
     }),
+    updateImportingEditState: createEffect<boolean>(function* ({ payload: editing }, { put }) {
+      yield put({
+        type: 'UpdateImporting',
+        payload: {
+          editing,
+        },
+      })
+    }),
     checkDuplicateNames: createEffect<{ pid: number; names: string[] }>(function* ({ payload: { pid, names } }, { put, call }) {
       const { code, result } = yield call(checkDuplicateNames, pid, names)
       if (code === 0) {
