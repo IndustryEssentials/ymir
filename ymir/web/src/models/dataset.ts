@@ -177,18 +177,12 @@ const DatasetModal: DatasetStore = {
       })
     }),
     queryAllDatasets: createEffect<{ pid: number; force?: boolean }>(function* ({ payload }, { select, call, put }) {
-      const loading = yield select(({ loading }) => {
-        return loading.effects['dataset/queryDatasets']
-      })
       const { pid, force } = payload
       if (!force) {
         const dssCache: Dataset[] = yield select((state) => state.dataset.allDatasets[pid])
         if (dssCache.length) {
           return dssCache
         }
-      }
-      if (loading) {
-        return
       }
       const dss = yield put.resolve({ type: 'queryDatasets', payload: { pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
