@@ -31,9 +31,6 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
   const [maA, setMaA] = useState<MaskType[]>([])
 
   useEffect(() => {
-    if (!annotations?.length) {
-      return
-    }
     setBbA(filterAts(AnnotationType.BoundingBox) as BoundingBoxType[])
     setPgA(filterAts(AnnotationType.Polygon) as PolygonType[])
     setMaA(filterAts(AnnotationType.Mask) as MaskType[])
