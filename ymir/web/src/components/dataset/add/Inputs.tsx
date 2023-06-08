@@ -23,7 +23,7 @@ const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
       {...formLayout}
       onFinish={(values) => {
         if (max > 0) {
-          confirm((values[name] || '').trim())
+          confirm(values[name])
           form.resetFields()
         } else {
           message.warning('Exceed Maximium Count')

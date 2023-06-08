@@ -90,6 +90,7 @@ const dataset = {
   'dataset.add.label_strategy.add': { cn: '添加所有标注', en: 'Add Classes' },
   'dataset.add.form.internal.label': { cn: '数据集', en: 'Dataset' },
   'dataset.add.form.internal.required': { cn: '请选择公共数据集', en: 'Please select public dataset' },
+  'dataset.add.form.internal.max': { cn: '选择的数据集不能超过{max}个', en: 'Selected datasets > {max}' },
   'dataset.add.form.internal.placeholder': { cn: '请选择一个公共数据集', en: 'Select A Public Dataset' },
   'dataset.add.form.net.label': { cn: 'URL地址', en: 'URL' },
   'dataset.add.form.net.placeholder': { cn: '请输入压缩文件的url地址', en: 'Please input a url of zip file' },

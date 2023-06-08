@@ -29,7 +29,7 @@ const Copy: FC = () => {
         console.log('finish failed: ', err)
       }}
     >
-      <Form.Item required label={t('dataset.add.form.copy.label')} name="dataset" rules={[{ required: true }, { max }]}>
+      <Form.Item required label={t('dataset.add.form.copy.label')} name="dataset" rules={[{ required: true }]}>
         <ProjectDatasetSelect
           onChange={(_, option) => {
             if (Array.isArray(option)) {
