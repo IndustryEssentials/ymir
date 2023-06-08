@@ -79,7 +79,7 @@ const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
       <Breadcrumb className="breadcrumbContent" separator="/">
         {crumbItems.map((crumb, index) => {
           const last = index === crumbItems.length - 1
-          const link = (isProjectDetail(crumb) ? datasetList?.path : crumb.path)?.replace(/:([^\/]+)/g, (str, key: number) => {
+          const link = (isProjectDetail(crumb) && params.id ? datasetList?.path : crumb.path)?.replace(/:([^\/]+)/g, (str, key: number) => {
             return params[key] ? params[key] : ''
           })
           const label = getLabel(crumb, titles[index])
