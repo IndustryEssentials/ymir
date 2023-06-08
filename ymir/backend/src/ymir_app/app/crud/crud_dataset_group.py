@@ -5,7 +5,6 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.libs.common import pagination as paginate
 from app.models import DatasetGroup
 from app.schemas.dataset_group import DatasetGroupCreate, DatasetGroupUpdate
 from app.schemas import CommonPaginationParams
@@ -44,7 +43,7 @@ class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUp
         order_by = pagination.order_by.name
         is_desc = pagination.is_desc
 
-        query = db.query(self.model)
+        query = db.query(self.model).distinct()
         query = query.filter(self.model.user_id == user_id, self.model.datasets, not_(self.model.is_deleted))
 
         if start_time and end_time:
@@ -69,10 +68,7 @@ class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUp
             order_by_column = desc(order_by_column)
         query = query.order_by(order_by_column)
 
-        # fixme
-        # SQLAlchemy do not guarantee precise count
-        items = query.all()
-        return paginate(items, offset, limit), len(items)
+        return query.offset(offset).limit(limit).all(), query.count()
 
 
 dataset_group = CRUDDatasetGroup(DatasetGroup)
