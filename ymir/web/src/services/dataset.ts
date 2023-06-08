@@ -275,3 +275,10 @@ export function getNegativeKeywords({ pid, did, keywords = [] }: YParams.Dataset
     },
   })
 }
+
+export function checkDuplicateNames(pid: number, names: string[]) {
+  return request.post('/dataset_groups/check_names', {
+    project_id: pid,
+    names,
+  })
+}

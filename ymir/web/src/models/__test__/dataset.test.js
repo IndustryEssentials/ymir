@@ -109,7 +109,7 @@ describe('models: dataset', () => {
   })
 
   it('effects: updateImportingList', () => {
-    const list = [1, 2, 34, 65]
+    const list = [{ name: 'test1 ' }, { name: 'test2' }, { name: 'test3' }, { name: 'test4' }]
     const creator = {
       type: 'updateImporting',
       payload: list,

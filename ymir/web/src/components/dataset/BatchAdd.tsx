@@ -15,7 +15,7 @@ const BatchAdd: FC = () => {
   const history = useHistory()
   const { formatVisible: visible, items } = useSelector(({ dataset }) => dataset.importing)
   const { run: showFormatDetail } = useRequest<null, [boolean]>('dataset/showFormatDetail', { loading: false })
-  const { data: results, run: batch } = useRequest<(Task | null)[], [{ pid: string }]>('task/batchAdd')
+  const { data: results, run: batch } = useRequest<(Task | null)[], [{ pid: string }]>('dataset/batchAdd')
 
   useEffect(() => {
     results && history.push(`/home/project/${id}/dataset`)
@@ -29,26 +29,16 @@ const BatchAdd: FC = () => {
     }
   }, [results])
 
+  const Btns = (
+    <Button disabled={!items.length} type="primary" size="large" onClick={() => batch({ pid: id })}>
+      {t('common.action.import')}
+    </Button>
+  )
+
   return (
-    <Card className={s.container} title={t('breadcrumbs.dataset.add')}>
-      <AddList />
+    <Card className={s.container} title={t('breadcrumbs.dataset.add')} extra={Btns}>
+      <AddList style={{ marginBottom: 20 }} />
       <AddSelector />
-      <Form>
-        <Form.Item wrapperCol={{ offset: 8 }}>
-          <Space size={20}>
-            <Form.Item name="submitBtn" noStyle>
-              <Button disabled={!items.length} type="primary" size="large" onClick={() => batch({ pid: id })}>
-                {t('common.action.import')}
-              </Button>
-            </Form.Item>
-            <Form.Item name="backBtn" noStyle>
-              <Button size="large" onClick={(e) => history.goBack()}>
-                {t('task.btn.back')}
-              </Button>
-            </Form.Item>
-          </Space>
-        </Form.Item>
-      </Form>
       <FormatDetailModal title={t('dataset.add.form.tip.format.detail')} visible={visible} onCancel={() => showFormatDetail(false)} />
     </Card>
   )

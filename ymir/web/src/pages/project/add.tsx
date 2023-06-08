@@ -10,8 +10,11 @@ import DatasetSelect from '@/components/form/datasetSelect'
 import Panel from '@/components/form/panel'
 import ProjectTypes from '@/components/project/ProjectTypes'
 import useRequest from '@/hooks/useRequest'
-import { Dataset, Project } from '@/constants'
+import { Dataset, Project, Task } from '@/constants'
+import { Image } from '@/services/typings/image.d'
 import { CreateParams, UpdateParams } from '@/services/project'
+import LLMM from '@/constants/llmm'
+import { isMultiModal } from '@/constants/objectType'
 
 const { useForm } = Form
 
@@ -26,6 +29,9 @@ const Add: FC = () => {
   })
   const { data: created, run: createProject } = useRequest<Project, [CreateParams]>('project/createProject')
   const { data: updated, run: updateProject } = useRequest<Project, [UpdateParams]>('project/updateProject')
+  const { data: pulling, run: createLLMMImage } = useRequest<Task>('image/createLLMMImage', {
+    loading: false,
+  })
 
   useEffect(() => {
     setEdit(!!pid)
@@ -40,10 +46,18 @@ const Add: FC = () => {
   useEffect(() => {
     if (created || updated) {
       const pid = created?.id || id
-      message.success(t(`project.${isEdit ? 'update' : 'create'}.success`))
+      message.success({ content: t(`project.${isEdit ? 'update' : 'create'}.success`), key: 'success' })
       history.push(`/home/project/${pid}/dataset`)
     }
+    if (created && isMultiModal(created.type)) {
+      createLLMMImage()
+    }
   }, [created, updated])
+
+  useEffect(() => {
+    console.log('pulling:', pulling)
+    pulling && message.success({ content: t('llmm.image.add.tip'), key: 'success' })
+  }, [pulling])
 
   function initForm(project: Project) {
     const { name, type, description, enableIteration, testingSets } = project

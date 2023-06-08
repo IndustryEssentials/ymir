@@ -77,6 +77,7 @@ type ImportingItem = {
   sourceName: string
   strategy?: IMPORTSTRATEGY
   classes?: string[]
+  dup?: false
 }
 
 export {

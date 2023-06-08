@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from 'react'
-import { Button } from 'antd'
+import { Button, Tooltip } from 'antd'
 import { useParams, useSelector } from 'umi'
 import t from '@/utils/t'
 import { getTypeLabel, Types } from './AddTypes'
@@ -40,8 +40,16 @@ const Tip: FC<Props> = ({ type }) => {
   useEffect(() => {
     const structureTip = t('dataset.add.form.tip.structure', {
       br: <br />,
-      pic: <img src={samplePic} />,
-      detail: <Button onClick={() => showFormatDetail(true)}>{t('dataset.add.form.tip.format.detail')}</Button>,
+      pic: (
+        <Tooltip overlayInnerStyle={{ width: 316 }} overlay={<img style={{ background: '#fff' }} src={samplePic} />}>
+          <a>{t('common.view')}</a>
+        </Tooltip>
+      ),
+      detail: (
+        <Button type="link" onClick={() => showFormatDetail(true)}>
+          {t('dataset.add.form.tip.format.detail')}
+        </Button>
+      ),
     })
     const conf = {
       ...config,

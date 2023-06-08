@@ -96,8 +96,8 @@ const dataset = {
   'dataset.add.form.path.label': { cn: '相对路径', en: 'Relative Path' },
   'dataset.add.form.tip.format.detail': { cn: '查看标注示例文件格式', en: 'View annotations sample file format' },
   'dataset.add.form.tip.structure': {
-    cn: '图片文件需放入images文件夹内，标注文件需放入gt文件夹内。gt可选。文件结构如下：{br}{pic}{br}{detail}',
-    en: 'image -> images; gt -> GT annotations; gt is optional. structure: {br}{pic}',
+    cn: '图片文件需放入images文件夹内，标注文件（{detail}）需放入gt文件夹内。gt可选。 文件结构请{pic}{br}',
+    en: 'image -> images; gt -> GT annotations ({detail}); gt is optional. structure: {pic}',
   },
   'dataset.add.form.path.tip': {
     cn: `1. 将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/Dataset2012, 输入基于ymir-sharing相对路径：Dataset2012{br}
