@@ -466,7 +466,10 @@ const DatasetModal: DatasetStore = {
       yield put({
         type: 'UpdateImporting',
         payload: {
-          items: items.map((item, index) => ({ ...item, name: item.name.trim(), index })),
+          items: items.map((item, index) => {
+            const source = typeof item.source === 'string' ? item.source.trim() : item.source
+            return { ...item, source, name: item.name.trim(), index }
+          }),
           max: updatedMax,
         },
       })
