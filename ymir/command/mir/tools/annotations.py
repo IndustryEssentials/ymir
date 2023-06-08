@@ -495,17 +495,35 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
     known_cids_mapping = {k: v for k, v in cids_mapping.items() if v >= 0}
 
     for sia in mir_annotations.prediction.image_annotations.values():
+        boxes: List[mirpb.ObjectAnnotation] = []
         for oa in sia.boxes:
-            if oa.class_id in known_cids_mapping:
-                oa.class_id = known_cids_mapping[oa.class_id]
-            else:
-                sia.boxes.remove(oa)
+            if oa.class_id not in known_cids_mapping:
+                continue
+            oa.class_id = known_cids_mapping[oa.class_id]
+            boxes.append(oa)
+        del sia.boxes[:]
+        sia.boxes.extend(boxes)
     for sia in mir_annotations.ground_truth.image_annotations.values():
+        boxes = []
         for oa in sia.boxes:
-            if oa.class_id in known_cids_mapping:
-                oa.class_id = known_cids_mapping[oa.class_id]
-            else:
-                sia.boxes.remove(oa)
+            if oa.class_id not in known_cids_mapping:
+                continue
+            oa.class_id = known_cids_mapping[oa.class_id]
+            boxes.append(oa)
+        del sia.boxes[:]
+        sia.boxes.extend(boxes)
+
+    # exclude asset_ids with empty prediction or ground truth
+    exclude_asset_ids = [
+        asset_id for asset_id, sia in mir_annotations.prediction.image_annotations.items() if len(sia.boxes) == 0
+    ]
+    for asset_id in exclude_asset_ids:
+        del mir_annotations.prediction.image_annotations[asset_id]
+    exclude_asset_ids = [
+        asset_id for asset_id, sia in mir_annotations.ground_truth.image_annotations.items() if len(sia.boxes) == 0
+    ]
+    for asset_id in exclude_asset_ids:
+        del mir_annotations.ground_truth.image_annotations[asset_id]
 
     mir_annotations.prediction.eval_class_ids[:] = [
         known_cids_mapping[cid] for cid in mir_annotations.prediction.eval_class_ids if cid in known_cids_mapping
