@@ -1,4 +1,4 @@
-import { Button, Card, Form, message, Modal, Space } from 'antd'
+import { Alert, Button, Card, Form, message, Modal, Space } from 'antd'
 import { FC, useCallback, useEffect } from 'react'
 import t from '@/utils/t'
 import AddList from './add/AddList'
@@ -48,6 +48,7 @@ const BatchAdd: FC = () => {
 
   return (
     <Card className={s.container} title={t('breadcrumbs.dataset.add')} extra={Btns}>
+      {items.length && items.some((item) => item.dup) ? <Alert type="error" message={t('dataset.add.name.duplicated')} /> : null}
       <AddList style={{ marginBottom: 20 }} />
       <AddSelector />
       <FormatDetailModal title={t('dataset.add.form.tip.format.detail')} visible={visible} onCancel={() => showFormatDetail(false)} />

@@ -92,6 +92,7 @@ const AddList: FC<Omit<TableProps<ImportingItem>, 'columns' | 'dataSource'>> = (
 
   return (
     <Table
+      title={() => <strong>{t('dataset.add.import.list.title')}</strong>}
       rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
       pagination={false}
       {...props}
