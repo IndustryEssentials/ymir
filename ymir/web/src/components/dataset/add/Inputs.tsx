@@ -20,7 +20,7 @@ const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
   const { run: setEditing } = useRequest<null, [boolean]>('dataset/updateImportingEditState', { loading: false })
 
   useEffect(() => {
-    setEditing(!(items.length === 1 && items[0].trim() === ''))
+    setEditing(!(items?.length === 1 && items[0].trim() === ''))
   }, [items])
 
   return (

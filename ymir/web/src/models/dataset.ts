@@ -458,15 +458,17 @@ const DatasetModal: DatasetStore = {
     updateImportingItem: createEffect<ImportingItem>(function* ({ payload: item }, { put, select }) {
       const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
       const updatedList = items.map((old) => (old.index === item.index ? item : old))
-      console.log('updatedList:', updatedList, item)
       yield put({ type: 'updateImportingList', payload: updatedList })
     }),
     updateImportingList: createEffect<ImportingItem[]>(function* ({ payload: items }, { put }) {
       const updatedMax = ImportingMaxCount - items.length
+      const uniqueItems = items.reduce<ImportingItem[]>((prev, curr) => {
+        return prev.some((item) => item.source === curr.source) ? prev : [...prev, curr]
+      }, [])
       yield put({
         type: 'UpdateImporting',
         payload: {
-          items: items.map((item, index) => {
+          items: uniqueItems.map((item, index) => {
             const source = typeof item.source === 'string' ? item.source.trim() : item.source
             return { ...item, source, name: item.name.trim(), index }
           }),
