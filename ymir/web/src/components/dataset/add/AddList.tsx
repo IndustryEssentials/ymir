@@ -74,7 +74,7 @@ const AddList: FC<Omit<TableProps<ImportingItem>, 'columns' | 'dataSource'>> = (
           />
         )
       },
-      width: 200,
+      width: 300,
     },
     {
       title: t('common.action'),
@@ -96,7 +96,7 @@ const AddList: FC<Omit<TableProps<ImportingItem>, 'columns' | 'dataSource'>> = (
       rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
       pagination={false}
       {...props}
-      rowKey={(item) => item.index || 0}
+      rowKey={(item) => item.source}
       dataSource={list}
       columns={columns}
     />
