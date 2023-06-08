@@ -47,7 +47,12 @@ const Public: FC<Props> = ({ selected }) => {
             required: true,
             message: t('dataset.add.form.internal.required'),
           },
-          { max },
+          {
+            validator(rule, value) {
+              return value.length <= max ? Promise.resolve() : Promise.reject()
+            },
+            message: t('dataset.add.form.internal.max', { max }),
+          },
         ]}
       >
         <Select

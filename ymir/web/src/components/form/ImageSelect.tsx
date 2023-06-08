@@ -12,6 +12,7 @@ import { List } from '@/models/typings/common.d'
 import { useSelector } from 'umi'
 import { isMultiModal, ObjectType } from '@/constants/objectType'
 import { QueryParams } from '@/services/typings/image.d'
+import LLMM from '@/constants/llmm'
 
 interface Props extends SelectProps {
   pid: number
@@ -96,6 +97,9 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       }
       if (project?.type && !isMultiModal(project?.type) && official) {
         items = withPriorityImage(items, official)
+      }
+      if (isMultiModal(project?.type) && type === TYPES.INFERENCE) {
+        items = items.filter((item) => item.url !== LLMM.GroundedSAMImageUrl)
       }
       items = items.filter((item) => options.every((opt) => opt.value !== item.id))
       const opts = generateOptions(items)

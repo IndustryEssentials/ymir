@@ -67,7 +67,7 @@ const RelateModal = forwardRef<RefProps, Props>(({ ok = () => {} }, ref) => {
   const submitLink = () => {
     linkForm.validateFields().then(() => {
       const { relations } = linkForm.getFieldsValue()
-      id && relations?.length && relate({ id, relations })
+      id && relate({ id, relations })
     })
   }
 

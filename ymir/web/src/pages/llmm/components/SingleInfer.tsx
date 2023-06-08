@@ -145,7 +145,7 @@ const SingleInfer: FC<Props> = ({}) => {
         <Form form={form} className={styles.asset_form}>
           <PromptInput />
           <GPUCount form={form} min={1} />
-          <DockerConfigForm form={form} show={true} itemProps={{ wrapperCol: { span: 24 } }} seniorConfig={seniorConfig} />
+          <DockerConfigForm form={form} show={true} itemProps={{ wrapperCol: { span: 24 } }} seniorConfig={seniorConfig} fixed />
         </Form>
         <Space>
           {virtualAsset?.url ? <UploaderButton label={t('model.verify.upload.again.label')} btnProps={{ type: 'default', ghost: false }} /> : null}

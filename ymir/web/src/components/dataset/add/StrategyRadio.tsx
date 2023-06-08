@@ -13,7 +13,7 @@ const strategies: { value: string | number; label: string }[] = [
   { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: t(`${prefix}exclude`) },
 ]
 
-const StrategyRadio: FC<Props> = ({ type, ...rest }) => {
+const StrategyRadio: FC<Props> = ({ type, value, ...rest }) => {
   const [options, setOptions] = useState<SelectProps['options']>([])
 
   useEffect(() => {
@@ -25,6 +25,6 @@ const StrategyRadio: FC<Props> = ({ type, ...rest }) => {
     }
     setOptions(opts)
   }, [type])
-  return <Select {...rest} defaultValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD} options={options} />
+  return <Select {...rest} defaultValue={value || IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD} options={options} />
 }
 export default StrategyRadio
