@@ -1,4 +1,5 @@
 import { Asset, ClassObject, Dataset, Image, Iteration, Message, Prediction, ProgressTask, Project, Task, User, Model, ImportingItem } from '@/constants'
+import { QueryParams } from '@/services/project'
 import { Socket } from 'socket.io-client'
 import { Loading } from 'umi'
 import { IdMap, List, StoreType } from './typings/common.d'
@@ -33,9 +34,10 @@ interface UserState {
 }
 
 interface ProjectState {
+  query: QueryParams
   list: List<Project>
   projects: IdMap<Project>
-  current: Project
+  current?: Project
 }
 
 interface DatasetState {
@@ -114,6 +116,7 @@ type CommonStore = StoreType<'common', CommonState>
 type IterationStore = StoreType<'iteration', IterationState>
 type UserStore = StoreType<'user', UserState>
 type KeywordStore = StoreType<'keyword', KeywordState>
+type ProjectStore = StoreType<'project', ProjectState>
 
 export {
   PredictionStore,
@@ -138,6 +141,8 @@ export {
   TaskStore,
   KeywordState,
   KeywordStore,
+  ProjectState,
+  ProjectStore,
 }
 
 export default Root

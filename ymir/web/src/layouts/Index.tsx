@@ -43,7 +43,7 @@ const BasicLayout: FC = ({ children }) => {
         </Header>
         <Layout>
           <LeftMenu></LeftMenu>
-          <Layout>
+          <Layout className="layoutContent">
             <Content
               className={commonStyles.content}
               style={{

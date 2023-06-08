@@ -1,7 +1,10 @@
 import { getProjects, getProject, delProject, createProject, updateProject, addExampleProject, checkStatus } from '@/services/project'
 import { transferProject } from '@/constants/project'
 import { deepClone } from '@/utils/object'
-import { NormalReducer } from './_utils'
+import { createEffect, createReducersByState } from './_utils'
+import { ProjectState, ProjectStore } from '.'
+import { List } from './typings/common'
+import { Project } from '@/constants'
 
 const initQuery = {
   name: '',
@@ -9,45 +12,39 @@ const initQuery = {
   offset: 0,
   limit: 20,
 }
-const initState = {
+const initState: ProjectState = {
   query: initQuery,
   list: {
     items: [],
     total: 0,
   },
   projects: {},
-  current: null,
+  current: undefined,
 }
 
-const reducers = {
-  UPDATE_LIST: NormalReducer('list'),
-  UPDATE_PROJECTS: NormalReducer('projects'),
-  UPDATE_CURRENT: NormalReducer('current'),
-}
-
-export default {
+const ProjectModel: ProjectStore = {
   namespace: 'project',
   state: deepClone(initState),
   effects: {
-    *getProjects({ payload }, { call, put }) {
+    getProjects: createEffect(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(getProjects, payload)
       if (code === 0) {
-        const projects = { items: result.items.map((project) => transferProject(project)), total: result.total }
+        const projects: List<Project> = { items: result.items.map(transferProject), total: result.total }
         yield put({
-          type: 'UPDATE_LIST',
+          type: 'UpdateList',
           payload: projects,
         })
         return projects
       }
-    },
-    *getProject({ payload }, { select, call, put }) {
+    }),
+    getProject: createEffect(function* ({ payload }, { select, call, put }) {
       const { id, force } = payload
       if (!force) {
         const cache = yield select((state) => state.project.projects)
         const cacheProject = cache[id]
         if (cacheProject) {
           yield put({
-            type: 'UPDATE_CURRENT',
+            type: 'UpdateCurrent',
             payload: cacheProject,
           })
           return cacheProject
@@ -57,91 +54,85 @@ export default {
       if (code === 0) {
         const project = transferProject(result)
         yield put({
-          type: 'UPDATE_PROJECTS',
+          type: 'UpdateProjects',
           payload: { [project.id]: project },
         })
         yield put({
-          type: 'UPDATE_CURRENT',
+          type: 'UpdateCurrent',
           payload: project,
         })
         return project
       }
-    },
-    *delProject({ payload }, { call, put }) {
+    }),
+    delProject: createEffect(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(delProject, payload)
       if (code === 0) {
         return result
       }
-    },
-    *createProject({ payload }, { call, put }) {
+    }),
+    createProject: createEffect(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(createProject, payload)
       if (code === 0) {
         const project = transferProject(result)
         yield put({
-          type: 'UPDATE_PROJECTS',
+          type: 'UpdateProjects',
           payload: { [project.id]: project },
         })
         return project
       }
-    },
-    *addExampleProject({ payload }, { call, put }) {
+    }),
+    addExampleProject: createEffect(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(addExampleProject, payload)
       if (code === 0) {
         return result
       }
-    },
-    *updateProject({ payload }, { call, put }) {
+    }),
+    updateProject: createEffect(function* ({ payload }, { call, put }) {
       const { id, ...params } = payload
       const { code, result } = yield call(updateProject, id, params)
       if (code === 0) {
         const project = transferProject(result)
         yield put({
-          type: 'UPDATE_PROJECTS',
+          type: 'UpdateProjects',
           payload: { [project.id]: project },
         })
         return project
       }
-    },
-    *updateQuery({ payload = {} }, { put, select }) {
+    }),
+    updateQuery: createEffect(function* ({ payload = {} }, { put, select }) {
       const query = yield select(({ project }) => project.query)
       yield put({
-        type: 'UPDATE_QUERY',
+        type: 'UpdateQuery',
         payload: {
           ...query,
           ...payload,
           offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
         },
       })
-    },
-    *resetQuery({}, { put }) {
+    }),
+    resetQuery: createEffect(function* ({}, { put }) {
       yield put({
-        type: 'UPDATE_QUERY',
+        type: 'UpdateQuery',
         payload: initQuery,
       })
-    },
-    *clearCache({}, { put }) {
+    }),
+    clearCache: createEffect(function* ({}, { put }) {
       yield put({ type: 'CLEAR_ALL' })
-    },
-    *checkStatus({ payload }, { call, put }) {
+    }),
+    checkStatus: createEffect(function* ({ payload }, { call, put }) {
       const pid = payload
       const { code, result } = yield call(checkStatus, pid)
       if (code === 0) {
         return result
       }
-    },
+    }),
   },
   reducers: {
-    ...reducers,
+    ...createReducersByState(initState),
     UPDATE_PREPARETRAINSET(state, { payload }) {
       return {
         ...state,
         prepareTrainSet: payload,
-      }
-    },
-    UPDATE_QUERY(state, { payload }) {
-      return {
-        ...state,
-        query: payload,
       }
     },
     CLEAR_ALL() {
@@ -149,3 +140,5 @@ export default {
     },
   },
 }
+
+export default ProjectModel

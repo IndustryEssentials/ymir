@@ -1,10 +1,7 @@
-import { stopTask, fusion, merge, filter, mine, train, label, infer, batchAdd } from '@/services/task'
+import { stopTask, fusion, merge, filter, mine, train, label, infer } from '@/services/task'
 import { createEffect, createReducersByState } from './_utils'
 import { MergeParams } from '@/services/task.d'
 import { TaskState, TaskStore } from '.'
-import { ImportingItem } from '@/constants'
-import { Types } from '@/components/dataset/add/AddTypes'
-import { IMPORTSTRATEGY } from '@/constants/dataset'
 
 const state: TaskState = {}
 
@@ -107,38 +104,6 @@ const TaskModel: TaskStore = {
             payload: { ids: [id], pid },
           })
         }
-        return result
-      }
-    }),
-    batchAdd: createEffect<{ pid: number }>(function* ({ payload: { pid } }, { call, put, select }) {
-      const items: ImportingItem[] = yield select(({ dataset }) => dataset.importing.items)
-      const params = items.map((item) => {
-        const field = {
-          [Types.LOCAL]: 'url',
-          [Types.NET]: 'url',
-          [Types.COPY]: 'dataset_id',
-          [Types.INTERNAL]: 'dataset_id',
-          [Types.PATH]: 'path',
-        }[item.type]
-        return {
-          dataset_group_name: item.name,
-          [field]: item.source,
-          strategy: item.strategy || IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD,
-        }
-      })
-      const newClasses = [...new Set(items.reduce<string[]>((prev, { classes = [] }) => [...prev, ...classes], []))]
-      if (newClasses.length) {
-        yield put.resolve({
-          type: 'keyword/updateKeywords',
-          payload: { keywords: newClasses.map((cls) => ({ name: cls })) },
-        })
-      }
-      const { code, result } = yield call(batchAdd, pid, params)
-      if (code === 0) {
-        yield put({
-          type: 'dataset/updateImportingList',
-          payload: [],
-        })
         return result
       }
     }),

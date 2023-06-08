@@ -11,7 +11,7 @@ function equalObject(obj1, obj2) {
 describe('models: project', () => {
   const product = (id) => ({ id })
   const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
-  it('reducers: UPDATE_LIST', () => {
+  it('reducers: UpdateList', () => {
     const state = {
       list: { items: [], total: 0 },
     }
@@ -19,10 +19,10 @@ describe('models: project', () => {
     const action = {
       payload: expected,
     }
-    const result = project.reducers.UPDATE_LIST(state, action)
+    const result = project.reducers.UpdateList(state, action)
     expect(result.list).toEqual(expected)
   })
-  it('reducers: UPDATE_PROJECTS', () => {
+  it('reducers: UpdateProjects', () => {
     const state = {
       projects: {},
     }
@@ -31,7 +31,7 @@ describe('models: project', () => {
     const action = {
       payload: expected,
     }
-    const result = project.reducers.UPDATE_PROJECTS(state, action)
+    const result = project.reducers.UpdateProjects(state, action)
     expect(result.projects).toEqual(expected)
   })
 

@@ -184,6 +184,19 @@ const ImageModel: ImageStore = {
         },
       })
     }),
+    createLLMMImage: createEffect(function* ({}, { put }) {
+      const { items } = yield put.resolve({ type: 'getImages', payload: { url: LLMM.MultiModalImageUrl } })
+      if (items?.length) {
+        return
+      }
+      return yield put.resolve({
+        type: 'createImage',
+        payload: {
+          name: 'LLMM-GLIP',
+          url: LLMM.MultiModalImageUrl,
+        },
+      })
+    }),
   },
   reducers: createReducersByState(state),
 }
