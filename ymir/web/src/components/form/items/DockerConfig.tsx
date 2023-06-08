@@ -25,7 +25,8 @@ const DockerConfigForm: FC<{
   show?: boolean
   name?: string
   itemProps?: FormItemProps
-}> = ({ show, form, seniorConfig, name = 'hyperparam', itemProps = { wrapperCol: { offset: 8, span: 12 } } }) => {
+  fixed?: boolean
+}> = ({ show, form, seniorConfig, name = 'hyperparam', itemProps = { wrapperCol: { offset: 8, span: 12 } }, fixed }) => {
   const [visible, setVisible] = useState(false)
   const [config, setConfig] = useState<{ [key: string]: ValueType }[]>([])
   const hyperParams: { [key: string]: string }[] = Form.useWatch('hyperparam', form)
@@ -80,12 +81,14 @@ const DockerConfigForm: FC<{
                       </Form.Item>
                     </Col>
                     <Col flex={'60px'}>
-                      <Space>
-                        {field.name === fields.length - 1 ? (
-                          <AddTwoIcon style={{ color: '#36cbcb' }} onClick={() => add()} title={t('task.train.parameter.add.label')} />
-                        ) : null}
-                        {field.name < config.length ? null : <AddDelTwoIcon onClick={() => remove(field.name)} />}
-                      </Space>
+                      {!fixed ? (
+                        <Space>
+                          {field.name === fields.length - 1 ? (
+                            <AddTwoIcon style={{ color: '#36cbcb' }} onClick={() => add()} title={t('task.train.parameter.add.label')} />
+                          ) : null}
+                          {field.name < config.length ? null : <AddDelTwoIcon onClick={() => remove(field.name)} />}
+                        </Space>
+                      ) : null}
                     </Col>
                   </Row>
                 ))}
