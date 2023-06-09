@@ -502,7 +502,7 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
             oa.class_id = known_cids_mapping[oa.class_id]
             oa.index = len(mapped_mir_annotations.prediction.image_annotations[asset_id].boxes)
             mapped_mir_annotations.prediction.image_annotations[asset_id].boxes.append(oa)
-    for sia in mir_annotations.ground_truth.image_annotations.values():
+    for asset_id, sia in mir_annotations.ground_truth.image_annotations.items():
         for oa in sia.boxes:
             if oa.class_id not in known_cids_mapping:
                 continue

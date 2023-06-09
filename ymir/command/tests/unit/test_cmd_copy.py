@@ -69,8 +69,11 @@ class TestCmdCopy(unittest.TestCase):
         mir_annotations.prediction.image_annotations['asset1'].CopyFrom(
             self.__create_image_annotations(type_ids=[3]))
         mir_annotations.prediction.eval_class_ids[:] = eval_class_ids
-        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOS
-        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOS
+        mir_annotations.prediction.type = mirpb.ObjectType.OT_DET
+
+        mir_annotations.ground_truth.image_annotations['asset1'].CopyFrom(
+            self.__create_image_annotations(type_ids=[3]))
+        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_DET
 
         model_meta = mirpb.ModelMeta(mAP=0.3)
         task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeTraining,
@@ -116,6 +119,9 @@ class TestCmdCopy(unittest.TestCase):
 
         if drop_annotations:
             self.assertEqual(0, len(mir_annotations.prediction.image_annotations))
+            self.assertEqual(mirpb.ObjectType.OT_NO_ANNOS, mir_annotations.prediction.type)
+            self.assertEqual(0, len(mir_annotations.ground_truth.image_annotations))
+            self.assertEqual(mirpb.ObjectType.OT_NO_ANNOS, mir_annotations.ground_truth.type)
         else:
             asset0_idx_ids = {
                 annotation.index: annotation.class_id
@@ -126,6 +132,8 @@ class TestCmdCopy(unittest.TestCase):
             # which is unknown to destination dataset, and to be ignored
             # so asset1 have no predictions in destination dataset, and should not appear in image_annotations
             self.assertTrue('asset1' not in mir_annotations.prediction.image_annotations)
+            self.assertEqual(mirpb.ObjectType.OT_DET, mir_annotations.prediction.type)
+            self.assertEqual(mirpb.ObjectType.OT_NO_ANNOS, mir_annotations.ground_truth.type)
         self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
         mAP = mir_tasks.tasks[dst_tid].model.mAP
