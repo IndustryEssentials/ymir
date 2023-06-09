@@ -47,6 +47,8 @@ import useRequest from '@/hooks/useRequest'
 import StrongTitle from '../table/columns/StrongTitle'
 import { IdMap, List } from '@/models/typings/common.d'
 import { ModelGroup as ModelGroupType, Model, Iteration, Project, Result } from '@/constants'
+import IterationRoundTag from '../table/IterationRoundTag'
+import IterationTypeTag from '../table/IterationTypeTag'
 
 type IsType = {
   isInitModel?: boolean
@@ -105,10 +107,9 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [groups])
 
   useEffect(() => {
-    const mds = setGroupLabelsByProject(modelList?.items, project)
-    setModels(mds)
+    setModels(modelList?.items)
     setTotal(modelList?.total || 1)
-  }, [modelList, project])
+  }, [modelList])
 
   useEffect(() => {
     Object.keys(versions).forEach((gid) => {
@@ -127,14 +128,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
       }
     })
   }, [visibles])
-
-  useEffect(() => {
-    let dvs = setVersionLabelsByProject(versions, project)
-    if (iterations?.length) {
-      dvs = setVersionLabelsByIterations(versions, iterations)
-    }
-    setModelVersions(dvs)
-  }, [versions, project, iterations])
 
   useEffect(() => {
     if (name) {
@@ -170,7 +163,7 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
       title: <StrongTitle label="model.column.name" />,
       dataIndex: 'versionName',
       className: styles[`column_name`],
-      render: (name, { id, description, projectLabel, iterationLabel }) => {
+      render: (name, { id, description }) => {
         const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
         const content = (
           <Row>
@@ -178,8 +171,8 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
               <Link to={`/home/project/${pid}/model/${id}`}>{name}</Link>
             </Col>
             <Col flex={'50px'}>
-              {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-              {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+              <IterationTypeTag project={project} id={id} model />
+              <IterationRoundTag iterations={iterations} id={id} model />
             </Col>
           </Row>
         )
@@ -250,55 +243,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
 
   function toggleVersions(id: number, force?: boolean) {
     setVisibles((old) => ({ ...old, [id]: force || (typeof old[id] !== 'undefined' && !old[id]) }))
-  }
-
-  function setVersionLabelsByIterations(versions: Models, iterations: Iteration[]) {
-    Object.keys(versions).forEach((gid) => {
-      const list = versions[gid]
-      const updatedList = list.map((item) => {
-        delete item.iterationLabel
-        return setLabelByIterations(item, iterations)
-      })
-      versions[gid] = updatedList
-    })
-    return { ...versions }
-  }
-
-  function setVersionLabelsByProject(versions: Models, project?: Project) {
-    Object.keys(versions).forEach((gid) => {
-      const list = versions[gid]
-      const updatedList = list.map((item) => {
-        delete item.projectLabel
-        return project?.model ? setLabelByProject(project?.model, 'isInitModel', item) : item
-      })
-      versions[gid] = updatedList
-    })
-    return { ...versions }
-  }
-
-  function setGroupLabelsByProject(items: ModelGroup[] = [], project?: Project) {
-    return items.map((item) => {
-      delete item.projectLabel
-      return project?.model ? setLabelByProject(project?.model, 'isInitModel', item) : item
-    })
-  }
-
-  function setLabelByProject<T extends ModelType | ModelGroup = ModelType>(id: number, label: keyof IsType, item: T, version = ''): T {
-    const maps = {
-      isInitModel: 'project.tag.model',
-    }
-    item[label] = !!id && item.id === id
-    item.projectLabel = item.projectLabel || (item[label] ? t(maps[label], { version }) : '')
-    return item
-  }
-
-  function setLabelByIterations(item: ModelType, iterations?: Iteration[]) {
-    const iteration = iterations?.find((iter) => iter.steps[iter.steps.length - 1].resultId === item.id)
-    if (iteration) {
-      item.iterationLabel = t('iteration.tag.round', iteration)
-      item.iterationRound = iteration.round
-    }
-    return item
   }
 
   function fetchVersions(id: number | string, force?: boolean) {
@@ -517,7 +461,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
               <Col flex={1} onClick={() => toggleVersions(group.id)}>
                 <span className="foldBtn">{visibles[group.id] !== false ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
                 <span className="groupName">{group.name}</span>
-                {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
               </Col>
               <Col>
                 <Space>
