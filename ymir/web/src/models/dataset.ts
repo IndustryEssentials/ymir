@@ -445,9 +445,11 @@ const DatasetModal: DatasetStore = {
     }),
     addImportingList: createEffect<ImportingItem[]>(function* ({ payload: newItems }, { put, select }) {
       const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
-      const checkDuplicateName = (newName: string, list: ImportingItem[]) => list.find(({ name }) => name === newName)
+      const checkDuplicateName = (newName: string, list: ImportingItem[], index: number) => list.slice(0, index).find(({ name }) => name === newName)
       const updatedList = [...items, ...newItems]
-      const list = updatedList.map((item) => (checkDuplicateName(item.name, updatedList) ? { ...item, name: item.name + '_' + randomNumber(3) } : item))
+      const list = updatedList.map((item, index) =>
+        checkDuplicateName(item.name, updatedList, index) ? { ...item, name: item.name + '_' + randomNumber(3) } : item,
+      )
       yield put({ type: 'updateImportingList', payload: list })
     }),
     removeImporting: createEffect<number[]>(function* ({ payload: indexs }, { put, select }) {
