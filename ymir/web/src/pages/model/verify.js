@@ -273,7 +273,7 @@ function Verify() {
                   onChange={imageChange}
                 />
               </Form.Item>
-              <GPUCount form={form} min={isMultiModal(project?.type) ? 1 : 0} />
+              {project ? <GPUCount form={form} min={isMultiModal(project.type) ? 1 : 0} /> : null}
               {isMultiModal(project?.type) ? <ObjectTypeSelector /> : null}
               {seniorConfig.length ? (
                 <Card
