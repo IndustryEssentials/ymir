@@ -39,7 +39,7 @@ const Local: FC = () => {
           max={1024}
           maxCount={max}
           onChange={({ fileList }) => {
-            console.log('fileList:', fileList)
+            setEditing(true)
             if (fileList.every(({ status }) => status !== 'uploading')) {
               const items = fileList
                 .map((file) => {
