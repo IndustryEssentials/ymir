@@ -55,7 +55,6 @@ const Add: FC = () => {
   }, [created, updated])
 
   useEffect(() => {
-    console.log('pulling:', pulling)
     pulling && message.success({ content: t('llmm.image.add.tip'), key: 'success' })
   }, [pulling])
 
