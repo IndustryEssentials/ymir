@@ -153,13 +153,13 @@ class UserLabels(LabelStorage):
                     class_ids.append(class_id)
 
         if raise_if_unknown and unknown_names:
-            raise ValueError(f"unknown class found: {unknown_names}")
+            raise ValueError(f"unknown class names: {unknown_names}")
 
         return class_ids, unknown_names
 
     def main_name_for_id(self, class_id: int) -> str:
         if class_id not in self._id_to_name:
-            raise ValueError(f"copy: unknown src class id: {class_id}")
+            raise ValueError(f"unknown class id: {class_id}")
         return self._id_to_name[class_id]
 
     def main_name_for_ids(self, class_ids: List[int]) -> List[str]:
