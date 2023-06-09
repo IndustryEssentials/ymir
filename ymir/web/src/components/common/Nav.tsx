@@ -82,7 +82,7 @@ const HeaderNav: FC<{ simple?: boolean }> = ({ simple = false }) => {
   }, [role])
 
   useEffect(() => {
-    logoutResult && history.push('/login')
+    logoutResult && (window.location.href = '/login')
   }, [logoutResult])
 
   const out = () => loginout()

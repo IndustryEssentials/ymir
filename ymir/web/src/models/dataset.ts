@@ -177,18 +177,12 @@ const DatasetModal: DatasetStore = {
       })
     }),
     queryAllDatasets: createEffect<{ pid: number; force?: boolean }>(function* ({ payload }, { select, call, put }) {
-      const loading = yield select(({ loading }) => {
-        return loading.effects['dataset/queryDatasets']
-      })
       const { pid, force } = payload
       if (!force) {
         const dssCache: Dataset[] = yield select((state) => state.dataset.allDatasets[pid])
         if (dssCache.length) {
           return dssCache
         }
-      }
-      if (loading) {
-        return
       }
       const dss = yield put.resolve({ type: 'queryDatasets', payload: { pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
@@ -458,21 +452,37 @@ const DatasetModal: DatasetStore = {
     updateImportingItem: createEffect<ImportingItem>(function* ({ payload: item }, { put, select }) {
       const { items }: DatasetState['importing'] = yield select(({ dataset }) => dataset.importing)
       const updatedList = items.map((old) => (old.index === item.index ? item : old))
-      console.log('updatedList:', updatedList, item)
       yield put({ type: 'updateImportingList', payload: updatedList })
     }),
     updateImportingList: createEffect<ImportingItem[]>(function* ({ payload: items }, { put }) {
       const updatedMax = ImportingMaxCount - items.length
+      const uniqueItems = items.reduce<ImportingItem[]>((prev, curr) => {
+        return prev.some((item) => item.source === curr.source) ? prev : [...prev, curr]
+      }, [])
       yield put({
         type: 'UpdateImporting',
         payload: {
-          items: items.map((item, index) => ({ ...item, name: item.name.trim(), index })),
+          items: uniqueItems.map((item, index) => {
+            const source = typeof item.source === 'string' ? item.source.trim() : item.source
+            return { ...item, source, name: item.name.trim(), index }
+          }),
           max: updatedMax,
         },
       })
     }),
+    clearImporting: createEffect(function* ({}, { put }) {
+      yield put({ type: 'updateImportingList', payload: [] })
+    }),
     showFormatDetail: createEffect<boolean>(function* ({ payload: visible }, { put, select }) {
       yield put({ type: 'UpdateImporting', payload: { formatVisible: visible } })
+    }),
+    updateImportingEditState: createEffect<boolean>(function* ({ payload: editing }, { put }) {
+      yield put({
+        type: 'UpdateImporting',
+        payload: {
+          editing,
+        },
+      })
     }),
     checkDuplicateNames: createEffect<{ pid: number; names: string[] }>(function* ({ payload: { pid, names } }, { put, call }) {
       const { code, result } = yield call(checkDuplicateNames, pid, names)
@@ -520,8 +530,7 @@ const DatasetModal: DatasetStore = {
       const { code, result } = yield call(batchAdd, pid, params)
       if (code === 0) {
         yield put({
-          type: 'updateImportingList',
-          payload: [],
+          type: 'clearImporting',
         })
         return result
       }

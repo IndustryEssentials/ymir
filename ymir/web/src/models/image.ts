@@ -131,6 +131,18 @@ const ImageModel: ImageStore = {
       }
       return list
     }),
+    getMiningImages: createEffect(function* ({}, { call }) {
+      const { code, result } = yield call(getImages, {
+        type: TYPES.MINING,
+        offset: 0,
+        limit: 10000,
+      })
+      if (code === 0) {
+        const { items, total } = result
+        const images: Image[] = items.map(transferImage)
+        return images
+      }
+    }),
     getOfficialImage: createEffect<boolean>(function* ({ payload: force }, { put, select }) {
       const { official } = yield select(({ image }) => image)
       if (!force && official) {

@@ -4,7 +4,7 @@ import { Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Space, Tag,
 import { useLocation, useSelector } from 'umi'
 
 import t from '@/utils/t'
-import { ObjectType, isDetection, isSemantic, isSegmentation } from '@/constants/objectType'
+import { ObjectType, isDetection, isSemantic, isSegmentation, isMultiModal } from '@/constants/objectType'
 
 import Panel from '@/components/form/panel'
 import SingleMetircView from './SingleMetircView'
@@ -216,7 +216,7 @@ const Matrics: FC<Props> = ({ prediction }) => {
           options={tabs.map((item, index) => ({
             ...item,
             label: t(`model.diagnose.medtric.tabs.${item.value}`),
-            disabled: isDetection(prediction?.type) && averageIou && index > 0,
+            disabled: ((isDetection(prediction?.type) && averageIou) || isMultiModal(prediction?.type)) && index > 0,
           }))}
           onChange={metricsChange}
         />
