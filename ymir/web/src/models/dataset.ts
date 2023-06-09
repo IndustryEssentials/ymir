@@ -470,6 +470,9 @@ const DatasetModal: DatasetStore = {
         },
       })
     }),
+    clearImporting: createEffect(function* ({}, { put }) {
+      yield put({ type: 'updateImportingList', payload: [] })
+    }),
     showFormatDetail: createEffect<boolean>(function* ({ payload: visible }, { put, select }) {
       yield put({ type: 'UpdateImporting', payload: { formatVisible: visible } })
     }),
@@ -527,8 +530,7 @@ const DatasetModal: DatasetStore = {
       const { code, result } = yield call(batchAdd, pid, params)
       if (code === 0) {
         yield put({
-          type: 'updateImportingList',
-          payload: [],
+          type: 'clearImporting',
         })
         return result
       }
@@ -538,18 +540,6 @@ const DatasetModal: DatasetStore = {
     ...reducers,
     CLEAR_ALL() {
       return deepClone(initState)
-    },
-  },
-  subscriptions: {
-    clearImporting({ history, dispatch }) {
-      return history.listen((location) => {
-        if (!/\/project\/home\/project\/\d+\/dataset\/add/.test(location.pathname)) {
-          dispatch({
-            type: 'updateImportingList',
-            payload: [],
-          })
-        }
-      })
     },
   },
 }

@@ -1,5 +1,5 @@
 import { Alert, Button, Card, Form, message, Modal, Space } from 'antd'
-import { FC, useCallback, useEffect } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import t from '@/utils/t'
 import AddList from './add/AddList'
 import AddSelector from './add/AddSelector'
@@ -15,6 +15,7 @@ const BatchAdd: FC = () => {
   const history = useHistory()
   const { formatVisible: visible, items, editing } = useSelector(({ dataset }) => dataset.importing)
   const { run: showFormatDetail } = useRequest<null, [boolean]>('dataset/showFormatDetail', { loading: false })
+  const { run: clearImporting } = useRequest('dataset/clearImporting', { loading: false })
   const { data: results, run: batch } = useRequest<(Task | null)[], [{ pid: string }]>('dataset/batchAdd')
 
   useEffect(() => {
@@ -52,7 +53,16 @@ const BatchAdd: FC = () => {
       <AddList style={{ marginBottom: 20 }} />
       <AddSelector />
       <FormatDetailModal title={t('dataset.add.form.tip.format.detail')} visible={visible} onCancel={() => showFormatDetail(false)} />
-      <Prompt when={editing || !!items.length} message={t('dataset.add.leave.page.prompt')} />
+      <Prompt
+        when={editing || !!items.length}
+        message={() => {
+          const result = window.confirm(t('dataset.add.leave.page.prompt'))
+          if (result) {
+            clearImporting()
+          }
+          return result
+        }}
+      />
     </Card>
   )
 }
