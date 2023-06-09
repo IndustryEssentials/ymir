@@ -143,7 +143,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [groups])
 
   useEffect(() => {
-    setDatasets(datasetList?.items)
+    setDatasets(datasetList?.items || [])
     setTotal(datasetList?.total || 1)
   }, [datasetList])
 

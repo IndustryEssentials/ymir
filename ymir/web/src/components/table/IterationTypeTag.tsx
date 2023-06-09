@@ -72,6 +72,6 @@ const IterationTypeTag: FC<Props> = ({ project, gid, id, model }) => {
     typesByGroup[gid] && setLabel(t(typesByGroup[gid].type, { version: typesByGroup[gid].v }))
   }, [typesByGroup, gid])
 
-  return label ? <div style={extraTag}>{label}</div> : null
+  return label ? <span style={extraTag}>{label}</span> : null
 }
 export default IterationTypeTag

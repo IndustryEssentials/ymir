@@ -107,7 +107,7 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [groups])
 
   useEffect(() => {
-    setModels(modelList?.items)
+    setModels(modelList?.items || [])
     setTotal(modelList?.total || 1)
   }, [modelList])
 
