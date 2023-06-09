@@ -500,6 +500,7 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
             if oa.class_id not in known_cids_mapping:
                 continue
             oa.class_id = known_cids_mapping[oa.class_id]
+            oa.index = len(boxes)
             boxes.append(oa)
         del sia.boxes[:]
         sia.boxes.extend(boxes)
@@ -509,6 +510,7 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
             if oa.class_id not in known_cids_mapping:
                 continue
             oa.class_id = known_cids_mapping[oa.class_id]
+            oa.index = len(boxes)
             boxes.append(oa)
         del sia.boxes[:]
         sia.boxes.extend(boxes)

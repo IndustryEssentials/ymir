@@ -89,15 +89,19 @@ class TestCmdCopy(unittest.TestCase):
 
     def __create_image_annotations(self, type_ids: List[int]) -> mirpb.SingleImageAnnotations:
         single_image_annotations = mirpb.SingleImageAnnotations()
-        for idx, type_id in enumerate(type_ids):
-            annotation = mirpb.ObjectAnnotation()
-            annotation.index = idx
-            annotation.class_id = type_id
-            single_image_annotations.boxes.append(annotation)
+        for type_id in type_ids:
+            for _ in range(3):
+                annotation = mirpb.ObjectAnnotation()
+                annotation.index = len(single_image_annotations.boxes)
+                annotation.class_id = type_id
+                single_image_annotations.boxes.append(annotation)
         return single_image_annotations
 
     # private: check results
-    def __check_results(self, dst_branch: str, dst_tid: str, ignore_unknown_types: bool, drop_annotations: bool,
+    def __check_results(self,
+                        dst_branch: str,
+                        dst_tid: str,
+                        drop_annotations: bool,
                         eval_class_ids_set: Set[int] = set()):
         [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
          _] = mir_storage_ops.MirStorageOps.load_multiple_storages(
@@ -117,7 +121,7 @@ class TestCmdCopy(unittest.TestCase):
                 annotation.index: annotation.class_id
                 for annotation in mir_annotations.prediction.image_annotations['asset0'].boxes
             }
-            self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
+            self.assertEqual({0: 2, 1: 2, 2: 2, 3: 1, 4: 1, 5: 1}, asset0_idx_ids)
             # asset1 has only one prediction with class name 'd'
             # which is unknown to destination dataset, and to be ignored
             # so asset1 have no predictions in destination dataset, and should not appear in image_annotations
@@ -145,7 +149,7 @@ class TestCmdCopy(unittest.TestCase):
 
         # check result
         self.assertEqual(MirCode.RC_OK, return_code)
-        self.__check_results(dst_branch='b', dst_tid='t1', ignore_unknown_types=True, drop_annotations=False)
+        self.__check_results(dst_branch='b', dst_tid='t1', drop_annotations=False)
 
         # case 1
         fake_args = type('', (), {})()
@@ -163,7 +167,7 @@ class TestCmdCopy(unittest.TestCase):
 
         # check result
         self.assertEqual(MirCode.RC_OK, return_code)
-        self.__check_results(dst_branch='b', dst_tid='t2', ignore_unknown_types=True, drop_annotations=True)
+        self.__check_results(dst_branch='b', dst_tid='t2', drop_annotations=True)
 
         # run cmd: abnormal cases
         fake_args = type('', (), {})()
@@ -209,5 +213,5 @@ class TestCmdCopy(unittest.TestCase):
         cmd_copy = copy.CmdCopy(fake_args)
         return_code = cmd_copy.run()
         self.assertEqual(MirCode.RC_OK, return_code)
-        self.__check_results(dst_branch='b', dst_tid='t1', ignore_unknown_types=True, drop_annotations=False,
+        self.__check_results(dst_branch='b', dst_tid='t1', drop_annotations=False,
                              eval_class_ids_set={0, 2})
