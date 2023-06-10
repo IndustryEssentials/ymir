@@ -242,14 +242,14 @@ const task = {
   'task.label.bottomtip': { cn: '前往{link}标注', en: 'Go to {link}' },
   'task.label.bottomtip.link.label': { cn: '标注平台', en: 'Label Platform' },
   'task.btn.back': { cn: '返回', en: 'Back' },
-  'task.gpu.count': { cn: '空闲GPU', en: 'Idle GPUs' },
-  'task.train.gpu.invalid': {
+  'task.gpu.count': { cn: 'GPU数量', en: 'GPU Count' },
+  'task.gpu.invalid': {
     cn: 'GPU个数必须在{min}-{max}之间',
     en: 'GPU Count must between {min} - {max}',
   },
   'task.gpu.tip': {
-    cn: '当前空闲GPU为 {count}',
-    en: 'Valid Idle GPUs: {count}',
+    cn: '空闲GPU数量为 {count}',
+    en: 'Idle GPUs: {count}',
   },
   'task.detail.label.go.platform': {
     cn: '跳转到标注平台>>',

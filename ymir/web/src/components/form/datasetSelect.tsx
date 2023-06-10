@@ -47,8 +47,6 @@ const DatasetSelect: FC<Props> = ({
     debounceWait: 300,
     loading: false,
     cacheKey: 'datasetSelect',
-    refreshDeps: [pid],
-    ready: !!pid,
     onSuccess: () => {
       setVal(value)
     },
@@ -62,6 +60,7 @@ const DatasetSelect: FC<Props> = ({
   }, [pid])
 
   useEffect(() => {
+    console.log('datasets:', datasets)
     onReady(datasets || [])
   }, [datasets])
 

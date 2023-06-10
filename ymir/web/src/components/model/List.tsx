@@ -293,12 +293,7 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
   }
 
   function setLabelByIterations(item: ModelType, iterations?: Iteration[]) {
-    const iteration = iterations?.find((iter) =>
-      iter.steps
-        .map(({ resultId }) => resultId)
-        .filter((id) => id)
-        .includes(item.id),
-    )
+    const iteration = iterations?.find((iter) => iter.steps[iter.steps.length - 1].resultId === item.id)
     if (iteration) {
       item.iterationLabel = t('iteration.tag.round', iteration)
       item.iterationRound = iteration.round
@@ -422,7 +417,7 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
     hideRef.current?.hide([version])
   }
 
-  const hideOk = (result: Result[]) => {
+  const hideOk = (result: { groupId: number }[]) => {
     result.forEach((item) => fetchVersions(item.groupId, true))
     getData()
     setSelectedVersions({ selected: [], versions: {} })

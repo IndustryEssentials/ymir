@@ -25,6 +25,7 @@ import DockerConfigForm from '@/components/form/items/DockerConfig'
 import Desc from '@/components/form/desc'
 import Dataset from '@/components/form/option/Dataset'
 import ObjectTypeSelector, { Types } from '@/components/form/InferObjectTypeSelector'
+import { classes2Prompt } from '@/pages/llmm/components/_utils'
 
 import commonStyles from '../common.less'
 import styles from './index.less'
@@ -144,11 +145,11 @@ function Inference({ ...func }) {
   }
 
   const onFinish = async (values) => {
-    const prompt = values.objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : selectedModel.keywords
+    const classes = values.objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : selectedModel.keywords
     const config = {
       ...values.hyperparam?.reduce((prev, { key, value }) => (key && value ? { ...prev, [key]: value } : prev), {}),
       ...(values.live || {}),
-      prompt: prompt.join(';'),
+      prompt: classes2Prompt(classes, selectedModel.keywords),
     }
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0

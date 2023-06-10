@@ -34,6 +34,7 @@ export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[]
   if (!ctx || !annotations.length) {
     return
   }
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   const { color } = annotations[0]
   ctx.fillStyle = getColor(color).hexa()
   ctx.strokeStyle = getColor('gray').hexa()

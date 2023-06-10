@@ -60,7 +60,7 @@ const Uploader: FC<Props> = ({
     }))
     setFiles(fileListWithUrl)
 
-    file.response?.result && onChange({ file, fileList: fileListWithUrl })
+    file.status !== 'uploading' && onChange({ file, fileList: fileListWithUrl })
   }
 
   function beforeUpload(file: UFile) {

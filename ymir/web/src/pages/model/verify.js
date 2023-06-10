@@ -18,6 +18,7 @@ import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
 import ImageSelect from '@/components/form/ImageSelect'
 import ObjectTypeSelector, { Types } from '@/components/form/InferObjectTypeSelector'
 import GPUCount from '@/components/form/items/GPUCount'
+import { classes2Prompt } from '@/pages/llmm/components/_utils'
 
 import styles from './verify.less'
 import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/Icons'
@@ -157,8 +158,8 @@ function Verify() {
     const objectType = form.getFieldValue('objectType')
     const gpuCount = form.getFieldValue('gpu_count')
     config.gpu_count = gpuCount
-    const prompt = objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : model.keywords
-    config.prompt = prompt.join(';')
+    const classes = objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : model.keywords
+    config.prompt = classes2Prompt(classes, model.keywords)
     // reinit annotations
     setAnnotations([])
     verify({ projectId: pid, modelStage: [id, model.recommendStage], urls: [virtualAsset.url], image, config })
