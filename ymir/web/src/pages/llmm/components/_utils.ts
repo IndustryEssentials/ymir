@@ -7,4 +7,12 @@ const transHyperParams = (params: { key: string; value: any }[], prompt: string 
   return config
 }
 
-export { transHyperParams }
+const classes2Prompt = (classes: string[], preClasses: string[] = []) => {
+  const subs = [...new Set([...preClasses, ...classes])].reduce<string[]>((prev, curr) => {
+    const target = [...prev, curr]
+    return target.join('').length > 256 ? prev : target
+  }, [])
+  return subs.join(';')
+}
+
+export { transHyperParams, classes2Prompt }
