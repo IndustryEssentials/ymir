@@ -15,8 +15,12 @@ const Copy: FC = () => {
   const [items, setItems] = useState<ImportingItem[]>([])
   const { max } = useSelector(({ dataset }) => dataset.importing)
   const { run: addImportingList } = useRequest('dataset/addImportingList', { loading: false })
+  const { run: setEditing } = useRequest<null, [boolean]>('dataset/updateImportingEditState', { loading: false })
 
-  useEffect(() => {}, [])
+  useEffect(() => {
+    setEditing(!!items.length)
+  }, [items])
+
   return (
     <Form
       form={form}
@@ -29,7 +33,20 @@ const Copy: FC = () => {
         console.log('finish failed: ', err)
       }}
     >
-      <Form.Item required label={t('dataset.add.form.copy.label')} name="dataset" rules={[{ required: true }]}>
+      <Form.Item
+        required
+        label={t('dataset.add.form.copy.label')}
+        name="dataset"
+        rules={[
+          { required: true },
+          {
+            validator(rule, value) {
+              return max > 0 ? Promise.resolve() : Promise.reject()
+            },
+            message: t('dataset.add.form.internal.max', { max }),
+          },
+        ]}
+      >
         <ProjectDatasetSelect
           onChange={(_, option) => {
             if (Array.isArray(option)) {

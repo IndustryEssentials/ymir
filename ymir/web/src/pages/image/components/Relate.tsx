@@ -22,7 +22,7 @@ const RelateModal = forwardRef<RefProps, Props>(({ ok = () => {} }, ref) => {
   const [imageName, setImageName] = useState('')
   const [linkForm] = useForm()
   const { data: relateResult, run: relate } = useRequest<Image, [{ id: number; relations: number[] }]>('image/relateImage')
-  const { data: { items: images } = {}, run: getMiningImages } = useRequest<List<Image>, [QueryParams]>('image/getImages', { loading: false })
+  const { data: images = [], run: getMiningImages } = useRequest<Image[]>('image/getMiningImages', { loading: false })
 
   useEffect(
     () =>
@@ -33,12 +33,7 @@ const RelateModal = forwardRef<RefProps, Props>(({ ok = () => {} }, ref) => {
   )
 
   useEffect(() => {
-    visible &&
-      getMiningImages({
-        type: TYPES.MINING,
-        offset: 0,
-        limit: 10000,
-      })
+    visible && getMiningImages()
   }, [visible])
 
   useEffect(() => {

@@ -72,7 +72,7 @@ const dataset = {
   },
   'dataset.add.form.name.required': { cn: '数据集名称为必填项', en: 'Dataset Name Required' },
   'dataset.add.form.name.placeholder': { cn: '请输入数据集名称，支持2-80个字符', en: 'Please input dataset name, 2 - 80 characters' },
-  'dataset.add.to.list': { cn: '添加到导入列表', en: 'Add to Importing List' },
+  'dataset.add.to.list': { cn: '添加到导入列表', en: 'Add to Import List' },
   'dataset.add.form.type.label': { cn: '添加类型', en: 'Type' },
   'dataset.add.form.source.label': { cn: 'URL/路径/数据集', en: 'URL/Path/Dataset' },
   'dataset.add.form.label.label': { cn: '标注', en: 'Labeling Status' },
@@ -126,6 +126,19 @@ const dataset = {
     en: `1. Sample: https://www.examples.com/dataset.zip{br} 
       2. {structure}`,
   },
+  'dataset.add.editing.tip': {
+    cn: '有未添加到导入列表的数据集，是否只添加导入列表中的数据集？',
+    en: 'There are datasets that have not been added to the import list. Do you want to only add the datasets that are in the import list?',
+  },
+  'dataset.add.leave.page.prompt': {
+    cn: '数据集正在添加中，离开页面会导致未添加完成的数据丢失，确认要离开？',
+    en: 'The dataset is currently being added. If you leave the page, the incomplete dataset may be lost. Are you sure you want to leave?',
+  },
+  'dataset.add.name.duplicated': {
+    cn: '数据集名称和项目中已有的数据集重复，请修改',
+    en: 'The dataset name is a duplicate of an existing dataset in the project. Please modify the name.',
+  },
+  'dataset.add.import.list.title': { cn: '导入列表', en: 'Import Dataset' },
   'dataset.copy.form.dataset': { cn: '原数据集', en: 'Original Dataset' },
   'dataset.copy.form.desc.label': { cn: '备注', en: 'Description' },
   'dataset.copy.success.msg': { cn: '数据集正在复制，请稍等', en: 'Dataset copying' },

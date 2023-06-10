@@ -13,7 +13,7 @@ const InferObjectTypeSelector: FC<RadioGroupProps> = (props) => {
     { value: Types.TrainingTarget, label: t('task.infer.objectType.trainingTarget') },
   ]
   return (
-    <Form.Item name="objectType" label={t('task.infer.objectType.label')} initialValue={Types.All}>
+    <Form.Item name="objectType" label={t('task.infer.objectType.label')} initialValue={Types.TrainingTarget}>
       <Radio.Group {...props} options={options}></Radio.Group>
     </Form.Item>
   )
