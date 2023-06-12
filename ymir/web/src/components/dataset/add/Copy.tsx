@@ -27,6 +27,7 @@ const Copy: FC = () => {
       {...formLayout}
       onFinish={() => {
         addImportingList(items)
+        setItems([])
         form.resetFields()
       }}
       onFinishFailed={(err) => {
