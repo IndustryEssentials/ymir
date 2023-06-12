@@ -10,18 +10,20 @@ import useRequest from '@/hooks/useRequest'
 type Props = {}
 
 const dynmicContent = () => {
-  const Content: FC<{ type: string }> = ({ type }) => {
+  const Content: FC<{ type: string; url?: string }> = ({ type, url }) => {
     const Comp = {
       [TabKey.Single]: SingleInfer,
       [TabKey.Dataset]: DatasetInfer,
     }[type]
-    return Comp ? <Comp /> : null
+    return Comp ? <Comp url={url} /> : null
   }
   return Content
 }
-const inference: FC<Props> = ({}) => {
-  const history = useHistory<{ type: string }>()
+const InferencePage: FC<Props> = ({}) => {
+  const history = useHistory<{ type: string; url?: string }>()
   const [active, setActive] = useState<TabKey>(TabKey.Single)
+  const [url, setUrl] = useState<string>()
+
   const tabs = [
     { key: TabKey.Single, tab: t('llmm.tabs.single') },
     // { key: TabKey.Dataset, tab: t('llmm.tabs.dataset') },
@@ -37,6 +39,10 @@ const inference: FC<Props> = ({}) => {
     setActive(type || TabKey.Single)
   }, [history.location.state?.type])
 
+  useEffect(() => {
+    history.location.state?.url && setUrl(history.location.state.url)
+  }, [history.location.state?.url])
+
   return (
     <div>
       <Breadcrumbs />
@@ -47,9 +53,10 @@ const inference: FC<Props> = ({}) => {
           history.replace({ state: { type: key } })
         }}
       >
-        <Content type={active} />
+        <Content type={active} url={url} />
       </Card>
     </div>
   )
 }
-export default inference
+
+export default InferencePage
