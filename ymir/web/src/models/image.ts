@@ -7,6 +7,7 @@ import LLMM from '@/constants/llmm'
 import { ImageState, ImageStore } from '.'
 import { Image } from '@/constants'
 import { List } from './typings/common'
+import { isAdmin } from '@/constants/user'
 
 const state: ImageState = {
   images: { items: [], total: 0 },
@@ -196,7 +197,11 @@ const ImageModel: ImageStore = {
         },
       })
     }),
-    createLLMMImage: createEffect(function* ({}, { put }) {
+    createLLMMImage: createEffect(function* ({}, { put, select }) {
+      const { role } = yield select(({ user }) => user.user)
+      if (!isAdmin(role)) {
+        return
+      }
       const { items } = yield put.resolve({ type: 'getImages', payload: { url: LLMM.MultiModalImageUrl } })
       if (items?.length) {
         return
