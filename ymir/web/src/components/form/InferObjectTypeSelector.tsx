@@ -3,8 +3,8 @@ import { FC } from 'react'
 import t from '@/utils/t'
 
 export enum Types {
-  All,
-  TrainingTarget,
+  All = 1,
+  TrainingTarget = 2,
 }
 
 const InferObjectTypeSelector: FC<RadioGroupProps> = (props) => {
