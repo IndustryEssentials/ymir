@@ -5,6 +5,7 @@ import { AddIcon, DeleteIcon } from '@/components/common/Icons'
 import { formLayout } from '@/config/antd'
 import SubmitBtn from './SubmitBtn'
 import useRequest from '@/hooks/useRequest'
+import { ImportingMaxCount } from '@/constants/common'
 
 type Props = {
   name: string
@@ -33,7 +34,7 @@ const Inputs: FC<Props> = ({ name, rules, tip = null, confirm, max = 0 }) => {
           confirm(values[name].map((item: string) => (item || '').trim()))
           form.resetFields()
         } else {
-          message.warning('Exceed Maximium Count')
+          message.warning(t('dataset.add.form.internal.max', { max: ImportingMaxCount }))
         }
       }}
       onFinishFailed={(err) => {
