@@ -1,5 +1,4 @@
-import os
-from typing import Dict, Any
+from typing import Dict
 
 import grpc
 from fastapi.logger import logger
@@ -7,11 +6,9 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.api.errors.errors import ModelNotFound, TaskNotFound, FieldValidationFailed
-from app.constants.state import ResultState, TaskType, TaskState
-from app.utils.files import NGINX_DATA_PATH
+from app.constants.state import ResultState, TaskState
 from app.utils.ymir_controller import ControllerClient
 from id_definition.error_codes import APIErrorCode as error_codes
-from id_definition.task_id import gen_repo_hash, gen_user_hash
 
 
 def import_model_in_background(
@@ -52,28 +49,8 @@ def _import_model(
     db: Session, controller_client: ControllerClient, model_import: schemas.ModelImport, user_id: int, task_hash: str
 ) -> None:
     logger.info("[import model] start importing model file from %s", model_import)
-    parameters: Dict[str, Any] = {}
-    if model_import.import_type == TaskType.copy_model:
-        # get the task.hash from input_model
-        model_obj = crud.model.get(db, id=model_import.input_model_id)
-        if model_obj is None:
-            raise ModelNotFound()
-        task_obj = crud.task.get(db, id=model_obj.task_id)
-        if task_obj is None:
-            raise TaskNotFound()
-        parameters = {
-            "src_user_id": gen_user_hash(model_obj.user_id),
-            "src_repo_id": gen_repo_hash(model_obj.project_id),
-            "src_resource_id": task_obj.hash,
-        }
-    elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:
-        # TODO(chao): remove model file after importing
-        parameters = {"model_package_path": os.path.join(NGINX_DATA_PATH, model_import.input_model_path)}
-    elif model_import.input_url:
-        parameters = {"model_package_path": model_import.input_url}
-    else:
-        raise FieldValidationFailed()
-
+    parameters = model_import.get_import_parameters(db)
+    logger.info("[import model] importing model parameters: %s", parameters)
     controller_client.import_model(
         user_id=user_id,
         project_id=model_import.project_id,

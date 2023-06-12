@@ -1,7 +1,12 @@
-from typing import Any, List, Optional
+import os
+from typing import Any, Dict, List, Optional
 import json
 
 from pydantic import BaseModel, Field, root_validator, validator
+from sqlalchemy.orm import Session
+
+from app import crud
+from app.api.errors.errors import ModelNotFound, TaskNotFound, FieldValidationFailed
 from app.config import settings
 from app.constants.state import ResultState, TaskType, ObjectType
 from app.schemas.common import (
@@ -12,6 +17,8 @@ from app.schemas.common import (
 )
 from app.schemas.model_stage import ModelStageInDBBase
 from app.schemas.task import TaskInternal
+from app.utils.files import NGINX_DATA_PATH
+from id_definition.task_id import gen_repo_hash, gen_user_hash
 
 
 def get_model_url(model_hash: str) -> str:
@@ -51,6 +58,27 @@ class ModelImport(BaseModel):
             return TaskType.import_model
         else:
             raise ValueError("Missing input source")
+
+    def get_import_parameters(self, db: Session) -> Dict[str, Any]:
+        if self.import_type == TaskType.copy_model:
+            source_model = crud.model.get(db, id=self.input_model_id)
+            if source_model is None: 
+                raise ModelNotFound()
+            source_task = crud.task.get(db, id=source_model.task_id)
+            if source_task is None: 
+                raise TaskNotFound()
+            return {
+                "src_user_id": gen_user_hash(source_model.user_id),
+                "src_repo_id": gen_repo_hash(source_model.project_id),
+                "src_resource_id": source_task.hash,
+            }
+        elif self.import_type == TaskType.import_model:
+            if self.input_model_path is not None:
+                return {"model_package_path": os.path.join(NGINX_DATA_PATH, self.input_model_path)}
+            elif self.input_url:
+                return {"model_package_path": self.input_url}
+        else:
+            raise FieldValidationFailed()
 
 
 class ModelCreate(ModelBase):
