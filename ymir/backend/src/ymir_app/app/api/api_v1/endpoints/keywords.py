@@ -39,7 +39,7 @@ def get_keywords(
     """
     try:
         items = list(user_labels.filter_labels(q))
-    except KeyError:
+    except (KeyError, ValueError):
         logger.info("found no keywords for query: %s", q)
         items = []
     if settings.REVERSE_KEYWORDS_OUTPUT:
