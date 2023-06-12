@@ -43,7 +43,7 @@ const ListHOC: ListType = (Module) => {
     }, [location.hash])
 
     useEffect(() => {
-      getProject({ id, force: true })
+      groups && getProject({ id, force: true })
     }, [groups])
 
     return (
