@@ -9,6 +9,7 @@ import { ImportingItem } from '@/constants'
 import useRequest from '@/hooks/useRequest'
 import { formLayout } from '@/config/antd'
 import SubmitBtn from './SubmitBtn'
+import { ImportingMaxCount } from '@/constants/common'
 
 const Copy: FC = () => {
   const [form] = Form.useForm()
@@ -27,6 +28,7 @@ const Copy: FC = () => {
       {...formLayout}
       onFinish={() => {
         addImportingList(items)
+        setItems([])
         form.resetFields()
       }}
       onFinishFailed={(err) => {
@@ -43,7 +45,7 @@ const Copy: FC = () => {
             validator(rule, value) {
               return max > 0 ? Promise.resolve() : Promise.reject()
             },
-            message: t('dataset.add.form.internal.max', { max }),
+            message: t('dataset.add.form.internal.max', { max: ImportingMaxCount }),
           },
         ]}
       >

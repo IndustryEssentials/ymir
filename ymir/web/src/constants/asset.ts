@@ -69,6 +69,7 @@ export function toAnnotation(annotation: Backend, width: number = 0, height: num
     gt: !pred,
     tags: annotation.tags || {},
     color,
+    box: annotation.box,
     ...annotationTransfer({ ...annotation, type: getType(annotation) }),
   }
 }
@@ -86,7 +87,6 @@ export function toBoundingBoxAnnoatation(annotation: Backend) {
   const type: AnnotationType.BoundingBox = annotation.type || AnnotationType.BoundingBox
   return {
     ...annotation,
-    box: annotation.box,
     type,
   }
 }

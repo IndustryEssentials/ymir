@@ -31,6 +31,7 @@ import useRequest from '@/hooks/useRequest'
 import SampleProjectTip from './SampleProjectTip'
 import { Image, Project } from '@/constants'
 import { isMultiModal } from '@/constants/objectType'
+import useGroundedSAMValidator from '@/hooks/useGroundedSAMValidator'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -63,10 +64,7 @@ function LeftMenu() {
     cacheKey: 'getTrainingDatasetCount',
     loading: false,
   })
-  const { runAsync: getGroundedSAMImage } = useRequest<Image>('image/getGroundedSAMImage', {
-    loading: false,
-  })
-  const { runAsync: createGroundedSAMImage } = useRequest('image/createGroundedSAMImage')
+  const gsImageValidate = useGroundedSAMValidator()
 
   useEffect(() => {
     project?.id && getTrainingDatasetCount(project.id)
@@ -137,36 +135,15 @@ function LeftMenu() {
     const outer = /^outer\//.test(key)
     if (!outer) {
       if (key.includes('/llmm/infer')) {
-        llmmInferHandle(key)
+        gsImageValidate()
+          .then((valid) => {
+            if (valid) {
+              setDefaultKeys([key])
+              history.push(key)
+            }
+          })
+          .catch((err) => {})
         return
-      }
-      setDefaultKeys([key])
-      history.push(key)
-    }
-  }
-
-  const llmmInferHandle = async (key: string) => {
-    const gsImage = await getGroundedSAMImage()
-    if (!gsImage) {
-      if (!isAdmin(role)) {
-        return Modal.info({
-          title: 'Grounded-SAM Image',
-          content: t('llmm.groundedsam.image.add.user.invalid'),
-        })
-      }
-      return Modal.confirm({
-        title: 'Grounded-SAM Image',
-        content: <>{t('llmm.groundedsam.image.add.tip')}</>,
-        onOk: async () => {
-          const result = await createGroundedSAMImage()
-          if (result) {
-            message.success(t('llmm.groundedsam.image.add.success'))
-          }
-        },
-      })
-    } else {
-      if (readyState(gsImage.state)) {
-        return Modal.info({ content: t('llmm.groundedsam.image.add.success') })
       }
       setDefaultKeys([key])
       history.push(key)

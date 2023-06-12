@@ -473,7 +473,7 @@ const DatasetModal: DatasetStore = {
       })
     }),
     clearImporting: createEffect(function* ({}, { put }) {
-      yield put({ type: 'updateImportingList', payload: [] })
+      yield put({ type: 'UpdateImporting', payload: { items: [], max: ImportingMaxCount, editing: false } })
     }),
     showFormatDetail: createEffect<boolean>(function* ({ payload: visible }, { put, select }) {
       yield put({ type: 'UpdateImporting', payload: { formatVisible: visible } })
@@ -531,7 +531,7 @@ const DatasetModal: DatasetStore = {
       }
       const { code, result } = yield call(batchAdd, pid, params)
       if (code === 0) {
-        yield put({
+        yield put.resolve({
           type: 'clearImporting',
         })
         return result

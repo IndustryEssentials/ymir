@@ -18,9 +18,9 @@ import PromptInput from './PromptInput'
 import { transHyperParams } from './_utils'
 import GPUCount from '@/components/form/items/GPUCount'
 
-type Props = {}
+type Props = { url?: string }
 
-const SingleInfer: FC<Props> = ({}) => {
+const SingleInfer: FC<Props> = ({ url }) => {
   const params = useParams<{ id: string }>()
   const pid = Number(params.id)
   const [virtualAsset, setVirtualAsset] = useState<Asset>({ annotations: [] })
@@ -65,6 +65,13 @@ const SingleInfer: FC<Props> = ({}) => {
       </div>
     </div>
   )
+
+  useEffect(() => {
+    if (url) {
+      const withProtocolUrl = /http(s)/.test(url) ? url : `${location.protocol}//${location.host}${url}`
+      setVirtualAsset((asset) => ({ ...asset, url: withProtocolUrl }))
+    }
+  }, [url])
 
   useEffect(() => {
     if (!image) {
