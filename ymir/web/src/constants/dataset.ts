@@ -98,7 +98,7 @@ export function transferDataset(data: Backend): Dataset {
     assetCount,
     keywords,
     keywordCount: keywords.length,
-    gt: transferAnnotationsCount(gt, data.negative_info?.gt, assetCount),
+    gt: transferAnnotationsCount(gt, data.gt?.negative_assets_count, assetCount),
     isProtected: data.is_protected || false,
     hash: data.hash,
     state: data.result_state,
