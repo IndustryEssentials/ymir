@@ -1,10 +1,11 @@
 .info {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 180px);
+  height: calc(100vh - 100px);
+  padding: 20px 0;
   background: #fff;
   .infoRow {
-    height: 100%
+    height: 100%;
   }
   :global(.ant-tag-checkable-checked) {
     filter: drop-shadow(1px 1px 1px black);
@@ -12,13 +13,6 @@
   .asset_info {
     position: relative;
     overflow-y: auto;
-    // .random {
-      // position: absolute;
-      // bottom: 0;
-    // }
-    .back {
-      left: 10px;
-    }
   }
 }
 .filter {
@@ -35,4 +29,7 @@
   padding: 20px;
   border: 1px solid rgba(0, 0, 0, 0.06);
   text-align: center;
+}
+.asset_info {
+  align-self: flex-start;
 }
