@@ -187,7 +187,7 @@ function ModelDetail() {
                   {t('dataset.action.inference')}
                 </Button>
                 <Button type="primary" onClick={() => history.push(`/home/project/${model?.projectId}/train?mid=${getModelStage()}`)}>
-                  {t('dataset.action.train')}
+                  {t('common.action.finetune')}
                 </Button>
                 <Button type="primary" onClick={() => hide(model)}>
                   {t('common.action.del')}

@@ -42,6 +42,10 @@ const ListHOC: ListType = (Module) => {
       }
     }, [location.hash])
 
+    useEffect(() => {
+      groups && getProject({ id, force: true })
+    }, [groups])
+
     return (
       <div className={s.projectDetail}>
         <Breadcrumbs />

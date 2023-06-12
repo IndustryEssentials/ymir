@@ -145,11 +145,13 @@ function Inference({ ...func }) {
   }
 
   const onFinish = async (values) => {
-    const classes = values.objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : selectedModel.keywords
     const config = {
       ...values.hyperparam?.reduce((prev, { key, value }) => (key && value ? { ...prev, [key]: value } : prev), {}),
       ...(values.live || {}),
-      prompt: classes2Prompt(classes, selectedModel.keywords),
+    }
+    if (values.objectType) {
+      const classes = values.objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : selectedModel.keywords
+      config.prompt = classes2Prompt(classes, selectedModel.keywords)
     }
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0

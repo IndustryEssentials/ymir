@@ -19,6 +19,7 @@ import GtSelector from '@/components/form/GtSelector'
 import { evaluationTags } from '@/constants/dataset'
 import { List } from '@/models/typings/common.d'
 import { Annotation, Asset, Dataset, Prediction } from '@/constants'
+import SingleImageInferBtn from './SingleImageInferBtn'
 
 type Props = {
   id: number
@@ -221,6 +222,7 @@ const AssetComponent: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKey
               <Button className={styles.back} type="primary" style={{ marginTop: 20 }} onClick={back}>
                 {t('dataset.asset.back')}
               </Button>
+              <SingleImageInferBtn style={{ marginTop: 20 }} url={asset.url} />
             </Space>
           </Col>
           <Col style={{ alignSelf: 'center' }} flex={'20px'}>

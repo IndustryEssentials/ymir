@@ -98,7 +98,7 @@ export function transferDataset(data: Backend): Dataset {
     assetCount,
     keywords,
     keywordCount: keywords.length,
-    gt: transferAnnotationsCount(gt, data.negative_info?.gt, assetCount),
+    gt: transferAnnotationsCount(gt, data.gt?.negative_assets_count, assetCount),
     isProtected: data.is_protected || false,
     hash: data.hash,
     state: data.result_state,
@@ -115,7 +115,7 @@ export function transferDataset(data: Backend): Dataset {
     hidden: !data.is_visible,
     description: data.description || '',
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
-    tags: data.gt ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total) : undefined,
+    tags: data.gt?.tags_count ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total) : undefined,
     suggestions,
   }
 }

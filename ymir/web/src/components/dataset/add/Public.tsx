@@ -9,6 +9,7 @@ import { List } from '@/models/typings/common'
 import { formLayout } from '@/config/antd'
 import SubmitBtn from './SubmitBtn'
 import { useSelector } from 'umi'
+import { ImportingMaxCount } from '@/constants/common'
 type Props = {
   selected?: number
 }
@@ -55,7 +56,7 @@ const Public: FC<Props> = ({ selected }) => {
             validator(rule, value) {
               return value.length <= max ? Promise.resolve() : Promise.reject()
             },
-            message: t('dataset.add.form.internal.max', { max }),
+            message: t('dataset.add.form.internal.max', { max: ImportingMaxCount }),
           },
         ]}
       >
