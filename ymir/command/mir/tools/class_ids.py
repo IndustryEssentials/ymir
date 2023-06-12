@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
+import uuid
 
 import fasteners  # type: ignore
 from mir.version import check_ymir_version_or_crash, YMIR_REPO_VERSION
@@ -99,8 +100,10 @@ class UserLabels(LabelStorage):
         if not self.storage_file:
             raise RuntimeError("empty storage_file.")
 
-        with open(self.storage_file, 'w') as f:
+        tmp_file_path = f"{self.storage_file}.{uuid.uuid4()}"
+        with open(tmp_file_path, 'w') as f:
             yaml.safe_dump(self.dict(), f, allow_unicode=True)
+        os.rename(src=tmp_file_path, dst=self.storage_file)
 
     def _add_new_cname(self, name: str, exist_ok: bool = True) -> Tuple[int, str]:
         name = _normalize_and_check_name(name)
