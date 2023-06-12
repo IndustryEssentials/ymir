@@ -25,7 +25,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             for asset_fileame in files:
                 asset_src_file = os.path.join(root, asset_fileame)
 
-                if Image.open(asset_src_file).format.lower() in ["png", "jpeg", "jpg"]:
+                if Image.open(asset_src_file).format.lower() in ["png", "jpeg", "jpg", "bmp"]:
                     shutil.copy(asset_src_file, dst_assets)
                     media_files.append(os.path.join(dst_assets, asset_fileame))
 
