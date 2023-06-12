@@ -190,9 +190,9 @@ class UserLabels(LabelStorage):
         if not self.storage_file:
             raise RuntimeError("empty storage_file.")
 
+        ret_val: List[Tuple[int, str]] = []
         with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
             self.__reload()
-            ret_val: List[Tuple[int, str]] = []
 
             # shortcut, return if all names are known.
             for main_name in main_names:
@@ -217,11 +217,11 @@ class UserLabels(LabelStorage):
         if not self.storage_file:
             raise RuntimeError("empty storage_file.")
 
-        self.__reload()
+        conflict_labels = []
         with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
+            self.__reload()
             current_time = datetime.now()
 
-            conflict_labels = []
             for label in new_labels.labels:
                 new_label = SingleLabel.parse_obj(label.dict())
                 idx = self.id_and_main_name_for_name(label.name)[0]
