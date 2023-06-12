@@ -364,7 +364,7 @@ export default {
       }
     },
     *updateQuery({ payload = {} }, { put, select }) {
-      const query = yield select(({ task }) => task.query)
+      const query = yield select(({ model }) => model.query)
       yield put({
         type: 'UPDATE_QUERY',
         payload: {
