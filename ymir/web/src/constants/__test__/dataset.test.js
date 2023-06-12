@@ -41,9 +41,8 @@ const ds = (id) => ({
     gt: { cat: 143, dog: 145 },
     pred: {},
   },
-  negative_info: {
-    gt: 34,
-    pred: 234,
+  gt: {
+    negative_assets_count: 34,
   },
   asset_count: 234,
   keyword_count: 2,

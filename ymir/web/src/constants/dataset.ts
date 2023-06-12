@@ -115,7 +115,7 @@ export function transferDataset(data: Backend): Dataset {
     hidden: !data.is_visible,
     description: data.description || '',
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
-    tags: data.gt ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total) : undefined,
+    tags: data.gt?.tags_count ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total) : undefined,
     suggestions,
   }
 }
