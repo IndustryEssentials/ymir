@@ -494,22 +494,32 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
     }
     known_cids_mapping = {k: v for k, v in cids_mapping.items() if v >= 0}
 
-    for sia in mir_annotations.prediction.image_annotations.values():
+    mapped_mir_annotations = mirpb.MirAnnotations()
+    for asset_id, sia in mir_annotations.prediction.image_annotations.items():
         for oa in sia.boxes:
-            if oa.class_id in known_cids_mapping:
-                oa.class_id = known_cids_mapping[oa.class_id]
-            else:
-                sia.boxes.remove(oa)
-    for sia in mir_annotations.ground_truth.image_annotations.values():
+            if oa.class_id not in known_cids_mapping:
+                continue
+            oa.class_id = known_cids_mapping[oa.class_id]
+            oa.index = len(mapped_mir_annotations.prediction.image_annotations[asset_id].boxes)
+            mapped_mir_annotations.prediction.image_annotations[asset_id].boxes.append(oa)
+    for asset_id, sia in mir_annotations.ground_truth.image_annotations.items():
         for oa in sia.boxes:
-            if oa.class_id in known_cids_mapping:
-                oa.class_id = known_cids_mapping[oa.class_id]
-            else:
-                sia.boxes.remove(oa)
+            if oa.class_id not in known_cids_mapping:
+                continue
+            oa.class_id = known_cids_mapping[oa.class_id]
+            oa.index = len(mapped_mir_annotations.ground_truth.image_annotations[asset_id].boxes)
+            mapped_mir_annotations.ground_truth.image_annotations[asset_id].boxes.append(oa)
 
-    mir_annotations.prediction.eval_class_ids[:] = [
+    mapped_mir_annotations.prediction.type = mir_annotations.prediction.type if len(
+        mapped_mir_annotations.prediction.image_annotations) > 0 else mirpb.ObjectType.OT_NO_ANNOS
+    mapped_mir_annotations.ground_truth.type = mir_annotations.ground_truth.type if len(
+        mapped_mir_annotations.ground_truth.image_annotations) > 0 else mirpb.ObjectType.OT_NO_ANNOS
+
+    mapped_mir_annotations.prediction.eval_class_ids[:] = [
         known_cids_mapping[cid] for cid in mir_annotations.prediction.eval_class_ids if cid in known_cids_mapping
     ]
+
+    mir_annotations.CopyFrom(mapped_mir_annotations)
 
     return src_class_id_mgr.main_name_for_ids(list(cids_mapping.keys() - known_cids_mapping.keys()))
 
