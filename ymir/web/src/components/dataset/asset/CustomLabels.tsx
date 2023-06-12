@@ -1,6 +1,7 @@
+import { Asset } from '@/constants'
 import { Col, Row, Space } from 'antd'
 import { FC } from 'react'
-type Props = { asset?: YModels.Asset }
+type Props = { asset?: Asset }
 
 const CustomLabels: FC<Props> = ({ asset }) => {
   const cks = asset?.cks || {}
@@ -9,7 +10,9 @@ const CustomLabels: FC<Props> = ({ asset }) => {
       {cks
         ? Object.keys(cks).map((ck) => (
             <Row key={ck}>
-              <Col><span style={{ fontWeight: 'bold' }}>{ck}: </span> <span>{cks[ck]}</span></Col>
+              <Col>
+                <span style={{ fontWeight: 'bold' }}>{ck}: </span> <span>{cks[ck]}</span>
+              </Col>
             </Row>
           ))
         : null}

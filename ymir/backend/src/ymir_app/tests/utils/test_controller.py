@@ -3,6 +3,7 @@ import random
 import pytest
 
 from app.schemas.common import MergeStrategy
+from app.schemas.task import TrainingDuplicationStrategy
 from app.utils import ymir_controller as m
 from tests.utils.utils import random_lower_string, random_url
 
@@ -30,13 +31,14 @@ class TestControllerRequest:
                 "object_type": 2,
                 "typed_datasets": [],
                 "typed_models": [],
-                "merge_strategy": MergeStrategy.prefer_newest,
+                "duplication_strategy": TrainingDuplicationStrategy.as_training,
                 "docker_image": "yolov4-training:test",
                 "docker_image_config": "{}",
             },
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
         assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeTraining
+        assert ret.req.merge_strategy == m.mirsvrpb.MergeStrategy.HOST
 
     def test_mining(self):
         task_type = m.TaskType.mining
@@ -180,7 +182,6 @@ class TestControllerClient:
         user_labels = mocker.Mock()
         confidence_threshold, iou_thrs_interval, need_pr_curve = 0.5, "0.5", True
         main_ck = None
-        is_instance_segmentation = True
         dataset_hash = random_lower_string()
         cc = m.ControllerClient(channel_str)
         mock_convertor = mocker.Mock()
@@ -195,7 +196,6 @@ class TestControllerClient:
             iou_thrs_interval,
             need_pr_curve,
             main_ck,
-            is_instance_segmentation,
             dataset_hash,
         )
         mock_convertor.assert_called()

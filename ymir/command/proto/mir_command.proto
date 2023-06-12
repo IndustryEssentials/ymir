@@ -53,6 +53,7 @@ enum TaskType {
     TaskTypeDatasetInfer = 15;
     TaskTypeEvaluate = 16;
     TaskTypePullImage = 17;
+    TaskTypeExcludeData = 18;
 };
 
 enum TaskState {
@@ -125,9 +126,11 @@ enum ObjectType {
     OT_UNKNOWN = 0;
 
     OT_CLASS = 1; // Classification with class id, not implemented.
-    OT_DET_BOX = 2; // Detection w. bounding box.
-    OT_SEG = 3;  // semantic segmentation w. polygon or mask
+    OT_DET = 2; // Detection w. bounding box.
+    OT_SEM_SEG = 3;  // semantic segmentation w. polygon or mask
     OT_INS_SEG = 4; // used by controller and app
+
+    OT_MULTI_MODAL = 50;
 
     OT_NO_ANNOS = 100;
 };
@@ -135,17 +138,18 @@ enum ObjectType {
 enum ObjectSubType {
     OST_NOTSET = 0;
 
-    //OT_SEG sub types
+    //OT_SEM_SEG & OT_INS_SEG sub types
     OST_SEG_MASK = 30;
     OST_SEG_POLYGON = 31;
 }
 
-enum ExportFormat {
-    EF_NO_ANNOTATIONS = 0;
-    EF_VOC_XML = 1;
-    EF_ARK_TXT = 2;
-    EF_LS_JSON = 3;
-    EF_COCO_JSON = 4;
+enum AnnoFormat {
+    AF_NO_ANNOS = 0;
+    AF_VOC_XML = 1;
+    AF_ARK_TXT = 2;
+    AF_COCO_JSON = 4;
+
+    reserved 3;
 }
 
 message SingleTaskAnnotations {
@@ -155,7 +159,6 @@ message SingleTaskAnnotations {
     ObjectType type = 3;
     // Set of all shown class ids.
     repeated int32 task_class_ids = 4;
-    bool is_instance_segmentation = 5;
 
     // meta infos of this SingleTaskAnnotations
     repeated int32 eval_class_ids = 10;
@@ -163,6 +166,8 @@ message SingleTaskAnnotations {
     ModelMeta model = 11;
     // executor config used to generate this single task annotations
     string executor_config = 12;
+
+    reserved 5;
 };
 
 message SingleImageAnnotations {
@@ -195,6 +200,7 @@ message ObjectAnnotation {
     int32 iscrowd = 12;  // 0 or 1
     ObjectSubType type = 13;
     int32 mask_area = 14;
+    string prompt = 15;
 };
 
 enum ConfusionMatrixType {
@@ -329,9 +335,8 @@ message EvaluateConfig {
     repeated int32 class_ids = 7;
     string main_ck = 8;
     ObjectType type = 9;
-    bool is_instance_segmentation = 10;
 
-    reserved 1, 2, 6;
+    reserved 1, 2, 6, 10;
 }
 
 message SingleDatasetEvaluation {
@@ -455,7 +460,7 @@ message ExportConfig {
     bool need_sub_folder = 6;
 
     // Annotation config.
-    ExportFormat anno_format = 50;
+    AnnoFormat anno_format = 50;
     string gt_dir = 51;
     string gt_index_file = 52;
     string gt_index_prefix = 53;

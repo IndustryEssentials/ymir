@@ -7,11 +7,11 @@ from fastapi.logger import logger
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.text_format import MessageToString
 
-from app.api.errors.errors import FailedtoCreateSegLabelTask, InvalidRepo
+from app.api.errors.errors import InvalidRepo
 from app.config import settings
-from app.constants.state import TaskType, RequestType, AnnotationType, DatasetType, ObjectType
+from app.constants.state import TaskType, RequestType, AnnotationType, DatasetType
 from app.schemas.common import ImportStrategy, MergeStrategy
-from app.schemas.task import TrainingDatasetsStrategy
+from app.schemas.task import TrainingDuplicationStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
 from id_definition.task_id import gen_repo_hash, gen_task_id, gen_user_hash, TaskId
 from id_definition.error_codes import CTLResponseCode as controller_error_code
@@ -36,6 +36,15 @@ class ExtraRequestType(enum.IntEnum):
     get_cmd_version = 606
 
 
+ANNO_FORMAT_MAPPING = {
+    mir_cmd_pb.ObjectType.OT_NO_ANNOS: mir_cmd_pb.AnnoFormat.AF_NO_ANNOS,
+    mir_cmd_pb.ObjectType.OT_DET: mir_cmd_pb.AnnoFormat.AF_VOC_XML,
+    mir_cmd_pb.ObjectType.OT_SEM_SEG: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+    mir_cmd_pb.ObjectType.OT_INS_SEG: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+    mir_cmd_pb.ObjectType.OT_MULTI_MODAL: mir_cmd_pb.AnnoFormat.AF_COCO_JSON,
+}
+
+
 MERGE_STRATEGY_MAPPING = {
     MergeStrategy.stop_upon_conflict: mirsvrpb.MergeStrategy.STOP,
     MergeStrategy.prefer_newest: mirsvrpb.MergeStrategy.HOST,
@@ -44,9 +53,9 @@ MERGE_STRATEGY_MAPPING = {
 
 
 TRAINING_DATASET_STRATEGY_MAPPING = {
-    TrainingDatasetsStrategy.stop: mirsvrpb.MergeStrategy.STOP,
-    TrainingDatasetsStrategy.as_training: mirsvrpb.MergeStrategy.HOST,
-    TrainingDatasetsStrategy.as_validation: mirsvrpb.MergeStrategy.GUEST,
+    TrainingDuplicationStrategy.stop: mirsvrpb.MergeStrategy.STOP,
+    TrainingDuplicationStrategy.as_training: mirsvrpb.MergeStrategy.HOST,
+    TrainingDuplicationStrategy.as_validation: mirsvrpb.MergeStrategy.GUEST,
 }
 
 
@@ -60,13 +69,6 @@ IMPORTING_STRATEGY_MAPPING = {
 ANNOTATION_TYPE_MAPPING = {
     AnnotationType.gt: mir_cmd_pb.AnnotationType.AT_GT,
     AnnotationType.pred: mir_cmd_pb.AnnotationType.AT_PRED,
-}
-
-OBJECT_TYPE_MAPPING = {
-    ObjectType.classification: int(ObjectType.classification),
-    ObjectType.object_detect: int(ObjectType.object_detect),
-    ObjectType.segmentation: int(ObjectType.segmentation),
-    ObjectType.instance_segmentation: int(ObjectType.segmentation),
 }
 
 
@@ -126,8 +128,8 @@ class ControllerRequest:
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_image_config"]
-        # stop if training_dataset and validation_dataset share any assets
-        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["merge_strategy"]]
+        # use duplicated assets as training_dataset or validation_dataset
+        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["duplication_strategy"]]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
@@ -138,6 +140,8 @@ class ControllerRequest:
         if args.get("top_k"):
             mine_task_req.top_k = args["top_k"]
         mine_task_req.generate_annotations = args["generate_annotations"]
+        # FIXME: required by controller
+        mine_task_req.unknown_types_strategy = mirsvrpb.UnknownTypesStrategy.UTS_IGNORE
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeMining
@@ -156,14 +160,13 @@ class ControllerRequest:
 
         import_dataset_request.asset_dir = args["asset_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
-        if args["object_type"] == ObjectType.instance_segmentation:
-            import_dataset_request.is_instance_segmentation = True
 
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy == ImportStrategy.no_annotations:
             request.object_type = mir_cmd_pb.ObjectType.OT_NO_ANNOS
         else:
-            request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+            request.object_type = args["object_type"]
+        import_dataset_request.anno_format = ANNO_FORMAT_MAPPING[request.object_type]
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
@@ -183,10 +186,7 @@ class ControllerRequest:
         label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
 
-        # ad hoc: controller's object_type has no instance_segmentation
-        request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
-        if args["object_type"] == ObjectType.instance_segmentation:
-            label_request.is_instance_segmentation = True
+        request.object_type = args["object_type"]
 
         # pre annotation
         if args.get("annotation_type"):
@@ -294,6 +294,10 @@ class ControllerRequest:
         # need different app type for web, controller use same endpoint
         return self.prepare_data_fusion(request, args)
 
+    def prepare_exclude_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        # need different app type for web, controller use same endpoint
+        return self.prepare_data_fusion(request, args)
+
     def prepare_filter(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         # need different app type for web, controller use same endpoint
         return self.prepare_data_fusion(request, args)
@@ -337,7 +341,6 @@ class ControllerRequest:
         if args.get("iou_thrs_interval"):
             evaluate_config.iou_thrs_interval = args["iou_thrs_interval"]
         evaluate_config.need_pr_curve = args["need_pr_curve"]
-        evaluate_config.is_instance_segmentation = args["is_instance_segmentation"]
         if args.get("main_ck"):
             evaluate_config.main_ck = args["main_ck"]
 
@@ -367,8 +370,6 @@ class ControllerClient:
         pass
 
     def check_response_code(self, resp_code: int, resp_msg: Optional[str], verbose: bool = True) -> None:
-        if resp_code == controller_error_code.INVOKER_LABEL_TASK_SEG_NOT_SUPPORTED:
-            raise FailedtoCreateSegLabelTask()
         if resp_code == controller_error_code.INVALID_MIR_ROOT:
             raise InvalidRepo()
         elif resp_code != 0:
@@ -530,7 +531,6 @@ class ControllerClient:
         iou_thrs_interval: Optional[str],
         need_pr_curve: bool,
         main_ck: Optional[str],
-        is_instance_segmentation: bool,
         dataset_hash: str,
     ) -> Dict:
         req = ControllerRequest(
@@ -543,7 +543,6 @@ class ControllerClient:
                 "iou_thrs_interval": iou_thrs_interval,
                 "need_pr_curve": need_pr_curve,
                 "main_ck": main_ck,
-                "is_instance_segmentation": is_instance_segmentation,
             },
         )
         try:

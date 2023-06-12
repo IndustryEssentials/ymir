@@ -8,7 +8,7 @@ import t from '@/utils/t'
 import { percent } from '@/utils/number'
 import { TYPES, getConfig } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
-import { isSemantic } from '@/constants/objectType'
+import { isSemantic, isMultiModal } from '@/constants/objectType'
 import useRequest from '@/hooks/useRequest'
 import { getRecommendStage } from '@/constants/model'
 
@@ -16,6 +16,9 @@ import Breadcrumb from '@/components/common/breadcrumb'
 import Uploader from '@/components/form/uploader'
 import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
 import ImageSelect from '@/components/form/ImageSelect'
+import ObjectTypeSelector, { Types } from '@/components/form/InferObjectTypeSelector'
+import GPUCount from '@/components/form/items/GPUCount'
+import { classes2Prompt } from '@/pages/llmm/components/_utils'
 
 import styles from './verify.less'
 import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/Icons'
@@ -44,6 +47,7 @@ function Verify() {
     cacheKey: 'getProject',
     loading: false,
   })
+  const { runAsync: getAllKeywords } = useRequest('keyword/getAllKeywords', { loading: false })
 
   useEffect(() => {
     if (verifyResult) {
@@ -89,14 +93,14 @@ function Verify() {
   function imageChange(value, option = {}) {
     const { image, objectType } = option
     if (image) {
-      setImage(image.url)
+      setImage(image.id)
     }
     const configObj = getConfig(image, TYPES.INFERENCE, objectType)
     setConfig(configObj.config)
   }
 
-  function urlChange(files, url) {
-    setVirtualAsset({ url: files.length ? url : '' })
+  function urlChange({ fileList }) {
+    setVirtualAsset({ url: fileList.length ? fileList[0].url : '' })
     setAnnotations([])
   }
 
@@ -131,15 +135,7 @@ function Verify() {
 
   function renderUploadBtn(label = t('model.verify.upload.label')) {
     return (
-      <Uploader
-        key={'uploader'}
-        className={styles.verify_uploader}
-        onChange={urlChange}
-        format="img"
-        label={label}
-        showUploadList={false}
-        max={IMGSIZELIMIT}
-      />
+      <Uploader key={'uploader'} className={styles.verify_uploader} onChange={urlChange} format="img" label={label} showUploadList={false} max={IMGSIZELIMIT} />
     )
   }
 
@@ -153,12 +149,17 @@ function Verify() {
     setConfidence(cfc)
   }
 
-  function verifyImg() {
+  async function verifyImg() {
     if (!virtualAsset?.url) {
       return
     }
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => (key && value ? (config[key] = value) : null))
+    const objectType = form.getFieldValue('objectType')
+    const gpuCount = form.getFieldValue('gpu_count')
+    config.gpu_count = gpuCount
+    const classes = objectType === Types.All ? (await getAllKeywords())?.map((kw) => kw.name) : model.keywords
+    config.prompt = classes2Prompt(classes, model.keywords)
     // reinit annotations
     setAnnotations([])
     verify({ projectId: pid, modelStage: [id, model.recommendStage], urls: [virtualAsset.url], image, config })
@@ -184,9 +185,11 @@ function Verify() {
 
   const modelPrimaryMetricRender = (model) => {
     const stage = getRecommendStage(model)
-    return stage ? <Descriptions.Item label={stage.primaryMetricLabel}>
-    <span title={stage.primaryMetric}>{percent(stage.primaryMetric)}</span>
-  </Descriptions.Item> : null
+    return stage ? (
+      <Descriptions.Item label={stage.primaryMetricLabel}>
+        <span title={stage.primaryMetric}>{percent(stage.primaryMetric)}</span>
+      </Descriptions.Item>
+    ) : null
   }
 
   return (
@@ -270,7 +273,8 @@ function Verify() {
                   onChange={imageChange}
                 />
               </Form.Item>
-
+              {project ? <GPUCount form={form} min={isMultiModal(project.type) ? 1 : 0} /> : null}
+              {isMultiModal(project?.type) ? <ObjectTypeSelector /> : null}
               {seniorConfig.length ? (
                 <Card
                   title={

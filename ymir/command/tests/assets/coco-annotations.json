@@ -26,6 +26,16 @@
             "data_captured": "2013-11-25 14:00:10",
             "flickr_url": "http://fake_flickr_url/2007_000243.jpg",
             "id": 2
+        },
+        {
+            "license": 1,
+            "file_name": "2007_000243.xml",
+            "coco_url": "http://fake_coco_url/2007_000243.jpg",
+            "height": 333,
+            "width": 500,
+            "data_captured": "2013-11-25 14:00:10",
+            "flickr_url": "http://fake_flickr_url/2007_000243.jpg",
+            "id": 3
         }
     ],
     "licenses": [
@@ -192,6 +202,26 @@
             ],
             "category_id": 183,
             "id": 20000020
+        },
+        {
+            "segmentation": {
+                "counts": "fake_anno_for_error_format_img",
+                "size": [
+                    333,
+                    500
+                ]
+            },
+            "area": 81539.0,
+            "iscrowd": 0,
+            "image_id": 3,
+            "bbox": [
+                3.0,
+                55.0,
+                548.0,
+                420.0
+            ],
+            "category_id": 183,
+            "id": 20000021
         }
     ]
 }

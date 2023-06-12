@@ -2,10 +2,12 @@ import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 import { transferIteration } from './iteration'
 import { ObjectType, getProjectTypes, getProjectTypeLabel, isDetection, isSemantic, isInstance } from './objectType'
+import { Backend } from './typings/common.d'
+import { Project } from './typings/project.d'
 
-function transferProject(data: YModels.BackendData) {
+function transferProject(data: Backend) {
   const iteration = transferIteration(data.current_iteration)
-  const project: YModels.Project = {
+  const project: Project = {
     id: data.id,
     name: data.name,
     keywords: data.training_keywords,

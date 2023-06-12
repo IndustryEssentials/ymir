@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
-    DuplicateTaskError,
     FailedToUpdateTaskStatusTemporally,
     NoTaskPermission,
     ObsoleteTaskStatus,
@@ -98,9 +97,6 @@ def create_task(
     Create task
     """
     logger.info("[create task] create task with payload: %s", jsonable_encoder(task_in))
-    if crud.task.is_duplicated_name_in_project(db, project_id=task_in.project_id, name=task_in.name):
-        raise DuplicateTaskError()
-
     task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
     logger.info("[create task] created task name: %s", task_in.name)
     return {"result": task_in_db}
@@ -155,30 +151,6 @@ def get_task(
     return {"result": task}
 
 
-@router.patch(
-    "/{task_id}",
-    response_model=schemas.TaskOut,
-    responses={404: {"description": "Task Not Found"}},
-)
-def update_task_name(
-    *,
-    db: Session = Depends(deps.get_db),
-    task_id: int = Path(..., example="12"),
-    task_in: schemas.TaskUpdate,
-    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Update task name
-    """
-    task = crud.task.get(db, id=task_id)
-    if not task:
-        raise TaskNotFound()
-    if crud.task.is_duplicated_name_in_project(db, project_id=task.project_id, name=task_in.name):
-        raise DuplicateTaskError()
-    task = crud.task.update(db, db_obj=task, obj_in=task_in)
-    return {"result": task}
-
-
 @router.post("/{task_id}/terminate", response_model=schemas.TaskOut)
 def terminate_task(
     *,
@@ -206,10 +178,10 @@ def terminate_task(
         # task reachs final state right away
         # set result to error as well
         task = crud.task.update_state(db, task=task, new_state=TaskState.terminate)
-        if task.result_model:  # type: ignore
-            crud.model.set_result_state_to_error(db, id=task.result_model.id)  # type: ignore
-        if task.result_dataset:  # type: ignore
-            crud.dataset.set_result_state_to_error(db, id=task.result_dataset.id)  # type: ignore
+        if task.result_model:
+            crud.model.set_result_state_to_error(db, id=task.result_model.id)
+        if task.result_dataset:
+            crud.dataset.set_result_state_to_error(db, id=task.result_dataset.id)
     return {"result": task}
 
 
@@ -253,9 +225,7 @@ def update_task_status(
         raise FailedToUpdateTaskStatusTemporally()
     else:
         task_info = schemas.Task.from_orm(task_in_db)
-        crud.task.update_last_message_datetime(
-            db, id=task_info.id, dt=datetime.utcfromtimestamp(task_update.timestamp)
-        )
+        crud.task.update_last_message_datetime(db, id=task_info.id, dt=datetime.utcfromtimestamp(task_update.timestamp))
         namespace = f"/{gen_user_hash(task.user_id)}"
         task_update_msg = schemas.TaskResultUpdateMessage(
             task_id=task_info.hash,

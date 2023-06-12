@@ -1,30 +1,36 @@
 import { getImage, getImages, delImage, createImage, updateImage, relateImage } from '@/services/image'
-import { STATES, transferImage } from '@/constants/image'
-import { createEffect, createReducers } from './_utils'
+import { STATES, transferImage, TYPES } from '@/constants/image'
+import { createEffect, createReducers, createReducersByState } from './_utils'
 import { EditImage, Image as CreateImageParams, QueryParams } from '@/services/typings/image.d'
 import { ObjectType } from '@/constants/objectType'
-import { ImageStore } from '.'
+import LLMM from '@/constants/llmm'
+import { ImageState, ImageStore } from '.'
 import { Image } from '@/constants'
+import { List } from './typings/common'
+import { isAdmin } from '@/constants/user'
 
-const reducers = [
-  { name: 'UpdateImage', field: 'image' },
-  { name: 'UpdateTotal', field: 'total' },
-  { name: 'UpdateOfficial', field: 'official' },
-]
+const state: ImageState = {
+  images: { items: [], total: 0 },
+  image: {},
+  total: 0,
+  official: undefined,
+  groundedSAM: undefined,
+}
 
 const ImageModel: ImageStore = {
   namespace: 'image',
-  state: {
-    image: {},
-    total: 0,
-    official: undefined,
-  },
+  state,
   effects: {
     getImages: createEffect<QueryParams>(function* ({ payload }, { call, put }) {
       const { code, result } = yield call(getImages, payload)
       if (code === 0) {
         const { items, total } = result
         const images: Image[] = items.map(transferImage)
+        const list = { items: images, total }
+        yield put({
+          type: 'UpdateImages',
+          payload: list,
+        })
         yield put({
           type: 'UpdateImage',
           payload: images.reduce(
@@ -35,7 +41,7 @@ const ImageModel: ImageStore = {
             {},
           ),
         })
-        return { items: images, total }
+        return list
       }
     }),
     getImage: createEffect<{ id: number; force?: boolean }>(function* ({ payload }, { call, put, select }) {
@@ -126,12 +132,24 @@ const ImageModel: ImageStore = {
       }
       return list
     }),
+    getMiningImages: createEffect(function* ({}, { call }) {
+      const { code, result } = yield call(getImages, {
+        type: TYPES.MINING,
+        offset: 0,
+        limit: 10000,
+      })
+      if (code === 0) {
+        const { items, total } = result
+        const images: Image[] = items.map(transferImage)
+        return images
+      }
+    }),
     getOfficialImage: createEffect<boolean>(function* ({ payload: force }, { put, select }) {
-      const { official } = select(({ image }) => image)
+      const { official } = yield select(({ image }) => image)
       if (!force && official) {
         return official
       }
-      const images = yield put.resolve({
+      const images: List<Image> = yield put.resolve({
         type: 'getImages',
         payload: {
           official: true,
@@ -146,8 +164,58 @@ const ImageModel: ImageStore = {
         return image
       }
     }),
+    getGroundedSAMImage: createEffect(function* ({}, { put, select }) {
+      const { groundedSAM } = yield select(({ image }) => image)
+      if (groundedSAM) {
+        return groundedSAM
+      }
+      const images = yield put.resolve({
+        type: 'getImages',
+        payload: {
+          url: LLMM.GroundedSAMImageUrl,
+        },
+      })
+      if (images?.items?.length) {
+        const image = images.items[0]
+        yield put({
+          type: 'UpdateGroundedSAM',
+          payload: image,
+        })
+        return image
+      }
+    }),
+    haveGroundedSAMImage: createEffect(function* ({}, { put, select }) {
+      const { groundedSAM } = yield select(({ image }) => image)
+      return LLMM.GroundedSAMImageUrl === groundedSAM?.url
+    }),
+    createGroundedSAMImage: createEffect(function* ({}, { put }) {
+      return yield put.resolve({
+        type: 'createImage',
+        payload: {
+          name: 'Grounded-SAM',
+          url: LLMM.GroundedSAMImageUrl,
+        },
+      })
+    }),
+    createLLMMImage: createEffect(function* ({}, { put, select }) {
+      const { role } = yield select(({ user }) => user.user)
+      if (!isAdmin(role)) {
+        return
+      }
+      const { items } = yield put.resolve({ type: 'getImages', payload: { url: LLMM.MultiModalImageUrl } })
+      if (items?.length) {
+        return
+      }
+      return yield put.resolve({
+        type: 'createImage',
+        payload: {
+          name: 'LLMM-GLIP',
+          url: LLMM.MultiModalImageUrl,
+        },
+      })
+    }),
   },
-  reducers: createReducers(reducers),
+  reducers: createReducersByState(state),
 }
 
 export default ImageModel

@@ -1,10 +1,11 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, FC, PropsWithChildren } from 'react'
 import { Modal, Form, ModalFuncProps } from 'antd'
 import t from '@/utils/t'
+import { Group, Result } from '@/constants'
 
 type Props = PropsWithChildren<
   Omit<ModalFuncProps, 'visible' | 'onOk'> & {
-    record?: YModels.Group | YModels.Result
+    record?: Group | Result
     update?: Function
   }
 >

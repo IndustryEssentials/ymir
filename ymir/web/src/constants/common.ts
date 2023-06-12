@@ -1,12 +1,16 @@
 import storage from '@/utils/storage'
-import { Task } from '.'
+import { ProgressTask } from '.'
 import { TASKSTATES } from './task'
 
 type ResultStateType = {
   state: ResultStates
   progress: number
   taskState: TASKSTATES
-  task: Task
+  task: {
+    hash?: string
+    state: TASKSTATES
+    percent: number
+  }
   needReload?: boolean
 }
 
@@ -35,7 +39,7 @@ export const OPENPAI_MAX_GPU_COUNT = 8
 
 export const DefaultShowVersionCount = 3
 
-export function updateResultState<T extends ResultStateType>(result: T, tasks: { [key: string]: YModels.ProgressTask }) {
+export function updateResultState<T extends ResultStateType>(result: T, tasks: { [key: string]: ProgressTask }) {
   const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
     return result
@@ -43,7 +47,7 @@ export function updateResultState<T extends ResultStateType>(result: T, tasks: {
   return updateResultByTask<T>(result, task)
 }
 
-export function updateResultByTask<T extends ResultStateType>(result: T, task?: YModels.ProgressTask): T | undefined {
+export function updateResultByTask<T extends ResultStateType>(result: T, task?: ProgressTask): T | undefined {
   if (!result || !task) {
     return
   }
@@ -149,3 +153,5 @@ export const getLabelToolUrl = () => {
   const token = storage.get('access_token')
   return `${base}?token=${token}`
 }
+
+export const ImportingMaxCount = 10

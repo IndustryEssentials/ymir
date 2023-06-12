@@ -4,11 +4,12 @@ import { transferPrediction } from '@/constants/prediction'
 import { batchAct, evaluate, getPrediction, getPredictions } from '@/services/prediction'
 import { createEffect, createReducersByState, transferList } from './_utils'
 import { PredictionState, PredictionStore } from '.'
-import { Prediction } from '@/constants'
+import { Backend, Project } from '@/constants'
+import { List } from './typings/common.d'
 type PredictionsPayload = { pid: number; force?: boolean; [key: string]: any }
 type PredictionPayload = { id: number; force?: boolean }
 
-const state: PredictionState =  {
+const state: PredictionState = {
   predictions: {},
   prediction: {},
 }
@@ -34,11 +35,11 @@ const PredictionModel: PredictionStore = {
           return list
         }
       }
-      const { code, result } = yield call<YModels.Response<YModels.ResponseResultList>>(getPredictions, { pid, ...params })
+      const { code, result } = yield call(getPredictions, { pid, ...params })
       if (code === 0 && result) {
-        type originData = YModels.BackendData & { create_datatime: string }
+        type originData = Backend & { create_datatime: string }
         const sorter = (a: originData, b: originData) => diffTime(b.create_datetime, a.create_datetime)
-        const groupByModel = ({ items, total }: YModels.ResponseResultList) => ({
+        const groupByModel = ({ items, total }: List<Backend>) => ({
           items: Object.values(items)
             .map((list) =>
               list.sort(sorter).map((item: originData, index: number) => ({
@@ -55,7 +56,7 @@ const PredictionModel: PredictionStore = {
         const listResponse = groupByModel(result)
         const predictions = transferList(listResponse, transferPrediction)
 
-        const getIds = (key: keyof YModels.InferenceParams) => {
+        const getIds = (key: 'model_id' | 'dataset_id') => {
           const ids = predictions.items
             .map((ds) => {
               const param = ds.task?.parameters || {}
@@ -98,7 +99,7 @@ const PredictionModel: PredictionStore = {
         const prediction = transferPrediction(result)
 
         if (prediction.projectId) {
-          const presult = yield put.resolve<{ id: number }, YModels.Project>({
+          const presult = yield put.resolve<{ id: number }, Project>({
             type: 'project/getProject',
             payload: { id: prediction.projectId },
           })

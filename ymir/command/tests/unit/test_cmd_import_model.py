@@ -84,7 +84,7 @@ class TestCmdImportModel(unittest.TestCase):
             mir_root=self._mir_root, mir_branch='a', ms=mirpb.MirStorage.MIR_TASKS, mir_task_id='a')
         task = mir_storage_data.tasks[mir_storage_data.head_task_id]
         self.assertTrue(os.path.isfile(os.path.join(self._models_location, task.model.model_hash)))
-        self.assertEqual(task.model.object_type, mirpb.ObjectType.OT_DET_BOX)
+        self.assertEqual(task.model.object_type, mirpb.ObjectType.OT_DET)
 
     # public: test cases
     def test_00(self):

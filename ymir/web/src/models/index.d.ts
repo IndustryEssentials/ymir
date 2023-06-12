@@ -1,4 +1,5 @@
-import { Image, Message, Prediction } from '@/constants'
+import { Asset, ClassObject, Dataset, Image, Iteration, Message, Prediction, ProgressTask, Project, Task, User, Model, ImportingItem } from '@/constants'
+import { QueryParams } from '@/services/project'
 import { Socket } from 'socket.io-client'
 import { Loading } from 'umi'
 import { IdMap, List, StoreType } from './typings/common.d'
@@ -10,46 +11,50 @@ type Root = {
   prediction: PredictionState
   model: ModelState
   image: ImageState
-  keyword: LabelState
+  keyword: KeywordState
   project: ProjectState
   socket: SocketState
   asset: AssetState
   loading: Loading
   common: CommonState
   message: MessageState
+  task: TaskState
 }
 
 interface CommonState {
   loading: boolean
 }
 
+interface TaskState {}
+
 interface UserState {
-  username: string
-  email: string
-  phone: string
-  avatar: string
-  hash: string
-  id: number
-  role: number
+  user: User
   logined: boolean
   neverShow?: string
 }
 
 interface ProjectState {
-  list: List<YModels.Project>
-  projects: IdMap<YModels.Project>
-  current: YModels.Project
+  query: QueryParams
+  list: List<Project>
+  projects: IdMap<Project>
+  current?: Project
 }
 
 interface DatasetState {
-  datasets: IdMap<List<YModels.Dataset>>
-  versions: IdMap<YModels.Dataset[]>
-  dataset: IdMap<YModels.Dataset>
-  allDatasets: { [pid: number]: YModels.Dataset[] }
-  publicDatasets: YModels.Dataset[]
+  datasets: IdMap<List<Dataset>>
+  versions: IdMap<Dataset[]>
+  dataset: IdMap<Dataset>
+  allDatasets: { [pid: number]: Dataset[] }
+  publicDatasets: Dataset[]
   query: YParams.DatasetsQuery
   validDatasetCount: number
   trainingDatasetCount: number
+  importing: {
+    items: ImportingItem[]
+    max: number
+    formatVisible?: boolean
+    editing?: boolean
+  }
 }
 
 interface PredictionState {
@@ -58,15 +63,15 @@ interface PredictionState {
 }
 
 interface AssetState {
-  assets: IdMap<List<YModels.Asset>>
-  asset: IdMap<YModels.Asset>
+  assets: IdMap<List<Asset>>
+  asset: IdMap<Asset>
 }
 
 interface ModelState {
-  models: IdMap<List<YModels.Model>>
-  versions: IdMap<YModels.Model[]>
-  model: IdMap<YModels.Model>
-  allModels: YModels.Model[]
+  models: IdMap<List<Model>>
+  versions: IdMap<Model[]>
+  model: IdMap<Model>
+  allModels: Model[]
   query: YParams.ModelsQuery
 }
 
@@ -78,24 +83,26 @@ interface MessageState {
 }
 
 interface IterationState {
-  iterations: List<YModels.Iteration>
-  iteration: IdMap<YModels.Iteration>
+  iterations: IdMap<Iteration[]>
+  iteration: IdMap<Iteration>
   actionPanelExpand: boolean
 }
 
 interface ImageState {
+  images: List<Image>
   image: IdMap<Image>
   total: number
   official?: Image
+  groundedSAM?: Image
 }
 
-type LabelState = {
-  allKeywords: YModels.Keyword[]
+type KeywordState = {
+  allKeywords: ClassObject[]
   reload: boolean
 }
 
 interface SocketState {
-  tasks: YModels.ProgressTask[]
+  tasks: ProgressTask[]
   socket?: Socket
 }
 
@@ -105,6 +112,12 @@ type SocketStore = StoreType<'socket', SocketState>
 type ImageStore = StoreType<'image', ImageState>
 type DatasetStore = StoreType<'dataset', DatasetState>
 type MessageStore = StoreType<'message', MessageState>
+type TaskStore = StoreType<'task', TaskState>
+type CommonStore = StoreType<'common', CommonState>
+type IterationStore = StoreType<'iteration', IterationState>
+type UserStore = StoreType<'user', UserState>
+type KeywordStore = StoreType<'keyword', KeywordState>
+type ProjectStore = StoreType<'project', ProjectState>
 
 export {
   PredictionStore,
@@ -119,6 +132,18 @@ export {
   ImageState,
   DatasetState,
   MessageState,
+  CommonState,
+  CommonStore,
+  IterationStore,
+  IterationState,
+  UserState,
+  UserStore,
+  TaskState,
+  TaskStore,
+  KeywordState,
+  KeywordStore,
+  ProjectState,
+  ProjectStore,
 }
 
 export default Root

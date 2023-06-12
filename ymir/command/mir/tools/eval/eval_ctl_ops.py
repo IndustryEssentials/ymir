@@ -15,7 +15,7 @@ def evaluate_datasets(
     gt_mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
         mir_root=mir_root, mir_branch=gt_rev_tid.rev, mir_task_id=gt_rev_tid.tid, ms=mirpb.MirStorage.MIR_ANNOTATIONS)
     ground_truth = gt_mir_annotations.ground_truth
-    if ground_truth.type == mirpb.ObjectType.OT_SEG:
+    if ground_truth.type in {mirpb.ObjectType.OT_SEM_SEG, mirpb.ObjectType.OT_INS_SEG}:
         assets_metadata = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
                                                                             mir_branch=gt_rev_tid.rev,
                                                                             mir_task_id=gt_rev_tid.tid,
@@ -88,7 +88,6 @@ def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnno
                                           asset_ids: Collection[str]) -> mirpb.SingleTaskAnnotations:
     filtered_task_annotations = mirpb.SingleTaskAnnotations()
     filtered_task_annotations.type = task_annotations.type
-    filtered_task_annotations.is_instance_segmentation = task_annotations.is_instance_segmentation
     for asset_id in asset_ids:
         if asset_id not in task_annotations.image_annotations:
             continue

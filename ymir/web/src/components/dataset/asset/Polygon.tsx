@@ -1,18 +1,16 @@
 import { FC, useEffect, useRef, useState } from 'react'
-import { renderPolygon } from './_helper'
+import { renderPolygons } from './_helper'
+import { Polygon as PolygonType } from '@/constants'
+
 type Props = {
-  annotation: YModels.Polygon,
-  ratio?: number,
+  annotations: PolygonType[]
+  ratio?: number
   simple?: boolean
 }
 
-const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {
+const Polygon: FC<Props> = ({ annotations, ratio = 1, simple }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [canvas, setCanvas] = useState<HTMLCanvasElement>()
-  const [{ width, height }, setRect] = useState({
-    width: 0,
-    height: 0,
-  })
   useEffect(() => {
     if (canvasRef.current) {
       setCanvas(canvasRef.current)
@@ -20,32 +18,24 @@ const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {
   }, [canvasRef.current])
 
   useEffect(() => {
-    if (annotation.polygon?.length && canvas) {
-      renderPolygon(canvas, annotation.polygon, annotation.color)
+    if (annotations.length && canvas) {
+      renderPolygons(canvas, annotations, !simple, ratio)
     }
-  }, [annotation.polygon, canvas, width, height])
+  }, [annotations, canvas])
 
-  useEffect(() => {
-    if (!annotation) {
-      return
-    }
-    setRect({
-      width: annotation.width,
-      height: annotation.height,
-    })
-  }, [annotation])
-
-  return <canvas
-    ref={canvasRef}
-    style={{
-      position: 'absolute',
-      left: 0,
-      transformOrigin: 'left top 0',
-      transform: `scale(${ratio})`,
-    }}
-    width={width}
-    height={height}
-  ></canvas>
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'absolute',
+        left: 0,
+        transformOrigin: 'left top 0',
+        transform: `scale(${ratio})`,
+      }}
+      width={annotations[0]?.width}
+      height={annotations[0]?.height}
+    ></canvas>
+  )
 }
 
 export default Polygon

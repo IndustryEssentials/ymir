@@ -12,7 +12,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from tests.utils.images import create_docker_image_and_configs
 from tests.utils.models import create_model_stage
-from tests.utils.utils import random_lower_string, random_url
+from tests.utils.utils import random_url
 from tests.utils.projects import create_project_record
 
 
@@ -24,7 +24,7 @@ class TestPostInference:
         j = {
             "project_id": project_id,
             "model_stage_id": random.randint(1000, 2000),
-            "docker_image": random_lower_string(),
+            "docker_image_id": random.randint(1000, 2000),
             "image_urls": [random_url()],
             "docker_image_config": {"mock_docker_image_config": "mock_docker_image_config"},
         }
@@ -48,7 +48,7 @@ class TestPostInference:
         j = {
             "project_id": project_id,
             "model_stage_id": model_stage.id,
-            "docker_image": random_lower_string(),
+            "docker_image_id": random.randint(1000, 2000),
             "image_urls": [random_url()],
             "docker_image_config": {"mock_docker_image_config": "mock_docker_image_config"},
         }
@@ -73,7 +73,7 @@ class TestPostInference:
         j = {
             "project_id": project_id,
             "model_stage_id": model_stage.id,
-            "docker_image": image.url,
+            "docker_image_id": image.id,
             "image_urls": [random_url()],
             "docker_image_config": {"mock_docker_image_config": "mock_docker_image_config"},
         }

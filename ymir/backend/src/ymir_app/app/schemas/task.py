@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 from operator import attrgetter
+from uuid import uuid4
 
 from typing_extensions import Annotated
 
@@ -16,6 +17,7 @@ from app.constants.state import (
     ResultType,
     TaskState,
     TaskType,
+    ResultTypeMapping,
 )
 from app.schemas.common import (
     Common,
@@ -34,12 +36,13 @@ from app.schemas.common import (
     dataset_normalize,
     label_normalize,
     model_normalize,
+    ImportStrategy,
 )
-from id_definition.task_id import TaskId
+from id_definition.task_id import TaskId, gen_repo_hash, gen_user_hash
 
 
 class TaskBase(BaseModel):
-    name: str = ""
+    name: str = Field(default_factory=lambda: uuid4().hex)
     type: TaskType
     project_id: int
 
@@ -47,7 +50,7 @@ class TaskBase(BaseModel):
         use_enum_values = True
 
 
-class TrainingDatasetsStrategy(enum.IntEnum):
+class TrainingDuplicationStrategy(enum.IntEnum):
     stop = 0
     as_training = 1  # use duplicated assets as training assets
     as_validation = 2  # use duplicated assets as validation assets
@@ -62,7 +65,7 @@ class TaskPreprocess(BaseModel):
 
 
 class TaskParameterBase(BaseModel):
-    dataset_id: int
+    dataset_id: Optional[int]
     dataset_group_id: Optional[int]
     dataset_group_name: Optional[str]
 
@@ -114,7 +117,7 @@ class TrainingParameter(TaskParameterBase):
     task_type: Literal["training"]
 
     validation_dataset_id: Optional[int]
-    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
+    duplication_strategy: Optional[TrainingDuplicationStrategy] = TrainingDuplicationStrategy.stop
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
@@ -136,7 +139,7 @@ class MiningParameter(MiningParameterBase):
 
 class InferParameter(MiningParameterBase):
     generate_annotations: Optional[bool] = True
-    task_type: Literal["infer"]
+    task_type: Literal["dataset_infer"]
 
 
 class FusionParameterBase(TaskParameterBase, IterationContext):
@@ -180,13 +183,51 @@ class MergeParameter(FusionParameterBase):
 
     @root_validator(pre=True)
     def fill_in_dataset_id(cls, values: Any) -> Any:
-        if not values.get("dataset_id"):
+        if not values.get("dataset_id") and values.get("include_datasets"):
             values["dataset_id"] = values["include_datasets"][0]
         return values
 
 
+class ExcludeParameter(FusionParameterBase):
+    task_type: Literal["exclude_data"]
+
+
 class FilterParameter(FusionParameterBase):
     task_type: Literal["filter"]
+
+
+class ImportDatasetParameter(TaskParameterBase):
+    task_type: Literal["import_data"]
+    url: Optional[str]
+    path: Optional[str]
+    strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
+
+    asset_dir: Optional[str]
+    clean_dirs: Optional[bool]
+
+    @root_validator(pre=True)
+    def fillin_fields(cls, values: Any) -> Any:
+        values["asset_dir"] = values.get("path") or values.get("url")
+        values["clean_dirs"] = values.get("path") is None
+        return values
+
+
+class CopyDatasetParameter(TaskParameterBase):
+    task_type: Literal["copy_data"]
+    strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
+
+    src_user_id: Optional[int]
+    src_repo_id: Optional[int]
+    src_resource_id: Optional[int]
+
+    def update_with_src_dataset(self, datasets_getter: Callable, project_context: Dict) -> None:
+        dataset = datasets_getter(dataset_ids=[self.dataset_id])[0]
+        self.src_user_id = gen_user_hash(dataset.user_id)
+        self.src_repo_id = gen_repo_hash(dataset.project_id)
+        self.src_resource_id = dataset.hash
+        if project_context.get("object_type") != dataset.object_type:
+            self.strategy = ImportStrategy.no_annotations
+        return
 
 
 TaskParameter = Annotated[
@@ -197,7 +238,10 @@ TaskParameter = Annotated[
         InferParameter,
         FusionParameter,
         MergeParameter,
+        ExcludeParameter,
         FilterParameter,
+        ImportDatasetParameter,
+        CopyDatasetParameter,
     ],
     Field(description="Generic Task Parameters", discriminator="task_type"),  # noqa: F722, F821
 ]
@@ -263,6 +307,9 @@ class TaskCreate(TaskBase):
             # extra logic for dataset fusion:
             # reorder datasets based on merge_strategy
             self.parameters.update_with_iteration_context(iterations_getter)
+
+        if isinstance(self.parameters, CopyDatasetParameter):
+            self.parameters.update_with_src_dataset(datasets_getter, project_context)
 
         if project_context:
             self.parameters.update_with_project_context(project_context)
@@ -351,24 +398,7 @@ class TaskInternal(TaskInDBBase):
     @validator("result_type", pre=True, always=True)
     def gen_result_type(cls, v: Any, values: Any) -> Optional[ResultType]:
         task_type = values["type"]
-        if task_type in [TaskType.training, TaskType.copy_model, TaskType.import_model]:
-            return ResultType.model
-        elif task_type == TaskType.dataset_infer:
-            return ResultType.prediction
-        elif task_type == TaskType.pull_image:
-            return ResultType.docker_image
-        elif task_type in [
-            TaskType.mining,
-            TaskType.label,
-            TaskType.import_data,
-            TaskType.copy_data,
-            TaskType.data_fusion,
-            TaskType.filter,
-            TaskType.merge,
-        ]:
-            return ResultType.dataset
-        else:
-            return ResultType.no_result
+        return ResultTypeMapping.get(task_type, ResultType.no_result)
 
     class Config:
         use_enum_values = True

@@ -79,14 +79,32 @@ ul {
   }
 }
 
+@keyframes scale {
+  50%,
+  66%,
+  82%,
+  100% {
+    transform: scale(1);
+  }
+  58%,
+  74%,
+  90% {
+    transform: scale(1.08);
+  }
+}
+
 @keyframes rotate {
   50% {
     transform: rotate(0);
   }
-  57%, 71%, 85% {
+  57%,
+  71%,
+  85% {
     transform: rotate(30deg);
   }
-  64%, 78%, 92% {
+  64%,
+  78%,
+  92% {
     transform: rotate(-30deg);
   }
   100% {
@@ -131,6 +149,7 @@ ul {
     position: relative;
     z-index: 2;
   }
+  animation: wave 3s ease-in-out infinite;
   &::before {
     display: block;
     content: '';
@@ -146,6 +165,9 @@ ul {
 }
 .rotate {
   animation: rotate 3s ease-out infinite;
+}
+.scale {
+  animation: scale 3s ease-in-out infinite;
 }
 
 body {
@@ -253,6 +275,10 @@ body {
   .sidebar {
     background: #fff;
     overflow: auto;
+    height: calc(100vh - 60px);
+  }
+  .layoutContent {
+    overflow-y: auto;
     height: calc(100vh - 60px);
   }
 

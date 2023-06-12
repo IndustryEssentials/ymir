@@ -1,3 +1,4 @@
+import { Backend } from '@/constants'
 import { isPlainObject } from '@/utils/object'
 import { capitalize } from '@/utils/string'
 import Root from '.'
@@ -30,7 +31,7 @@ const createReducersByState = <S extends Root[keyof Root]>(state: S) => {
   }, {})
 }
 
-const transferList = <R extends any = any>(listResponse: YModels.ResponseResultList, func: (data: YModels.BackendData) => R) => {
+const transferList = <R extends any = any>(listResponse: List<Backend>, func: (data: Backend) => R): List<R> => {
   const { items, total } = listResponse
   return { items: items.map((item) => func(item)), total }
 }

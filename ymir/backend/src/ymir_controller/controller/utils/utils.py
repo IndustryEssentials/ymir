@@ -9,7 +9,6 @@ from typing import Callable, Dict, List, Optional
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase
 from controller.label_model.label_free import LabelFree
-from controller.label_model.label_studio import LabelStudio
 from controller.utils.errors import MirCtrError
 from id_definition import task_id as task_id_proto
 from id_definition.error_codes import CTLResponseCode
@@ -77,21 +76,22 @@ def sub_task_id(task_id: str, offset: int) -> str:
     return task_id[0] + str(offset) + task_id[2:]
 
 
-def annotation_format_str(format: mir_cmd_pb.ExportFormat) -> str:
+def annotation_format_str(format: mir_cmd_pb.AnnoFormat) -> str:
     format_enum_dict = {
-        mir_cmd_pb.ExportFormat.EF_NO_ANNOTATIONS: 'none',
-        mir_cmd_pb.ExportFormat.EF_VOC_XML: 'det-voc',
-        mir_cmd_pb.ExportFormat.EF_ARK_TXT: 'det-ark',
-        mir_cmd_pb.ExportFormat.EF_LS_JSON: 'det-ls-json',
-        mir_cmd_pb.ExportFormat.EF_COCO_JSON: 'seg-coco',
+        mir_cmd_pb.AnnoFormat.AF_NO_ANNOS: 'none',
+        mir_cmd_pb.AnnoFormat.AF_VOC_XML: 'voc',
+        mir_cmd_pb.AnnoFormat.AF_ARK_TXT: 'ark',
+        mir_cmd_pb.AnnoFormat.AF_COCO_JSON: 'coco',
     }
     return format_enum_dict[format]
 
 
 def object_type_str(object_type: mir_cmd_pb.ObjectType) -> str:
     format_enum_dict = {
-        mir_cmd_pb.ObjectType.OT_DET_BOX: 'det-box',
-        mir_cmd_pb.ObjectType.OT_SEG: 'seg',
+        mir_cmd_pb.ObjectType.OT_DET: 'det',
+        mir_cmd_pb.ObjectType.OT_SEM_SEG: 'sem-seg',
+        mir_cmd_pb.ObjectType.OT_INS_SEG: 'ins-seg',
+        mir_cmd_pb.ObjectType.OT_MULTI_MODAL: 'multi-modal',
         mir_cmd_pb.ObjectType.OT_NO_ANNOS: 'no-annos',
     }
     return format_enum_dict[object_type]
@@ -118,12 +118,10 @@ def time_it(f: Callable) -> Callable:
 
 
 def create_label_instance(user_token: Optional[str] = None) -> LabelBase:
-    if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
-        label_instance = LabelStudio()
-    elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
+    if label_task_config.LABEL_TOOL:
         label_instance = LabelFree(user_token)  # type: ignore
     else:
-        raise ValueError("Error! Please setting your label tools")
+        raise ValueError("Error! Please enable LabelFree")
 
     return label_instance
 

@@ -9,7 +9,6 @@ DEV_SOURCE_BACKEND_PIP='https://pypi.mirrors.ustc.edu.cn/simple'
 DEV_SOURCE_WEB_NPM='https://registry.npmmirror.com'
 
 FIELD_LABEL_TOOL='LABEL_TOOL'
-FIELD_LABEL_TOOL_LS='label_studio'
 FIELD_LABEL_TOOL_LF='label_free'
 ENV_FILE='.env'
 FIELD_SERVER_RUNTIME='SERVER_RUNTIME'
@@ -62,8 +61,8 @@ check_server_runtime(){
 }
 
 stop() {
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.label_studio.yml \
--f docker-compose.labelfree.yml -f docker-compose.modeldeploy.yml down
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.labelfree.yml \
+-f docker-compose.modeldeploy.yml down
 }
 
 pre_start() {
@@ -72,41 +71,33 @@ stop
 
 set_label_tool() {
 if ! cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
-    echo "label_tool already set"
+    echo "LabelFree already set"
     return
 fi
 
 cat <<- EOF
-Which label-tool would you like to start (1/2/3)?
-1.Label Studio
-2.Label Free
-3.None
+Would you like to start the LabelFree tool? (Y/N)
 
 EOF
 
 while true; do
-    read -p "You choose (1/[2]/3)?" yn
+    read -p "You choose ([Y]/N)?" yn
     case $yn in
-        [1]* ) sed -i.bk "s/^${FIELD_LABEL_TOOL}=.*/${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LS}/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk; break;;
-        [2]*|"" ) sed -i.bk "s/^${FIELD_LABEL_TOOL}=.*/${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk; break;;
-        [3]* ) break;;
-        * ) echo "Please answer 1/2/3.";;
+        [Yy]*|"" ) sed -i.bk "s/^${FIELD_LABEL_TOOL}=.*/${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer Y/N.";;
     esac
 done
 }
 
 start_label_tool() {
 if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
-    echo "no label_tool set, skip."
+    echo "no LabelFree set, skip."
     return
 fi
 
-if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LS}"; then
-    echo "label-studio set, starting..."
-    docker-compose -f docker-compose.label_studio.yml up -d
-    return
-elif cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}"; then
-    echo "label-free set, starting..."
+if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}"; then
+    echo "LabelFree set, starting..."
     docker-compose -f docker-compose.labelfree.yml up -d
     return
 else

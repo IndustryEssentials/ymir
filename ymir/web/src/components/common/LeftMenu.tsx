@@ -1,11 +1,10 @@
 import { FC, ReactNode, useEffect, useState } from 'react'
-import { Menu, Layout, MenuProps, MenuItemProps } from 'antd'
-import { useHistory, useLocation, withRouter, useSelector, useParams } from 'umi'
+import { Menu, Layout, MenuProps, Modal, message } from 'antd'
+import { useHistory, useLocation, withRouter, useSelector } from 'umi'
 import t from '@/utils/t'
-import { getDeployUrl, getPublicImageUrl } from '@/constants/common'
-import { isSuperAdmin } from '@/constants/user'
+import { getDeployUrl, getPublicImageUrl, readyState } from '@/constants/common'
+import { isAdmin, isSuperAdmin } from '@/constants/user'
 import {
-  BarchartIcon,
   FlagIcon,
   GithubIcon,
   FileHistoryIcon,
@@ -20,16 +19,19 @@ import {
   DeviceSupportedIcon,
   MyAlgoIcon,
   StoreIcon,
-  BarChart2LineIcon,
   ProjectIcon,
   VectorIcon,
   BookIcon,
   DeleteIcon,
+  MydatasetIcon,
 } from '@/components/common/Icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
 import type { IconProps } from './icons/IconProps'
 import useRequest from '@/hooks/useRequest'
 import SampleProjectTip from './SampleProjectTip'
+import { Image, Project } from '@/constants'
+import { isMultiModal } from '@/constants/objectType'
+import useGroundedSAMValidator from '@/hooks/useGroundedSAMValidator'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -49,18 +51,20 @@ const getItem = (label: ReactNode, key: string, Icon?: FC<IconProps>, children?:
 const getGroupItem = (label: string, key: string, children: MenuItem[]) => getItem(label, key, undefined, children, 'group')
 
 function LeftMenu() {
-  const { role } = useSelector((state) => state.user)
+  const { role } = useSelector((state) => state.user.user)
   const { projects } = useSelector((state) => state.project)
   const history = useHistory()
   const { pathname } = useLocation()
   const [defaultKeys, setDefaultKeys] = useState<string[]>()
   const [items, setItems] = useState<MenuItem[]>([])
   const [id, setId] = useState(0)
-  const [project, setProject] = useState<YModels.Project>()
+  const [project, setProject] = useState<Project>()
   const { trainingDatasetCount, tasks } = useSelector(({ dataset, socket }) => ({ trainingDatasetCount: dataset.trainingDatasetCount, tasks: socket.tasks }))
   const { run: getTrainingDatasetCount } = useRequest<null, [number]>('dataset/getTrainingDatasetCount', {
+    cacheKey: 'getTrainingDatasetCount',
     loading: false,
   })
+  const gsImageValidate = useGroundedSAMValidator()
 
   useEffect(() => {
     project?.id && getTrainingDatasetCount(project.id)
@@ -73,7 +77,7 @@ function LeftMenu() {
   }, [pathname])
 
   useEffect(() => {
-    id && projects && setProject(projects[id] || {})
+    id && projects && setProject(projects[id])
   }, [id, projects])
 
   useEffect(() => {
@@ -88,6 +92,7 @@ function LeftMenu() {
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
               getItem(t('model.diagnose'), `/home/project/${id}/prediction`, DiagnosisIcon),
               getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon, undefined, undefined, !trainingDatasetCount),
+              isMultiModal(project?.type) ? getItem(t('breadcrumbs.llmm.infer.title'), `/home/project/${id}/llmm/inference`, MydatasetIcon) : null,
               getItem(t('common.trash.list'), `/home/project/${id}/trash`, DeleteIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),
             ])
@@ -126,9 +131,20 @@ function LeftMenu() {
     ])
   }, [id, project, role, trainingDatasetCount])
 
-  const clickHandle: Handler = ({ key }) => {
+  const clickHandle: Handler = async ({ key }) => {
     const outer = /^outer\//.test(key)
     if (!outer) {
+      if (key.includes('/llmm/infer')) {
+        gsImageValidate()
+          .then((valid) => {
+            if (valid) {
+              setDefaultKeys([key])
+              history.push(key)
+            }
+          })
+          .catch((err) => {})
+        return
+      }
       setDefaultKeys([key])
       history.push(key)
     }
@@ -136,7 +152,7 @@ function LeftMenu() {
 
   return items.length ? (
     <Sider className="sidebar scrollbar">
-      <Menu items={items} mode="inline" defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys} />
+      <Menu items={items} mode="inline" defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys} inlineIndent={12} />
       <SampleProjectTip id={id} />
     </Sider>
   ) : null

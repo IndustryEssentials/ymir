@@ -6,30 +6,30 @@ import useRequest from '@/hooks/useRequest'
 
 import confirmConfig from '@/components/common/DangerConfirm'
 import VersionName from '@/components/result/VersionName'
-import { Prediction } from '@/constants'
 type ResultType = 'dataset' | 'model' | 'prediction'
-type Result<K extends ResultType> = {
-  'dataset': YModels.Dataset
-  'model' : YModels.Model
-  'prediction': Prediction
-}[K]
+type Target = {
+  id: number
+  projectId: number
+  groupId: number
+  name: string
+}
 export type RefProps = {
-  hide: (dss: YModels.Result[], exclude?: number[]) => void
+  hide: (dss: Target[], exclude?: number[]) => void
 }
 type Props = {
   type?: ResultType
   msg?: string
   excludeMsg?: string
-  ok?: (result: Result<ResultType>[]) => void
+  ok?: (result: Target[]) => void
 }
 
 const Hide = forwardRef<RefProps, Props>(
   ({ type = 'dataset', msg = 'dataset.action.del.confirm.content', excludeMsg = 'dataset.action.del.confirm.exclude', ok = () => {} }, ref) => {
-    const { data: hideResult, run: remoteHide } = useRequest<Result<typeof type>[], [{ pid: number; ids: number[] }]>(`${type}/hide`)
+    const { data: hideResult, run: remoteHide } = useRequest<Target[], [{ pid: number; ids: number[] }]>(`${type}/hide`)
 
     const [modal, contextHolder] = Modal.useModal()
     const [msgApi, msgHolder] = message.useMessage()
-    const getLabels = (labels: YModels.Result[]) =>
+    const getLabels = (labels: Target[]) =>
       labels.map((version) => (
         <Tag style={{ margin: '0 5px', display: 'inline-block' }} key={version.id}>
           <VersionName result={version} />
@@ -46,7 +46,7 @@ const Hide = forwardRef<RefProps, Props>(
       [],
     )
 
-    function hide(versions: YModels.Result[], exclude: number[] = []) {
+    function hide(versions: Target[], exclude: number[] = []) {
       if (!versions?.length) {
         return message.warn(t('common.selected.required'))
       }

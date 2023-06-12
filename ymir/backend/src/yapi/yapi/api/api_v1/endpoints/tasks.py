@@ -93,7 +93,7 @@ def create_infer_task(
     url = f"{settings.APP_URL_PREFIX}/tasks/"
     app_task_in = dump_to_json(
         schemas.task.AppTaskAdapter(
-            type=TaskType.infer, model_stage_id=model_stage_id, **task_in.dict()
+            type=TaskType.dataset_infer, model_stage_id=model_stage_id, **task_in.dict()
         )
     )
     resp = app.post(url, json=app_task_in)

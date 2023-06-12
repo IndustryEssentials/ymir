@@ -51,6 +51,9 @@ import { ObjectType } from '@/constants/objectType'
 import SimpleSuggestion from './list/SimpleSuggestion'
 import { IdMap, List } from '@/models/typings/common.d'
 import Empty from '../empty/Dataset'
+import { Dataset as DatasetType, DatasetGroup as DatasetGroupType, Iteration, Project, Result, Task } from '@/constants'
+import IterationRoundTag from '../table/IterationRoundTag'
+import IterationTypeTag from '../table/IterationTypeTag'
 
 type IsType = {
   isTrainSet?: boolean
@@ -63,8 +66,8 @@ type ExtraLabel = {
   iterationLabel?: string
   iterationRound?: number
 }
-type Dataset = YModels.Dataset & ExtraLabel & IsType
-type DatasetGroup = YModels.DatasetGroup & ExtraLabel & IsType
+type Dataset = DatasetType & ExtraLabel & IsType
+type DatasetGroup = DatasetGroupType & ExtraLabel & IsType
 type VersionsType = IdMap<Dataset[]>
 
 const { useForm } = Form
@@ -97,8 +100,8 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     query,
   } = useSelector(({ dataset }) => dataset)
 
-  const { run: getDatasets } = useRequest<List<YModels.DatasetGroup>>('dataset/getDatasetGroups')
-  const { run: getVersions } = useRequest<List<YModels.Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
+  const { run: getDatasets } = useRequest<List<DatasetGroup>>('dataset/getDatasetGroups')
+  const { run: getVersions } = useRequest<List<Dataset>, [{ gid: number; force?: boolean }]>('dataset/getDatasetVersions')
   const { run: updateQuery } = useRequest('dataset/updateQuery')
   const { run: resetQuery } = useRequest('dataset/resetQuery')
   const [datasetAdded, setDatasetAdded] = useState(false)
@@ -120,7 +123,9 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [project])
 
   useEffect(() => {
-    const datasets = Object.values(versions).flat().filter(ds => ds.projectId === pid)
+    const datasets = Object.values(versions)
+      .flat()
+      .filter((ds) => ds.projectId === pid)
     const added = datasets.filter((dataset) => validState(dataset.state) || readyState(dataset.state))
     setDatasetAdded(!!added.length)
   }, [versions])
@@ -138,11 +143,13 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [groups])
 
   useEffect(() => {
-    const list = setGroupLabelsByProject(datasetList?.items, project)
-    setDatasets(list)
+    setDatasets(datasetList?.items || [])
     setTotal(datasetList?.total || 1)
+  }, [datasetList])
+
+  useEffect(() => {
     setTestingSetIds(project?.testingSets || [])
-  }, [datasetList, project])
+  }, [project])
 
   useEffect(() => {
     Object.keys(visibles).map((key) => {
@@ -152,17 +159,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
       }
     })
   }, [visibles])
-
-  useEffect(() => {
-    let dvs = versions
-    if (project) {
-      dvs = setVersionLabelsByProject(dvs, project)
-    }
-    if (iterations?.length) {
-      dvs = setVersionLabelsByIterations(dvs, iterations)
-    }
-    setDatasetVersions(dvs)
-  }, [project, versions, iterations])
 
   useEffect(() => {
     Object.keys(versions).forEach((gid) => {
@@ -208,14 +204,14 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
         dataIndex: 'versionName',
         className: styles[`column_name`],
         render: (name, record) => {
-          const { id, description, projectLabel, iterationLabel, state, assetCount } = record
+          const { id, description, projectLabel, state, assetCount } = record
           const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
           const content = (
             <Row key={id}>
               <Col flex={1}>{readyState(state) ? name : <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>}</Col>
               <Col flex={'50px'} style={{ textAlign: 'right' }}>
-                {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-                {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+                <IterationTypeTag project={project} id={id} />
+                <IterationRoundTag iterations={iterations} id={id} />
                 {validState(state) && assetCount ? (
                   <span
                     onClick={(e) => {
@@ -435,72 +431,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     getVersions({ gid, force })
   }
 
-  function setGroupLabelsByProject(datasets: DatasetGroup[] = [], project?: YModels.Project) {
-    return datasets.map((item) => {
-      delete item.projectLabel
-      item = project?.trainSet?.id ? setLabelByProject<DatasetGroup>(project.trainSet.id, 'isTrainSet', item) : item
-      item = project?.testSet?.groupId ? setLabelByProject<DatasetGroup>(project.testSet?.groupId, 'isTestSet', item, project?.testSet?.versionName) : item
-      item = project?.miningSet?.groupId
-        ? setLabelByProject<DatasetGroup>(project.miningSet?.groupId, 'isMiningSet', item, project?.miningSet?.versionName)
-        : item
-      return { ...item }
-    })
-  }
-
-  function setVersionLabelsByProject(versions: VersionsType, project: YModels.Project) {
-    Object.keys(versions).forEach((gid) => {
-      const list = versions[gid]
-      const updatedList = list.map((item) => {
-        delete item.projectLabel
-        const field =
-          item.id === project?.testSet?.id ? 'isTestSet' : item.id === project?.miningSet?.id ? 'isMiningSet' : isTestingDataset(item.id) ? 'isTestingSet' : ''
-        field && (item = setLabelByProject(item.id, field, item))
-        return { ...item }
-      })
-      versions[gid] = updatedList
-    })
-    return { ...versions }
-  }
-
-  function setVersionLabelsByIterations(versions: VersionsType, iterations: YModels.Iteration[]) {
-    Object.keys(versions).forEach((gid) => {
-      const list = versions[gid]
-      const updatedList = list.map((item) => {
-        delete item.iterationLabel
-        item = setLabelByIterations(item, iterations)
-        return { ...item }
-      })
-      versions[gid] = updatedList
-    })
-    return { ...versions }
-  }
-
-  function setLabelByProject<T extends Dataset | DatasetGroup = Dataset>(id: number, label: keyof IsType, item: T, version = ''): T {
-    const maps = {
-      isTrainSet: 'project.tag.train',
-      isTestSet: 'project.tag.test',
-      isMiningSet: 'project.tag.mining',
-      isTestingSet: 'project.tag.testing',
-    }
-    item[label] = !!id && item.id === id
-    item.projectLabel = item.projectLabel || (item[label] ? t(maps[label], { version }) : '')
-    return item
-  }
-
-  function setLabelByIterations(item: Dataset, iterations: YModels.Iteration[]) {
-    const iteration = iterations.find((iter) =>
-      iter.steps
-        .map(({ resultId }) => resultId)
-        .filter((id) => id)
-        .includes(item.id),
-    )
-    if (iteration) {
-      item.iterationLabel = t('iteration.tag.round', iteration)
-      item.iterationRound = iteration.round
-    }
-    return item
-  }
-
   function rowSelectChange(gid: number, rowKeys: number[]) {
     setSelectedVersions(({ versions }) => {
       versions[gid] = rowKeys
@@ -515,7 +445,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     terminateRef.current?.confirm(dataset)
   }
 
-  function terminateOk(t: YModels.Task, ds: YModels.Result) {
+  function terminateOk(t: Task, ds: Result) {
     ds?.groupId && fetchVersions(ds.groupId, true)
   }
 
@@ -556,10 +486,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     setEditingDataset(dataset)
   }
 
-  const add = () => {
-    history.push(`/home/project/${pid}/dataset/add`)
-  }
-
   const search = (values: { [key: string]: any }) => {
     const name = values.name
     if (typeof name === 'undefined') {
@@ -587,7 +513,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     hideRef.current?.hide([version])
   }
 
-  const hideOk = (result: YModels.Result[]) => {
+  const hideOk = (result: { groupId: number }[]) => {
     result.forEach((item) => item?.groupId && fetchVersions(item?.groupId, true))
     fetchDatasets()
     setSelectedVersions({ selected: [], versions: {} })
@@ -628,7 +554,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
               <Col flex={1} onClick={() => toggleVersions(group.id)}>
                 <span className="foldBtn">{visibles[group.id] !== false ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
                 <span className="groupName">{group.name}</span>
-                {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
+                <IterationTypeTag project={project} gid={group.id} />
               </Col>
               <Col>
                 <Space>
@@ -681,7 +607,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
       <Row className="actions">
         <Col flex={1}>
           <Space>
-            <AddButton className={!datasetAdded ? 'wave' : ''} />
+            <AddButton className={!datasetAdded ? 'scale' : ''} />
             {renderMultipleActions}
           </Space>
         </Col>

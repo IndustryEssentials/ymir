@@ -1,9 +1,8 @@
 import { getLocale } from 'umi'
 import { calDuration, format } from '@/utils/date'
-import { getVersionLabel } from './common'
 import { ObjectType } from './project'
 import { transferAnnotationsCount } from './dataset'
-import { Prediction } from '.'
+import { Prediction, Backend } from '.'
 
 export enum evaluationTags {
   tp = 1,
@@ -22,7 +21,7 @@ export const evaluationLabel = (tag: evaluationTags) => {
   return maps[tag]
 }
 
-export function transferPrediction(data: YModels.BackendData): Prediction {
+export function transferPrediction(data: Backend): Prediction {
   const task = data.related_task
   const params = task?.parameters
   const config = task?.config || {}

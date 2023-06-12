@@ -81,7 +81,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
     def test_invoker_00(self, mock_run):
         exporting_request = backend_pb2.TaskReqExporting()
         in_dataset_ids = [self._base_task_id]
-        exporting_request.format = mir_cmd_pb.ExportFormat.EF_VOC_XML
+        exporting_request.format = mir_cmd_pb.AnnoFormat.AF_VOC_XML
         exporting_request.asset_dir = self._storage_root
         exporting_request.pred_dir = self._storage_root
         exporting_request.gt_dir = self._storage_root
@@ -108,7 +108,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
         expected_cmd_exporting = (
             f"mir export --root {self._mir_repo_root} --media-location {self._storage_root} "
             f"--asset-dir {self._storage_root} --src-revs {in_dataset_ids[0]}@{in_dataset_ids[0]} "
-            f"--anno-format det-voc "
+            f"--anno-format voc "
             f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
             f"-w {working_dir} --pred-dir {self._storage_root} --gt-dir {self._storage_root}")
         mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,

@@ -21,6 +21,7 @@ from app.constants.state import TaskState, TaskType, ResultState, ObjectType
 from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
 from app.libs.datasets import import_dataset_in_background, ensure_datasets_are_ready
+from app.libs.labels import keywords_to_class_ids
 from app.libs.tasks import create_single_task
 from common_utils.labels import UserLabels
 
@@ -294,7 +295,7 @@ def get_dataset(
     keyword_ids: Optional[List[int]] = None
     if keywords_for_negative_info:
         keywords = keywords_for_negative_info.split(",")
-        keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0]
+        keyword_ids = keywords_to_class_ids(user_labels, keywords)
 
     dataset_info = schemas.dataset.DatasetInDB.from_orm(dataset).dict()
     if verbose_info or keyword_ids:
@@ -386,6 +387,29 @@ def merge_datasets(
         type=TaskType.merge,
         project_id=in_merge.project_id,
         parameters=in_merge,
+    )
+    task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
+    return {"result": task_in_db}
+
+
+@router.post("/exclude", response_model=schemas.TaskOut)
+def exclude_dataset(
+    *,
+    db: Session = Depends(deps.get_db),
+    in_exclude: schemas.task.ExcludeParameter,
+    current_user: schemas.user.UserInfo = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    """
+    Exclude datasets from specific dataset
+    """
+    logger.info("[exclude] excluding datasets with payload: %s", in_exclude.json())
+
+    task_in = schemas.TaskCreate(
+        type=TaskType.exclude_data,
+        project_id=in_exclude.project_id,
+        parameters=in_exclude,
     )
     task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
     return {"result": task_in_db}

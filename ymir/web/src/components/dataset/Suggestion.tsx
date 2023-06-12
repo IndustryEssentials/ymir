@@ -1,9 +1,10 @@
 import { FC } from 'react'
 import t from '@/utils/t'
 import { percent } from '@/utils/number'
+import { DatasetSuggestions } from '@/constants'
 
 type Props = {
-  suggestions?: YModels.DatasetSuggestions
+  suggestions?: DatasetSuggestions
   target?: string[]
 }
 

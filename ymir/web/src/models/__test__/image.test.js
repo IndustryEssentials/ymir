@@ -55,6 +55,7 @@ describe('models: image', () => {
       code: 0,
       result,
     })
+    generator.next()
     const end = generator.next()
 
     expect(end.value).toEqual(expected)

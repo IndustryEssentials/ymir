@@ -115,8 +115,6 @@ def write_model_stage(stage_name: str,
     if evaluate_config:
         training_result['evaluate_config'] = evaluate_config
 
-    training_result['object_type'] = env.get_manifest_object_type()
-
     # save all
     with open(env_config.output.training_result_file, 'w') as f:
         yaml.safe_dump(data=training_result, stream=f, allow_unicode=True)

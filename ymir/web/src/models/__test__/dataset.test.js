@@ -71,6 +71,7 @@ describe('models: dataset', () => {
   const gid = 534234
   const items = products(4)
   const datasets = { items, total: items.length }
+  const importing = { items: [1, 2, 3, 6], max: 6 }
   normalReducer(dataset, 'UpdateDatasets', { [916]: datasets }, { [916]: datasets }, 'datasets', {})
   normalReducer(dataset, 'UpdateVersions', { [gid]: items }, { [gid]: items }, 'versions', {})
   normalReducer(dataset, 'UpdateDataset', { [gid]: product(534) }, { [gid]: product(534) }, 'dataset', {})
@@ -78,6 +79,7 @@ describe('models: dataset', () => {
   normalReducer(dataset, 'UpdateQuery', { limit: 20 }, { limit: 20 }, 'query', {})
   normalReducer(dataset, 'UpdateTrainingDatasetCount', 15, 15, 'trainingDatasetCount', 0)
   normalReducer(dataset, 'UpdateValidDatasetCount', 18, 18, 'validDatasetCount', 0)
+  normalReducer(dataset, 'UpdateImporting', importing, importing, 'importing', { items: [], max: 10 })
 
   it('reducers: CLEAR_ALL', () => {
     const state = {
@@ -94,12 +96,30 @@ describe('models: dataset', () => {
       publicDatasets: [],
       trainingDatasetCount: 0,
       validDatasetCount: 0,
+      importing: {
+        items: [],
+        max: 10,
+      },
     }
     const action = {
       payload: null,
     }
     const result = dataset.reducers.CLEAR_ALL(state, action)
     expect(result).toEqual(expected)
+  })
+
+  it('effects: updateImportingList', () => {
+    const list = [{ name: 'test1 ' }, { name: 'test2' }, { name: 'test3' }, { name: 'test4' }]
+    const creator = {
+      type: 'updateImporting',
+      payload: list,
+    }
+    const saga = dataset.effects.updateImportingList
+    const generator = saga(creator, { put, select })
+    generator.next()
+    const end = generator.next()
+    console.log('end:', end)
+    expect(end.done).toBe(true)
   })
 
   it('effects: getDatasetGroups', () => {
@@ -191,7 +211,6 @@ describe('models: dataset', () => {
 
     const generator = saga(creator, { put, call, select })
     generator.next()
-    generator.next(false)
     generator.next(expected)
     const end = generator.next()
 
@@ -208,7 +227,6 @@ describe('models: dataset', () => {
 
     const generator = saga(creator, { put, call, select })
     generator.next()
-    generator.next(false)
     const end = generator.next(expected)
 
     expect(end.value).toEqual(expected)
@@ -224,7 +242,6 @@ describe('models: dataset', () => {
 
     const generator = saga(creator, { put, call, select })
     generator.next()
-    generator.next(false)
     generator.next([])
     generator.next({ items: expected, total: expected.length })
     const end = generator.next()
@@ -334,10 +351,11 @@ describe('models: dataset', () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    const end = generator.next()
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -450,7 +468,7 @@ describe('models: dataset', () => {
       payload: {},
     }
     const recieved = [1, 3, 4, 5, 6].map((id) => ds(id))
-    const expected = { items: recieved.map((item) => transferDataset(item)), total: recieved.length }
+    const expected = recieved.map((item) => transferDataset(item))
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -468,10 +486,10 @@ describe('models: dataset', () => {
     const pid = 63343
     const creator = {
       type: 'getValidDatasetsCount',
-      payload: pid
+      payload: pid,
     }
     const total = 3
-    const result = {items: products(total), total }
+    const result = { items: products(total), total }
     const generator = saga(creator, { put })
     generator.next()
     generator.next(result)
@@ -485,10 +503,10 @@ describe('models: dataset', () => {
     const pid = 63343
     const creator = {
       type: 'getTrainingDatasetCount',
-      payload: pid
+      payload: pid,
     }
     const total = 4
-    const result = {items: products(total), total }
+    const result = { items: products(total), total }
     const generator = saga(creator, { put })
     generator.next()
     generator.next(result)

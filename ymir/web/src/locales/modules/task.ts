@@ -242,14 +242,14 @@ const task = {
   'task.label.bottomtip': { cn: '前往{link}标注', en: 'Go to {link}' },
   'task.label.bottomtip.link.label': { cn: '标注平台', en: 'Label Platform' },
   'task.btn.back': { cn: '返回', en: 'Back' },
-  'task.gpu.count': { cn: '空闲GPU数量', en: 'Idle GPU Count' },
-  'task.train.gpu.invalid': {
+  'task.gpu.count': { cn: 'GPU数量', en: 'GPU Count' },
+  'task.gpu.invalid': {
     cn: 'GPU个数必须在{min}-{max}之间',
     en: 'GPU Count must between {min} - {max}',
   },
   'task.gpu.tip': {
-    cn: '当前可用空闲GPU个数为 {count}',
-    en: 'Valid Idle GPU count: {count}',
+    cn: '空闲GPU数量为 {count}',
+    en: 'Idle GPUs: {count}',
   },
   'task.detail.label.go.platform': {
     cn: '跳转到标注平台>>',
@@ -421,6 +421,9 @@ const task = {
   'task.panel.settings.advanced': { en: 'Advanced Settings', cn: '高级设置' },
   'task.train.keywords.disabled.tip': { en: 'Training dataset required', cn: '请先选择训练集' },
   'task.train.validation.disabled.tip': { en: 'Training target required', cn: '请先选择训练目标' },
+  'task.infer.objectType.label': { en: 'Detection Object', cn: '检测目标' },
+  'task.infer.objectType.all': { en: 'Detect All Classes', cn: '检测所有目标' },
+  'task.infer.objectType.trainingTarget': { en: 'Detect Training Classes', cn: '检测训练目标' },
 }
 
 export default task

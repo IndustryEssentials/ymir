@@ -35,6 +35,7 @@ class TaskType(IntEnum):
     import_model = mir_cmd_pb.TaskType.TaskTypeImportModel
     dataset_infer = mir_cmd_pb.TaskType.TaskTypeDatasetInfer
     pull_image = mir_cmd_pb.TaskType.TaskTypePullImage
+    exclude_data = mir_cmd_pb.TaskType.TaskTypeExcludeData
 
     # fixme
     #  create_project is not the type of TASK_CREATE, but empty dataset need a task
@@ -86,9 +87,10 @@ class MiningStrategy(IntEnum):
 class ObjectType(IntEnum):
     unknown = mir_cmd_pb.ObjectType.OT_UNKNOWN  # 0
     classification = mir_cmd_pb.ObjectType.OT_CLASS  # 1
-    object_detect = mir_cmd_pb.ObjectType.OT_DET_BOX  # 2
-    segmentation = mir_cmd_pb.ObjectType.OT_SEG  # 3
-    instance_segmentation = mir_cmd_pb.ObjectType.OT_SEG + 1  # 4
+    object_detect = mir_cmd_pb.ObjectType.OT_DET  # 2
+    semantic_segmentation = mir_cmd_pb.ObjectType.OT_SEM_SEG  # 3
+    instance_segmentation = mir_cmd_pb.ObjectType.OT_INS_SEG  # 4
+    multi_modal = mir_cmd_pb.ObjectType.OT_MULTI_MODAL  # 50
 
 
 class AnnotationType(IntEnum):
@@ -116,3 +118,18 @@ IterationStepTemplates = [
     IterationStepTemplate("prepare_training", TaskType.data_fusion),
     IterationStepTemplate("training", TaskType.training),
 ]
+ResultTypeMapping = {
+    TaskType.training: ResultType.model,
+    TaskType.copy_model: ResultType.model,
+    TaskType.import_model: ResultType.model,
+    TaskType.dataset_infer: ResultType.prediction,
+    TaskType.pull_image: ResultType.docker_image,
+    TaskType.mining: ResultType.dataset,
+    TaskType.label: ResultType.dataset,
+    TaskType.import_data: ResultType.dataset,
+    TaskType.copy_data: ResultType.dataset,
+    TaskType.data_fusion: ResultType.dataset,
+    TaskType.filter: ResultType.dataset,
+    TaskType.merge: ResultType.dataset,
+    TaskType.exclude_data: ResultType.dataset,
+}

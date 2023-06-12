@@ -72,7 +72,9 @@ const dataset = {
   },
   'dataset.add.form.name.required': { cn: '数据集名称为必填项', en: 'Dataset Name Required' },
   'dataset.add.form.name.placeholder': { cn: '请输入数据集名称，支持2-80个字符', en: 'Please input dataset name, 2 - 80 characters' },
+  'dataset.add.to.list': { cn: '添加到导入列表', en: 'Add to Import List' },
   'dataset.add.form.type.label': { cn: '添加类型', en: 'Type' },
+  'dataset.add.form.source.label': { cn: 'URL/路径/数据集', en: 'URL/Path/Dataset' },
   'dataset.add.form.label.label': { cn: '标注', en: 'Labeling Status' },
   'dataset.add.form.newkw.label': { cn: ' ', en: ' ' },
   'dataset.add.newkw.asname': { cn: '添加类别', en: 'As Class' },
@@ -88,14 +90,15 @@ const dataset = {
   'dataset.add.label_strategy.add': { cn: '添加所有标注', en: 'Add Classes' },
   'dataset.add.form.internal.label': { cn: '数据集', en: 'Dataset' },
   'dataset.add.form.internal.required': { cn: '请选择公共数据集', en: 'Please select public dataset' },
+  'dataset.add.form.internal.max': { cn: '选择的数据集不能超过{max}个', en: 'Selected datasets > {max}' },
   'dataset.add.form.internal.placeholder': { cn: '请选择一个公共数据集', en: 'Select A Public Dataset' },
   'dataset.add.form.net.label': { cn: 'URL地址', en: 'URL' },
   'dataset.add.form.net.placeholder': { cn: '请输入压缩文件的url地址', en: 'Please input a url of zip file' },
   'dataset.add.form.path.label': { cn: '相对路径', en: 'Relative Path' },
-  'dataset.add.form.tip.format.detail': { cn: '查看标注示例文件及meta.yaml格式', en: 'View annotations sample file or meta.yaml' },
+  'dataset.add.form.tip.format.detail': { cn: '查看标注示例文件格式', en: 'View annotations sample file format' },
   'dataset.add.form.tip.structure': {
-    cn: '图片文件需放入images文件夹内，标注文件需放入gt文件夹内。gt可选。文件结构如下：{br}{pic}{br}{detail}',
-    en: 'image -> images; gt -> GT annotations; gt is optional. structure: {br}{pic}',
+    cn: '图片文件需放入images文件夹内，标注文件（{detail}）需放入gt文件夹内。gt可选。 文件结构请{pic}{br}',
+    en: 'image -> images; gt -> GT annotations ({detail}); gt is optional. structure: {pic}',
   },
   'dataset.add.form.path.tip': {
     cn: `1. 将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/Dataset2012, 输入基于ymir-sharing相对路径：Dataset2012{br}
@@ -105,7 +108,7 @@ const dataset = {
   },
   'dataset.add.form.path.placeholder': { cn: '请输入路径', en: 'Please input path on server' },
   'dataset.add.form.upload.btn': { cn: '上传文件', en: 'Upload' },
-  'dataset.add.form.upload.tip': {
+  'dataset.add.form.local.tip': {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
       3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，格式不符的图片将不会导入，标注文件格式为{format}。{br}
@@ -123,6 +126,19 @@ const dataset = {
     en: `1. Sample: https://www.examples.com/dataset.zip{br} 
       2. {structure}`,
   },
+  'dataset.add.editing.tip': {
+    cn: '有未添加到导入列表的数据集，是否只添加导入列表中的数据集？',
+    en: 'There are datasets that have not been added to the import list. Do you want to only add the datasets that are in the import list?',
+  },
+  'dataset.add.leave.page.prompt': {
+    cn: '数据集正在添加中，离开页面会导致未添加完成的数据丢失，确认要离开？',
+    en: 'The dataset is currently being added. If you leave the page, the incomplete dataset may be lost. Are you sure you want to leave?',
+  },
+  'dataset.add.name.duplicated': {
+    cn: '数据集名称和项目中已有的数据集重复，请修改',
+    en: 'The dataset name is a duplicate of an existing dataset in the project. Please modify the name.',
+  },
+  'dataset.add.import.list.title': { cn: '导入列表', en: 'Import Dataset' },
   'dataset.copy.form.dataset': { cn: '原数据集', en: 'Original Dataset' },
   'dataset.copy.form.desc.label': { cn: '备注', en: 'Description' },
   'dataset.copy.success.msg': { cn: '数据集正在复制，请稍等', en: 'Dataset copying' },
@@ -224,6 +240,7 @@ const dataset = {
     en: 'It is recommended to add images containing {values} classes greater than {boundingLabel} of the maxium to increase the balance of the object density.',
   },
   'dataset.unfold.all': { cn: '全部展开', en: 'Unfold All Versions' },
+  'dataset.add.batch.success': { cn: '{count}个数据集添加任务创建成功', en: '{count} datasets add tasks created' },
 }
 
 export default dataset

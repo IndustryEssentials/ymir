@@ -51,6 +51,7 @@
                                 "pose": "Frontal",
                                 "color": "white"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -78,6 +79,7 @@
                                 "pose": "Left",
                                 "color": "blue"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -110,6 +112,7 @@
                                 "pose": "Unspecified",
                                 "color": "pink"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -125,7 +128,6 @@
                     ]
                 }
             },
-            "is_instance_segmentation": false,
             "task_id": "import_detbox_01",
             "type": 2,
             "task_class_ids": [
@@ -155,6 +157,7 @@
                                 "color": "pink",
                                 "pose": "Unspecified"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -188,6 +191,7 @@
                                 "pose": "Frontal",
                                 "color": "white"
                             },
+                            "prompt": "",
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
@@ -215,6 +219,7 @@
                                 "difficult": "0",
                                 "color": "blue"
                             },
+                            "prompt": "",
                             "cm": 0,
                             "det_link_id": 0,
                             "polygon": [],
@@ -229,7 +234,6 @@
                     ]
                 }
             },
-            "is_instance_segmentation": false,
             "task_id": "import_detbox_01",
             "type": 2,
             "task_class_ids": [

@@ -4,6 +4,7 @@ import { Link, useParams, useRouteMatch, useSelector } from 'umi'
 import { homeRoutes } from '@/config/routes'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
+import { Project } from '@/constants'
 
 type CrumbType = {
   id: number
@@ -53,7 +54,7 @@ const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
   const { path } = useRouteMatch()
   const params = useParams<{ id: string; [key: string | number]: string }>()
   const project = useSelector(({ project }) => project.projects[params.id])
-  const { run: getProject } = useRequest<YModels.Project, [{ id: string }]>('project/getProject', {
+  const { run: getProject } = useRequest<Project, [{ id: string }]>('project/getProject', {
     cacheKey: 'getProject',
     loading: false,
   })
@@ -78,7 +79,7 @@ const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
       <Breadcrumb className="breadcrumbContent" separator="/">
         {crumbItems.map((crumb, index) => {
           const last = index === crumbItems.length - 1
-          const link = (isProjectDetail(crumb) ? datasetList?.path : crumb.path)?.replace(/:([^\/]+)/g, (str, key: number) => {
+          const link = (isProjectDetail(crumb) && params.id ? datasetList?.path : crumb.path)?.replace(/:([^\/]+)/g, (str, key: number) => {
             return params[key] ? params[key] : ''
           })
           const label = getLabel(crumb, titles[index])

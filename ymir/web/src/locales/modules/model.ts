@@ -56,6 +56,7 @@ const model = {
   'model.verify.upload.info': { cn: '支持jpg, png, bmp格式, 图片大小 < {size}M', en: 'Support *.jpg, *.png, *.bmp, size < {size}M' },
   'model.verify.confidence': { cn: '置信度', en: 'Confidence' },
   'model.verify.upload.label': { cn: '上传图片', en: 'Upload Image' },
+  'model.verify.upload.again.label': { cn: '重新上传图片', en: 'Upload Another Image' },
   'model.verify.model.info.title': { cn: '模型信息', en: 'Model Info.' },
   'model.verify.model.param.title': { cn: '参数调整', en: 'Parameter Adjustment' },
   'model.verify.model.param.fold': { cn: '点击收起', en: 'Fold' },
@@ -67,7 +68,7 @@ const model = {
   'model.diagnose.form.model': { cn: '诊断模型', en: 'Diagnosing Models' },
   'model.diagnose.form.testset': { cn: '测试集', en: 'Testing Datasets' },
   'model.diagnose.form.confidence': { cn: '置信度', en: 'Confidence' },
-  'model.diagnose.form.iou': { cn: '请输入mAP计算方式', en: 'mAP Calculation' },
+  'model.diagnose.form.iou': { cn: 'mAP计算方式', en: 'mAP Calculation' },
   'model.diagnose.form.iou.everage': { cn: '插值计算', en: 'Interpolation' },
   'model.diagnose.form.iou.single': { cn: '单点计算', en: 'Single Point' },
   'model.diagnose.form.iou.everage.tip': {
@@ -123,6 +124,7 @@ const model = {
   'model.stage.metrics.primary.label.det': { en: 'mAP', cn: '精度均值(mAP)' },
   'model.stage.metrics.primary.label.seg': { en: 'mIoU', cn: '精度均值(mIoU)' },
   'model.stage.metrics.primary.label.ins': { en: 'maskAP', cn: '精度均值(maskAP)' },
+  'model.stage.metrics.primary.label.mul': { en: 'mAP', cn: '精度均值(mAP)' },
 }
 
 export default model

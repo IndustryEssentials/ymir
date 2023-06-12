@@ -1,8 +1,5 @@
-import glob
 import json
 import logging
-import os
-import shutil
 import zipfile
 from enum import IntEnum
 from io import BytesIO
@@ -55,16 +52,15 @@ class LabelFree(LabelBase):
         return label_config
 
     @staticmethod
-    def map_object_type_to_label_free_project_type(object_type: int, is_instance_segmentation: bool) -> int:
-        if is_instance_segmentation:
-            project_type = LabelFreeProjectType.instance_segmentation
-        elif object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
-            project_type = LabelFreeProjectType.detection
-        elif object_type == mir_cmd_pb.ObjectType.OT_SEG:
-            project_type = LabelFreeProjectType.semantic_segmentation
-        else:
-            raise ValueError(f"LabelFree DOES NOT SUPPORT object_type({object_type})")
-        return project_type.value
+    def map_object_type_to_label_free_project_type(object_type: int) -> int:
+        mapping = {
+            mir_cmd_pb.ObjectType.OT_DET: LabelFreeProjectType.detection,
+            mir_cmd_pb.ObjectType.OT_SEM_SEG: LabelFreeProjectType.semantic_segmentation,
+            mir_cmd_pb.ObjectType.OT_INS_SEG: LabelFreeProjectType.instance_segmentation,
+            # FIXME: ad hoc, ymir only supports detection + multimodal for now
+            mir_cmd_pb.ObjectType.OT_MULTI_MODAL: LabelFreeProjectType.detection,
+        }
+        return mapping[object_type].value
 
     def create_label_project(
         self,
@@ -73,7 +69,6 @@ class LabelFree(LabelBase):
         collaborators: List,
         expert_instruction: str,
         object_type: int,
-        is_instance_segmentation: bool,
     ) -> int:
         # Create a project and set up the labeling interface
         url_path = "/api/projects"
@@ -83,13 +78,15 @@ class LabelFree(LabelBase):
             collaborators=collaborators,
             label_config=label_config,
             expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
-            project_type=self.map_object_type_to_label_free_project_type(object_type, is_instance_segmentation),
+            project_type=self.map_object_type_to_label_free_project_type(object_type),
+            multimodal=(object_type == mir_cmd_pb.ObjectType.OT_MULTI_MODAL),
         )
         resp = self._requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp).get("id")
         if not isinstance(project_id, int):
             raise ValueError(f"LabelFree return wrong id: {project_id} from {url_path}")
 
+        logging.info(f"[label] created LabelFree project({project_id}) with payload: {data}")
         return project_id
 
     def set_import_storage(self, project_id: int, import_path: str, use_pre_annotation: bool = False) -> int:
@@ -162,13 +159,6 @@ class LabelFree(LabelBase):
         self._requests.put(url_path=url_path, params={"delete_unlabeled_task": True})
 
     @staticmethod
-    def _move_voc_annotations_to(des_path: str) -> None:
-        voc_files = glob.glob(f"{des_path}/**/*.xml")
-        for voc_file in voc_files:
-            base_name = os.path.basename(voc_file)
-            shutil.move(voc_file, os.path.join(des_path, base_name))
-
-    @staticmethod
     def _move_coco_annotations_to(des_path: str) -> None:
         """
         Convert result.json (Label Studio default filename) to coco-annotations.json (YMIR required filename)
@@ -187,10 +177,7 @@ class LabelFree(LabelBase):
         export_url = self.get_export_url(project_id, export_task_id)
         content = self._requests.get(export_url)
         self.unzip_annotation_files(BytesIO(content), des_path)
-        if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
-            self._move_voc_annotations_to(des_path)
-        else:
-            self._move_coco_annotations_to(des_path)
+        self._move_coco_annotations_to(des_path)
         logging.info(f"success save label result from labelfree to {des_path}")
 
     def get_export_task(self, project_id: int, object_type: int) -> str:
@@ -206,7 +193,7 @@ class LabelFree(LabelBase):
 
     def create_export_task(self, project_id: int, object_type: int) -> None:
         url_path = "/api/v1/export"
-        export_type = 1 if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX else 4
+        export_type = 4  # use COCO JSON for all kinds of label projects
         payload = {"project_id": project_id, "export_type": export_type, "export_image": False}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
@@ -243,11 +230,10 @@ class LabelFree(LabelBase):
         import_work_dir: str,
         use_pre_annotation: bool,
         object_type: int,
-        is_instance_segmentation: bool,
     ) -> None:
         logging.info("start LABELFREE run()")
         project_id = self.create_label_project(
-            project_name, keywords, collaborators, expert_instruction, object_type, is_instance_segmentation)
+            project_name, keywords, collaborators, expert_instruction, object_type)
         storage_id = self.set_import_storage(project_id, input_asset_dir, use_pre_annotation)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
@@ -262,5 +248,4 @@ class LabelFree(LabelBase):
             exported_storage_id,
             input_asset_dir,
             object_type,
-            is_instance_segmentation,
         )

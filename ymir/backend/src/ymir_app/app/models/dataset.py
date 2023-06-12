@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, SmallInteger, Text, JSON
 from sqlalchemy.orm import relationship
@@ -7,6 +7,10 @@ from sqlalchemy.orm import relationship
 from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
+
+if TYPE_CHECKING:
+    from app.models.project import Project
+    from app.models.dataset_group import DatasetGroup
 
 
 class Dataset(Base):
@@ -48,9 +52,12 @@ class Dataset(Base):
         nullable=False,
     )
 
+    project: "Project"
+    group: "DatasetGroup"
+
     @property
     def group_name(self) -> str:
-        return self.group.name  # type: ignore
+        return self.group.name
 
     @property
     def name(self) -> str:
@@ -58,6 +65,4 @@ class Dataset(Base):
 
     @property
     def object_type(self) -> Optional[int]:
-        if self.project:  # type: ignore
-            return self.project.object_type  # type: ignore
-        return None
+        return self.project.object_type

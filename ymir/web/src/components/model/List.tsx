@@ -46,6 +46,9 @@ import { ModuleType } from '@/pages/project/components/ListHoc'
 import useRequest from '@/hooks/useRequest'
 import StrongTitle from '../table/columns/StrongTitle'
 import { IdMap, List } from '@/models/typings/common.d'
+import { ModelGroup as ModelGroupType, Model, Iteration, Project, Result } from '@/constants'
+import IterationRoundTag from '../table/IterationRoundTag'
+import IterationTypeTag from '../table/IterationTypeTag'
 
 type IsType = {
   isInitModel?: boolean
@@ -55,13 +58,13 @@ type ExtraLabel = {
   iterationLabel?: string
   iterationRound?: number
 }
-type ModelType = YModels.Model & ExtraLabel & IsType
-type ModelGroup = YModels.ModelGroup & ExtraLabel & IsType
+type ModelType = Model & ExtraLabel & IsType
+type ModelGroup = ModelGroupType & ExtraLabel & IsType
 type Models = IdMap<ModelType[]>
 
 const { useForm } = Form
 
-const Model: ModuleType = ({ pid, project, iterations, groups }) => {
+const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
   const history = useHistory()
   const location: Location = useLocation()
   const name = location.query?.name
@@ -80,14 +83,14 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   const terminateRef = useRef<TRefProps>(null)
   const generateRerun = useRerunAction()
   const [publish, publishResult] = usePublish()
-  const [editingModel, setEditingModel] = useState<YModels.Model>()
+  const [editingModel, setEditingModel] = useState<Model>()
   const {
     versions,
     query,
     models: { [pid]: modelList },
   } = useSelector(({ model }) => model)
-  const { run: getModels } = useRequest<List<YModels.ModelGroup>, [{ pid: number; query: YParams.ModelsQuery }]>('model/getModelGroups')
-  const { run: getVersions } = useRequest<List<YModels.Model>, [{ gid: number; force?: boolean }]>('model/getModelVersions')
+  const { run: getModels } = useRequest<List<ModelGroup>, [{ pid: number; query: YParams.ModelsQuery }]>('model/getModelGroups')
+  const { run: getVersions } = useRequest<List<Model>, [{ gid: number; force?: boolean }]>('model/getModelVersions')
   const { run: updateQuery } = useRequest('model/updateQuery')
   const { run: resetQuery } = useRequest('model/resetQuery')
 
@@ -104,10 +107,9 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   }, [groups])
 
   useEffect(() => {
-    const mds = setGroupLabelsByProject(modelList?.items, project)
-    setModels(mds)
+    setModels(modelList?.items || [])
     setTotal(modelList?.total || 1)
-  }, [modelList, project])
+  }, [modelList])
 
   useEffect(() => {
     Object.keys(versions).forEach((gid) => {
@@ -126,14 +128,6 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
       }
     })
   }, [visibles])
-
-  useEffect(() => {
-    let dvs = setVersionLabelsByProject(versions, project)
-    if (iterations?.length) {
-      dvs = setVersionLabelsByIterations(versions, iterations)
-    }
-    setModelVersions(dvs)
-  }, [versions, project, iterations])
 
   useEffect(() => {
     if (name) {
@@ -169,7 +163,7 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
       title: <StrongTitle label="model.column.name" />,
       dataIndex: 'versionName',
       className: styles[`column_name`],
-      render: (name, { id, description, projectLabel, iterationLabel }) => {
+      render: (name, { id, description }) => {
         const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
         const content = (
           <Row>
@@ -177,8 +171,8 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
               <Link to={`/home/project/${pid}/model/${id}`}>{name}</Link>
             </Col>
             <Col flex={'50px'}>
-              {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-              {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+              <IterationTypeTag project={project} id={id} model />
+              <IterationRoundTag iterations={iterations} id={id} model />
             </Col>
           </Row>
         )
@@ -228,7 +222,7 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     },
   ]
 
-  const hideHidden = ({ state, id }: YModels.Model) => readyState(state) || project?.hiddenModels?.includes(id)
+  const hideHidden = ({ state, id }: Model) => readyState(state) || project?.hiddenModels?.includes(id)
 
   const listChange = (current: number, pageSize: number) => {
     const limit = pageSize
@@ -236,7 +230,7 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     updateQuery({ ...query, current, limit, offset })
   }
 
-  function updateModelVersion(result: YModels.Model) {
+  function updateModelVersion(result: Model) {
     setModelVersions((mvs) => {
       return {
         ...mvs,
@@ -246,63 +240,9 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
       }
     })
   }
-  
+
   function toggleVersions(id: number, force?: boolean) {
     setVisibles((old) => ({ ...old, [id]: force || (typeof old[id] !== 'undefined' && !old[id]) }))
-  }
-
-  function setVersionLabelsByIterations(versions: Models, iterations: YModels.Iteration[]) {
-    Object.keys(versions).forEach((gid) => {
-      const list = versions[gid]
-      const updatedList = list.map((item) => {
-        delete item.iterationLabel
-        return setLabelByIterations(item, iterations)
-      })
-      versions[gid] = updatedList
-    })
-    return { ...versions }
-  }
-
-  function setVersionLabelsByProject(versions: Models, project?: YModels.Project) {
-    Object.keys(versions).forEach((gid) => {
-      const list = versions[gid]
-      const updatedList = list.map((item) => {
-        delete item.projectLabel
-        return project?.model ? setLabelByProject(project?.model, 'isInitModel', item) : item
-      })
-      versions[gid] = updatedList
-    })
-    return { ...versions }
-  }
-
-  function setGroupLabelsByProject(items: ModelGroup[] = [], project?: YModels.Project) {
-    return items.map((item) => {
-      delete item.projectLabel
-      return project?.model ? setLabelByProject(project?.model, 'isInitModel', item) : item
-    })
-  }
-
-  function setLabelByProject<T extends ModelType | ModelGroup = ModelType>(id: number, label: keyof IsType, item: T, version = ''): T {
-    const maps = {
-      isInitModel: 'project.tag.model',
-    }
-    item[label] = !!id && item.id === id
-    item.projectLabel = item.projectLabel || (item[label] ? t(maps[label], { version }) : '')
-    return item
-  }
-
-  function setLabelByIterations(item: ModelType, iterations?: YModels.Iteration[]) {
-    const iteration = iterations?.find((iter) =>
-      iter.steps
-        .map(({ resultId }) => resultId)
-        .filter((id) => id)
-        .includes(item.id),
-    )
-    if (iteration) {
-      item.iterationLabel = t('iteration.tag.round', iteration)
-      item.iterationRound = iteration.round
-    }
-    return item
   }
 
   function fetchVersions(id: number | string, force?: boolean) {
@@ -421,7 +361,7 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     hideRef.current?.hide([version])
   }
 
-  const hideOk = (result: YModels.Result[]) => {
+  const hideOk = (result: { groupId: number }[]) => {
     result.forEach((item) => fetchVersions(item.groupId, true))
     getData()
     setSelectedVersions({ selected: [], versions: {} })
@@ -441,7 +381,7 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
     terminateRef.current?.confirm(model)
   }
 
-  function terminateOk({}, { groupId }: YModels.Result) {
+  function terminateOk({}, { groupId }: Result) {
     groupId && fetchVersions(groupId, true)
   }
 
@@ -521,7 +461,6 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
               <Col flex={1} onClick={() => toggleVersions(group.id)}>
                 <span className="foldBtn">{visibles[group.id] !== false ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
                 <span className="groupName">{group.name}</span>
-                {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
               </Col>
               <Col>
                 <Space>
@@ -606,4 +545,4 @@ const Model: ModuleType = ({ pid, project, iterations, groups }) => {
   )
 }
 
-export default Model
+export default ModelList

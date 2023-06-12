@@ -6,9 +6,10 @@ import { evaluationLabel } from '@/constants/dataset'
 
 import styles from '../common.less'
 import { percent } from '@/utils/number'
+import { BoundingBox as BoundingBoxType } from '@/constants'
 
 type Props = {
-  annotation: YModels.BoundingBox
+  annotation: BoundingBoxType
   ratio?: number
   simple?: boolean
 }
@@ -33,7 +34,9 @@ const BoundingBox: FC<Props> = ({ annotation, ratio = 1, simple = false }) => {
         {annotation?.score ? (
           <Row>
             <Col flex={'100px'}>{t('model.verify.confidence')}</Col>
-            <Col flex={1} title={`${annotation.score}`}>{percent(annotation?.score)}</Col>
+            <Col flex={1} title={`${annotation.score}`}>
+              {percent(annotation?.score)}
+            </Col>
           </Row>
         ) : null}
         {tagsArr.length ? (
@@ -55,7 +58,7 @@ const BoundingBox: FC<Props> = ({ annotation, ratio = 1, simple = false }) => {
   const width = w * ratio <= 2 ? 1 : w * ratio - 2
   const height = h * ratio <= 2 ? 1 : h * ratio - 2
 
-  const getBox = (annotation: YModels.BoundingBox, title = '', extra?: ReactNode) => (
+  const getBox = (annotation: BoundingBoxType, title = '', extra?: ReactNode) => (
     <div
       title={title}
       className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}

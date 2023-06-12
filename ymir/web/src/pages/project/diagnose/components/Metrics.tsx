@@ -4,7 +4,7 @@ import { Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Space, Tag,
 import { useLocation, useSelector } from 'umi'
 
 import t from '@/utils/t'
-import { ObjectType, isDetection, isSemantic } from '@/constants/objectType'
+import { ObjectType, isDetection, isSemantic, isSegmentation, isMultiModal } from '@/constants/objectType'
 
 import Panel from '@/components/form/panel'
 import SingleMetircView from './SingleMetircView'
@@ -50,6 +50,7 @@ const getTabs = (type = ObjectType.ObjectDetection) => {
     [ObjectType.ObjectDetection]: ['ap', 'curve', 'rp', 'pr'],
     [ObjectType.SemanticSegmentation]: ['iou', 'acc'],
     [ObjectType.InstanceSegmentation]: ['maskap', 'boxap'],
+    [ObjectType.MultiModal]: ['ap', 'curve', 'rp', 'pr'],
   }
   return metricsTabs.filter(({ value }) => types[type].includes(value))
 }
@@ -68,8 +69,9 @@ const Matrics: FC<Props> = ({ prediction }) => {
   const [tabs, setTabs] = useState<TabType[]>([])
   const { state } = useLocation<{ mid: number }>()
   const [form] = Form.useForm()
-  const [averageIou, setaverageIou] = useState(false)
+  const [averageIou, setaverageIou] = useState(true)
   const [confidence, setConfidence] = useState(0.3)
+  const [confidenceChanged, setConfidenceChanged] = useState(false)
   const [selectedMetric, setSelectedMetric] = useState<TabIdType>('ap')
   const [prRate, setPrRate] = useState<[number, number]>([0.8, 0.95])
   const [keywords, setKeywords] = useState<string[]>([])
@@ -145,15 +147,20 @@ const Matrics: FC<Props> = ({ prediction }) => {
     })
   }, [selectedKeywords, kws])
 
-  const diagnose = useCallback(
-    (params: { [key: string]: any }) => {
-      if (!prediction) {
-        return
-      }
-      fetchDiagnosis({ ...params, pid: prediction?.projectId, predictionId: prediction?.id, curve: isDetection(prediction?.type), averageIou })
-    },
-    [prediction, averageIou],
-  )
+  useEffect(() => {
+    prediction && diagnose()
+  }, [prediction])
+
+  const diagnose = () => {
+    fetchDiagnosis({
+      pid: prediction.projectId,
+      predictionId: prediction.id,
+      curve: false,
+      averageIou: true,
+      confidence,
+    })
+    setConfidenceChanged(false)
+  }
 
   function onFinishFailed(errorInfo: ValidateErrorEntity) {
     console.log('Failed:', errorInfo)
@@ -173,12 +180,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
 
   function kwChange(values: string[]) {
     setSelectedKeywords(values)
-  }
-
-  function retry() {
-    setDiagnosis(undefined)
-    setDiagnosing(false)
-    setCk(false)
   }
 
   function renderView() {
@@ -215,7 +216,7 @@ const Matrics: FC<Props> = ({ prediction }) => {
           options={tabs.map((item, index) => ({
             ...item,
             label: t(`model.diagnose.medtric.tabs.${item.value}`),
-            disabled: isDetection(prediction?.type) && averageIou && index > 0,
+            disabled: ((isDetection(prediction?.type) && averageIou) || isMultiModal(prediction?.type)) && index > 0,
           }))}
           onChange={metricsChange}
         />
@@ -292,11 +293,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
         </Col>
         <Col span={6}>
           <div className={s.formContainer}>
-            <div className={s.mask} hidden={!diagnosing}>
-              <Button style={{ marginBottom: 10 }} size="large" type="primary" onClick={() => retry()}>
-                <CompareIcon /> {t('model.diagnose.metrics.btn.retry')}
-              </Button>
-            </div>
             <Panel label={'Metrics'} toogleVisible={false}>
               <Form
                 className={s.form}
@@ -324,31 +320,27 @@ const Matrics: FC<Props> = ({ prediction }) => {
                 </Form.Item>
                 {!isSemantic(prediction?.type) ? (
                   <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">
-                    <InputNumber step={0.0005} min={0.0005} max={0.9995} />
+                    <InputNumber
+                      step={0.0005}
+                      min={0.0005}
+                      max={0.9995}
+                      onChange={(value) => {
+                        setConfidence(value)
+                        setConfidenceChanged(true)
+                      }}
+                    />
                   </Form.Item>
                 ) : null}
-                <CKSelector prediction={prediction} />
                 {!isSemantic(prediction?.type) ? (
-                  <Form.Item label={t('model.diagnose.form.iou')}>
-                    <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
-                    {!averageIou ? (
-                      <Form.Item name="iou">
-                        <IouSlider />
-                      </Form.Item>
-                    ) : null}
+                  <Form.Item style={{ textAlign: 'center' }}>
+                    <Button htmlType="submit" type="primary" disabled={!confidenceChanged} onClick={() => diagnose()}>
+                      <CompareIcon /> {t('model.diagnose.metrics.btn.retry')}
+                    </Button>
                   </Form.Item>
                 ) : null}
-                <Form.Item name="submitBtn">
-                  <div style={{ textAlign: 'center' }}>
-                    <Button type="primary" size="large" htmlType="submit">
-                      <CompareIcon /> {t('model.diagnose.metrics.btn.start')}
-                    </Button>
-                  </div>
-                </Form.Item>
               </Form>
             </Panel>
           </div>
-          {model && diagnosing ? <DefaultStages models={[model]} /> : null}
         </Col>
       </Row>
     </div>

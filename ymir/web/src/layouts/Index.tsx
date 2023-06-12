@@ -25,7 +25,7 @@ const BasicLayout: FC = ({ children }) => {
 
   useEffect(() => {
     if (!logined) {
-      history.replace(`/login?redirect=${history.location.pathname}`)
+      window.location.href = `/login?redirect=${history.location.pathname}`
       return
     }
     getUserInfo()
@@ -43,7 +43,7 @@ const BasicLayout: FC = ({ children }) => {
         </Header>
         <Layout>
           <LeftMenu></LeftMenu>
-          <Layout>
+          <Layout className="layoutContent">
             <Content
               className={commonStyles.content}
               style={{

@@ -11,12 +11,11 @@ function equalObject(obj1, obj2) {
 
 describe('models: iteration', () => {
   const createGenerator = generatorCreator(iteration)
-  normalReducer(iteration, 'UPDATE_ITERATIONS', { 13424: product(34) }, { 13424: product(34) }, 'iterations', {})
-  normalReducer(iteration, 'UPDATE_ITERATION', { 100434: product(100434) }, { 100434: product(100434) }, 'iteration', {})
+  normalReducer(iteration, 'UpdateIterations', { 13424: product(34) }, { 13424: product(34) }, 'iterations', {})
+  normalReducer(iteration, 'UpdateIteration', { 100434: product(100434) }, { 100434: product(100434) }, 'iteration', {})
 
   errorCode(iteration, 'getIterations')
   errorCode(iteration, 'createIteration')
-  errorCode(iteration, 'updateIteration')
 
   it('effects: getIterations -> success', () => {
     const iterations = products(5)
@@ -93,24 +92,6 @@ describe('models: iteration', () => {
     generator.next({
       code: 0,
       result,
-    })
-    generator.next()
-    generator.next([])
-    const end = generator.next()
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it('effects: updateIteration', () => {
-    const origin = { id: 10011, name: 'new_iteration_name' }
-
-    const expected = transferIteration(origin)
-    const generator = createGenerator('updateIteration', origin)
-
-    generator.next()
-    generator.next({
-      code: 0,
-      result: expected,
     })
     generator.next()
     generator.next([])

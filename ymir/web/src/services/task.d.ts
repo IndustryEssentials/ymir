@@ -10,7 +10,7 @@ type WithDocker = {
   config: DockerConfig
   image: number
 }
-type modelStage = [number, number| undefined | null]
+type modelStage = [number, number | undefined | null]
 
 type TasksQuery = {
   stages?: number[]
@@ -97,7 +97,7 @@ type MiningParams = WithDocker & {
 type InferenceParams = WithDocker & {
   projectId: number
   dataset: number[]
-  stage: modelStage
+  stage?: number[]
   name?: string
   openpai?: boolean
   description?: string
@@ -106,3 +106,5 @@ type InferenceParams = WithDocker & {
 type TaskParams = (FusionParams | MergeParams | FilterParams | LabelParams | TrainingParams | MiningParams | InferenceParams) & {
   type: TASKTYPES
 }
+
+export { DockerConfig, TasksQuery, FusionParams, FilterParams, MergeParams, LabelParams, TrainingParams, MiningParams, InferenceParams, TaskParams }

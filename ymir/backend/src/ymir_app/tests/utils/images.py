@@ -8,7 +8,7 @@ from app.constants.state import ResultState
 from tests.utils.utils import random_lower_string
 
 
-def create_docker_image_and_configs(db: Session, config: Dict = {}, image_type: int = 1):
+def create_docker_image_and_configs(db: Session, config: Dict = {}, object_type: int = 2, image_type: int = 1):
     j = {"url": random_lower_string(), "name": random_lower_string()}
 
     docker_image_in = schemas.DockerImageCreate(**j)
@@ -18,7 +18,7 @@ def create_docker_image_and_configs(db: Session, config: Dict = {}, image_type: 
     image_config_in = schemas.ImageConfigCreate(
         image_id=docker_image.id,
         config=json.dumps(config),
-        object_type=2,
+        object_type=object_type,
         type=image_type,
     )
     image_config = crud.image_config.create(db, obj_in=image_config_in)

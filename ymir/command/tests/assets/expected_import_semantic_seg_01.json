@@ -54,6 +54,7 @@
                             "cm": 0,
                             "polygon": [],
                             "iscrowd": 0,
+                            "prompt": "",
                             "mask_area": 88715
                         },
                         {
@@ -76,6 +77,7 @@
                             "cm": 0,
                             "polygon": [],
                             "iscrowd": 0,
+                            "prompt": "",
                             "mask_area": 275827
                         }
                     ],
@@ -106,6 +108,7 @@
                             "cm": 0,
                             "polygon": [],
                             "iscrowd": 0,
+                            "prompt": "",
                             "mask_area": 5104
                         },
                         {
@@ -128,6 +131,7 @@
                             "cm": 0,
                             "polygon": [],
                             "iscrowd": 0,
+                            "prompt": "",
                             "mask_area": 175494
                         },
                         {
@@ -150,6 +154,7 @@
                             "cm": 0,
                             "polygon": [],
                             "iscrowd": 0,
+                            "prompt": "",
                             "mask_area": 26543
                         },
                         {
@@ -172,6 +177,7 @@
                             "cm": 0,
                             "polygon": [],
                             "iscrowd": 0,
+                            "prompt": "",
                             "mask_area": 81539
                         }
                     ],
@@ -183,7 +189,6 @@
                     ]
                 }
             },
-            "is_instance_segmentation": false,
             "task_id": "import_semantic_seg_01",
             "type": 3,
             "task_class_ids": [
@@ -199,7 +204,6 @@
         "prediction": {
             "task_id": "import_semantic_seg_01",
             "image_annotations": {},
-            "is_instance_segmentation": false,
             "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],
@@ -329,11 +333,11 @@
                     "sub_cks": {}
                 },
                 "new_types": {
-                    "leaves": 0,
-                    "grass": 0,
-                    "blanket": 0,
-                    "house": 0,
-                    "other": 0
+                    "leaves": 1,
+                    "grass": 1,
+                    "blanket": 1,
+                    "house": 1,
+                    "other": 1
                 },
                 "new_types_added": true,
                 "src_revs": "master",

@@ -9,7 +9,7 @@ import t from '@/utils/t'
 const key = 'officialImage'
 
 const OfficialImageTip: FC = () => {
-  const { official, role } = useSelector(({ image, user }) => ({ official: image.official, role: user.role }))
+  const { official, role } = useSelector(({ image, user }) => ({ official: image.official, role: user.user.role }))
   const { run: getOfficialImage } = useRequest('image/getOfficialImage')
 
   useEffect(() => getOfficialImage(), [])

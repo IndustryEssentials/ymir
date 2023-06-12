@@ -2,8 +2,9 @@ import React from 'react'
 
 import AssetCount from '@/components/dataset/AssetCount'
 import VersionName from '@/components/result/VersionName'
+import { Dataset as DatasetType } from '@/constants'
 
-type Props = { dataset: YModels.Dataset }
+type Props = { dataset: DatasetType }
 
 const Dataset: React.FC<Props> = ({ dataset }) => {
   return dataset?.name ? (

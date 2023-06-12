@@ -33,15 +33,13 @@ class CmdImport(base.BaseCommand):
                                        work_dir=self.args.work_dir,
                                        unknown_types_strategy=annotations.UnknownTypesStrategy(
                                            self.args.unknown_types_strategy),
-                                       anno_type=annotations.parse_object_type(self.args.anno_type),
-                                       is_instance_segmentation=self.args.is_instance_segmentation)
+                                       anno_type_fmt=self.args.anno_type_fmt)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, pred_abs: Optional[str], gt_abs: Optional[str], asset_abs: str, gen_abs: str,
                       dst_rev: str, src_revs: str, work_dir: str, label_storage_file: str,
-                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
-                      is_instance_segmentation: bool) -> int:
+                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type_fmt: str) -> int:
         # step 0: check args
         if not gen_abs or not work_dir or not asset_abs:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -93,7 +91,6 @@ class CmdImport(base.BaseCommand):
                                   error_message=f"invalid gt_abs: {gt_abs}")
 
         # Step 3: generate sha1 file and rename images.
-        # sha1 file to be written.
         file_name_to_asset_ids = _generate_sha_and_copy(index_file, gen_abs)
 
         # Step 4 import metadat and annotations:
@@ -106,25 +103,29 @@ class CmdImport(base.BaseCommand):
             logging.error(f"import metadatas error: {ret}")
             return ret
 
+        obj_type, anno_fmt = annotations.parse_anno_type_format(anno_type_fmt)
         mir_annotation = mirpb.MirAnnotations()
-        unknown_class_names = annotations.import_annotations(mir_annotation=mir_annotation,
-                                                             label_storage_file=label_storage_file,
-                                                             prediction_dir_path=pred_abs,
-                                                             groundtruth_dir_path=gt_abs,
-                                                             file_name_to_asset_ids=file_name_to_asset_ids,
-                                                             unknown_types_strategy=unknown_types_strategy,
-                                                             anno_type=anno_type,
-                                                             is_instance_segmentation=is_instance_segmentation,
-                                                             phase='import.others')
+        new_class_names = annotations.import_annotations(mir_annotation=mir_annotation,
+                                                         label_storage_file=label_storage_file,
+                                                         prediction_dir_path=pred_abs,
+                                                         groundtruth_dir_path=gt_abs,
+                                                         file_name_to_asset_ids=file_name_to_asset_ids,
+                                                         unknown_types_strategy=unknown_types_strategy,
+                                                         anno_type=obj_type,
+                                                         anno_fmt=anno_fmt,
+                                                         phase='import.others')
 
-        logging.info(f"pred / gt import unknown result: {dict(unknown_class_names)}")
+        logging.info(f"Import done, images count: {len(mir_metadatas.attributes)}, "
+                     f"with gt: {len(mir_annotation.ground_truth.image_annotations)}, "
+                     f"with pred: {len(mir_annotation.prediction.image_annotations)}")
+        logging.info(f"pred / gt new class names: {new_class_names}, strategy: {unknown_types_strategy}")
 
         # create and write tasks
         task = mir_storage_ops.create_task_record(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
             message=f"importing {index_file}-{pred_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
-            new_types=unknown_class_names,
+            new_types={name: -1 for name in new_class_names},
             new_types_added=(unknown_types_strategy == annotations.UnknownTypesStrategy.ADD),
             src_revs=src_revs,
             dst_rev=dst_rev,
@@ -245,13 +246,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                            'stop: stop on unknown class type names\n'
                                            'ignore: ignore unknown class type names\n'
                                            'add: add unknown class types names to labels.yaml')
-    import_dataset_arg_parser.add_argument('--anno-type',
-                                           dest='anno_type',
-                                           required=True,
-                                           choices=['det-box', 'seg', 'no-annos'],
-                                           help='annotations type\n')
-    import_dataset_arg_parser.add_argument('--ins-seg',
-                                           dest='is_instance_segmentation',
-                                           action='store_true',
-                                           help='set if this dataset is instance segmentation')
+    import_dataset_arg_parser.add_argument(
+        '--anno-type-fmt', '--anno-type',
+        dest='anno_type_fmt',
+        required=True,
+        choices=['det:voc', 'det:coco', 'sem-seg:coco', 'ins-seg:coco', 'multi-modal:coco', 'no-annos:none',
+                 'sem-seg', 'ins-seg', 'multi-modal', 'no-annos'],
+        help='anno_type:anno_format\n')
     import_dataset_arg_parser.set_defaults(func=CmdImport)

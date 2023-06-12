@@ -68,8 +68,8 @@ function Label({ query = {}, hidden, ok = () => {}, bottom }) {
     result && ok(result)
   }
 
-  function docChange(files, docFile) {
-    setDoc(files.length ? location.protocol + '//' + location.host + docFile : '')
+  function docChange({ fileList }) {
+    setDoc(fileList.length ? location.protocol + '//' + location.host + fileList[0].url : '')
   }
 
   function onFinishFailed(errorInfo) {

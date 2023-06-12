@@ -1,5 +1,5 @@
 import { ComponentProps, FC, useEffect } from 'react'
-import { Col, Row, Space, Tag } from 'antd'
+import { Col, Row, Space, Tag, Tooltip } from 'antd'
 
 import t from '@/utils/t'
 import { invalidState } from '@/constants/common'
@@ -10,9 +10,11 @@ import StateTag from '@/components/task/StateTag'
 import useModal from '@/hooks/useModal'
 import DatasetMoreInfo from './DatasetMoreInfo'
 import { MoreIcon } from '@/components/common/Icons'
-import { Prediction } from '@/constants'
+import { Dataset, Prediction } from '@/constants'
+import { isMultiModal } from '@/constants/objectType'
+import { QuestionCircleOutlined } from '@ant-design/icons'
 
-const DatasetInfo: FC<{ dataset?: Prediction | YModels.Dataset }> = ({ dataset }) => {
+const DatasetInfo: FC<{ dataset?: Prediction | Dataset }> = ({ dataset }) => {
   if (!dataset) {
     return null
   }
@@ -48,6 +50,11 @@ const DatasetInfo: FC<{ dataset?: Prediction | YModels.Dataset }> = ({ dataset }
               {inferClass?.map((cls) => (
                 <Tag key={cls}>{cls}</Tag>
               ))}
+              {isMultiModal(dataset.type) ? (
+                <Tooltip color={'green'} overlay={t('llmm.prediction.classes.tip')}>
+                  <QuestionCircleOutlined style={{ color: '#ccc', fontSize: 14 }} />
+                </Tooltip>
+              ) : null}
             </div>
           ) : null}
         </Space>

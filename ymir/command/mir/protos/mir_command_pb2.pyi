@@ -106,6 +106,7 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     TaskTypeDatasetInfer = TaskType.V(15)
     TaskTypeEvaluate = TaskType.V(16)
     TaskTypePullImage = TaskType.V(17)
+    TaskTypeExcludeData = TaskType.V(18)
 
 TaskTypeUnknown = TaskType.V(0)
 TaskTypeTraining = TaskType.V(1)
@@ -127,6 +128,7 @@ TaskTypeCopyModel = TaskType.V(14)
 TaskTypeDatasetInfer = TaskType.V(15)
 TaskTypeEvaluate = TaskType.V(16)
 TaskTypePullImage = TaskType.V(17)
+TaskTypeExcludeData = TaskType.V(18)
 global___TaskType = TaskType
 
 
@@ -216,30 +218,32 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_CLASS = ObjectType.V(1)
     """Classification with class id, not implemented."""
 
-    OT_DET_BOX = ObjectType.V(2)
+    OT_DET = ObjectType.V(2)
     """Detection w. bounding box."""
 
-    OT_SEG = ObjectType.V(3)
+    OT_SEM_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
     OT_INS_SEG = ObjectType.V(4)
     """used by controller and app"""
 
+    OT_MULTI_MODAL = ObjectType.V(50)
     OT_NO_ANNOS = ObjectType.V(100)
 
 OT_UNKNOWN = ObjectType.V(0)
 OT_CLASS = ObjectType.V(1)
 """Classification with class id, not implemented."""
 
-OT_DET_BOX = ObjectType.V(2)
+OT_DET = ObjectType.V(2)
 """Detection w. bounding box."""
 
-OT_SEG = ObjectType.V(3)
+OT_SEM_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
 
 OT_INS_SEG = ObjectType.V(4)
 """used by controller and app"""
 
+OT_MULTI_MODAL = ObjectType.V(50)
 OT_NO_ANNOS = ObjectType.V(100)
 global___ObjectType = ObjectType
 
@@ -252,36 +256,34 @@ class _ObjectSubTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
     OST_NOTSET = ObjectSubType.V(0)
     OST_SEG_MASK = ObjectSubType.V(30)
-    """OT_SEG sub types"""
+    """OT_SEM_SEG & OT_INS_SEG sub types"""
 
     OST_SEG_POLYGON = ObjectSubType.V(31)
 
 OST_NOTSET = ObjectSubType.V(0)
 OST_SEG_MASK = ObjectSubType.V(30)
-"""OT_SEG sub types"""
+"""OT_SEM_SEG & OT_INS_SEG sub types"""
 
 OST_SEG_POLYGON = ObjectSubType.V(31)
 global___ObjectSubType = ObjectSubType
 
 
-class ExportFormat(_ExportFormat, metaclass=_ExportFormatEnumTypeWrapper):
+class AnnoFormat(_AnnoFormat, metaclass=_AnnoFormatEnumTypeWrapper):
     pass
-class _ExportFormat:
+class _AnnoFormat:
     V = typing.NewType('V', builtins.int)
-class _ExportFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ExportFormat.V], builtins.type):
+class _AnnoFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AnnoFormat.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    EF_NO_ANNOTATIONS = ExportFormat.V(0)
-    EF_VOC_XML = ExportFormat.V(1)
-    EF_ARK_TXT = ExportFormat.V(2)
-    EF_LS_JSON = ExportFormat.V(3)
-    EF_COCO_JSON = ExportFormat.V(4)
+    AF_NO_ANNOS = AnnoFormat.V(0)
+    AF_VOC_XML = AnnoFormat.V(1)
+    AF_ARK_TXT = AnnoFormat.V(2)
+    AF_COCO_JSON = AnnoFormat.V(4)
 
-EF_NO_ANNOTATIONS = ExportFormat.V(0)
-EF_VOC_XML = ExportFormat.V(1)
-EF_ARK_TXT = ExportFormat.V(2)
-EF_LS_JSON = ExportFormat.V(3)
-EF_COCO_JSON = ExportFormat.V(4)
-global___ExportFormat = ExportFormat
+AF_NO_ANNOS = AnnoFormat.V(0)
+AF_VOC_XML = AnnoFormat.V(1)
+AF_ARK_TXT = AnnoFormat.V(2)
+AF_COCO_JSON = AnnoFormat.V(4)
+global___AnnoFormat = AnnoFormat
 
 
 class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
@@ -502,7 +504,6 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     TASK_ID_FIELD_NUMBER: builtins.int
     TYPE_FIELD_NUMBER: builtins.int
     TASK_CLASS_IDS_FIELD_NUMBER: builtins.int
-    IS_INSTANCE_SEGMENTATION_FIELD_NUMBER: builtins.int
     EVAL_CLASS_IDS_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
     EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
@@ -516,7 +517,6 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     def task_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """Set of all shown class ids."""
         pass
-    is_instance_segmentation: builtins.bool = ...
     @property
     def eval_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """meta infos of this SingleTaskAnnotations"""
@@ -534,13 +534,12 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
         task_id : typing.Text = ...,
         type : global___ObjectType.V = ...,
         task_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
-        is_instance_segmentation : builtins.bool = ...,
         eval_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         model : typing.Optional[global___ModelMeta] = ...,
         executor_config : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["eval_class_ids",b"eval_class_ids","executor_config",b"executor_config","image_annotations",b"image_annotations","is_instance_segmentation",b"is_instance_segmentation","model",b"model","task_class_ids",b"task_class_ids","task_id",b"task_id","type",b"type"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["eval_class_ids",b"eval_class_ids","executor_config",b"executor_config","image_annotations",b"image_annotations","model",b"model","task_class_ids",b"task_class_ids","task_id",b"task_id","type",b"type"]) -> None: ...
 global___SingleTaskAnnotations = SingleTaskAnnotations
 
 class SingleImageAnnotations(google.protobuf.message.Message):
@@ -618,6 +617,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
     ISCROWD_FIELD_NUMBER: builtins.int
     TYPE_FIELD_NUMBER: builtins.int
     MASK_AREA_FIELD_NUMBER: builtins.int
+    PROMPT_FIELD_NUMBER: builtins.int
     index: builtins.int = ...
     """Index of this annotation in current single image, may be different from the index in repeated field."""
 
@@ -643,6 +643,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
 
     type: global___ObjectSubType.V = ...
     mask_area: builtins.int = ...
+    prompt: typing.Text = ...
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -659,9 +660,10 @@ class ObjectAnnotation(google.protobuf.message.Message):
         iscrowd : builtins.int = ...,
         type : global___ObjectSubType.V = ...,
         mask_area : builtins.int = ...,
+        prompt : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","mask_area",b"mask_area","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","mask_area",b"mask_area","polygon",b"polygon","prompt",b"prompt","score",b"score","tags",b"tags","type",b"type"]) -> None: ...
 global___ObjectAnnotation = ObjectAnnotation
 
 class Rect(google.protobuf.message.Message):
@@ -1138,7 +1140,6 @@ class EvaluateConfig(google.protobuf.message.Message):
     CLASS_IDS_FIELD_NUMBER: builtins.int
     MAIN_CK_FIELD_NUMBER: builtins.int
     TYPE_FIELD_NUMBER: builtins.int
-    IS_INSTANCE_SEGMENTATION_FIELD_NUMBER: builtins.int
     conf_thr: builtins.float = ...
     iou_thrs_interval: typing.Text = ...
     need_pr_curve: builtins.bool = ...
@@ -1146,7 +1147,6 @@ class EvaluateConfig(google.protobuf.message.Message):
     def class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]: ...
     main_ck: typing.Text = ...
     type: global___ObjectType.V = ...
-    is_instance_segmentation: builtins.bool = ...
     def __init__(self,
         *,
         conf_thr : builtins.float = ...,
@@ -1155,9 +1155,8 @@ class EvaluateConfig(google.protobuf.message.Message):
         class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         main_ck : typing.Text = ...,
         type : global___ObjectType.V = ...,
-        is_instance_segmentation : builtins.bool = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["class_ids",b"class_ids","conf_thr",b"conf_thr","iou_thrs_interval",b"iou_thrs_interval","is_instance_segmentation",b"is_instance_segmentation","main_ck",b"main_ck","need_pr_curve",b"need_pr_curve","type",b"type"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["class_ids",b"class_ids","conf_thr",b"conf_thr","iou_thrs_interval",b"iou_thrs_interval","main_ck",b"main_ck","need_pr_curve",b"need_pr_curve","type",b"type"]) -> None: ...
 global___EvaluateConfig = EvaluateConfig
 
 class SingleDatasetEvaluation(google.protobuf.message.Message):
@@ -1586,7 +1585,7 @@ class ExportConfig(google.protobuf.message.Message):
 
     media_location: typing.Text = ...
     need_sub_folder: builtins.bool = ...
-    anno_format: global___ExportFormat.V = ...
+    anno_format: global___AnnoFormat.V = ...
     """Annotation config."""
 
     gt_dir: typing.Text = ...
@@ -1604,7 +1603,7 @@ class ExportConfig(google.protobuf.message.Message):
         asset_index_prefix : typing.Text = ...,
         media_location : typing.Text = ...,
         need_sub_folder : builtins.bool = ...,
-        anno_format : global___ExportFormat.V = ...,
+        anno_format : global___AnnoFormat.V = ...,
         gt_dir : typing.Text = ...,
         gt_index_file : typing.Text = ...,
         gt_index_prefix : typing.Text = ...,

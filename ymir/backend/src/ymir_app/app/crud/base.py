@@ -99,6 +99,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .all()
         )
 
+    def get_multi_by_project_and_names(self, db: Session, *, project_id: int, names: List[str]) -> List[ModelType]:
+        if len(names) == 0:
+            return []
+        return (
+            db.query(self.model)
+            .filter(
+                self.model.project_id == project_id,  # type: ignore
+                self.model.name.in_(names),  # type: ignore
+            )
+            .all()
+        )
+
     def get_multi_by_iteration(self, db: Session, *, iteration_id: int) -> List[ModelType]:
         return (
             db.query(self.model)
@@ -184,20 +196,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .filter(
                 self.model.project_id == project_id,  # type: ignore
                 self.model.name == name,  # type: ignore
-                not_(self.model.is_deleted),  # type: ignore
             )
-            .one_or_none()
+            .all()
         )
-        return existing is not None
-
-    def is_duplicated_hash(self, db: Session, project_id: int, hash_: str) -> bool:
-        existing = (
-            db.query(self.model)
-            .filter(
-                self.model.project_id == project_id,  # type: ignore
-                self.model.hash == hash_,  # type: ignore
-                not_(self.model.is_deleted),  # type: ignore
-            )
-            .one_or_none()
-        )
-        return existing is not None
+        return any(group.is_visible for group in existing)  # type: ignore

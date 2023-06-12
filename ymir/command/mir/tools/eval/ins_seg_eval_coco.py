@@ -12,7 +12,7 @@ def _make_box_eval_params_copy(
     """
     copy_config = mirpb.EvaluateConfig()
     copy_config.CopyFrom(config)
-    copy_config.type = mirpb.ObjectType.OT_DET_BOX
+    copy_config.type = mirpb.ObjectType.OT_DET
     copy_prediction = mirpb.SingleTaskAnnotations()
     copy_prediction.CopyFrom(prediction)
     copy_ground_truth = mirpb.SingleTaskAnnotations()

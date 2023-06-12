@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import IntEnum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, desc, not_
+from sqlalchemy import and_, desc, not_, select, func
 from sqlalchemy.orm import Session
 
 from app import schemas, models
@@ -108,23 +108,14 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.refresh(dataset)
         return dataset
 
-    def get_latest_version(self, db: Session, dataset_group_id: int) -> Optional[int]:
-        query = db.query(self.model)
-        latest_dataset_in_group = (
-            query.filter(self.model.dataset_group_id == dataset_group_id).order_by(desc(self.model.id)).first()
-        )
-        if latest_dataset_in_group:
-            return latest_dataset_in_group.version_num
-        return None
-
-    def next_available_version(self, db: Session, group_id: int) -> int:
-        latest_version = self.get_latest_version(db, group_id)
-        return latest_version + 1 if latest_version is not None else 1
-
     def create_with_version(self, db: Session, obj_in: DatasetCreate) -> Dataset:
-        # fixme
-        #  add mutex lock to protect latest_version
-        version_num = self.next_available_version(db, obj_in.dataset_group_id)
+        stmt = (
+            select(func.max(Dataset.version_num))
+            .where(Dataset.dataset_group_id == obj_in.dataset_group_id)
+            .with_for_update()
+        )
+        max_version = db.execute(stmt).scalar() or 0
+        version_num = int(max_version) + 1
 
         db_obj = Dataset(
             version_num=version_num,

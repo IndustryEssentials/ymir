@@ -1,4 +1,4 @@
-FROM node:16-alpine as builder
+FROM node:18-alpine as builder
 WORKDIR /app
 
 ARG NPM_REGISTRY=https://registry.npmjs.org
@@ -6,7 +6,6 @@ ARG ENV=prod
 
 COPY package.json .
 COPY package-lock.json .
-RUN npm set-script prepare ""
 RUN npm install --registry ${NPM_REGISTRY}
 COPY . .
 RUN npm run build:${ENV}

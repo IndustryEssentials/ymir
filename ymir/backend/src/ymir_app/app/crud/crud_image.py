@@ -28,6 +28,7 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
             query = query.filter(DockerImage.result_state == int(filters["state"]))
         if filters.get("url"):
             query = query.filter(DockerImage.url == filters["url"])
+
         if filters.get("object_type") and filters.get("type"):
             query = query.filter(
                 DockerImage.configs.any(
@@ -37,6 +38,11 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
                     )
                 )
             )
+        elif filters.get("type"):
+            query = query.filter(DockerImage.configs.any(DockerImageConfig.type == int(filters["type"])))
+        elif filters.get("object_type"):
+            query = query.filter(DockerImage.configs.any(DockerImageConfig.object_type == int(filters["object_type"])))
+
         if filters.get("is_official"):
             query = query.filter(self.model.is_official)
 
@@ -46,10 +52,10 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         else:
             return query.all(), query.count()
 
-    def get_inference_docker_image(self, db: Session, url: str) -> Optional[DockerImage]:
+    def get_inference_docker_image(self, db: Session, id: int) -> Optional[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
         query = query.filter(DockerImage.configs.any(DockerImageConfig.type == int(DockerImageType.infer)))
-        return query.filter(self.model.url == url).first()  # type: ignore
+        return query.filter(self.model.id == id).first()  # type: ignore
 
     def get_official_docker_images(self, db: Session) -> List[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))

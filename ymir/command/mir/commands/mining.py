@@ -10,7 +10,8 @@ from mir.commands.merge import merge_with_pb
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import models, revs_parser
-from mir.tools.annotations import filter_mirdatas_by_asset_ids, valid_image_annotation, MergeStrategy
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, valid_image_annotation
+from mir.tools.annotations import MergeStrategy, UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -47,7 +48,8 @@ class CmdMining(base.BaseCommand):
                                        add_prediction=self.args.add_prediction,
                                        executor=self.args.executor,
                                        executant_name=self.args.executant_name,
-                                       run_as_root=self.args.run_as_root)
+                                       run_as_root=self.args.run_as_root,
+                                       unknown_types_strategy=UnknownTypesStrategy(self.args.unknown_types_strategy))
 
     @staticmethod
     @command_run_in_out
@@ -65,6 +67,7 @@ class CmdMining(base.BaseCommand):
                       executor: str,
                       executant_name: str,
                       run_as_root: bool,
+                      unknown_types_strategy: UnknownTypesStrategy,
                       topk: int = None,
                       add_prediction: bool = False) -> int:
         """
@@ -155,7 +158,7 @@ class CmdMining(base.BaseCommand):
                                 asset_index_file=work_index_file,
                                 media_location=media_location,
                                 need_sub_folder=True,
-                                anno_format=mirpb.ExportFormat.EF_NO_ANNOTATIONS,)
+                                anno_format=mirpb.AnnoFormat.AF_NO_ANNOS,)
         export_code = exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,
             ec=ec,
@@ -183,7 +186,8 @@ class CmdMining(base.BaseCommand):
                                                        executant_name=executant_name,
                                                        run_as_root=run_as_root,
                                                        run_infer=add_prediction,
-                                                       run_mining=(topk is not None))
+                                                       run_mining=(topk is not None),
+                                                       unknown_types_strategy=unknown_types_strategy)
         except CalledProcessError:
             return_code = PercentLogHandler.parse_percent_log(os.path.join(
                 work_dir, 'out', 'monitor.txt')).state_code or MirCode.RC_CMD_CONTAINER_ERROR.value
@@ -197,7 +201,9 @@ class CmdMining(base.BaseCommand):
                                   dst_rev=dst_typ_rev_tid.rev_tid,
                                   return_code=return_code,
                                   return_msg=return_msg,
-                                  executor=executor)
+                                  executor=executor,
+                                  new_types_added=(add_prediction
+                                                   and unknown_types_strategy == UnknownTypesStrategy.ADD))
         if return_code != MirCode.RC_OK:
             raise MirContainerError(task)
 
@@ -246,8 +252,6 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
         prediction = mir_annotations.prediction
         prediction.Clear()
 
-        cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-
         infer_result_prediction = mirpb.SingleTaskAnnotations()
         with open(os.path.join(export_out, 'prediction.mir'), 'rb') as f:
             infer_result_prediction.ParseFromString(f.read())
@@ -265,13 +269,12 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
                     infer_result_prediction.image_annotations[file_name])
 
         # pred type and meta
+        cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
         prediction.eval_class_ids[:] = set(
             cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
         prediction.executor_config = json.dumps(model_storage.executor_config)
         prediction.model.CopyFrom(model_storage.get_model_meta())
-        prediction.type = (mirpb.ObjectType.OT_DET_BOX if model_storage.object_type
-                           == mirpb.ObjectType.OT_DET_BOX else mirpb.ObjectType.OT_SEG)
-        prediction.is_instance_segmentation = (model_storage.object_type == mirpb.ObjectType.OT_INS_SEG)
+        prediction.type = infer_result_prediction.type
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
@@ -382,4 +385,12 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest="run_as_root",
                                    action='store_true',
                                    help="run executor as root user")
+    mining_arg_parser.add_argument('--unknown-types-strategy',
+                                   dest='unknown_types_strategy',
+                                   required=False,
+                                   choices=['ignore', 'add'],
+                                   default='stop',
+                                   help='strategy for unknown class types in annotation files\n'
+                                   'ignore: ignore unknown class type names\n'
+                                   'add: add unknown class types names to labels.yaml')
     mining_arg_parser.set_defaults(func=CmdMining)

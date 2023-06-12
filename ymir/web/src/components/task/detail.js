@@ -157,7 +157,6 @@ function TaskDetail({ task = {} }) {
       {renderCreateTime(task.create_datetime)}
       <Item label={t('task.train.form.testsets.label')}>{renderDatasetName(task.parameters.validation_dataset_id)}</Item>
       {renderModel(task.parameters.model_id, task.project_id, 'task.detail.label.premodel')}
-      {renderDuration(task.durationLabel)}
       {renderLiveCodeItem(task.config)}
       {renderImageById(task?.parameters?.docker_image_id, 2)}
       <Item label={t('task.detail.label.processing')} span={2}>
@@ -195,9 +194,7 @@ function TaskDetail({ task = {} }) {
           <Tag key={keyword}>{keyword}</Tag>
         ))}
       </Item>
-      <Item label={t('task.label.form.keep_anno.label')}>
-        {renderKeepAnnotations(task.parameters.annotation_type)}
-      </Item>
+      <Item label={t('task.label.form.keep_anno.label')}>{renderKeepAnnotations(task.parameters.annotation_type)}</Item>
       <Item label={t('task.label.form.desc.label')}>
         {task.parameters.extra_url ? (
           <a target="_blank" href={task.parameters.extra_url}>
@@ -274,8 +271,12 @@ function TaskDetail({ task = {} }) {
   )
   const renderMerge = () => (
     <>
-      <Item label={t('task.detail.include_datasets.label')} span={2}>{renderDatasetNames(task?.parameters?.include_datasets)}</Item>
-      <Item label={t('task.detail.exclude_datasets.label')} span={2}>{renderDatasetNames(task?.parameters?.exclude_datasets)}</Item>
+      <Item label={t('task.detail.include_datasets.label')} span={2}>
+        {renderDatasetNames(task?.parameters?.include_datasets)}
+      </Item>
+      <Item label={t('task.detail.exclude_datasets.label')} span={2}>
+        {renderDatasetNames(task?.parameters?.exclude_datasets)}
+      </Item>
       {renderCreateTime(task.create_datetime)}
     </>
   )

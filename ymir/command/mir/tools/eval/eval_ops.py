@@ -50,10 +50,10 @@ def evaluate_with_pb(
         evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
         return evaluation
 
-    f_eval_model = _get_eval_model_function(prediction.type, config.is_instance_segmentation)
+    f_eval_model = _get_eval_model_function(prediction.type)
     if not f_eval_model:
         logging.warning(
-            f"skip evaluation: anno type: {prediction.type}, {config.is_instance_segmentation} not supported")
+            f"skip evaluation: anno type: {prediction.type} not supported")
         evaluation.state = mirpb.EvaluationState.ES_NOT_SET
         return evaluation
 
@@ -79,13 +79,14 @@ def evaluate_with_pb(
     return evaluation
 
 
-def _get_eval_model_function(anno_type: Any, is_instance_segmentation: bool) -> Optional[ModuleType]:
+def _get_eval_model_function(anno_type: Any) -> Optional[ModuleType]:
     mapping = {
-        (mirpb.ObjectType.OT_DET_BOX, False): det_eval_voc,
-        (mirpb.ObjectType.OT_SEG, False): sem_seg_eval_mm,
-        (mirpb.ObjectType.OT_SEG, True): ins_seg_eval_coco,
+        mirpb.ObjectType.OT_DET: det_eval_voc,
+        mirpb.ObjectType.OT_SEM_SEG: sem_seg_eval_mm,
+        mirpb.ObjectType.OT_INS_SEG: ins_seg_eval_coco,
+        mirpb.ObjectType.OT_MULTI_MODAL: det_eval_voc,
     }
-    return mapping.get((anno_type, is_instance_segmentation))
+    return mapping.get(anno_type)
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import IntEnum
 from typing import Dict, List, Optional, Tuple
 
-from sqlalchemy import and_, desc, not_
+from sqlalchemy import and_, desc, not_, select, func
 from sqlalchemy.orm import Session
 
 from app import schemas
@@ -75,23 +75,12 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
 
         return query.offset(offset).limit(limit).all(), query.count()
 
-    def get_latest_version(self, db: Session, model_group_id: int) -> Optional[int]:
-        query = db.query(self.model)
-        latest_model_in_group = (
-            query.filter(self.model.model_group_id == model_group_id).order_by(desc(self.model.id)).first()
-        )
-        if latest_model_in_group:
-            return latest_model_in_group.version_num
-        return None
-
-    def next_available_version(self, db: Session, model_group_id: int) -> int:
-        latest_version = self.get_latest_version(db, model_group_id)
-        return latest_version + 1 if latest_version is not None else 1
-
     def create_with_version(self, db: Session, obj_in: ModelCreate) -> Model:
-        # fixme
-        #  add mutex lock to protect latest_version
-        version_num = self.next_available_version(db, obj_in.model_group_id)
+        stmt = (
+            select(func.max(Model.version_num)).where(Model.model_group_id == obj_in.model_group_id).with_for_update()
+        )
+        max_version = db.execute(stmt).scalar() or 0
+        version_num = int(max_version) + 1
 
         db_obj = Model(
             version_num=version_num,

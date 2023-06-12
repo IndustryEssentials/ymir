@@ -2,28 +2,30 @@ import type { DefaultOptionType } from 'antd/lib/select'
 import type { FC, ReactNode } from 'react'
 
 import { useEffect, useState } from 'react'
-import { Col, ConfigProvider, Row, Select, SelectProps } from 'antd'
-import { useSelector } from 'umi'
+import { Button, Col, ConfigProvider, Divider, Row, Select, SelectProps, Space } from 'antd'
+import { useHistory, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 import EmptyState from '@/components/empty/Dataset'
 import Dataset from '@/components/form/option/Dataset'
+import { Dataset as DatasetType } from '@/constants'
+import AddButton from '../dataset/AddButton'
 
-interface Props extends SelectProps {
+interface Props extends Omit<SelectProps, 'options'> {
   pid: number
   filter?: number[]
   allowEmpty?: boolean
-  filters?: (ds: YModels.Dataset[]) => YModels.Dataset[]
-  renderLabel?: (d: YModels.Dataset) => ReactNode
+  filters?: (ds: DatasetType[]) => DatasetType[]
+  renderLabel?: (d: DatasetType) => ReactNode
   onReady?: Function
   extra?: ReactNode
   changeByUser?: boolean
 }
-interface DatasetOption extends YModels.Dataset {
+interface DatasetOption extends DatasetType {
   disabled?: boolean
 }
-const defaultLabelRender = (dataset: YModels.Dataset) => <Dataset dataset={dataset} />
+const defaultLabelRender = (dataset: DatasetType) => <Dataset dataset={dataset} />
 
 const DatasetSelect: FC<Props> = ({
   pid,
@@ -38,14 +40,13 @@ const DatasetSelect: FC<Props> = ({
   changeByUser,
   ...resProps
 }) => {
+  const history = useHistory()
   const datasets = useSelector(({ dataset }) => dataset.allDatasets[pid])
   const [options, setOptions] = useState<DefaultOptionType[]>([])
   const { run: getDatasets } = useRequest('dataset/queryAllDatasets', {
     debounceWait: 300,
     loading: false,
     cacheKey: 'datasetSelect',
-    refreshDeps: [pid],
-    ready: !!pid,
     onSuccess: () => {
       setVal(value)
     },
@@ -59,6 +60,7 @@ const DatasetSelect: FC<Props> = ({
   }, [pid])
 
   useEffect(() => {
+    console.log('datasets:', datasets)
     onReady(datasets || [])
   }, [datasets])
 
@@ -106,7 +108,7 @@ const DatasetSelect: FC<Props> = ({
     getDatasets({ pid, force: true })
   }
 
-  function filterEmptyAsset(datasets: YModels.Dataset[]) {
+  function filterEmptyAsset(datasets: DatasetType[]) {
     return datasets.filter((ds) => ds.assetCount)
   }
 
@@ -115,13 +117,24 @@ const DatasetSelect: FC<Props> = ({
       <Select
         value={val}
         placeholder={t('task.train.form.training.datasets.placeholder')}
-        onChange={onChange}
         showArrow
         allowClear
         showSearch
+        {...resProps}
+        onChange={onChange}
         options={options}
         filterOption={(input, option) => option?.dataset?.name?.toLowerCase()?.indexOf(input.toLowerCase()) >= 0}
-        {...resProps}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {options.length ? (
+              <>
+                <Divider style={{ margin: '8px 0' }} />
+                <AddButton type="link" block />
+              </>
+            ) : null}
+          </>
+        )}
       ></Select>
     </ConfigProvider>
   )

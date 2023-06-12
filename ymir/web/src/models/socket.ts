@@ -4,7 +4,9 @@ import { createEffect } from './_utils'
 import { history } from 'umi'
 import { Socket as SocketType } from 'socket.io-client'
 import { SocketStore } from '.'
-import { IdMap } from './typings/common'
+import { IdMap, List } from './typings/common.d'
+import { Backend, Image, ProgressTask, User } from '@/constants'
+
 history
 const pageMaps = [
   { path: '/home/project/\\d+/dataset', method: 'dataset/updateDatasets' },
@@ -31,7 +33,7 @@ const Socket: SocketStore = {
       if (socket) {
         return socket
       }
-      const { hash } = yield put.resolve<null, YModels.User>({
+      const { hash } = yield put.resolve<null, User>({
         type: 'user/getUserInfo',
       })
       socket = getSocket(hash)
@@ -41,7 +43,7 @@ const Socket: SocketStore = {
       })
       return socket
     }),
-    saveUpdatedTasks: createEffect<IdMap<YModels.ProgressTask>>(function* ({ payload = {} }, { put }) {
+    saveUpdatedTasks: createEffect<IdMap<ProgressTask>>(function* ({ payload = {} }, { put }) {
       const tasks = Object.keys(payload).map((hash) => ({
         ...payload[hash],
         hash,
@@ -49,11 +51,41 @@ const Socket: SocketStore = {
       }))
       yield put({ type: 'saveTasks', payload: tasks })
     }),
-    asyncMessages: createEffect<YModels.BackendData[]>(function* ({ payload }, { put }) {
+    asyncMessages: createEffect<Backend[]>(function* ({ payload }, { put }) {
       yield put({
         type: 'message/asyncMessages',
         payload,
       })
+    }),
+    updateGroundedSamImage: createEffect<ProgressTask[]>(function* ({ payload: tasks }, { put, select }) {
+      const gsImage: Image | undefined = yield select(({ image }) => image.groundedSAM)
+      const imageTask = tasks.find(({ result_docker_image }) => result_docker_image?.id)
+      if (gsImage && imageTask && gsImage?.id === imageTask?.result_docker_image?.id) {
+        const image = { ...gsImage, state: imageTask.result_state }
+        yield put({
+          type: 'image/UpdateGroundedSAM',
+          payload: image,
+        })
+      }
+    }),
+    updateImageList: createEffect<ProgressTask[]>(function* ({ payload: tasks }, { put, select }) {
+      const { items, total }: List<Image> = yield select(({ image }) => image.images)
+      const imageTasks = tasks.filter(({ result_docker_image }) => result_docker_image?.id)
+      if (imageTasks.length) {
+        const images = items.map((image) => {
+          const imageTask = imageTasks.find((task) => task.result_docker_image?.id === image.id)
+          return imageTask
+            ? {
+                ...image,
+                state: imageTask.result_state,
+              }
+            : image
+        })
+        yield put({
+          type: 'image/UpdateImages',
+          payload: { items: images, total },
+        })
+      }
     }),
   },
   reducers: {
@@ -74,8 +106,17 @@ const Socket: SocketStore = {
           .off()
           .on('update_taskstate', (data) => {
             pageMaps.forEach((page) => dispatch({ type: page.method, payload: data }))
+
+            const tasks: ProgressTask[] = Object.keys(data).map((hash) => ({
+              ...data[hash],
+              hash,
+              reload: !readyState(data[hash].result_state),
+            }))
             // cache socket valid data
             dispatch({ type: 'saveUpdatedTasks', payload: data })
+            // update data in socket model by dispatch effects
+            dispatch({ type: 'updateGroundedSamImage', payload: tasks })
+            dispatch({ type: 'updateImageList', payload: tasks })
           })
           .on('update_message', (data) => {
             dispatch({ type: 'asyncMessages', payload: data })

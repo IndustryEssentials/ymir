@@ -73,8 +73,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = gen_folder
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
-        args.anno_type = 'det-box'
-        args.is_instance_segmentation = False
+        args.anno_type_fmt = 'det:voc'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -144,8 +143,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = gen_folder
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
-        args.anno_type = 'det-box'
-        args.is_instance_segmentation = False
+        args.anno_type_fmt = 'det:voc'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -176,8 +174,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = os.path.join(self._storage_root, 'gen')
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'
-        args.anno_type = 'seg'
-        args.is_instance_segmentation = False
+        args.anno_type_fmt = 'sem-seg:coco'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -202,8 +199,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = os.path.join(self._storage_root, 'gen')
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'
-        args.anno_type = 'seg'
-        args.is_instance_segmentation = False
+        args.anno_type_fmt = 'sem-seg:coco'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -230,8 +226,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = os.path.join(self._storage_root, 'gen')
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'
-        args.anno_type = 'seg'
-        args.is_instance_segmentation = False
+        args.anno_type_fmt = 'sem-seg:coco'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -263,8 +258,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen_abs = os.path.join(self._storage_root, 'gen')
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'
-        args.anno_type = 'seg'
-        args.is_instance_segmentation = True
+        args.anno_type_fmt = 'ins-seg:coco'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -316,8 +310,8 @@ class TestCmdImport(unittest.TestCase):
     def _prepare_data(self):
         local_data_root = 'tests/assets'
 
-        # Copy img files.
-        img_files = ['2007_000032.jpg', '2007_000243.jpg']
+        # Copy img files, 2007_000243.xml represents for error format images
+        img_files = ['2007_000032.jpg', '2007_000243.jpg', '2007_000243.xml']
         with open(self._idx_file, 'w') as idx_f:
             for file in img_files:
                 src = os.path.join(local_data_root, file)

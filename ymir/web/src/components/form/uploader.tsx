@@ -1,5 +1,5 @@
 import { Button, ButtonProps, message, Upload } from 'antd'
-import { useState, useEffect, FC } from 'react'
+import { useState, useEffect, FC, ReactNode } from 'react'
 import ImgCrop from 'antd-img-crop'
 
 import { CloudUploadOutlined } from '@ant-design/icons'
@@ -7,27 +7,22 @@ import { getUploadUrl } from '@/services/common'
 import storage from '@/utils/storage'
 import t from '@/utils/t'
 import 'antd/es/slider/style'
-import { UploadFile } from 'antd/lib/upload/interface'
+import { UploadProps, UploadFile } from 'antd/es/upload/interface'
+type UFile = UploadFile<ResponseType>
+export type { UploadFile, UFile }
 
-export type { UploadFile }
-
-type Props = {
-  className?: string
-  value?: UploadFile[]
+export type Props = Omit<UploadProps, 'fileList'> & {
+  value?: UFile[]
   format?: string
   label?: string
   max?: number
-  maxCount?: number
-  info?: string
+  info?: ReactNode
   crop?: boolean
   btnProps?: ButtonProps
-  showUploadList?: boolean
-  onChange?: (files: UploadFile[], url: string) => void
-  onRemove?: (file: UploadFile) => void
 }
 
 type ResponseType = {
-  code: number,
+  code: number
   result: string
 }
 
@@ -40,8 +35,7 @@ const fileSuffix: { [type: string]: string[] } = {
 }
 
 const Uploader: FC<Props> = ({
-  className,
-  value = null,
+  value,
   format = 'zip',
   label,
   max = 200,
@@ -49,29 +43,31 @@ const Uploader: FC<Props> = ({
   info = '',
   crop = false,
   btnProps = {},
-  showUploadList = true,
   onChange = () => {},
-  onRemove = () => {},
+  ...rest
 }) => {
   label = label || t('model.add.form.upload.btn')
-  const [files, setFiles] = useState<UploadFile[]>()
+  const [files, setFiles] = useState<UFile[]>()
 
   useEffect(() => {
-    value && value.length && setFiles(value)
+    value?.length && setFiles(value)
   }, [value])
 
-  function onFileChange({ file, fileList }: { file: UploadFile; fileList: UploadFile[] }) {
-    if (file.status === 'done') {
-      uploadSuccess(file.response)
-    }
-    setFiles([...fileList])
+  function onFileChange({ file, fileList }: { file: UFile; fileList: UFile[] }) {
+    const fileListWithUrl = fileList.slice(-maxCount).map((file) => ({
+      ...file,
+      url: file?.response?.result,
+    }))
+    setFiles(fileListWithUrl)
+
+    onChange({ file, fileList: fileListWithUrl })
   }
 
-  function beforeUpload(file: File) {
+  function beforeUpload(file: UFile) {
     return validFile(file) || Upload.LIST_IGNORE
   }
 
-  function validFile(file: File) {
+  function validFile(file: UFile | File) {
     const fix = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase()
     const isValid = format === 'all' ? true : fileSuffix[format].indexOf(fix) > -1
     if (!isValid) {
@@ -82,27 +78,27 @@ const Uploader: FC<Props> = ({
     if (!isOver) {
       message.error(t('common.uploader.size.error', { max }))
     }
+    if (maxCount <= 0) {
+      message.error('exceed maximium count')
+      return false
+    }
     return isValid && isOver
   }
 
   const beforeCrop = (file: File) => validFile(file)
 
-  const uploadSuccess = ({ code, result }: ResponseType) => code === 0 && files && onChange(files, result)
-
   const uploader = (
     <Upload
-      className={className}
+      {...rest}
       fileList={files}
       action={getUploadUrl()}
       name="file"
       headers={{ Authorization: `Bearer ${storage.get('access_token')}` }}
       onChange={onFileChange}
-      onRemove={onRemove}
       beforeUpload={beforeUpload}
-      maxCount={maxCount}
-      showUploadList={showUploadList}
+      multiple={maxCount > 1}
     >
-      <Button type='primary' ghost icon={<CloudUploadOutlined />} {...btnProps}>
+      <Button type="primary" ghost icon={<CloudUploadOutlined />} {...btnProps}>
         {label}
       </Button>
     </Upload>

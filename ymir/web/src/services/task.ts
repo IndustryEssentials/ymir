@@ -3,6 +3,7 @@ import { TASKTYPES } from '@/constants/task'
 import { randomNumber } from '@/utils/number'
 import { generateName } from '@/utils/string'
 import { FilterParams, FusionParams, InferenceParams, LabelParams, MergeParams, MiningParams, TaskParams, TasksQuery, TrainingParams } from './task.d'
+import { Backend } from '@/constants'
 
 /**
  * get (or filter) task list
@@ -198,7 +199,7 @@ export function train({ openpai, description, projectId, datasetId, keywords, te
     docker_image_config: { ...config, openpai_enable: openpai },
     parameters: {
       task_type: 'training',
-      strategy,
+      duplication_strategy: strategy,
       dataset_id: datasetId,
       validation_dataset_id: testset,
       keywords,
@@ -241,7 +242,7 @@ export function mine({ openpai, description, projectId, datasetId, modelStage, t
  * @export
  * @param {InferenceParams} { name, projectId, datasets, stages = [], config, image, openpai, description }
  */
-export function infer({ name, projectId, dataset, stage: [model, mstage], config, image, openpai, description }: InferenceParams) {
+export function infer({ name, projectId, dataset, stage: [model, mstage] = [], config, image, openpai, description }: InferenceParams) {
   const params = {
     name,
     type: TASKTYPES.INFERENCE,
@@ -249,7 +250,7 @@ export function infer({ name, projectId, dataset, stage: [model, mstage], config
     result_description: description,
     docker_image_config: { ...config, openpai_enable: openpai },
     parameters: {
-      task_type: 'infer',
+      task_type: 'dataset_infer',
       model_id: model,
       model_stage_id: mstage,
       dataset_id: dataset,
@@ -257,4 +258,29 @@ export function infer({ name, projectId, dataset, stage: [model, mstage], config
     },
   }
   return request.post('/tasks/', params)
+}
+
+export const batchAdd = (pid: number, tasks: Backend[]) => {
+  const params = tasks.map((task) => {
+    const typeLabel = task.dataset_id ? 'copy_data' : 'import_data'
+    const type = task.dataset_id ? TASKTYPES.COPY : TASKTYPES.IMPORT
+    return {
+      ...task,
+      type,
+      task_type: typeLabel,
+    }
+  })
+
+  return batch(pid, params)
+}
+
+export const batch = (pid: number, tasks: Backend[]) => {
+  return request.post('/tasks/batch', {
+    payloads: tasks.map(({ type, ...task }) => ({
+      name: randomNumber(20),
+      project_id: pid,
+      type: type,
+      parameters: task,
+    })),
+  })
 }

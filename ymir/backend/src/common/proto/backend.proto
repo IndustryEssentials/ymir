@@ -16,6 +16,7 @@ enum UnknownTypesStrategy {
     UTS_STOP = 0;
     UTS_IGNORE = 1;
     UTS_ADD = 2;
+    UTS_KEEP = 3;
 }
 
 enum RequestType {
@@ -157,8 +158,11 @@ message TaskReqTraining {
 }
 
 message TaskReqMining {
-    int32 top_k = 1;  // > 0, will keep all if set to 0.
+    // > 0, will keep all if set to 0.
+    int32 top_k = 1;
     bool generate_annotations = 2;
+    // ignore, add
+    UnknownTypesStrategy unknown_types_strategy = 3;
 }
 
 message TaskReqImportDataset {
@@ -171,17 +175,17 @@ message TaskReqImportDataset {
     //  for coco: coco-annotations.json in that dir
     string pred_dir = 2;
     string gt_dir = 3;
-    // strategy for unknown class types: stop, ignore or add
+    // stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
-    bool is_instance_segmentation = 7;
+    mir.command.AnnoFormat anno_format = 8;
 
-    reserved 6;
+    reserved 6, 7;
 }
 
 message TaskReqExporting {
     string dataset_id = 1;
-    mir.command.ExportFormat format = 2;
+    mir.command.AnnoFormat format = 2;
     string asset_dir = 3;
     string pred_dir = 4;
     string gt_dir = 5;
@@ -200,9 +204,8 @@ message TaskReqLabeling {
     string project_name = 3;
     bool export_annotation = 4;
     mir.command.AnnotationType annotation_type = 5;
-    bool is_instance_segmentation = 7;
 
-    reserved 6;
+    reserved 6, 7;
 }
 
 message TaskReqImportModel {
@@ -282,7 +285,7 @@ message HelTaskRequestImportDataset {
 
     string pred_dir = 20;
     string gt_dir = 21;
-    mir.command.ExportFormat anno_format = 22;
+    mir.command.AnnoFormat anno_format = 22;
     UnknownTypesStrategy unknown_types_strategy = 23;
 
     bool clean_dirs = 30;
@@ -293,7 +296,7 @@ message HelTaskRequestExportDataset {
 
     string pred_dir = 20;
     string gt_dir = 21;
-    mir.command.ExportFormat anno_format = 22;
+    mir.command.AnnoFormat anno_format = 22;
 }
 
 message HelTaskRequestImportModel {

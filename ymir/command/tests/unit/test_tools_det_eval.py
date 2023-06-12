@@ -72,7 +72,7 @@ class TestToolsDetEval(unittest.TestCase):
 
         annotations_dict = {
             'prediction': {
-                'type': mirpb.ObjectType.OT_DET_BOX,
+                'type': mirpb.ObjectType.OT_DET,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -178,7 +178,7 @@ class TestToolsDetEval(unittest.TestCase):
                 },
             },
             'ground_truth': {
-                'type': mirpb.ObjectType.OT_DET_BOX,
+                'type': mirpb.ObjectType.OT_DET,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -291,6 +291,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 1,
                             'box': {
@@ -312,6 +313,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 2,
                             'box': {
@@ -333,6 +335,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 3,
                             'box': {
@@ -354,6 +357,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }],
                         'img_class_ids': [0, 1, 2],
                     },
@@ -379,16 +383,16 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }],
                         'img_class_ids': [2],
                     },
                 },
-                'is_instance_segmentation': False,
                 'task_class_ids': [0, 1, 2],
                 'task_id': 'a',
                 'eval_class_ids': [],
                 'executor_config': '',
-                'type': 'OT_DET_BOX',
+                'type': 'OT_DET',
             },
             'prediction': {
                 'image_annotations': {
@@ -414,6 +418,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }],
                         'img_class_ids': [2],
                     },
@@ -439,6 +444,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 1,
                             'box': {
@@ -460,6 +466,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 2,
                             'box': {
@@ -481,6 +488,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 3,
                             'box': {
@@ -502,6 +510,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 4,
                             'box': {
@@ -523,6 +532,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }, {
                             'index': 5,
                             'box': {
@@ -544,15 +554,15 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                            'prompt': '',
                         }],
                         'img_class_ids': [0, 1, 2, 3],
                     }
                 },
-                'is_instance_segmentation': False,
                 'task_id': 'a',
                 'eval_class_ids': [0, 1, 2, 3],
                 'executor_config': '',
-                'type': 'OT_DET_BOX',
+                'type': 'OT_DET',
                 'task_class_ids': [0, 1, 2, 3],
             },
             'image_cks': {
@@ -617,15 +627,15 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.need_pr_curve = False
         evaluate_config.main_ck = 'color'
         evaluation = eval_ctl_ops.evaluate_datasets(mir_root=self._mir_root,
-                                                        gt_rev_tid=gt_pred_rev_tid,
-                                                        pred_rev_tid=gt_pred_rev_tid,
-                                                        evaluate_config=evaluate_config)
+                                                    gt_rev_tid=gt_pred_rev_tid,
+                                                    pred_rev_tid=gt_pred_rev_tid,
+                                                    evaluate_config=evaluate_config)
         self.assertIsNotNone(evaluation)
         self.assertEqual({'blue', 'red'}, set(evaluation.sub_cks.keys()))
 
         evaluate_config.main_ck = 'FakeMainCk'
         evaluation = eval_ctl_ops.evaluate_datasets(mir_root=self._mir_root,
-                                                        gt_rev_tid=gt_pred_rev_tid,
-                                                        pred_rev_tid=gt_pred_rev_tid,
-                                                        evaluate_config=evaluate_config)
+                                                    gt_rev_tid=gt_pred_rev_tid,
+                                                    pred_rev_tid=gt_pred_rev_tid,
+                                                    evaluate_config=evaluate_config)
         self.assertIsNone(evaluation)

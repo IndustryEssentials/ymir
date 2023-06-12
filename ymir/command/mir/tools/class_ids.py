@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
+import uuid
 
 import fasteners  # type: ignore
 from mir.version import check_ymir_version_or_crash, YMIR_REPO_VERSION
@@ -89,16 +90,20 @@ class UserLabels(LabelStorage):
         if not (self.storage_file and os.path.isfile(self.storage_file)):
             raise RuntimeError("cannot reload with empty storage_file.")
 
-        *_, validation_error = validate_model(self.__class__, self.__dict__)
+        values, _, validation_error = validate_model(self.__class__, self.__dict__)
         if validation_error:
             raise validation_error
+
+        self.__dict__.update(values)
 
     def __save(self) -> None:
         if not self.storage_file:
             raise RuntimeError("empty storage_file.")
 
-        with open(self.storage_file, 'w') as f:
+        tmp_file_path = f"{self.storage_file}.{uuid.uuid4()}"
+        with open(tmp_file_path, 'w') as f:
             yaml.safe_dump(self.dict(), f, allow_unicode=True)
+        os.rename(src=tmp_file_path, dst=self.storage_file)
 
     def _add_new_cname(self, name: str, exist_ok: bool = True) -> Tuple[int, str]:
         name = _normalize_and_check_name(name)
@@ -153,13 +158,13 @@ class UserLabels(LabelStorage):
                     class_ids.append(class_id)
 
         if raise_if_unknown and unknown_names:
-            raise ValueError(f"unknown class found: {unknown_names}")
+            raise ValueError(f"unknown class names: {unknown_names}")
 
         return class_ids, unknown_names
 
     def main_name_for_id(self, class_id: int) -> str:
         if class_id not in self._id_to_name:
-            raise ValueError(f"copy: unknown src class id: {class_id}")
+            raise ValueError(f"unknown class id: {class_id}")
         return self._id_to_name[class_id]
 
     def main_name_for_ids(self, class_ids: List[int]) -> List[str]:
@@ -185,23 +190,23 @@ class UserLabels(LabelStorage):
 
     def add_main_names(self, main_names: List[str]) -> List[Tuple[int, str]]:
         # only trigger reload at saving, not read safe, main_name may already been added in another process.
-        self.__reload()
-        ret_val: List[Tuple[int, str]] = []
-
-        # shortcut, return if all names are known.
-        for main_name in main_names:
-            class_id, main_name = self.id_and_main_name_for_name(main_name)
-            if class_id < 0:
-                break
-            ret_val.append((class_id, main_name))
-        if len(ret_val) == len(main_names):  # all known names.
-            return ret_val
-
         if not self.storage_file:
             raise RuntimeError("empty storage_file.")
 
-        ret_val.clear()
+        ret_val: List[Tuple[int, str]] = []
         with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
+            self.__reload()
+
+            # shortcut, return if all names are known.
+            for main_name in main_names:
+                class_id, main_name = self.id_and_main_name_for_name(main_name)
+                if class_id < 0:
+                    break
+                ret_val.append((class_id, main_name))
+            if len(ret_val) == len(main_names):  # all known names.
+                return ret_val
+
+            ret_val.clear()
             for main_name in main_names:
                 added_class_id, main_name = self._add_new_cname(name=main_name)
                 ret_val.append((added_class_id, main_name))
@@ -215,11 +220,11 @@ class UserLabels(LabelStorage):
         if not self.storage_file:
             raise RuntimeError("empty storage_file.")
 
-        self.__reload()
+        conflict_labels = []
         with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
+            self.__reload()
             current_time = datetime.now()
 
-            conflict_labels = []
             for label in new_labels.labels:
                 new_label = SingleLabel.parse_obj(label.dict())
                 idx = self.id_and_main_name_for_name(label.name)[0]

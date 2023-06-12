@@ -1,4 +1,5 @@
-import { AnnotationType } from '@/constants/dataset'
+import { Annotation, BoundingBox, Mask, Polygon } from '@/constants'
+import { AnnotationType } from '@/constants/asset'
 import { decode } from '@/utils/rle'
 import Color from 'color'
 
@@ -28,32 +29,64 @@ function mask2Uint8Array(mask: number[][], len: number, color?: string) {
   return dataWithColor
 }
 
-export function renderPolygon(canvas: HTMLCanvasElement, points: YModels.Point[], color?: string) {
+export function renderPolygons(canvas: HTMLCanvasElement, annotations: Polygon[], showMore?: boolean, ratio?: number) {
   const ctx = canvas.getContext('2d')
-  if (!ctx) {
+  if (!ctx || !annotations.length) {
     return
   }
-  ctx.beginPath()
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  const { color } = annotations[0]
   ctx.fillStyle = getColor(color).hexa()
-  ctx.strokeStyle = getColor('black').hexa()
-  ctx.moveTo(points[0].x, points[0].y)
+  ctx.strokeStyle = getColor('gray').hexa()
   ctx.lineWidth = 1
-  points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
+  ctx.beginPath()
+  annotations.forEach((annotation) => {
+    const { polygon: points } = annotation
+    ctx.moveTo(points[0].x, points[0].y)
+    points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
+  })
   ctx.fill()
+  showMore && drawBoxs(ctx, annotations, ratio)
 }
 
-export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: number, height: number, color?: string) {
+export function renderMask(canvas: HTMLCanvasElement, annotation: Mask, showMore?: boolean, ratio?: number) {
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return
   }
-  const image = mask2Image(mask, width, height, color)
+  const { width, height, color, decodeMask } = annotation
+  if (!decodeMask) {
+    return
+  }
+  const image = mask2Image(decodeMask, width, height, color)
 
   image && ctx.putImageData(image, 0, 0)
+
+  showMore && drawBoxs(ctx, [annotation], ratio)
 }
 
-export function transferAnnotations(annotations: YModels.Annotation[] = []) {
-  const handles = (annotation: YModels.Annotation) => {
+function drawBoxs(ctx: CanvasRenderingContext2D, annotations: Annotation[], ratio: number = 1) {
+  const { color } = annotations[0]
+  const lw = 1 / ratio
+  const th = 16 * lw
+  const padding = lw * 4
+  const mainColor = getColor(color).hexa()
+  ctx.strokeStyle = mainColor
+  ctx.lineWidth = 1 / ratio
+  ctx.font = `${th}px Microsoft Yahei`
+  annotations.forEach(({ box, keyword, score }) => {
+    ctx.strokeRect(box.x, box.y, box.w, box.h)
+    const text = `${keyword} ${score || ''}`
+    const tw = ctx.measureText(text).width
+    ctx.fillStyle = getColor(color, 0.6).hexa()
+    ctx.fillRect(box.x, box.y - th - padding * 2, tw + 8, th + padding * 2)
+    ctx.fillStyle = 'white'
+    ctx.fillText(text, box.x + padding, box.y - padding)
+  })
+}
+
+export function transferAnnotations(annotations: Annotation[] = []) {
+  const handles = (annotation: Annotation) => {
     switch (annotation.type) {
       case AnnotationType.Polygon:
         return toPolygon(annotation)
@@ -61,20 +94,20 @@ export function transferAnnotations(annotations: YModels.Annotation[] = []) {
         return toMask(annotation)
       case AnnotationType.BoundingBox:
       default:
-        return toBoundingBox(annotation as YModels.BoundingBox)
+        return toBoundingBox(annotation as BoundingBox)
     }
   }
 
   return annotations.map(handles)
 }
 
-function toBoundingBox(annotation: YModels.BoundingBox): YModels.BoundingBox {
+function toBoundingBox(annotation: BoundingBox): BoundingBox {
   return annotation
 }
 
-function toMask(annotation: YModels.Mask): YModels.Mask {
-  const { mask, height } = annotation
-  if(!mask || !height) {
+function toMask(annotation: Mask): Mask {
+  const { mask, height, decodeMask: decoded } = annotation
+  if (!mask || !height || decoded) {
     return annotation
   }
   const decodeMask = decode(mask, height)
@@ -84,6 +117,6 @@ function toMask(annotation: YModels.Mask): YModels.Mask {
   }
 }
 
-function toPolygon(annotation: YModels.Polygon): YModels.Polygon {
+function toPolygon(annotation: Polygon): Polygon {
   return annotation
 }
