@@ -1,46 +1,25 @@
-import {
-  getIterations,
-  getIteration,
-  createIteration,
-  updateIteration,
-  getMiningStats,
-  bindStep,
-  unbindStep,
-  nextStep,
-  updateTrainClasses,
-} from '@/services/iteration'
+import { getIterations, getIteration, createIteration, getMiningStats, bindStep, unbindStep, nextStep } from '@/services/iteration'
 import { Stages, transferIteration, transferMiningStats } from '@/constants/iteration'
-import { updateResultState } from '@/constants/common'
-import { NormalReducer } from './_utils'
+import { createEffect, createReducersByState } from './_utils'
+import { IterationState, IterationStore } from '.'
+import { Backend, Iteration, Project } from '@/constants'
+import { CreateParams } from '@/services/typings/iteration'
 
-const initQuery = {
-  name: '',
-  offset: 0,
-  limit: 20,
+const state: IterationState = {
+  iterations: {},
+  iteration: {},
+  actionPanelExpand: true,
 }
 
-const reducers = {
-  UPDATE_ITERATIONS: NormalReducer('iterations'),
-  UPDATE_ITERATION: NormalReducer('iteration'),
-  UPDATE_PREPARE_STAGES_RESULT: NormalReducer('prepareStageResult'),
-  UPDATE_ACTIONPANELEXPAND: NormalReducer('actionPanelExpand'),
-}
-
-export default {
+const IterationModel: IterationStore = {
   namespace: 'iteration',
-  state: {
-    query: initQuery,
-    iterations: {},
-    iteration: {},
-    prepareStagesResult: {},
-    actionPanelExpand: true,
-  },
+  state,
   effects: {
-    *getIterations({ payload }, { call, put }) {
+    getIterations: createEffect<{ id: number; more?: boolean }>(function* ({ payload }, { call, put }) {
       const { id, more } = payload
       const { code, result } = yield call(getIterations, id)
       if (code === 0) {
-        let iterations = result.map((iteration) => transferIteration(iteration))
+        let iterations = (result as Backend[]).map(transferIteration)
         if (more && iterations.length) {
           yield put.resolve({
             type: 'moreIterationsInfo',
@@ -48,7 +27,7 @@ export default {
           })
         }
         yield put({
-          type: 'UPDATE_ITERATIONS',
+          type: 'UpdateIterations',
           payload: { [id]: iterations },
         })
         // cache single iteration
@@ -58,12 +37,12 @@ export default {
         })
         return iterations
       }
-    },
-    *getIteration({ payload }, { call, put, select }) {
+    }),
+    getIteration: createEffect<{ pid: number; id: number; more?: boolean }>(function* ({ payload }, { call, put, select }) {
       const { pid, id, more } = payload
       let iteration = null
       // try get iteration from cache
-      const cache = yield select(({ iteration }) => iteration.iteration[id])
+      const cache: Iteration = yield select(({ iteration }) => iteration.iteration[id])
       if (cache) {
         iteration = cache
       } else {
@@ -79,35 +58,35 @@ export default {
         })
       }
       yield put({
-        type: 'UPDATE_ITERATION',
+        type: 'UpdateIteration',
         payload: { [iteration.id]: iteration },
       })
       return iteration
-    },
-    *getRemoteIteration({ payload }, { call }) {
+    }),
+    getRemoteIteration: createEffect<{ pid: number; id: number }>(function* ({ payload }, { call }) {
       const { pid, id } = payload
       const { code, result } = yield call(getIteration, pid, id)
       if (code === 0) {
         return transferIteration(result)
       }
-    },
-    *moreIterationsInfo({ payload: { iterations, id } }, { put }) {
+    }),
+    moreIterationsInfo: createEffect<{ id: number; iterations: Iteration[] }>(function* ({ payload: { iterations, id } }, { put }) {
       if (!iterations.length) {
         return
       }
-      const getIds = (iterations, isModel) =>
+      const getIds = (iterations: Iteration[], type = 'dataset') =>
         [
           ...new Set(
             iterations
               .map(({ wholeMiningSet, testSet, steps }) => {
-                const stepResults = steps.map((step) => (!isModel || step.resultType === 'model' ? step.resultId : null))
-                return !isModel ? [wholeMiningSet, testSet, ...stepResults] : stepResults
+                const stepResults = steps.filter((step) => step.resultType === type).map((step) => step.resultId)
+                return type === 'dataset' ? [wholeMiningSet, testSet, ...stepResults] : stepResults
               })
               .flat(),
           ),
         ].filter((id) => id)
       const datasetIds = getIds(iterations)
-      const modelIds = getIds(iterations, true)
+      const modelIds = getIds(iterations, 'model')
       if (datasetIds?.length) {
         yield put({
           type: 'dataset/batchLocalDatasets',
@@ -120,20 +99,19 @@ export default {
           payload: modelIds,
         })
       }
-    },
-
-    *updateTrainClasses({ payload: { id, classes } }, { call, put }) {
+    }),
+    updateTrainClasses: createEffect<{ id: number; classes: string[] }>(function* ({ payload: { id, classes } }, { call, put }) {
       return yield put({ type: 'project/updateProject', payload: { id, keywords: classes } })
-    },
-    *getMiningStats({ payload }, { call, put }) {
+    }),
+    getMiningStats: createEffect<{ pid: number; id: number }>(function* ({ payload }, { call, put }) {
       const { pid, id } = payload
       const { code, result } = yield call(getMiningStats, pid, id)
       if (code === 0) {
         return transferMiningStats(result)
       }
-    },
-    *getPrepareStagesResult({ payload }, { put }) {
-      const project = yield put.resolve({
+    }),
+    getPrepareStagesResult: createEffect<number>(function* ({ payload }, { put }) {
+      const project: Project = yield put.resolve({
         type: 'project/getProject',
         payload,
       })
@@ -157,8 +135,8 @@ export default {
         })
       }
       return true
-    },
-    *createIteration({ payload }, { call, put, select }) {
+    }),
+    createIteration: createEffect<CreateParams>(function* ({ payload }, { call, put, select }) {
       const { projectId } = payload
       const { code, result } = yield call(createIteration, payload)
       if (code === 0) {
@@ -169,32 +147,13 @@ export default {
         })
         const iterations = yield select(({ iteration }) => iteration.iterations[projectId] || [])
         yield put({
-          type: 'UPDATE_ITERATIONS',
+          type: 'UpdateIterations',
           payload: { [projectId]: [...iterations, iteration] },
         })
         return iteration
       }
-    },
-    *updateIteration({ payload }, { call, put, select }) {
-      const { id, ...params } = payload
-      const { code, result } = yield call(updateIteration, id, params)
-      if (code === 0) {
-        const iteration = transferIteration(result)
-        yield put({
-          type: 'updateLocalIterations',
-          payload: [{ ...iteration, needReload: true }],
-        })
-        const iterations = yield select(({ iteration: it }) => it.iterations[iteration.projectId])
-        yield put({
-          type: 'UPDATE_ITERATIONS',
-          payload: {
-            [iteration.projectId]: iterations.map((it) => (it.id === iteration.id ? iteration : it)),
-          },
-        })
-        return iteration
-      }
-    },
-    *getStageResult({ payload }, { call, put }) {
+    }),
+    getStageResult: createEffect(function* ({ payload }, { call, put }) {
       const { id, stage, force } = payload
       const isModel = stage === Stages.training
       const type = isModel ? 'model/getModel' : 'dataset/getDataset'
@@ -203,8 +162,8 @@ export default {
         payload: { id, force },
       })
       return result
-    },
-    *updateLocalIterations({ payload: iterations = [] }, { put, select }) {
+    }),
+    updateLocalIterations: createEffect<Iteration[]>(function* ({ payload: iterations = [] }, { put, select }) {
       const objIterations = iterations.reduce(
         (prev, iteration) =>
           iteration?.id
@@ -216,44 +175,24 @@ export default {
         {},
       )
       yield put({
-        type: 'UPDATE_ITERATION',
+        type: 'UpdateIteration',
         payload: objIterations,
       })
-    },
-    *updateIterationCache({ payload: tasks = {} }, { put, select }) {
-      // const tasks = payload || {}
-      const iteration = yield select((state) => state.iteration.iteration)
-      const updateItertion = Object.keys(iteration).reduce((prev, key) => {
-        let item = iteration[key]
-        if (item.id) {
-          item = updateResultState(item, tasks)
-        }
-        return {
-          ...prev,
-          [key]: item,
-        }
-      }, {})
-      if (updateIteration.id) {
-        yield put({
-          type: 'UPDATE_ITERATION',
-          payload: { [updateIteration.id]: updateItertion },
-        })
-      }
-    },
-    *toggleActionPanel({ payload }, { call, put, select }) {
+    }),
+    toggleActionPanel: createEffect<boolean>(function* ({ payload }, { call, put, select }) {
       yield put.resolve({
         type: 'UPDATE_ACTIONPANELEXPAND',
         payload,
       })
-    },
-    *bindStep({ payload }, { call, put, select }) {
+    }),
+    bindStep: createEffect<{ id: number; sid: number; tid: number }>(function* ({ payload }, { call, put, select }) {
       const { id, sid, tid } = payload
       const { code, result } = yield call(bindStep, id, sid, tid)
       if (code === 0) {
         return result
       }
-    },
-    *skipStep({ payload }, { call, put, select }) {
+    }),
+    skipStep: createEffect<{ id: number; sid: number }>(function* ({ payload }, { call, put, select }) {
       const { id, sid } = payload
       const { code } = yield call(unbindStep, id, sid)
       if (code === 0) {
@@ -262,14 +201,16 @@ export default {
           return result
         }
       }
-    },
-    *nextStep({ payload }, { call, put, select }) {
+    }),
+    nextStep: createEffect<{ id: number; sid: number }>(function* ({ payload }, { call, put, select }) {
       const { id, sid } = payload
       const { code, result } = yield call(nextStep, id, sid)
       if (code === 0) {
         return result
       }
-    },
+    }),
   },
-  reducers,
+  reducers: createReducersByState(state),
 }
+
+export default IterationModel
