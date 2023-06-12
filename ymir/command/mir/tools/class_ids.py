@@ -89,9 +89,11 @@ class UserLabels(LabelStorage):
         if not (self.storage_file and os.path.isfile(self.storage_file)):
             raise RuntimeError("cannot reload with empty storage_file.")
 
-        *_, validation_error = validate_model(self.__class__, self.__dict__)
+        values, _, validation_error = validate_model(self.__class__, self.__dict__)
         if validation_error:
             raise validation_error
+
+        self.__dict__.update(values)
 
     def __save(self) -> None:
         if not self.storage_file:
@@ -185,23 +187,23 @@ class UserLabels(LabelStorage):
 
     def add_main_names(self, main_names: List[str]) -> List[Tuple[int, str]]:
         # only trigger reload at saving, not read safe, main_name may already been added in another process.
-        self.__reload()
-        ret_val: List[Tuple[int, str]] = []
-
-        # shortcut, return if all names are known.
-        for main_name in main_names:
-            class_id, main_name = self.id_and_main_name_for_name(main_name)
-            if class_id < 0:
-                break
-            ret_val.append((class_id, main_name))
-        if len(ret_val) == len(main_names):  # all known names.
-            return ret_val
-
         if not self.storage_file:
             raise RuntimeError("empty storage_file.")
 
-        ret_val.clear()
         with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
+            self.__reload()
+            ret_val: List[Tuple[int, str]] = []
+
+            # shortcut, return if all names are known.
+            for main_name in main_names:
+                class_id, main_name = self.id_and_main_name_for_name(main_name)
+                if class_id < 0:
+                    break
+                ret_val.append((class_id, main_name))
+            if len(ret_val) == len(main_names):  # all known names.
+                return ret_val
+
+            ret_val.clear()
             for main_name in main_names:
                 added_class_id, main_name = self._add_new_cname(name=main_name)
                 ret_val.append((added_class_id, main_name))
