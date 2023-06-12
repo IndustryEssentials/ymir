@@ -1,4 +1,5 @@
 from typing import Dict
+from functools import partial
 
 import grpc
 from fastapi.logger import logger
@@ -49,8 +50,9 @@ def _import_model(
     db: Session, controller_client: ControllerClient, model_import: schemas.ModelImport, user_id: int, task_hash: str
 ) -> None:
     logger.info("[import model] start importing model file from %s", model_import)
-    parameters = model_import.get_import_parameters(db)
-    logger.info("[import model] importing model parameters: %s", parameters)
+    # avoid import crud in schemas.model, which will cause circular importing
+    model_getter = partial(crud.model.get, db)
+    parameters = model_import.get_import_parameters(model_getter)
     controller_client.import_model(
         user_id=user_id,
         project_id=model_import.project_id,

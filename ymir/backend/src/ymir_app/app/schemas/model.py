@@ -1,11 +1,9 @@
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import json
 
 from pydantic import BaseModel, Field, root_validator, validator
-from sqlalchemy.orm import Session
 
-from app import crud
 from app.api.errors.errors import ModelNotFound, TaskNotFound, FieldValidationFailed
 from app.config import settings
 from app.constants.state import ResultState, TaskType, ObjectType
@@ -59,18 +57,17 @@ class ModelImport(BaseModel):
         else:
             raise ValueError("Missing input source")
 
-    def get_import_parameters(self, db: Session) -> Dict[str, Any]:
+    def get_import_parameters(self, model_getter: Callable) -> Dict[str, Any]:
         if self.import_type == TaskType.copy_model:
-            source_model = crud.model.get(db, id=self.input_model_id)
-            if source_model is None: 
+            source_model = model_getter(self.input_model_id)
+            if source_model is None:
                 raise ModelNotFound()
-            source_task = crud.task.get(db, id=source_model.task_id)
-            if source_task is None: 
+            if source_model.related_task is None:
                 raise TaskNotFound()
             return {
                 "src_user_id": gen_user_hash(source_model.user_id),
                 "src_repo_id": gen_repo_hash(source_model.project_id),
-                "src_resource_id": source_task.hash,
+                "src_resource_id": source_model.related_task.hash,
             }
         elif self.import_type == TaskType.import_model:
             if self.input_model_path is not None:
