@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   gateway:
-    image: industryessentials/ymir-gateway:release-2.4.0
+    image: industryessentials/ymir-gateway:release-2.5.0
     env_file:
       - .env
     ports:
@@ -12,7 +12,7 @@ services:
       - ymirnetwork
 
   yapi:
-    image: industryessentials/ymir-backend:release-2.4.0
+    image: industryessentials/ymir-backend:release-2.5.0
     command: bash -c 'cd /yapi && supervisord -nc supervisor/supervisord.conf'
     env_file:
       - .env
@@ -31,7 +31,7 @@ services:
       start_period: 30s
 
   backend:
-    image: industryessentials/ymir-backend:release-2.4.0
+    image: industryessentials/ymir-backend:release-2.5.0
     env_file:
       - .env
     runtime: ${SERVER_RUNTIME}
@@ -109,7 +109,7 @@ services:
       - ymirnetwork
 
   web:
-    image: industryessentials/ymir-web:release-2.4.0
+    image: industryessentials/ymir-web:release-2.5.0
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
