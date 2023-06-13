@@ -467,20 +467,6 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
     }
   }
 
-  const saveDescHandle = (result: Dataset) => {
-    if (result) {
-      setDatasetVersions((versions) => ({
-        ...versions,
-        [result.groupId]: versions[result.groupId].map((dataset) => {
-          if (dataset.id === result.id) {
-            dataset.description = result.description
-          }
-          return dataset
-        }),
-      }))
-    }
-  }
-
   const editDesc = (dataset: Dataset) => {
     editDescBoxRef.current?.show()
     setEditingDataset(dataset)
@@ -636,7 +622,7 @@ const Datasets: ModuleType = ({ pid, project, iterations, groups }) => {
         </div>
         {renderGroups}
       </div>
-      <EditDescBox ref={editDescBoxRef} record={editingDataset} handle={saveDescHandle} />
+      <EditDescBox ref={editDescBoxRef} record={editingDataset} />
       <EditNameBox ref={editNameBoxRef} record={current} max={80} handle={saveNameHandle} />
       <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />

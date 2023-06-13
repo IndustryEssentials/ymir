@@ -249,7 +249,7 @@ export default {
         return result
       }
     },
-    *updateVersion({ payload }, { call, put }) {
+    *updateVersion({ payload }, { call, put, select }) {
       const { id, description } = payload
       const { code, result } = yield call(updateVersion, id, description)
       if (code === 0) {
@@ -257,6 +257,10 @@ export default {
         yield put({
           type: 'UPDATE_MODEL',
           payload: { [model.id]: model },
+        })
+        yield put({
+          type: 'updateVersionData',
+          payload: model,
         })
         return model
       }
@@ -270,9 +274,29 @@ export default {
           type: 'UPDATE_MODEL',
           payload: { [model]: updatedModel },
         })
+        yield put({
+          type: 'updateVersionData',
+          payload: updatedModel,
+        })
         return updatedModel
       }
     },
+    updateVersionData: createEffect(function* ({ payload: model }, { put, select }) {
+      const versions = yield select(({ model }) => model.versions)
+      const groupVersions = versions[model.groupId] || []
+      groupVersions.splice(
+        groupVersions.findIndex((v) => v.id === model.id),
+        1,
+        model,
+      )
+      yield put({
+        type: 'UPDATE_VERSIONS',
+        payload: {
+          ...versions,
+          [model.groupId]: [...groupVersions],
+        },
+      })
+    }),
     *verify({ payload }, { call }) {
       const { code, result } = yield call(verify, payload)
       if (code === 0) {

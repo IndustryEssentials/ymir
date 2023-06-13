@@ -286,6 +286,7 @@ describe('models: model', () => {
       code: 0,
       result,
     })
+    generator.next()
     const end = generator.next()
 
     expect(end.value).toEqual(expected)
@@ -312,7 +313,7 @@ describe('models: model', () => {
       result: expected,
     })
 
-    expect(end.value).toEqual(boxes.map((box, index) =>({ ...toAnnotation(box, 0, 0, true), id: end.value[index].id})))
+    expect(end.value).toEqual(boxes.map((box, index) => ({ ...toAnnotation(box, 0, 0, true), id: end.value[index].id })))
     expect(end.done).toBe(true)
   })
   // getModelsByMap
@@ -395,7 +396,7 @@ describe('models: model', () => {
       payload: pid,
     }
     const total = 3
-    const result = {items: products(total), total }
+    const result = { items: products(total), total }
     const generator = saga(creator, { put })
     generator.next()
     generator.next(result)

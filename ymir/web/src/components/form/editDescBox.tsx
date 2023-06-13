@@ -17,7 +17,7 @@ const EditDescBox = forwardRef<RefProps, Props>(({ type = 'dataset', record, max
   const [updated, updateResult] = useFetch(`${type}/updateVersion`)
   const description = record?.description || ''
 
-  useEffect(() => handle && handle(updated), [updated])
+  useEffect(() => updated && handle && handle(updated), [updated])
 
   function update(record: Result, values: any) {
     const desc = values.description.trim()
