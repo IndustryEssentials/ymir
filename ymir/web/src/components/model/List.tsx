@@ -229,17 +229,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
     updateQuery({ ...query, current, limit, offset })
   }
 
-  function updateModelVersion(result: Model) {
-    // setModelVersions((mvs) => {
-    //   return {
-    //     ...mvs,
-    //     [result.groupId]: mvs[result.groupId].map((version) => {
-    //       return version.id === result.id ? result : version
-    //     }),
-    //   }
-    // })
-  }
-
   function toggleVersions(id: number, force?: boolean) {
     setVisibles((old) => ({ ...old, [id]: force || (typeof old[id] !== 'undefined' && !old[id]) }))
   }
@@ -396,7 +385,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
       )
     }
   }
-  const saveDescHandle = (result: ModelType) => {}
 
   const editDesc = (model: ModelType) => {
     editDescBoxRef.current?.show()
@@ -524,7 +512,7 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
         {renderGroups}
       </div>
       <EditNameBox ref={editNameBoxRef} type="model" record={current} max={80} handle={saveNameHandle} />
-      <EditDescBox ref={editDescBoxRef} type="model" record={editingModel} handle={saveDescHandle} />
+      <EditDescBox ref={editDescBoxRef} type="model" record={editingModel} />
       <Hide ref={hideRef} type={'model'} msg="model.action.del.confirm.content" ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
