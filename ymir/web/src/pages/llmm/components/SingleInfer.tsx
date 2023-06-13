@@ -24,7 +24,7 @@ const SingleInfer: FC<Props> = ({ url }) => {
   const params = useParams<{ id: string }>()
   const pid = Number(params.id)
   const [virtualAsset, setVirtualAsset] = useState<Asset>({ annotations: [] })
-  const IMGSIZELIMIT = 10
+  const IMGSIZELIMIT = 20
   const [confidence, setConfidence] = useState(20)
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([])
@@ -44,7 +44,7 @@ const SingleInfer: FC<Props> = ({ url }) => {
       {...props}
       // className={styles.btn}
       onChange={({ file, fileList }) => {
-        if (fileList.length) {
+        if (fileList.length && fileList[0].url) {
           setVirtualAsset({ annotations: [], url: fileList[0].url })
           setAnnotations([])
         }
