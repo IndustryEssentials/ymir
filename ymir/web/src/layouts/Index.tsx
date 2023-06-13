@@ -44,17 +44,12 @@ const BasicLayout: FC = ({ children }) => {
         <Layout>
           <LeftMenu></LeftMenu>
           <Layout className="layoutContent">
-            <Content
-              className={commonStyles.content}
-              style={{
-                minHeight: document.documentElement.clientHeight - 60 - 50,
-              }}
-            >
-              {children}
+            <Content className={commonStyles.content}>
+              <div>{children}</div>
+              <Footer className={commonStyles.footer}>
+                <Foot></Foot>
+              </Footer>
             </Content>
-            <Footer className={commonStyles.footer}>
-              <Foot></Foot>
-            </Footer>
           </Layout>
         </Layout>
       </Layout>

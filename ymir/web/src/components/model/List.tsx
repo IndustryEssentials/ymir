@@ -69,7 +69,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
   const location: Location = useLocation()
   const name = location.query?.name
   const [models, setModels] = useState<ModelGroup[]>([])
-  const [modelVersions, setModelVersions] = useState<Models>({})
   const [total, setTotal] = useState(1)
   const [selectedVersions, setSelectedVersions] = useState<{ selected: number[]; versions: { [gid: number]: number[] } }>({ selected: [], versions: {} })
   const [form] = useForm()
@@ -145,7 +144,7 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
 
   useEffect(() => {
     const selected = selectedVersions.selected
-    const mvs = Object.values(modelVersions)
+    const mvs = Object.values(versions)
       .flat()
       .filter((version) => selected.includes(version.id))
     const hashs = mvs.map((version) => version.task.hash)
@@ -194,7 +193,7 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
     {
       title: <StrongTitle label="model.column.stage" />,
       dataIndex: 'recommendStage',
-      render: (_, record) => (validState(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null),
+      render: (_, record) => (validState(record.state) ? <EditStageCell record={record} /> : null),
       // align: 'center',
       width: 300,
     },
@@ -228,17 +227,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
     updateQuery({ ...query, current, limit, offset })
-  }
-
-  function updateModelVersion(result: Model) {
-    setModelVersions((mvs) => {
-      return {
-        ...mvs,
-        [result.groupId]: mvs[result.groupId].map((version) => {
-          return version.id === result.id ? result : version
-        }),
-      }
-    })
   }
 
   function toggleVersions(id: number, force?: boolean) {
@@ -397,19 +385,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
       )
     }
   }
-  const saveDescHandle = (result: ModelType) => {
-    if (result) {
-      setModelVersions((models) => ({
-        ...models,
-        [result.groupId]: models[result.groupId].map((model) => {
-          if (model.id === result.id) {
-            model.description = result.description
-          }
-          return model
-        }),
-      }))
-    }
-  }
 
   const editDesc = (model: ModelType) => {
     editDescBoxRef.current?.show()
@@ -473,7 +448,6 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
             <div className="groupTable" hidden={visibles[group.id] === false}>
               <Table
                 dataSource={typeof visibles[group.id] === 'undefined' ? (versions[group.id] || []).slice(0, DefaultShowVersionCount) : versions[group.id]}
-                // dataSource={modelVersions[group.id]}
                 rowKey={(record) => record.id}
                 rowSelection={{
                   selectedRowKeys: selectedVersions.versions[group.id],
@@ -538,7 +512,7 @@ const ModelList: ModuleType = ({ pid, project, iterations, groups }) => {
         {renderGroups}
       </div>
       <EditNameBox ref={editNameBoxRef} type="model" record={current} max={80} handle={saveNameHandle} />
-      <EditDescBox ref={editDescBoxRef} type="model" record={editingModel} handle={saveDescHandle} />
+      <EditDescBox ref={editDescBoxRef} type="model" record={editingModel} />
       <Hide ref={hideRef} type={'model'} msg="model.action.del.confirm.content" ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>

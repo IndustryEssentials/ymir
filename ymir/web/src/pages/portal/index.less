@@ -1,5 +1,5 @@
 .portal {
-  padding: 20px 0;
+  padding: 20px 0 0;
   .box {
     border: 1px solid rgba(0, 0, 0, 0.06);
     box-shadow: 0px 0px 10px 0px rgba(0, 106, 107, 0.1);
@@ -22,13 +22,12 @@
     }
   }
   :global(.ant-card-hoverable) {
-    &:hover{
-      border-color:@primary-color;
+    &:hover {
+      border-color: @primary-color;
       box-shadow: 0 0 0 2px rgba(54, 203, 203, 0.35);
     }
-    
   }
-  
+
   .addBtn {
     height: 42px;
     line-height: 42px;
@@ -37,7 +36,7 @@
     padding: 0;
     text-align: center;
     &:hover {
-      border-color:@primary-color ;
+      border-color: @primary-color;
     }
   }
   .emptyBoxAction {
@@ -58,12 +57,12 @@
     margin-right: 10px;
   }
   // 新增卡片标题文字颜色
-  .headTitle{
+  .headTitle {
     line-height: 32px;
     vertical-align: middle;
   }
-//  最新最热选项样式提取
-  .tabLatestHot{
+  //  最新最热选项样式提取
+  .tabLatestHot {
     margin-right: 40px;
     font-weight: normal;
   }
@@ -113,7 +112,8 @@
       margin: 0 0 4px;
     }
   }
-  .myDataset, .hotModel {
+  .myDataset,
+  .hotModel {
     .boxItem {
       height: 246px;
     }
@@ -138,14 +138,14 @@
       cursor: pointer;
       border: 1px solid #ebfafa;
       color: @primary-color;
-      background-color:#ebfafa;
+      background-color: #ebfafa;
     }
     .current {
       background-color: @btn-primary-bg;
       color: #fff;
       border: 1px solid @btn-primary-bg;
     }
-  }  /** model lsit **/
+  } /** model lsit **/
   .modelListItem {
     display: inline-block;
     color: rgba(0, 0, 0, 0.45);
@@ -166,13 +166,16 @@
     text-align: center;
     border-radius: 100px;
   }
-  .ol0, .ol1, .ol2 {
+  .ol0,
+  .ol1,
+  .ol2 {
     color: #fff;
   }
   .ol0 {
     background: rgb(242, 99, 123);
   }
-  .ol1, .ol2 {
+  .ol1,
+  .ol2 {
     background: @primary-color;
   }
 
@@ -187,12 +190,13 @@
     z-index: 2;
   }
 
-
   .badge {
     z-index: 2;
     width: 100%;
   }
-  .dataset_panel, .model_panel, .task_panel {
+  .dataset_panel,
+  .model_panel,
+  .task_panel {
     margin-bottom: 20px;
   }
 }
@@ -206,9 +210,9 @@
 }
 // mode map
 .mapValue {
-  :global(.ant-descriptions-item-content){
+  :global(.ant-descriptions-item-content) {
     color: @primary-color;
-  } 
+  }
 }
 
 .myProject {
@@ -224,7 +228,7 @@
     justify-content: center;
   }
   .rowContainer {
-    height: 962px;
+    min-height: calc(100vh - 230px);
     padding: 0 2px;
     overflow-y: auto;
     overflow-x: hidden;

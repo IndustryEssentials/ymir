@@ -22,7 +22,7 @@ import { createEffect, createReducersByState } from './_utils'
 import { deepClone } from '@/utils/object'
 import { TASKTYPES } from '@/constants/task'
 import { DatasetState, DatasetStore } from '.'
-import { List } from './typings/common.d'
+import { IdMap, List } from './typings/common.d'
 import { Backend, Dataset, ImportingItem, ProgressTask } from '@/constants'
 import { randomNumber } from '@/utils/number'
 import { Types } from '@/components/dataset/add/AddTypes'
@@ -285,11 +285,26 @@ const DatasetModal: DatasetStore = {
         return result.total
       }
     }),
-    updateVersion: createEffect<{ id: number; description: string }>(function* ({ payload }, { call, put }) {
+    updateVersion: createEffect<{ id: number; description: string }>(function* ({ payload }, { call, put, select }) {
       const { id, description } = payload
       const { code, result } = yield call(updateVersion, id, description)
       if (code === 0) {
-        return transferDataset(result)
+        const dataset = transferDataset(result)
+        const versions: IdMap<Dataset[]> = yield select(({ dataset }) => dataset.versions)
+        const groupVersions = versions[dataset.groupId] || []
+        groupVersions.splice(
+          groupVersions.findIndex((v) => v.id === dataset.id),
+          1,
+          dataset,
+        )
+        yield put({
+          type: 'UpdateVersions',
+          payload: {
+            ...versions,
+            [dataset.groupId]: [...groupVersions],
+          },
+        })
+        return dataset
       }
     }),
     getInternalDataset: createEffect(function* ({ payload }, { call, put }) {
