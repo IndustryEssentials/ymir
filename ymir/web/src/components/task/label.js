@@ -170,7 +170,7 @@ function Label({ query = {}, hidden, ok = () => {}, bottom }) {
               },
             ]}
           >
-            <UserKeywordsSelector />
+            <UserKeywordsSelector placeholder={t('task.label.form.target.label')} />
           </Item>
           <KeepAnnotations />
           <Item label={t('task.label.form.desc.label')} name="desc">
