@@ -1,6 +1,6 @@
 .login {
   .slogan {
-    background-image: url(../../assets/slogan_en.svg), linear-gradient(295.04deg, #FCFCFD, #F0F2F5);
+    background-image: url(../../assets/slogan_en.svg), linear-gradient(295.04deg, #fcfcfd, #f0f2f5);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: contain;
@@ -21,10 +21,10 @@
     }
   }
   :global(.slogan_zh-CN) {
-    background-image: url(../../assets/slogan.svg), linear-gradient(295.04deg, #FCFCFD, #F0F2F5);
+    background-image: url(../../assets/slogan.svg), linear-gradient(295.04deg, #fcfcfd, #f0f2f5);
   }
   :global(.slogan_en-US) {
-    background-image: url(../../assets/slogan_en.svg), linear-gradient(295.04deg, #FCFCFD, #F0F2F5);
+    background-image: url(../../assets/slogan_en.svg), linear-gradient(295.04deg, #fcfcfd, #f0f2f5);
   }
   .content {
     background-color: #fff;
@@ -41,7 +41,8 @@
       flex-direction: column;
       justify-content: center;
       height: calc(100% - @langHeight - 30px);
-      .title, .form {
+      .title,
+      .form {
         padding: 0 10%;
         width: 100%;
       }
@@ -54,13 +55,15 @@
       .links {
         text-align: center;
         .link {
-          color: rgba(0,0,0,0.45);
+          color: rgba(0, 0, 0, 0.45);
         }
       }
     }
   }
 }
-.reg, .forget, .reset {
+.reg,
+.forget,
+.reset {
   .content {
     display: flex;
     align-items: center;
@@ -72,7 +75,7 @@
     }
   }
   .formBox {
-    margin-top: 60px;
+    margin-top: 20px;
     width: 60vw;
     background-color: #fff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -93,10 +96,10 @@
     .tipTitle {
       font-weight: 800;
       font-size: 18px;
-      color:rgba(0, 0, 0, 0.85);
+      color: rgba(0, 0, 0, 0.85);
     }
     .tip {
-      color:rgba(0, 0, 0, 0.65);
+      color: rgba(0, 0, 0, 0.65);
       // font-size: 16px;
     }
     .form {
@@ -104,7 +107,10 @@
     }
   }
 }
-.login, .reg, .forget, .reset {
+.login,
+.reg,
+.forget,
+.reset {
   :global(.ant-input) {
     line-height: 2.9;
   }
@@ -121,7 +127,7 @@
     background: #fff;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 180px);
+    height: calc(100vh - 160px);
     :global(.ant-card-body) {
       flex: 1;
       overflow-y: auto;

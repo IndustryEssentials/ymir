@@ -285,7 +285,7 @@ const Matrics: FC<Props> = ({ prediction }) => {
     confidence,
   }
   return (
-    <div className={s.wrapper}>
+    <div className={s.container}>
       <Row className={s.view} gutter={20}>
         <Col className={s.viewPanel} span={18}>
           {renderFilterPanel()}

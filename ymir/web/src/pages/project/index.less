@@ -1,5 +1,6 @@
 .list {
-  :global(.ant-list-item), :global(.ant-list-item:last-child) {
+  :global(.ant-list-item),
+  :global(.ant-list-item:last-child) {
     padding: 10px 20px;
     border: 1px solid rgba(0, 0, 0, 0.05);
     margin: 10px 0;
@@ -40,7 +41,9 @@
     line-height: 12px;
     color: #fff;
     text-align: right;
-    .negative, .positive, .neutral {
+    .negative,
+    .positive,
+    .neutral {
       display: inline-block;
       padding: 2px 4px;
       border-radius: 4px;
@@ -72,6 +75,6 @@
 .hiddenList {
   .table {
     padding: 20px;
-    min-height: calc(100vh - 320px);
+    min-height: calc(100vh - 250px);
   }
 }

@@ -11,7 +11,7 @@ const AddPage: FC = () => {
   return (
     <div className={'datasetImport'} style={{ height: '100%' }}>
       <Breadcrumbs />
-      {stepKey ? <Add id={Number(id)} from={from} stepKey={stepKey} style={{ height: 'calc(100vh - 186px)' }} /> : <BatchAdd />}
+      {stepKey ? <Add id={Number(id)} from={from} stepKey={stepKey} style={{ height: 'calc(100vh - 166px)' }} /> : <BatchAdd />}
     </div>
   )
 }

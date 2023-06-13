@@ -44,10 +44,12 @@ const BasicLayout: FC = ({ children }) => {
         <Layout>
           <LeftMenu></LeftMenu>
           <Layout className="layoutContent">
-            <Content className={commonStyles.content}>{children}</Content>
-            <Footer className={commonStyles.footer}>
-              <Foot></Foot>
-            </Footer>
+            <Content className={commonStyles.content}>
+              <div>{children}</div>
+              <Footer className={commonStyles.footer}>
+                <Foot></Foot>
+              </Footer>
+            </Content>
           </Layout>
         </Layout>
       </Layout>

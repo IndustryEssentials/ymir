@@ -3,9 +3,12 @@
 }
 .home {
   .content {
-    padding: 0 20px 20px;
+    padding: 0 20px;
     overflow-x: hidden;
     overflow-y: auto;
+    > div {
+      min-height: calc(100% - 50px);
+    }
   }
   .footer {
     height: 50px;
