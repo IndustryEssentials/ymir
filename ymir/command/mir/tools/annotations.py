@@ -133,17 +133,18 @@ def _coco_object_dict_to_annotation(anno_dict: dict,
 
     # box, polygon and mask
     seg_obj = anno_dict.get('segmentation')
-    if isinstance(seg_obj, dict):  # mask
-        obj_anno.type = mirpb.ObjectSubType.OST_SEG_MASK
-        obj_anno.mask = seg_obj['counts']
-    elif isinstance(seg_obj, list):  # polygon
-        if len(seg_obj) > 1:
-            raise NotImplementedError('Multi polygons not supported')
+    if seg_obj:
+        if isinstance(seg_obj, dict):  # mask
+            obj_anno.type = mirpb.ObjectSubType.OST_SEG_MASK
+            obj_anno.mask = seg_obj['counts']
+        elif isinstance(seg_obj, list):  # polygon
+            if len(seg_obj) > 1:
+                raise NotImplementedError('Multi polygons not supported')
 
-        obj_anno.type = mirpb.ObjectSubType.OST_SEG_POLYGON
-        points_list = seg_obj[0]
-        for i in range(0, len(points_list), 2):
-            obj_anno.polygon.append(mirpb.IntPoint(x=int(points_list[i]), y=int(points_list[i + 1]), z=0))
+            obj_anno.type = mirpb.ObjectSubType.OST_SEG_POLYGON
+            points_list = seg_obj[0]
+            for i in range(0, len(points_list), 2):
+                obj_anno.polygon.append(mirpb.IntPoint(x=int(points_list[i]), y=int(points_list[i + 1]), z=0))
 
     bbox_list = anno_dict['bbox']
     obj_anno.box.x = int(bbox_list[0])
