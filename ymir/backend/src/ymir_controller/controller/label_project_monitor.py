@@ -87,7 +87,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
         percent = label_instance.get_task_completion_percent(project_info["project_id"])
     except (ConnectionError, HTTPError, Timeout) as e:
         logging.error(f"Failed to get_task_completion_percent for {project_info['project_id']} error: {e}")
-        percent = -1
+        percent = 1
         error_code = CTLResponseCode.INVOKER_LABEL_TASK_NETWORK_ERROR
         error_message = "Label Service Network Error"
         state = LogState.ERROR
