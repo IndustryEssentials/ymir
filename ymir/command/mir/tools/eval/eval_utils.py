@@ -54,8 +54,8 @@ def get_iou_thrs_array(iou_thrs_str: str) -> np.ndarray:
         return np.array([iou_thr_from])
     return np.linspace(start=iou_thr_from,
                        stop=iou_thr_to,
-                       num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
-                       endpoint=False)
+                       num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)) + 1,
+                       endpoint=True)
 
 
 def calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation, class_ids: Collection[int]) -> None:
